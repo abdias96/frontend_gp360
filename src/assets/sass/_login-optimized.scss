@@ -1,0 +1,26 @@
+// Optimized styles for login page - only essential imports
+@import "bootstrap-icons/font/bootstrap-icons.css";
+@import "animate.css";
+@import "sweetalert2/dist/sweetalert2.css";
+@import "@fortawesome/fontawesome-free/css/all.min.css";
+
+// Main demo style scss - essential only
+@import "assets/keenicons/duotone/style.css";
+@import "assets/keenicons/outline/style.css";
+@import "assets/keenicons/solid/style.css";
+@import "assets/sass/style";
+
+// Remove heavy imports not needed for login:
+// - apexcharts
+// - quill
+// - nouislider
+// - socicon
+// - line-awesome
+// - dropzone
+// - multiselect
+// - prism-themes
+// - element-plus
+
+#app {
+  display: contents;
+}

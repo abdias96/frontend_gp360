@@ -1,0 +1,1193 @@
+<template>
+  <div class="row g-6 g-xl-9">
+    <!-- Visitor Relationships Card -->
+    <div class="col-md-6 col-xl-4">
+      <div class="card card-flush h-100">
+        <div class="card-header pt-7">
+          <h3 class="card-title align-items-start flex-column">
+            <span class="card-label fw-bold text-gray-800"
+              >Visitantes Autorizados</span
+            >
+            <span class="text-gray-600 mt-1 fw-semibold fs-6"
+              >{{ authorizedVisitors.length }} visitantes registrados</span
+            >
+          </h3>
+          <div class="card-toolbar">
+            <button
+              v-if="canManageVisitors"
+              @click="openAddVisitorModal"
+              class="btn btn-sm btn-light-primary"
+            >
+              <KTIcon icon-name="plus" icon-class="fs-2" />
+              Agregar
+            </button>
+          </div>
+        </div>
+        <div class="card-body pt-0">
+          <div v-if="authorizedVisitors.length === 0" class="text-center py-5">
+            <KTIcon icon-name="people" icon-class="fs-5x text-gray-400 mb-4" />
+            <div class="text-gray-600">No hay visitantes autorizados</div>
+          </div>
+          <div v-else class="scroll-y" style="max-height: 400px">
+            <div
+              v-for="visitor in authorizedVisitors"
+              :key="visitor.id"
+              class="border border-gray-300 border-dashed rounded p-3 mb-3"
+            >
+              <div class="d-flex justify-content-between align-items-start">
+                <div class="flex-grow-1">
+                  <div class="fw-bold text-gray-800 fs-6">
+                    {{ visitor.visitor_name }}
+                  </div>
+                  <div class="text-gray-600 fs-7">
+                    DPI: {{ visitor.visitor_dpi }}
+                  </div>
+                  <div class="text-gray-600 fs-7">
+                    {{ visitor.relationship_type_name }}
+                  </div>
+                  <div class="mt-2">
+                    <span
+                      class="badge"
+                      :class="getVisitorStatusClass(visitor.status)"
+                    >
+                      {{ getVisitorStatusText(visitor.status) }}
+                    </span>
+                    <span
+                      v-if="visitor.relationship_verified"
+                      class="badge badge-light-success ms-2"
+                    >
+                      Verificado
+                    </span>
+                  </div>
+                  <div
+                    v-if="visitor.visit_limit_per_month"
+                    class="text-gray-600 fs-8 mt-1"
+                  >
+                    Límite: {{ visitor.visit_limit_per_month }} visitas/mes
+                  </div>
+                </div>
+                <div class="dropdown">
+                  <button
+                    class="btn btn-sm btn-light btn-active-light-primary"
+                    data-bs-toggle="dropdown"
+                  >
+                    <KTIcon icon-name="dots-vertical" icon-class="fs-7" />
+                  </button>
+                  <div
+                    class="dropdown-menu menu menu-sub menu-sub-dropdown menu-column menu-rounded menu-gray-600 menu-state-bg-light-primary fw-semibold fs-7 w-200px py-4"
+                  >
+                    <div class="menu-item px-3">
+                      <a
+                        @click.prevent="viewVisitorHistory(visitor)"
+                        class="menu-link px-3"
+                      >
+                        <KTIcon icon-name="time" icon-class="fs-6 me-2" />
+                        Historial de Visitas
+                      </a>
+                    </div>
+                    <div v-if="canManageVisitors" class="menu-item px-3">
+                      <a
+                        @click.prevent="editVisitor(visitor)"
+                        class="menu-link px-3"
+                      >
+                        <KTIcon icon-name="pencil" icon-class="fs-6 me-2" />
+                        Editar Relación
+                      </a>
+                    </div>
+                    <div v-if="canManageVisitors" class="menu-separator"></div>
+                    <div
+                      v-if="canManageVisitors && visitor.status === 'active'"
+                      class="menu-item px-3"
+                    >
+                      <a
+                        @click.prevent="suspendVisitor(visitor)"
+                        class="menu-link px-3 text-warning"
+                      >
+                        <KTIcon icon-name="pause" icon-class="fs-6 me-2" />
+                        Suspender
+                      </a>
+                    </div>
+                    <div
+                      v-if="canManageVisitors && visitor.status === 'suspended'"
+                      class="menu-item px-3"
+                    >
+                      <a
+                        @click.prevent="reactivateVisitor(visitor)"
+                        class="menu-link px-3 text-success"
+                      >
+                        <KTIcon icon-name="check" icon-class="fs-6 me-2" />
+                        Reactivar
+                      </a>
+                    </div>
+                    <div v-if="canManageVisitors" class="menu-item px-3">
+                      <a
+                        @click.prevent="revokeVisitor(visitor)"
+                        class="menu-link px-3 text-danger"
+                      >
+                        <KTIcon icon-name="trash" icon-class="fs-6 me-2" />
+                        Revocar
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Recent Visits Card -->
+    <div class="col-md-6 col-xl-4">
+      <div class="card card-flush h-100">
+        <div class="card-header pt-7">
+          <h3 class="card-title align-items-start flex-column">
+            <span class="card-label fw-bold text-gray-800"
+              >Visitas Recientes</span
+            >
+            <span class="text-gray-600 mt-1 fw-semibold fs-6"
+              >Últimas 10 visitas</span
+            >
+          </h3>
+          <div class="card-toolbar">
+            <button
+              v-if="canScheduleVisits"
+              @click="openScheduleVisitModal"
+              class="btn btn-sm btn-light-primary"
+            >
+              <KTIcon icon-name="calendar" icon-class="fs-2" />
+              Agendar
+            </button>
+          </div>
+        </div>
+        <div class="card-body pt-0">
+          <div v-if="loading.visits" class="text-center py-5">
+            <div class="spinner-border text-primary" role="status">
+              <span class="visually-hidden">Cargando...</span>
+            </div>
+          </div>
+          <div v-else-if="recentVisits.length === 0" class="text-center py-5">
+            <KTIcon
+              icon-name="calendar-8"
+              icon-class="fs-5x text-gray-400 mb-4"
+            />
+            <div class="text-gray-600">No hay visitas registradas</div>
+          </div>
+          <div v-else class="scroll-y" style="max-height: 400px">
+            <div
+              v-for="visit in recentVisits"
+              :key="visit.id"
+              class="border border-gray-300 border-dashed rounded p-3 mb-3"
+            >
+              <div class="d-flex justify-content-between align-items-start">
+                <div class="flex-grow-1">
+                  <div class="fw-bold text-gray-800 fs-6">
+                    {{ visit.visitor_name }}
+                  </div>
+                  <div class="text-gray-600 fs-7">
+                    {{ formatDateTime(visit.visit_date) }}
+                  </div>
+                  <div class="text-gray-600 fs-7">
+                    Duración: {{ visit.duration_minutes }} min
+                  </div>
+                  <div class="mt-2">
+                    <span
+                      class="badge"
+                      :class="getVisitStatusClass(visit.status)"
+                    >
+                      {{ getVisitStatusText(visit.status) }}
+                    </span>
+                    <span
+                      v-if="visit.visit_type_name"
+                      class="badge badge-light-info ms-2"
+                    >
+                      {{ visit.visit_type_name }}
+                    </span>
+                  </div>
+                  <div v-if="visit.notes" class="text-gray-600 fs-8 mt-1">
+                    {{ truncateText(visit.notes, 50) }}
+                  </div>
+                </div>
+                <div class="dropdown">
+                  <button
+                    class="btn btn-sm btn-light btn-active-light-primary"
+                    data-bs-toggle="dropdown"
+                  >
+                    <KTIcon icon-name="dots-vertical" icon-class="fs-7" />
+                  </button>
+                  <div
+                    class="dropdown-menu menu menu-sub menu-sub-dropdown menu-column menu-rounded menu-gray-600 menu-state-bg-light-primary fw-semibold fs-7 w-200px py-4"
+                  >
+                    <div class="menu-item px-3">
+                      <a
+                        @click.prevent="viewVisitDetails(visit)"
+                        class="menu-link px-3"
+                      >
+                        <KTIcon icon-name="eye" icon-class="fs-6 me-2" />
+                        Ver Detalles
+                      </a>
+                    </div>
+                    <div
+                      v-if="canManageVisits && visit.status === 'scheduled'"
+                      class="menu-item px-3"
+                    >
+                      <a
+                        @click.prevent="editVisit(visit)"
+                        class="menu-link px-3"
+                      >
+                        <KTIcon icon-name="pencil" icon-class="fs-6 me-2" />
+                        Editar
+                      </a>
+                    </div>
+                    <div
+                      v-if="canManageVisits && visit.status === 'scheduled'"
+                      class="menu-separator"
+                    ></div>
+                    <div
+                      v-if="canManageVisits && visit.status === 'scheduled'"
+                      class="menu-item px-3"
+                    >
+                      <a
+                        @click.prevent="cancelVisit(visit)"
+                        class="menu-link px-3 text-danger"
+                      >
+                        <KTIcon icon-name="cross" icon-class="fs-6 me-2" />
+                        Cancelar
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Visit Statistics Card -->
+    <div class="col-md-6 col-xl-4">
+      <div class="card card-flush h-100">
+        <div class="card-header pt-7">
+          <h3 class="card-title align-items-start flex-column">
+            <span class="card-label fw-bold text-gray-800"
+              >Estadísticas de Visitas</span
+            >
+            <span class="text-gray-600 mt-1 fw-semibold fs-6"
+              >Últimos 30 días</span
+            >
+          </h3>
+        </div>
+        <div class="card-body pt-0">
+          <div v-if="loading.statistics" class="text-center py-5">
+            <div class="spinner-border text-primary" role="status">
+              <span class="visually-hidden">Cargando...</span>
+            </div>
+          </div>
+          <div v-else>
+            <!-- Total Visits -->
+            <div
+              class="d-flex align-items-center border-1 border-dashed border-gray-300 rounded p-3 mb-3"
+            >
+              <div class="symbol symbol-40px me-3">
+                <div class="symbol-label bg-light-primary">
+                  <KTIcon
+                    icon-name="chart-bar"
+                    icon-class="fs-2 text-primary"
+                  />
+                </div>
+              </div>
+              <div class="flex-grow-1">
+                <div class="fw-bold text-gray-800 fs-6">Total de Visitas</div>
+                <div class="text-gray-600 fs-7">
+                  {{ visitStatistics.total_visits_last_30_days || 0 }}
+                </div>
+              </div>
+            </div>
+
+            <!-- Unique Visitors -->
+            <div
+              class="d-flex align-items-center border-1 border-dashed border-gray-300 rounded p-3 mb-3"
+            >
+              <div class="symbol symbol-40px me-3">
+                <div class="symbol-label bg-light-success">
+                  <KTIcon icon-name="people" icon-class="fs-2 text-success" />
+                </div>
+              </div>
+              <div class="flex-grow-1">
+                <div class="fw-bold text-gray-800 fs-6">Visitantes Únicos</div>
+                <div class="text-gray-600 fs-7">
+                  {{ visitStatistics.unique_visitors_last_30_days || 0 }}
+                </div>
+              </div>
+            </div>
+
+            <!-- Average Duration -->
+            <div
+              class="d-flex align-items-center border-1 border-dashed border-gray-300 rounded p-3 mb-3"
+            >
+              <div class="symbol symbol-40px me-3">
+                <div class="symbol-label bg-light-warning">
+                  <KTIcon icon-name="time" icon-class="fs-2 text-warning" />
+                </div>
+              </div>
+              <div class="flex-grow-1">
+                <div class="fw-bold text-gray-800 fs-6">Duración Promedio</div>
+                <div class="text-gray-600 fs-7">
+                  {{ visitStatistics.average_duration_minutes || 0 }} min
+                </div>
+              </div>
+            </div>
+
+            <!-- Scheduled Visits -->
+            <div
+              class="d-flex align-items-center border-1 border-dashed border-gray-300 rounded p-3 mb-3"
+            >
+              <div class="symbol symbol-40px me-3">
+                <div class="symbol-label bg-light-info">
+                  <KTIcon
+                    icon-name="calendar-add"
+                    icon-class="fs-2 text-info"
+                  />
+                </div>
+              </div>
+              <div class="flex-grow-1">
+                <div class="fw-bold text-gray-800 fs-6">
+                  Visitas Programadas
+                </div>
+                <div class="text-gray-600 fs-7">
+                  {{ visitStatistics.scheduled_visits || 0 }}
+                </div>
+              </div>
+            </div>
+
+            <!-- Visit Types Distribution -->
+            <div v-if="visitStatistics.visit_types_distribution" class="mt-4">
+              <div class="fw-bold text-gray-800 fs-7 mb-3">
+                Tipos de Visitas
+              </div>
+              <div
+                v-for="(
+                  count, type
+                ) in visitStatistics.visit_types_distribution"
+                :key="type"
+                class="d-flex justify-content-between align-items-center mb-2"
+              >
+                <span class="text-gray-600 fs-8">{{ type }}</span>
+                <span class="fw-bold text-gray-800 fs-8">{{ count }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Biometric Access Control -->
+    <div class="col-12">
+      <div class="card card-flush">
+        <div class="card-header pt-7">
+          <h3 class="card-title align-items-start flex-column">
+            <span class="card-label fw-bold text-gray-800"
+              >Control de Acceso Biométrico</span
+            >
+            <span class="text-gray-600 mt-1 fw-semibold fs-6"
+              >Registro de accesos con biometría</span
+            >
+          </h3>
+          <div class="card-toolbar">
+            <button
+              v-if="canManageBiometrics"
+              @click="openBiometricRegistrationModal"
+              class="btn btn-sm btn-light-success me-3"
+            >
+              <KTIcon icon-name="fingerprint-scanning" icon-class="fs-2" />
+              Registrar Biometría
+            </button>
+            <button @click="refreshBiometricLogs" class="btn btn-sm btn-light">
+              <KTIcon icon-name="arrows-circle" icon-class="fs-2" />
+              Actualizar
+            </button>
+          </div>
+        </div>
+        <div class="card-body pt-0">
+          <div v-if="loading.biometrics" class="text-center py-5">
+            <div class="spinner-border text-primary" role="status">
+              <span class="visually-hidden">Cargando...</span>
+            </div>
+          </div>
+          <div v-else>
+            <!-- Biometric Devices Status -->
+            <div class="row g-3 mb-6">
+              <div
+                v-for="device in biometricDevices"
+                :key="device.id"
+                class="col-md-3"
+              >
+                <div class="border border-gray-300 border-dashed rounded p-3">
+                  <div class="d-flex align-items-center">
+                    <div class="symbol symbol-30px me-3">
+                      <div
+                        class="symbol-label"
+                        :class="
+                          device.status === 'online'
+                            ? 'bg-light-success'
+                            : 'bg-light-danger'
+                        "
+                      >
+                        <KTIcon
+                          icon-name="fingerprint-scanning"
+                          :icon-class="`fs-3 ${device.status === 'online' ? 'text-success' : 'text-danger'}`"
+                        />
+                      </div>
+                    </div>
+                    <div>
+                      <div class="fw-bold text-gray-800 fs-7">
+                        {{ device.device_name }}
+                      </div>
+                      <div class="text-gray-600 fs-8">
+                        {{ device.location }}
+                      </div>
+                      <div>
+                        <span
+                          class="badge badge-sm"
+                          :class="
+                            device.status === 'online'
+                              ? 'badge-light-success'
+                              : 'badge-light-danger'
+                          "
+                        >
+                          {{
+                            device.status === "online"
+                              ? "En Línea"
+                              : "Fuera de Línea"
+                          }}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Recent Biometric Access Logs -->
+            <div class="table-responsive">
+              <table class="table table-rounded table-striped border gy-7 gs-7">
+                <thead>
+                  <tr
+                    class="fw-semibold fs-6 text-gray-800 border-bottom-2 border-gray-200"
+                  >
+                    <th>Fecha/Hora</th>
+                    <th>Visitante</th>
+                    <th>Tipo de Acceso</th>
+                    <th>Dispositivo</th>
+                    <th>Estado</th>
+                    <th>Calidad Biométrica</th>
+                    <th>Acciones</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr v-if="biometricLogs.length === 0">
+                    <td colspan="7" class="text-center text-gray-600 py-5">
+                      No hay registros biométricos disponibles
+                    </td>
+                  </tr>
+                  <tr v-for="log in biometricLogs" :key="log.id">
+                    <td>{{ formatDateTime(log.access_datetime) }}</td>
+                    <td>
+                      <div class="fw-bold">{{ log.visitor_name }}</div>
+                      <div class="text-gray-600 fs-7">
+                        {{ log.visitor_dpi }}
+                      </div>
+                    </td>
+                    <td>
+                      <span
+                        class="badge"
+                        :class="
+                          log.access_type === 'entry'
+                            ? 'badge-light-success'
+                            : 'badge-light-warning'
+                        "
+                      >
+                        {{ log.access_type === "entry" ? "Ingreso" : "Salida" }}
+                      </span>
+                    </td>
+                    <td>{{ log.device_name }}</td>
+                    <td>
+                      <span
+                        class="badge"
+                        :class="
+                          getBiometricStatusClass(log.verification_status)
+                        "
+                      >
+                        {{ getBiometricStatusText(log.verification_status) }}
+                      </span>
+                    </td>
+                    <td>
+                      <div class="progress progress-sm">
+                        <div
+                          class="progress-bar"
+                          :class="getQualityBarClass(log.quality_score)"
+                          :style="`width: ${log.quality_score}%`"
+                        ></div>
+                      </div>
+                      <div class="text-gray-600 fs-8 mt-1">
+                        {{ log.quality_score }}%
+                      </div>
+                    </td>
+                    <td>
+                      <button
+                        @click="viewBiometricDetails(log)"
+                        class="btn btn-sm btn-light btn-active-light-primary"
+                      >
+                        <KTIcon icon-name="eye" icon-class="fs-7" />
+                      </button>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Add Visitor Modal -->
+  <div class="modal fade" id="addVisitorModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Agregar Visitante Autorizado</h5>
+          <button
+            type="button"
+            class="btn-close"
+            data-bs-dismiss="modal"
+          ></button>
+        </div>
+        <div class="modal-body">
+          <form @submit.prevent="saveVisitor">
+            <div class="row g-3">
+              <div class="col-md-6">
+                <label class="form-label required">DPI del Visitante</label>
+                <input
+                  v-model="visitorForm.visitor_dpi"
+                  type="text"
+                  class="form-control"
+                  :class="{ 'is-invalid': visitorErrors.visitor_dpi }"
+                  placeholder="Ingrese DPI"
+                  required
+                />
+                <div v-if="visitorErrors.visitor_dpi" class="invalid-feedback">
+                  {{ visitorErrors.visitor_dpi[0] }}
+                </div>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label required">Nombre Completo</label>
+                <input
+                  v-model="visitorForm.visitor_name"
+                  type="text"
+                  class="form-control"
+                  :class="{ 'is-invalid': visitorErrors.visitor_name }"
+                  placeholder="Nombre completo del visitante"
+                  required
+                />
+                <div v-if="visitorErrors.visitor_name" class="invalid-feedback">
+                  {{ visitorErrors.visitor_name[0] }}
+                </div>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label required">Tipo de Relación</label>
+                <select
+                  v-model="visitorForm.relationship_type_id"
+                  class="form-select"
+                  :class="{ 'is-invalid': visitorErrors.relationship_type_id }"
+                  required
+                >
+                  <option value="">Seleccione una relación</option>
+                  <option
+                    v-for="type in relationshipTypes"
+                    :key="type.id"
+                    :value="type.id"
+                  >
+                    {{ type.name }}
+                  </option>
+                </select>
+                <div
+                  v-if="visitorErrors.relationship_type_id"
+                  class="invalid-feedback"
+                >
+                  {{ visitorErrors.relationship_type_id[0] }}
+                </div>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">Límite de Visitas por Mes</label>
+                <input
+                  v-model.number="visitorForm.visit_limit_per_month"
+                  type="number"
+                  class="form-control"
+                  min="1"
+                  max="31"
+                  placeholder="Ej: 4"
+                />
+              </div>
+              <div class="col-12">
+                <label class="form-label">Condiciones Especiales</label>
+                <textarea
+                  v-model="visitorForm.special_conditions"
+                  class="form-control"
+                  rows="3"
+                  placeholder="Condiciones especiales para las visitas (opcional)"
+                ></textarea>
+              </div>
+              <div class="col-12">
+                <div class="form-check">
+                  <input
+                    v-model="visitorForm.relationship_verified"
+                    class="form-check-input"
+                    type="checkbox"
+                    id="relationshipVerified"
+                  />
+                  <label class="form-check-label" for="relationshipVerified">
+                    Relación verificada con documentación
+                  </label>
+                </div>
+              </div>
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-light" data-bs-dismiss="modal">
+            Cancelar
+          </button>
+          <button
+            type="button"
+            @click="saveVisitor"
+            class="btn btn-primary"
+            :disabled="loading.saving"
+          >
+            <span
+              v-if="loading.saving"
+              class="spinner-border spinner-border-sm me-2"
+            ></span>
+            {{ editingVisitor ? "Actualizar" : "Guardar" }} Visitante
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
+
+<script setup lang="ts">
+import { ref, onMounted, computed } from "vue";
+import { useAuthStore } from "@/stores/auth";
+import type { InmateDetail, InmateVisitorRelationship } from "@/types/inmates";
+import Swal from "sweetalert2";
+import KTIcon from "@/core/helpers/kt-icon/KTIcon.vue";
+
+interface Props {
+  inmate: InmateDetail;
+}
+
+// Interfaces específicas para visitas
+interface Visit {
+  id: number;
+  inmate_id: number;
+  visitor_dpi: string;
+  visitor_name: string;
+  visit_date: string;
+  duration_minutes: number;
+  visit_type_id: number;
+  visit_type_name: string;
+  status: "scheduled" | "in_progress" | "completed" | "cancelled" | "no_show";
+  notes?: string;
+  created_at: string;
+}
+
+interface VisitStatistics {
+  total_visits_last_30_days: number;
+  unique_visitors_last_30_days: number;
+  average_duration_minutes: number;
+  scheduled_visits: number;
+  visit_types_distribution: Record<string, number>;
+}
+
+interface BiometricDevice {
+  id: number;
+  device_name: string;
+  device_type: string;
+  location: string;
+  status: "online" | "offline";
+  last_heartbeat: string;
+}
+
+interface BiometricLog {
+  id: number;
+  visitor_dpi: string;
+  visitor_name: string;
+  device_id: number;
+  device_name: string;
+  access_datetime: string;
+  access_type: "entry" | "exit";
+  verification_status: "success" | "failed" | "partial";
+  quality_score: number;
+  notes?: string;
+}
+
+interface RelationshipType {
+  id: number;
+  name: string;
+  description?: string;
+}
+
+const props = defineProps<Props>();
+const authStore = useAuthStore();
+
+// Reactive data
+const authorizedVisitors = ref<InmateVisitorRelationship[]>([]);
+const recentVisits = ref<Visit[]>([]);
+const visitStatistics = ref<VisitStatistics>({
+  total_visits_last_30_days: 0,
+  unique_visitors_last_30_days: 0,
+  average_duration_minutes: 0,
+  scheduled_visits: 0,
+  visit_types_distribution: {},
+});
+const biometricDevices = ref<BiometricDevice[]>([]);
+const biometricLogs = ref<BiometricLog[]>([]);
+const relationshipTypes = ref<RelationshipType[]>([]);
+
+const loading = ref({
+  visits: false,
+  statistics: false,
+  biometrics: false,
+  saving: false,
+});
+
+// Visitor form
+const visitorForm = ref({
+  visitor_dpi: "",
+  visitor_name: "",
+  relationship_type_id: null as number | null,
+  visit_limit_per_month: null as number | null,
+  special_conditions: "",
+  relationship_verified: false,
+});
+
+const visitorErrors = ref<Record<string, string[]>>({});
+const editingVisitor = ref<InmateVisitorRelationship | null>(null);
+
+// Computed properties
+const canManageVisitors = computed(() =>
+  authStore.hasPermission("visits.manage_visitors"),
+);
+const canScheduleVisits = computed(() =>
+  authStore.hasPermission("visits.schedule"),
+);
+const canManageVisits = computed(() =>
+  authStore.hasPermission("visits.manage"),
+);
+const canManageBiometrics = computed(() =>
+  authStore.hasPermission("visits.biometrics"),
+);
+
+// Methods
+const loadVisitorData = async () => {
+  try {
+    loading.value.visits = true;
+
+    // Load authorized visitors
+    if (props.inmate.visitor_relationships) {
+      authorizedVisitors.value = props.inmate.visitor_relationships;
+    }
+
+    // Load recent visits (this would need backend API)
+    // For now, using mock data
+    recentVisits.value = [];
+
+    // Load relationship types
+    await loadRelationshipTypes();
+  } catch (error) {
+    console.error("Error loading visitor data:", error);
+  } finally {
+    loading.value.visits = false;
+  }
+};
+
+const loadVisitStatistics = async () => {
+  try {
+    loading.value.statistics = true;
+    // This would call backend API to get visit statistics
+    // For now, using mock data
+    visitStatistics.value = {
+      total_visits_last_30_days: 12,
+      unique_visitors_last_30_days: 8,
+      average_duration_minutes: 45,
+      scheduled_visits: 3,
+      visit_types_distribution: {
+        Familiar: 8,
+        Legal: 3,
+        Médica: 1,
+      },
+    };
+  } catch (error) {
+    console.error("Error loading visit statistics:", error);
+  } finally {
+    loading.value.statistics = false;
+  }
+};
+
+const loadBiometricData = async () => {
+  try {
+    loading.value.biometrics = true;
+
+    // Load biometric devices status
+    biometricDevices.value = [
+      {
+        id: 1,
+        device_name: "Scanner Principal",
+        device_type: "fingerprint",
+        location: "Entrada Principal",
+        status: "online",
+        last_heartbeat: new Date().toISOString(),
+      },
+      {
+        id: 2,
+        device_name: "Scanner Secundario",
+        device_type: "fingerprint",
+        location: "Área de Visitas",
+        status: "online",
+        last_heartbeat: new Date().toISOString(),
+      },
+    ];
+
+    // Load recent biometric logs
+    biometricLogs.value = [];
+  } catch (error) {
+    console.error("Error loading biometric data:", error);
+  } finally {
+    loading.value.biometrics = false;
+  }
+};
+
+const loadRelationshipTypes = async () => {
+  try {
+    // This would call backend API
+    relationshipTypes.value = [
+      { id: 1, name: "Padre/Madre" },
+      { id: 2, name: "Hijo/Hija" },
+      { id: 3, name: "Esposo/Esposa" },
+      { id: 4, name: "Hermano/Hermana" },
+      { id: 5, name: "Abogado" },
+      { id: 6, name: "Familiar Directo" },
+      { id: 7, name: "Otro Familiar" },
+    ];
+  } catch (error) {
+    console.error("Error loading relationship types:", error);
+  }
+};
+
+// Visitor management methods
+const openAddVisitorModal = () => {
+  editingVisitor.value = null;
+  resetVisitorForm();
+  const modal = new (window as any).bootstrap.Modal(
+    document.getElementById("addVisitorModal"),
+  );
+  modal.show();
+};
+
+const editVisitor = (visitor: InmateVisitorRelationship) => {
+  editingVisitor.value = visitor;
+  visitorForm.value = {
+    visitor_dpi: visitor.visitor_dpi,
+    visitor_name: visitor.visitor_name,
+    relationship_type_id: visitor.relationship_type_id,
+    visit_limit_per_month: visitor.visit_limit_per_month || null,
+    special_conditions: visitor.special_conditions || "",
+    relationship_verified: visitor.relationship_verified,
+  };
+  const modal = new (window as any).bootstrap.Modal(
+    document.getElementById("addVisitorModal"),
+  );
+  modal.show();
+};
+
+const saveVisitor = async () => {
+  try {
+    loading.value.saving = true;
+    visitorErrors.value = {};
+
+    // Basic validation
+    if (!visitorForm.value.visitor_dpi) {
+      visitorErrors.value.visitor_dpi = ["El DPI es requerido"];
+      return;
+    }
+    if (!visitorForm.value.visitor_name) {
+      visitorErrors.value.visitor_name = ["El nombre es requerido"];
+      return;
+    }
+    if (!visitorForm.value.relationship_type_id) {
+      visitorErrors.value.relationship_type_id = [
+        "El tipo de relación es requerido",
+      ];
+      return;
+    }
+
+    // Here would call backend API to save visitor
+    console.log("Saving visitor:", visitorForm.value);
+
+    // Close modal
+    const modal = (window as any).bootstrap.Modal.getInstance(
+      document.getElementById("addVisitorModal"),
+    );
+    modal.hide();
+
+    // Reload data
+    await loadVisitorData();
+
+    Swal.fire({
+      title: "Visitante Guardado",
+      text: "El visitante ha sido registrado correctamente.",
+      icon: "success",
+      confirmButtonText: "OK",
+    });
+  } catch (error) {
+    console.error("Error saving visitor:", error);
+    Swal.fire({
+      title: "Error",
+      text: "No se pudo guardar el visitante.",
+      icon: "error",
+      confirmButtonText: "OK",
+    });
+  } finally {
+    loading.value.saving = false;
+  }
+};
+
+const resetVisitorForm = () => {
+  visitorForm.value = {
+    visitor_dpi: "",
+    visitor_name: "",
+    relationship_type_id: null,
+    visit_limit_per_month: null,
+    special_conditions: "",
+    relationship_verified: false,
+  };
+  visitorErrors.value = {};
+};
+
+const suspendVisitor = async (visitor: InmateVisitorRelationship) => {
+  const { value: reason } = await Swal.fire({
+    title: "Suspender Visitante",
+    text: `¿Está seguro de suspender a ${visitor.visitor_name}?`,
+    input: "textarea",
+    inputPlaceholder: "Motivo de la suspensión",
+    showCancelButton: true,
+    confirmButtonText: "Suspender",
+    cancelButtonText: "Cancelar",
+  });
+
+  if (reason) {
+    // Call backend API to suspend visitor
+    console.log("Suspending visitor:", visitor.id, "Reason:", reason);
+    await loadVisitorData();
+  }
+};
+
+const reactivateVisitor = async (visitor: InmateVisitorRelationship) => {
+  const result = await Swal.fire({
+    title: "Reactivar Visitante",
+    text: `¿Está seguro de reactivar a ${visitor.visitor_name}?`,
+    showCancelButton: true,
+    confirmButtonText: "Reactivar",
+    cancelButtonText: "Cancelar",
+  });
+
+  if (result.isConfirmed) {
+    // Call backend API to reactivate visitor
+    console.log("Reactivating visitor:", visitor.id);
+    await loadVisitorData();
+  }
+};
+
+const revokeVisitor = async (visitor: InmateVisitorRelationship) => {
+  const { value: reason } = await Swal.fire({
+    title: "Revocar Autorización",
+    text: `¿Está seguro de revocar permanentemente la autorización de ${visitor.visitor_name}?`,
+    input: "textarea",
+    inputPlaceholder: "Motivo de la revocación",
+    showCancelButton: true,
+    confirmButtonText: "Revocar",
+    cancelButtonText: "Cancelar",
+    confirmButtonColor: "#d33",
+  });
+
+  if (reason) {
+    // Call backend API to revoke visitor
+    console.log("Revoking visitor:", visitor.id, "Reason:", reason);
+    await loadVisitorData();
+  }
+};
+
+// Visit management methods
+const openScheduleVisitModal = () => {
+  // This would open a modal to schedule a new visit
+  Swal.fire({
+    title: "Agendar Visita",
+    text: "Funcionalidad de agendamiento en desarrollo.",
+    icon: "info",
+    confirmButtonText: "OK",
+  });
+};
+
+const viewVisitorHistory = (visitor: InmateVisitorRelationship) => {
+  // This would show visit history for the visitor
+  console.log("Viewing history for visitor:", visitor.id);
+};
+
+const viewVisitDetails = (visit: Visit) => {
+  // This would show detailed visit information
+  console.log("Viewing visit details:", visit.id);
+};
+
+const editVisit = (visit: Visit) => {
+  // This would open edit modal for visit
+  console.log("Editing visit:", visit.id);
+};
+
+const cancelVisit = async (visit: Visit) => {
+  const { value: reason } = await Swal.fire({
+    title: "Cancelar Visita",
+    text: `¿Está seguro de cancelar la visita de ${visit.visitor_name}?`,
+    input: "textarea",
+    inputPlaceholder: "Motivo de la cancelación",
+    showCancelButton: true,
+    confirmButtonText: "Cancelar Visita",
+    cancelButtonText: "No Cancelar",
+  });
+
+  if (reason) {
+    // Call backend API to cancel visit
+    console.log("Cancelling visit:", visit.id, "Reason:", reason);
+    await loadVisitorData();
+  }
+};
+
+// Biometric methods
+const openBiometricRegistrationModal = () => {
+  Swal.fire({
+    title: "Registro Biométrico",
+    text: "Funcionalidad de registro biométrico en desarrollo.",
+    icon: "info",
+    confirmButtonText: "OK",
+  });
+};
+
+const refreshBiometricLogs = async () => {
+  await loadBiometricData();
+};
+
+const viewBiometricDetails = (log: BiometricLog) => {
+  console.log("Viewing biometric details:", log.id);
+};
+
+// Helper methods
+const getVisitorStatusClass = (status: string): string => {
+  const classes: Record<string, string> = {
+    active: "badge-light-success",
+    suspended: "badge-light-warning",
+    revoked: "badge-light-danger",
+  };
+  return classes[status] || "badge-light-secondary";
+};
+
+const getVisitorStatusText = (status: string): string => {
+  const texts: Record<string, string> = {
+    active: "Activo",
+    suspended: "Suspendido",
+    revoked: "Revocado",
+  };
+  return texts[status] || status;
+};
+
+const getVisitStatusClass = (status: string): string => {
+  const classes: Record<string, string> = {
+    scheduled: "badge-light-info",
+    in_progress: "badge-light-primary",
+    completed: "badge-light-success",
+    cancelled: "badge-light-danger",
+    no_show: "badge-light-warning",
+  };
+  return classes[status] || "badge-light-secondary";
+};
+
+const getVisitStatusText = (status: string): string => {
+  const texts: Record<string, string> = {
+    scheduled: "Programada",
+    in_progress: "En Progreso",
+    completed: "Completada",
+    cancelled: "Cancelada",
+    no_show: "No Asistió",
+  };
+  return texts[status] || status;
+};
+
+const getBiometricStatusClass = (status: string): string => {
+  const classes: Record<string, string> = {
+    success: "badge-light-success",
+    failed: "badge-light-danger",
+    partial: "badge-light-warning",
+  };
+  return classes[status] || "badge-light-secondary";
+};
+
+const getBiometricStatusText = (status: string): string => {
+  const texts: Record<string, string> = {
+    success: "Exitoso",
+    failed: "Fallido",
+    partial: "Parcial",
+  };
+  return texts[status] || status;
+};
+
+const getQualityBarClass = (score: number): string => {
+  if (score >= 80) return "bg-success";
+  if (score >= 60) return "bg-warning";
+  return "bg-danger";
+};
+
+const formatDateTime = (datetime: string): string => {
+  return new Date(datetime).toLocaleString("es-GT");
+};
+
+const truncateText = (text: string, maxLength: number): string => {
+  if (text.length <= maxLength) return text;
+  return text.substring(0, maxLength) + "...";
+};
+
+// Lifecycle
+onMounted(() => {
+  loadVisitorData();
+  loadVisitStatistics();
+  loadBiometricData();
+});
+</script>
+
+<style scoped>
+.scroll-y {
+  overflow-y: auto;
+}
+
+.progress-sm {
+  height: 0.5rem;
+}
+
+.symbol-40px {
+  width: 40px;
+  height: 40px;
+}
+
+.symbol-30px {
+  width: 30px;
+  height: 30px;
+}
+</style>

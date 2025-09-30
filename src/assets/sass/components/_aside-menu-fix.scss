@@ -1,0 +1,182 @@
+// Aside Menu Fixes for Light/Dark Theme
+
+// Fix for submenu text color in light theme
+[data-bs-theme="light"],
+body:not([data-bs-theme="dark"]) {
+  #kt_aside_nav_tab_menu {
+    .menu-item {
+      .menu-sub {
+        .menu-link {
+          color: var(--bs-gray-700) !important;
+          
+          .menu-title {
+            color: var(--bs-gray-700) !important;
+          }
+          
+          .menu-icon,
+          .menu-bullet {
+            color: var(--bs-gray-600) !important;
+          }
+          
+          &:hover,
+          &.active {
+            background-color: var(--bs-gray-100) !important;
+            
+            .menu-title,
+            .menu-icon,
+            .menu-bullet {
+              color: var(--bs-primary) !important;
+            }
+          }
+        }
+      }
+    }
+  }
+  
+  // Also fix dropdown submenus
+  .menu-sub-dropdown {
+    .menu-link {
+      color: var(--bs-gray-700) !important;
+      
+      .menu-title {
+        color: var(--bs-gray-700) !important;
+      }
+      
+      &:hover {
+        background-color: var(--bs-gray-100) !important;
+        color: var(--bs-primary) !important;
+        
+        .menu-title {
+          color: var(--bs-primary) !important;
+        }
+      }
+    }
+  }
+}
+
+// Dark theme submenu styles
+[data-bs-theme="dark"] {
+  #kt_aside_nav_tab_menu {
+    .menu-item {
+      .menu-sub {
+        .menu-link {
+          color: var(--bs-gray-300) !important;
+          
+          .menu-title {
+            color: var(--bs-gray-300) !important;
+          }
+          
+          .menu-icon,
+          .menu-bullet {
+            color: var(--bs-gray-400) !important;
+          }
+          
+          &:hover,
+          &.active {
+            background-color: rgba(255, 255, 255, 0.05) !important;
+            
+            .menu-title,
+            .menu-icon,
+            .menu-bullet {
+              color: var(--bs-primary) !important;
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+// Fix for arrow rotation on submenu toggle
+.menu-item {
+  .menu-link {
+    .menu-arrow {
+      transition: transform 0.3s ease !important;
+    }
+  }
+  
+  &.show {
+    > .menu-link {
+      .menu-arrow {
+        transform: rotate(90deg) !important;
+      }
+    }
+  }
+}
+
+// Fix for scrollable menu when content is too long
+.aside-secondary {
+  .aside-workspace {
+    height: 100%;
+    overflow: hidden;
+    
+    .flex-column-fluid {
+      overflow-y: auto !important;
+      overflow-x: hidden !important;
+      max-height: calc(100vh - 200px) !important;
+      
+      // Custom scrollbar for better appearance
+      &::-webkit-scrollbar {
+        width: 6px;
+      }
+      
+      &::-webkit-scrollbar-track {
+        background: var(--bs-gray-200);
+        border-radius: 3px;
+      }
+      
+      &::-webkit-scrollbar-thumb {
+        background: var(--bs-gray-400);
+        border-radius: 3px;
+        
+        &:hover {
+          background: var(--bs-gray-500);
+        }
+      }
+    }
+  }
+}
+
+// Ensure the menu content is properly contained
+#kt_aside_wordspace {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  
+  .tab-content {
+    flex: 1;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    
+    .tab-pane {
+      flex: 1;
+      overflow-y: auto;
+      overflow-x: hidden;
+    }
+  }
+}
+
+// Additional fix for menu toggle icon rotation
+.menu-toggle-icon {
+  display: inline-flex;
+  transition: transform 0.3s ease;
+  
+  &.rotate-180 {
+    transform: rotate(180deg);
+  }
+}
+
+// Fix dropdown menu colors for specific theme
+.theme-light-show {
+  .menu-sub-dropdown {
+    .menu-link {
+      color: var(--bs-gray-700) !important;
+      
+      &:hover {
+        background-color: var(--bs-gray-100) !important;
+        color: var(--bs-primary) !important;
+      }
+    }
+  }
+}

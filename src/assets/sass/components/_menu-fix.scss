@@ -1,0 +1,151 @@
+//
+// Menu Dropdown Text Color Fix
+//
+
+// Fix for submenu text appearing white on light theme
+.menu-sub-lg-dropdown {
+  // Ensure menu links in dropdown submenus have proper color
+  .menu-link {
+    color: var(--#{$prefix}gray-700) !important;
+    
+    // Title color
+    .menu-title {
+      color: var(--#{$prefix}gray-700) !important;
+    }
+    
+    // Icon color
+    .menu-icon {
+      &,
+      .svg-icon,
+      i {
+        color: var(--#{$prefix}gray-600) !important;
+      }
+    }
+    
+    // Bullet color
+    .menu-bullet {
+      .bullet {
+        background-color: var(--#{$prefix}gray-400) !important;
+      }
+    }
+    
+    // Hover state
+    &:hover {
+      color: var(--#{$prefix}primary) !important;
+      
+      .menu-title {
+        color: var(--#{$prefix}primary) !important;
+      }
+      
+      .menu-icon {
+        &,
+        .svg-icon,
+        i {
+          color: var(--#{$prefix}primary) !important;
+        }
+      }
+      
+      .menu-bullet {
+        .bullet {
+          background-color: var(--#{$prefix}primary) !important;
+        }
+      }
+    }
+    
+    // Active state
+    &.active {
+      color: var(--#{$prefix}primary) !important;
+      
+      .menu-title {
+        color: var(--#{$prefix}primary) !important;
+      }
+      
+      .menu-icon {
+        &,
+        .svg-icon,
+        i {
+          color: var(--#{$prefix}primary) !important;
+        }
+      }
+      
+      .menu-bullet {
+        .bullet {
+          background-color: var(--#{$prefix}primary) !important;
+        }
+      }
+    }
+  }
+}
+
+// Fix for dark mode
+[data-bs-theme="dark"] {
+  .menu-sub-lg-dropdown {
+    .menu-link {
+      color: var(--#{$prefix}gray-300) !important;
+      
+      .menu-title {
+        color: var(--#{$prefix}gray-300) !important;
+      }
+      
+      .menu-icon {
+        &,
+        .svg-icon,
+        i {
+          color: var(--#{$prefix}gray-400) !important;
+        }
+      }
+      
+      .menu-bullet {
+        .bullet {
+          background-color: var(--#{$prefix}gray-600) !important;
+        }
+      }
+      
+      // Hover state in dark mode
+      &:hover {
+        color: var(--#{$prefix}primary) !important;
+        
+        .menu-title {
+          color: var(--#{$prefix}primary) !important;
+        }
+        
+        .menu-icon {
+          &,
+          .svg-icon,
+          i {
+            color: var(--#{$prefix}primary) !important;
+          }
+        }
+        
+        .menu-bullet {
+          .bullet {
+            background-color: var(--#{$prefix}primary) !important;
+          }
+        }
+      }
+      
+      // Active state in dark mode
+      &.active {
+        color: var(--#{$prefix}primary) !important;
+        
+        .menu-title {
+          color: var(--#{$prefix}primary) !important;
+        }
+        
+        .menu-icon {
+          &,
+          .svg-icon,
+          i {
+            color: var(--#{$prefix}primary) !important;
+          }
+        }
+        
+        .menu-bullet {
+          .bullet {
+            background-color: var(--#{$prefix}primary) !important;
+          }
+        }
+      }
+    }
+  }
+}

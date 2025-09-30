@@ -1,0 +1,176 @@
+// Override styles for aside menu to fix color issues
+
+// Light theme - Force text colors for submenus
+html:not([data-bs-theme="dark"]) {
+  .aside-secondary {
+    #kt_aside_nav_tab_menu {
+      // All menu links in submenus
+      .menu-sub {
+        .menu-link {
+          color: #3F4254 !important; // Gray-700
+          
+          .menu-title {
+            color: #3F4254 !important;
+          }
+          
+          .menu-icon {
+            i, span {
+              color: #7E8299 !important; // Gray-600
+            }
+          }
+          
+          .menu-bullet {
+            span {
+              background-color: #B5B5C3 !important; // Gray-400
+            }
+          }
+          
+          // Hover state
+          &:hover {
+            background-color: #F3F6F9 !important; // Gray-100
+            
+            .menu-title {
+              color: #009EF7 !important; // Primary
+            }
+            
+            .menu-icon {
+              i, span {
+                color: #009EF7 !important;
+              }
+            }
+            
+            .menu-bullet {
+              span {
+                background-color: #009EF7 !important;
+              }
+            }
+          }
+          
+          // Active state
+          &.active {
+            background-color: #F3F6F9 !important;
+            
+            .menu-title {
+              color: #009EF7 !important;
+            }
+            
+            .menu-icon {
+              i, span {
+                color: #009EF7 !important;
+              }
+            }
+            
+            .menu-bullet {
+              span {
+                background-color: #009EF7 !important;
+              }
+            }
+          }
+        }
+      }
+      
+      // Dropdown menus
+      .menu-sub-dropdown {
+        .menu-link {
+          color: #3F4254 !important;
+          
+          .menu-title {
+            color: #3F4254 !important;
+          }
+          
+          &:hover {
+            background-color: #F3F6F9 !important;
+            
+            .menu-title {
+              color: #009EF7 !important;
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+// Fix arrow rotation
+.aside-secondary {
+  .menu-item {
+    > .menu-link {
+      .menu-arrow {
+        transition: transform 0.3s ease !important;
+        
+        &:after {
+          transition: transform 0.3s ease !important;
+        }
+      }
+    }
+    
+    // When submenu is shown
+    &.show,
+    &.here.show {
+      > .menu-link {
+        .menu-arrow {
+          transform: rotate(90deg) !important;
+        }
+      }
+    }
+  }
+}
+
+// Fix scrolling for long menus
+.aside-secondary {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  
+  .aside-workspace {
+    flex: 1;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    
+    > .d-flex {
+      flex: 1;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      
+      > .flex-column-fluid {
+        flex: 1;
+        overflow-y: auto !important;
+        overflow-x: hidden !important;
+        
+        // Remove any height restrictions
+        max-height: none !important;
+        height: auto !important;
+        
+        // Custom scrollbar
+        &::-webkit-scrollbar {
+          width: 5px;
+        }
+        
+        &::-webkit-scrollbar-track {
+          background: rgba(0, 0, 0, 0.05);
+          border-radius: 5px;
+        }
+        
+        &::-webkit-scrollbar-thumb {
+          background: rgba(0, 0, 0, 0.2);
+          border-radius: 5px;
+          
+          &:hover {
+            background: rgba(0, 0, 0, 0.3);
+          }
+        }
+      }
+    }
+  }
+}
+
+// Ensure tab content takes full height
+#kt_aside_nav_tab_menu {
+  height: 100%;
+  
+  .menu {
+    height: 100%;
+  }
+}
