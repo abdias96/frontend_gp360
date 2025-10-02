@@ -312,19 +312,21 @@
     />
 
     <!-- Discrepancy Resolution Modal -->
-    <DiscrepancyModal 
+    <!-- TODO: Create DiscrepancyModal component -->
+    <!-- <DiscrepancyModal
       v-if="showDiscrepancyModal"
       :count="selectedCount"
       @close="showDiscrepancyModal = false"
       @resolved="handleDiscrepancyResolved"
-    />
+    /> -->
 
     <!-- Count Detail Modal -->
-    <CountDetailModal 
+    <!-- TODO: Create CountDetailModal component -->
+    <!-- <CountDetailModal
       v-if="showDetailModal"
       :count="selectedCount"
       @close="showDetailModal = false"
-    />
+    /> -->
   </div>
 </template>
 
@@ -335,8 +337,8 @@ import { useAuthStore } from '@/stores/auth'
 import { dailyCountsApi } from '@/services/api/operations'
 import { catalogsApi } from '@/services/api/catalogs'
 import CountModal from '../components/CountModal.vue'
-import DiscrepancyModal from '../components/DiscrepancyModal.vue'
-import CountDetailModal from '../components/CountDetailModal.vue'
+// import DiscrepancyModal from '../components/DiscrepancyModal.vue'
+// import CountDetailModal from '../components/CountDetailModal.vue'
 
 const { showToast, showConfirm } = useToast()
 const authStore = useAuthStore()
