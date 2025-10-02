@@ -347,34 +347,38 @@
     </div>
 
     <!-- Movement Modal -->
-    <MovementModal 
+    <!-- TODO: Create MovementModal component -->
+    <!-- <MovementModal
       v-if="showNewMovementModal"
       @close="showNewMovementModal = false"
       @saved="handleMovementSaved"
-    />
+    /> -->
 
     <!-- Emergency Movement Modal -->
-    <EmergencyMovementModal 
+    <!-- TODO: Create EmergencyMovementModal component -->
+    <!-- <EmergencyMovementModal
       v-if="showEmergencyModal"
       @close="showEmergencyModal = false"
       @saved="handleMovementSaved"
-    />
+    /> -->
 
     <!-- Movement Detail Modal -->
-    <MovementDetailModal 
+    <!-- TODO: Create MovementDetailModal component -->
+    <!-- <MovementDetailModal
       v-if="showDetailModal"
       :movement="selectedMovement"
       @close="showDetailModal = false"
       @updated="handleMovementUpdated"
-    />
+    /> -->
 
     <!-- Status Update Modal -->
-    <StatusUpdateModal 
+    <!-- TODO: Create StatusUpdateModal component -->
+    <!-- <StatusUpdateModal
       v-if="showStatusModal"
       :movement="selectedMovement"
       @close="showStatusModal = false"
       @updated="handleMovementUpdated"
-    />
+    /> -->
   </div>
 </template>
 
@@ -383,10 +387,10 @@ import { ref, reactive, computed, onMounted, watch } from 'vue'
 import { useToast } from '@/composables/useToast'
 import { useAuthStore } from '@/stores/auth'
 import { movementsApi } from '@/services/api/operations'
-import MovementModal from '../components/MovementModal.vue'
-import EmergencyMovementModal from '../components/EmergencyMovementModal.vue'
-import MovementDetailModal from '../components/MovementDetailModal.vue'
-import StatusUpdateModal from '../components/StatusUpdateModal.vue'
+// import MovementModal from '../components/MovementModal.vue'
+// import EmergencyMovementModal from '../components/EmergencyMovementModal.vue'
+// import MovementDetailModal from '../components/MovementDetailModal.vue'
+// import StatusUpdateModal from '../components/StatusUpdateModal.vue'
 
 const { showToast, showConfirm } = useToast()
 const authStore = useAuthStore()

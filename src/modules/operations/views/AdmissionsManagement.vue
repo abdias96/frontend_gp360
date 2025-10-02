@@ -239,12 +239,13 @@
     />
 
     <!-- Admission Detail Modal -->
-    <AdmissionDetailModal 
+    <!-- TODO: Create AdmissionDetailModal component -->
+    <!-- <AdmissionDetailModal
       v-if="showDetailModal"
       :admission="selectedAdmission"
       @close="showDetailModal = false"
       @updated="handleAdmissionUpdated"
-    />
+    /> -->
   </div>
 </template>
 
@@ -254,7 +255,7 @@ import { useToast } from '@/composables/useToast'
 import { useAuth } from '@/stores/auth'
 import { admissionsApi } from '@/services/api/operations'
 import AdmissionModal from '../components/AdmissionModal.vue'
-import AdmissionDetailModal from '../components/AdmissionDetailModal.vue'
+// import AdmissionDetailModal from '../components/AdmissionDetailModal.vue'
 
 const { showToast } = useToast()
 const { user } = useAuth()

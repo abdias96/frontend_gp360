@@ -354,42 +354,47 @@
     </div>
 
     <!-- New Visitor Modal -->
-    <VisitorModal 
+    <!-- TODO: Create VisitorModal component -->
+    <!-- <VisitorModal
       v-if="showNewVisitorModal"
       @close="showNewVisitorModal = false"
       @saved="handleVisitorSaved"
-    />
+    /> -->
 
     <!-- Edit Visitor Modal -->
-    <VisitorModal 
+    <!-- TODO: Create VisitorModal component -->
+    <!-- <VisitorModal
       v-if="showEditModal"
       :visitor="selectedVisitor"
       @close="showEditModal = false"
       @saved="handleVisitorUpdated"
-    />
+    /> -->
 
     <!-- Visitor Detail Modal -->
-    <VisitorDetailModal 
+    <!-- TODO: Create VisitorDetailModal component -->
+    <!-- <VisitorDetailModal
       v-if="showDetailModal"
       :visitor="selectedVisitor"
       @close="showDetailModal = false"
       @updated="handleVisitorUpdated"
-    />
+    /> -->
 
     <!-- Biometric Capture Modal -->
-    <BiometricCaptureModal 
+    <!-- TODO: Create BiometricCaptureModal component -->
+    <!-- <BiometricCaptureModal
       v-if="showBiometricModal"
       :visitor="selectedVisitor"
       @close="showBiometricModal = false"
       @captured="handleBiometricCaptured"
-    />
+    /> -->
 
     <!-- Relationships Modal -->
-    <VisitorRelationshipsModal 
+    <!-- TODO: Create VisitorRelationshipsModal component -->
+    <!-- <VisitorRelationshipsModal
       v-if="showRelationshipsModal"
       :visitor="selectedVisitor"
       @close="showRelationshipsModal = false"
-    />
+    /> -->
   </div>
 </template>
 
@@ -398,10 +403,10 @@ import { ref, reactive, computed, onMounted, watch } from 'vue'
 import { useToast } from '@/composables/useToast'
 import { useAuthStore } from '@/stores/auth'
 import { visitorsApi } from '@/services/api/visits'
-import VisitorModal from '../components/VisitorModal.vue'
-import VisitorDetailModal from '../components/VisitorDetailModal.vue'
-import BiometricCaptureModal from '../components/BiometricCaptureModal.vue'
-import VisitorRelationshipsModal from '../components/VisitorRelationshipsModal.vue'
+// import VisitorModal from '../components/VisitorModal.vue'
+// import VisitorDetailModal from '../components/VisitorDetailModal.vue'
+// import BiometricCaptureModal from '../components/BiometricCaptureModal.vue'
+// import VisitorRelationshipsModal from '../components/VisitorRelationshipsModal.vue'
 
 const { showToast, showConfirm } = useToast()
 const authStore = useAuthStore()
