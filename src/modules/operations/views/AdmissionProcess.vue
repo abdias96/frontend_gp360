@@ -131,7 +131,11 @@
 import { ref, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import KTIcon from '@/core/helpers/kt-icon/KTIcon.vue'
-import { formatDate } from '@/core/helpers/dates'
+// Helper function to format dates
+const formatDate = (date: string) => {
+  if (!date) return ''
+  return new Date(date).toLocaleDateString('es-GT')
+}
 
 const { t } = useI18n()
 
