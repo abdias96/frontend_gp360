@@ -95,7 +95,18 @@ export function useJavaBiometric() {
 
         // Abrir protocolo personalizado (lanzará la aplicación Java)
         if (response.data.data?.protocol_url) {
-          window.location.href = response.data.data.protocol_url
+          // Crear un enlace temporal y hacer click programático
+          const link = document.createElement('a')
+          link.href = response.data.data.protocol_url
+          link.target = '_blank'
+          document.body.appendChild(link)
+          link.click()
+          document.body.removeChild(link)
+
+          // Fallback: también intentar con window.location
+          setTimeout(() => {
+            window.location.href = response.data.data.protocol_url
+          }, 100)
         }
 
         // Mostrar mensaje de monitoreo
@@ -266,7 +277,18 @@ export function useJavaBiometric() {
 
         // Abrir protocolo personalizado (lanzará la aplicación Java)
         if (response.data.data?.protocol_url) {
-          window.location.href = response.data.data.protocol_url
+          // Crear un enlace temporal y hacer click programático
+          const link = document.createElement('a')
+          link.href = response.data.data.protocol_url
+          link.target = '_blank'
+          document.body.appendChild(link)
+          link.click()
+          document.body.removeChild(link)
+
+          // Fallback: también intentar con window.location
+          setTimeout(() => {
+            window.location.href = response.data.data.protocol_url
+          }, 100)
         }
 
         return {
