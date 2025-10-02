@@ -14,7 +14,7 @@ export function useBiometricService() {
   const authStore = useAuthStore();
 
   /**
-   * Launch the Java biometric service for fingerprint capture
+   * Launch the Java biometric service for fingerprint capture using protocol handler
    */
   const launchBiometricService = async (options: BiometricServiceOptions) => {
     if (isServiceRunning.value) {
@@ -29,8 +29,8 @@ export function useBiometricService() {
     try {
       // Show loading message
       Swal.fire({
-        title: 'Iniciando servicio biométrico',
-        text: 'Por favor espere mientras se inicia el servicio de captura...',
+        title: 'Preparando servicio biométrico',
+        text: 'Generando enlace seguro...',
         icon: 'info',
         showConfirmButton: false,
         allowOutsideClick: false,
@@ -41,36 +41,89 @@ export function useBiometricService() {
 
       isServiceRunning.value = true;
 
-      // Get auth token
-      const token = authStore.token || localStorage.getItem('auth_token') || '';
-      
-      // Prepare parameters
-      const params = {
-        enrollableId: options.enrollableId,
-        enrollableType: options.enrollableType || 'App\\Models\\Inmate',
-        apiToken: token,
-        apiUrl: import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api'
-      };
+      // Call backend to get protocol URL
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/biometric-service/launch-enrollment`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${authStore.token}`,
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+        body: JSON.stringify({
+          inmate_id: options.enrollableId,
+          capture_type: 'enrollment'
+        })
+      });
 
-      // Check if running in Electron or native environment
-      if (window.electronAPI) {
-        // Electron environment
-        const result = await window.electronAPI.launchBiometricService(params);
-        handleServiceResult(result, options);
-      } else {
-        // Web environment - use WebSocket or alternative method
-        launchViaWebSocket(params, options);
+      const result = await response.json();
+
+      if (!result.success) {
+        throw new Error(result.message || 'Error al generar URL del servicio biométrico');
       }
+
+      // Close loading and show instructions
+      Swal.close();
+
+      const confirmResult = await Swal.fire({
+        title: 'Abrir Servicio Biométrico',
+        html: `
+          <div style="text-align: left;">
+            <p>Se abrirá la aplicación de captura de huellas dactilares.</p>
+            <p><strong>Instrucciones:</strong></p>
+            <ol>
+              <li>El navegador solicitará permiso para abrir GP360 Biometric Service</li>
+              <li>Haga clic en "Abrir" o "Permitir"</li>
+              <li>Complete la captura de las 10 huellas dactilares</li>
+              <li>Espere a que termine el proceso</li>
+            </ol>
+            <p class="text-muted small mt-3">Si no se abre automáticamente, asegúrese de que el servicio esté instalado en su equipo.</p>
+          </div>
+        `,
+        icon: 'info',
+        showCancelButton: true,
+        confirmButtonText: 'Abrir Servicio',
+        cancelButtonText: 'Cancelar'
+      });
+
+      if (!confirmResult.isConfirmed) {
+        isServiceRunning.value = false;
+        return;
+      }
+
+      // Open protocol URL (will launch Java app)
+      window.location.href = result.data.protocol_url;
+
+      // Show monitoring message
+      Swal.fire({
+        title: 'Servicio Biométrico Activo',
+        html: `
+          <div style="text-align: left;">
+            <p>La aplicación de captura debería haberse abierto.</p>
+            <p><strong>Monitoreo en curso...</strong></p>
+            <p class="text-muted">Esta ventana se cerrará automáticamente cuando complete la captura.</p>
+          </div>
+        `,
+        icon: 'info',
+        showConfirmButton: false,
+        allowOutsideClick: false,
+        didOpen: () => {
+          Swal.showLoading();
+        }
+      });
+
+      // Start polling for completion
+      pollForCompletion(options.enrollableId, options);
+
     } catch (error) {
       console.error('Error launching biometric service:', error);
       isServiceRunning.value = false;
-      
+
       Swal.fire({
         title: 'Error',
-        text: 'No se pudo iniciar el servicio biométrico',
+        text: error instanceof Error ? error.message : 'No se pudo iniciar el servicio biométrico',
         icon: 'error'
       });
-      
+
       if (options.onError) {
         options.onError(error as Error);
       }

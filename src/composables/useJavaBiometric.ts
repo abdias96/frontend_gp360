@@ -40,7 +40,7 @@ export function useJavaBiometric() {
   }
   
   /**
-   * Lanzar el servicio Java de captura biométrica
+   * Lanzar el servicio Java de captura biométrica usando protocolo personalizado
    */
   const launchBiometricCapture = async (inmateId: number, captureType: string = 'enrollment'): Promise<any> => {
     try {
@@ -66,26 +66,61 @@ export function useJavaBiometric() {
           }
         }
 
-        // Para enrollment, mostrar mensaje informativo
-        await Swal.fire({
+        // Para enrollment, mostrar mensaje y abrir protocolo
+        const confirmResult = await Swal.fire({
           icon: 'info',
-          title: 'Servicio de Captura Iniciado',
+          title: 'Abrir Servicio Biométrico',
           html: `
             <div class="text-center">
-              <p><strong>La ventana de captura biométrica se abrirá en unos segundos</strong></p>
-              <p class="text-muted mt-2">Complete la captura de huellas en la aplicación Java</p>
-              <p class="text-muted">La ventana se cerrará automáticamente al finalizar</p>
+              <p>Se abrirá la aplicación de captura de huellas dactilares.</p>
+              <p class="text-muted mt-2"><strong>Instrucciones:</strong></p>
+              <ol class="text-start">
+                <li>El navegador solicitará permiso para abrir GP360 Biometric Service</li>
+                <li>Haga clic en "Abrir" o "Permitir"</li>
+                <li>Complete la captura de las 10 huellas dactilares</li>
+                <li>Espere a que termine el proceso</li>
+              </ol>
+              <p class="text-muted small mt-3">Si no se abre automáticamente, asegúrese de que el servicio esté instalado en su equipo.</p>
             </div>
           `,
-          confirmButtonText: 'Entendido'
+          showCancelButton: true,
+          confirmButtonText: 'Abrir Servicio',
+          cancelButtonText: 'Cancelar'
         })
 
-        // Retornar éxito ya que el servicio Java maneja todo
-        isCapturing.value = false
-        return {
-          success: true,
-          message: 'Aplicación de captura lanzada exitosamente'
+        if (!confirmResult.isConfirmed) {
+          isCapturing.value = false
+          return { success: false, message: 'Cancelado por el usuario' }
         }
+
+        // Abrir protocolo personalizado (lanzará la aplicación Java)
+        if (response.data.data?.protocol_url) {
+          window.location.href = response.data.data.protocol_url
+        }
+
+        // Mostrar mensaje de monitoreo
+        Swal.fire({
+          icon: 'info',
+          title: 'Servicio Biométrico Activo',
+          html: `
+            <div class="text-center">
+              <div class="spinner-border text-primary mb-3" role="status">
+                <span class="visually-hidden">Esperando...</span>
+              </div>
+              <p>La aplicación de captura debería haberse abierto.</p>
+              <p class="text-muted">Esta ventana se cerrará automáticamente cuando complete la captura.</p>
+            </div>
+          `,
+          showConfirmButton: false,
+          allowOutsideClick: false,
+          didOpen: () => {
+            Swal.showLoading()
+          }
+        })
+
+        // Iniciar polling para detectar cuando termine
+        return await pollForCaptureCompletion(inmateId)
+
       } else {
         throw new Error(response.data.message || 'Error al lanzar servicio')
       }
