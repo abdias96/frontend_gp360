@@ -563,6 +563,7 @@ const {
   isCapturing,
   checkServiceStatus: checkJavaStatus,
   launchBiometricCapture,
+  launchBiometricVerification,
   startFingerprintCapture,
   verifyOneToMany,
   initializeDevice,
@@ -620,38 +621,15 @@ const startFingerprintVerification = async () => {
   verificationError.value = ''
 
   try {
-    // Usar un ID temporal para la verificación (no se guardará)
-    const tempInmateId = 99999 // ID temporal para verificación
+    // Lanzar el servicio de verificación biométrica 1:N
+    const result = await launchBiometricVerification()
 
-    // Lanzar el servicio Java para captura como aplicación standalone
-    currentStep.value = 2
-    const captureResult = await launchBiometricCapture(tempInmateId, 'verification')
-
-    if (captureResult.success) {
-      // Mostrar mensaje de que se abrió la aplicación
-      await Swal.fire({
-        icon: 'info',
-        title: 'Aplicación de Verificación Abierta',
-        html: `
-          <p>La aplicación de verificación biométrica se ha abierto en una ventana separada.</p>
-          <p class="mt-2"><strong>Instrucciones:</strong></p>
-          <ol class="text-start">
-            <li>Capture la huella en la aplicación Java</li>
-            <li>Presione el botón "VERIFICAR 1:N"</li>
-            <li>La aplicación mostrará el resultado</li>
-            <li>Cierre la aplicación cuando termine</li>
-          </ol>
-        `,
-        confirmButtonText: 'Entendido',
-        timer: 10000,
-        timerProgressBar: true
-      })
-
+    if (result.success) {
       // Resetear el estado ya que la verificación ocurre en la app Java
       verificationInProgress.value = false
       currentStep.value = 1
     } else {
-      throw new Error('No se pudo lanzar la aplicación de verificación')
+      throw new Error(result.message || 'No se pudo lanzar la aplicación de verificación')
     }
   } catch (error: any) {
     verificationError.value = error.message || 'Error al lanzar la aplicación de verificación'
