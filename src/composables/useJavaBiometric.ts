@@ -231,7 +231,7 @@ export function useJavaBiometric() {
   }
   
   /**
-   * Lanzar aplicación de verificación biométrica 1:N
+   * Lanzar aplicación de verificación biométrica 1:N usando protocolo personalizado
    * No requiere ID de interno ya que busca en toda la base de datos
    */
   const launchBiometricVerification = async (): Promise<any> => {
@@ -239,18 +239,35 @@ export function useJavaBiometric() {
       const response = await ApiService.post('biometric-service/launch-verification')
 
       if (response.data.success) {
-        await Swal.fire({
+        const confirmResult = await Swal.fire({
           icon: 'info',
-          title: 'Verificación Biométrica',
+          title: 'Abrir Verificación Biométrica',
           html: `
             <div class="text-center">
-              <p><strong>La ventana de verificación biométrica se abrirá en unos segundos</strong></p>
-              <p class="text-muted mt-2">Coloque el dedo en el lector cuando se le indique</p>
-              <p class="text-muted">La aplicación buscará coincidencias en toda la base de datos</p>
+              <p>Se abrirá la aplicación de verificación biométrica 1:N.</p>
+              <p class="text-muted mt-2"><strong>Instrucciones:</strong></p>
+              <ol class="text-start">
+                <li>El navegador solicitará permiso para abrir GP360 Biometric Service</li>
+                <li>Haga clic en "Abrir" o "Permitir"</li>
+                <li>Coloque el dedo en el lector cuando se le indique</li>
+                <li>La aplicación buscará coincidencias en toda la base de datos</li>
+              </ol>
+              <p class="text-muted small mt-3">Si no se abre automáticamente, asegúrese de que el servicio esté instalado en su equipo.</p>
             </div>
           `,
-          confirmButtonText: 'Entendido'
+          showCancelButton: true,
+          confirmButtonText: 'Abrir Servicio',
+          cancelButtonText: 'Cancelar'
         })
+
+        if (!confirmResult.isConfirmed) {
+          return { success: false, message: 'Cancelado por el usuario' }
+        }
+
+        // Abrir protocolo personalizado (lanzará la aplicación Java)
+        if (response.data.data?.protocol_url) {
+          window.location.href = response.data.data.protocol_url
+        }
 
         return {
           success: true,
