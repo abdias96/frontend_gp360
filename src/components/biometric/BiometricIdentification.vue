@@ -193,8 +193,8 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { useBiometricMatching } from '@/composables/useBiometricMatching'
-// @ts-ignore
-import { simpleFingerprintService } from '@/core/services/SimpleFingerprintService'
+// @ts-ignore - TODO: Create SimpleFingerprintService if needed
+// import { simpleFingerprintService } from '@/core/services/SimpleFingerprintService'
 
 const {
   isProcessing,
