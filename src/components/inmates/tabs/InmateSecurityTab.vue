@@ -548,15 +548,17 @@ const getIncidentSeverityColor = (severity: string) => {
 const fetchSecurityData = async () => {
   loadingProfile.value = true;
   try {
-    // Fetch current security classification
-    const classificationResponse = await ApiService.get(`/inmate-security-classifications/current/${props.inmate.id}`);
-    const classification = classificationResponse.data?.data;
-    
-    if (classification && classification !== null) {
+    // Fetch security data from organized endpoint
+    const securityResponse = await ApiService.get(`/inmates/${props.inmate.id}/data/security`);
+    const securityData = securityResponse.data.data;
+
+    // Set security classification
+    if (securityData.security_classification) {
+      const classification = securityData.security_classification;
       securityProfile.value = {
-        risk_level: classification.risk_level || 'low',
+        risk_level: classification.risk_level || securityData.security_level || 'low',
         security_phase: classification.security_phase || 'Fase 1',
-        gang_affiliation: classification.gang_affiliation || null,
+        gang_affiliation: securityData.gang_affiliation?.name || null,
         escape_risk: classification.escape_risk || false,
         communication_restrictions: classification.communication_restrictions || null,
         violence_risk_score: classification.violence_risk_score || 0,
@@ -566,44 +568,52 @@ const fetchSecurityData = async () => {
       };
     } else {
       securityProfile.value = {
-        risk_level: 'low',
+        risk_level: securityData.security_level || 'low',
         security_phase: 'Fase 1',
-        gang_affiliation: null,
+        gang_affiliation: securityData.gang_affiliation?.name || null,
         escape_risk: false,
         communication_restrictions: null
       };
     }
-    
-    // Fetch related security data in parallel
-    const [gangRes, historyRes] = await Promise.all([
-      ApiService.get(`/inmate-gang-affiliations/current/${props.inmate.id}`).catch(() => ({ data: { data: null } })),
-      ApiService.get(`/inmate-security-classifications/history/${props.inmate.id}`).catch(() => ({ data: { data: [] } }))
-    ]);
-    
+
     // Set gang information
-    gangInfo.value = gangRes.data.data;
-    
-    // Process classification history as incidents for now
-    if (historyRes.data.data && historyRes.data.data.length > 0) {
-      recentIncidents.value = historyRes.data.data.slice(0, 5).map((item: any) => ({
+    if (securityData.gang_affiliation) {
+      gangInfo.value = {
+        name: securityData.gang_affiliation.name,
+        role: securityData.gang_affiliation.role,
+        since: securityData.gang_affiliation.affiliation_date,
+        threat_level: securityData.gang_affiliation.threat_level,
+        known_enemies: securityData.gang_affiliation.known_enemies_count
+      };
+    } else {
+      gangInfo.value = null;
+    }
+
+    // Set recent incidents
+    if (securityData.recent_incidents && securityData.recent_incidents.length > 0) {
+      recentIncidents.value = securityData.recent_incidents.map((item: any) => ({
         id: item.id,
-        type: 'classification_change',
-        description: `Cambio de clasificación a ${item.risk_level}`,
-        date: item.created_at,
-        severity: item.risk_level
+        type: item.incident_type?.name || item.type || 'Incidente',
+        description: item.description,
+        date: item.incident_date,
+        location: item.location,
+        severity: item.severity
       }));
-      
-      lastIncident.value = recentIncidents.value[0];
+
+      lastIncident.value = {
+        date: recentIncidents.value[0].date,
+        type: recentIncidents.value[0].type
+      };
     } else {
       recentIncidents.value = [];
       lastIncident.value = null;
     }
-    
+
     // TODO: These endpoints need to be implemented in the backend
     activeSanctions.value = [];
     communicationStats.value = { calls: 0, visits: 0 };
     communicationRestrictions.value = securityProfile.value.communication_restrictions || '';
-    
+
   } catch (error) {
     console.error('Error fetching security data:', error);
     // Set default values on error

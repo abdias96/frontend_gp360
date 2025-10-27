@@ -590,8 +590,8 @@ const getBenefitStatusColor = (status: string) => {
 const fetchLegalData = async () => {
   loadingProfile.value = true;
   try {
-    // Fetch complete legal information
-    const legalResponse = await ApiService.get(`/inmates/${props.inmateId}/legal`);
+    // Fetch complete legal information from organized endpoint
+    const legalResponse = await ApiService.get(`/inmates/${props.inmateId}/data/legal`);
     const legalData = legalResponse.data.data;
     
     console.log('Legal data received:', legalData);
@@ -623,8 +623,13 @@ const fetchLegalData = async () => {
       name: crime.crime?.name || 'Delito sin especificar',
       article: crime.crime?.article || 'Art. N/A',
       classification: crime.crime_classification?.name || 'Sin clasificación',
-      severity: mapCrimeSeverity(crime.crime?.max_penalty_years)
+      severity: crime.crime?.severity || mapCrimeSeverity(crime.crime?.max_sentence_months ? crime.crime.max_sentence_months / 12 : null),
+      description: crime.crime_description,
+      date: crime.crime_date,
+      location: crime.crime_location
     }));
+
+    console.log('Active crimes loaded:', activeCrimes.value.length, activeCrimes.value);
     
     // Filter upcoming hearings (future dates)
     const now = new Date();

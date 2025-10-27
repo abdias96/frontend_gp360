@@ -460,9 +460,13 @@ const launchBiometricService = async (inmateId: number) => {
       const protocolUrl = response.data.data.protocol_url;
       const token = response.data.data.token;
 
+      // Obtener session_id de la respuesta
+      const sessionId = response.data.data.session_id;
+
       // Log para debugging
       console.log('Biometric Protocol Response:', {
         url: protocolUrl,
+        sessionId: sessionId,
         token: token ? `${token.substring(0, 20)}...` : 'NO TOKEN',
         inmateId
       });
@@ -470,14 +474,20 @@ const launchBiometricService = async (inmateId: number) => {
       // Cerrar el loading
       Swal.close();
 
-      // Verificar que el token esté presente
-      if (!token || !protocolUrl.includes('token=')) {
-        console.error('WARNING: Token not included in protocol URL!');
+      // Verificar que el token Y el session estén presentes
+      // NOTA: Por seguridad, el protocolo usa 'session=' en vez de 'token='
+      // El BiometricService intercambia el session_id por el token real
+      if (!token || !sessionId || !protocolUrl.includes('session=')) {
+        console.error('WARNING: Missing authentication data!', {
+          hasToken: !!token,
+          hasSession: !!sessionId,
+          urlHasSession: protocolUrl.includes('session=')
+        });
 
         const confirmResult = await Swal.fire({
           icon: 'warning',
           title: 'Posible problema de autenticación',
-          text: 'El token de autenticación podría no estar configurado correctamente. ¿Desea continuar de todos modos?',
+          text: 'Los datos de autenticación podrían no estar configurados correctamente. ¿Desea continuar de todos modos?',
           showCancelButton: true,
           confirmButtonText: 'Continuar',
           cancelButtonText: 'Cancelar'

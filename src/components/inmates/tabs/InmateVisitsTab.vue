@@ -502,18 +502,67 @@ const getRequestStatusColor = (status: string) => {
 const fetchVisitData = async () => {
   loadingProfile.value = true;
   try {
-    // TODO: Uncomment when API endpoints are ready
-    // const statsResponse = await ApiService.get(`/inmates/${props.inmate.id}/visit-stats`);
-    // visitStats.value = statsResponse.data.data || {};
-    
-    // TODO: Fetch related visit data when endpoints are ready
-    // const [visitsRes, visitorsRes, requestsRes] = await Promise.all([
-    //   ApiService.get(`/inmates/${props.inmate.id}/visits?recent=true&limit=5`),
-    //   ApiService.get(`/inmates/${props.inmate.id}/authorized-visitors?limit=5`),
-    //   ApiService.get(`/inmates/${props.inmate.id}/visit-requests?status=pending&limit=5`)
-    // ]);
-    
-    // Temporary mock data
+    // Fetch visit data from organized endpoint
+    const visitsResponse = await ApiService.get(`/inmates/${props.inmate.id}/data/visits`);
+    const visitsData = visitsResponse.data.data;
+
+    // Set visitor relationships
+    if (visitsData.visitor_relationships && visitsData.visitor_relationships.length > 0) {
+      authorizedVisitors.value = visitsData.visitor_relationships.map((rel: any) => ({
+        id: rel.id,
+        name: rel.visitor_full_name || `${rel.visitor_first_name} ${rel.visitor_first_surname}`,
+        relationship: rel.relationship_type?.name || 'No especificado',
+        document_number: rel.visitor_document_number,
+        has_biometric: rel.visitor_biometric_status === 'enrolled'
+      }));
+    } else {
+      authorizedVisitors.value = [];
+    }
+
+    // Set recent visits
+    if (visitsData.recent_visits && visitsData.recent_visits.length > 0) {
+      recentVisits.value = visitsData.recent_visits.map((visit: any) => ({
+        id: visit.id,
+        visitor_name: 'Visitante',  // TODO: Need to join with visitor_relationship to get name
+        relationship: visit.visit_type?.name || 'No especificado',
+        visit_date: visit.requested_visit_date,
+        duration: visit.duration_minutes || 0
+      }));
+    } else {
+      recentVisits.value = [];
+    }
+
+    // Set upcoming visits as pending requests
+    if (visitsData.upcoming_visits && visitsData.upcoming_visits.length > 0) {
+      visitRequests.value = visitsData.upcoming_visits.map((visit: any) => ({
+        id: visit.id,
+        visitor_name: 'Visitante',  // TODO: Need to join with visitor_relationship to get name
+        request_date: visit.created_at,
+        visit_type: visit.visit_type?.name || 'Visita familiar',
+        status: 'aprobada'
+      }));
+    } else {
+      visitRequests.value = [];
+    }
+
+    // Calculate visit statistics
+    visitStats.value = {
+      total_visits: recentVisits.value.length,
+      authorized_visitors: authorizedVisitors.value.length,
+      monthly_visits: recentVisits.value.length,
+      family_visits: recentVisits.value.filter(v => v.relationship?.includes('Familia')).length,
+      legal_visits: recentVisits.value.filter(v => v.relationship?.includes('Legal')).length,
+      average_duration: recentVisits.value.length > 0
+        ? Math.round(recentVisits.value.reduce((sum, v) => sum + v.duration, 0) / recentVisits.value.length)
+        : 0,
+      has_restrictions: false,
+      pending_requests: visitRequests.value.length,
+      last_visit: recentVisits.value.length > 0 ? recentVisits.value[0].visit_date : null
+    };
+
+  } catch (error) {
+    console.error('Error fetching visit data:', error);
+    // Set default empty values on error
     visitStats.value = {
       total_visits: 0,
       authorized_visitors: 0,
@@ -524,13 +573,9 @@ const fetchVisitData = async () => {
       has_restrictions: false,
       pending_requests: 0
     };
-    
     recentVisits.value = [];
     authorizedVisitors.value = [];
     visitRequests.value = [];
-    
-  } catch (error) {
-    console.error('Error fetching visit data:', error);
   } finally {
     loadingProfile.value = false;
   }

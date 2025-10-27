@@ -523,25 +523,16 @@ const fetchMedicalData = async () => {
   loadingProfile.value = true;
   try {
     console.log('Inmate data in medical tab:', props.inmate);
-    
-    // Try to get the medical profile from the inmate data first
-    if (props.inmate.medical_profile) {
-      console.log('Medical profile from props:', props.inmate.medical_profile);
-      medicalProfile.value = props.inmate.medical_profile;
+
+    // Fetch medical data from organized endpoint
+    const medicalResponse = await ApiService.get(`/inmates/${props.inmate.id}/data/medical`);
+    const medicalData = medicalResponse.data.data;
+
+    // Set medical profile
+    if (medicalData.medical_profile) {
+      medicalProfile.value = medicalData.medical_profile;
     } else {
-      // If not available, fetch it from the API
-      try {
-        const profileResponse = await ApiService.get(`/inmate-medical-profiles/current/${props.inmate.id}`);
-        console.log('Medical profile from API:', profileResponse.data);
-        medicalProfile.value = profileResponse.data.data;
-      } catch (error) {
-        console.error('Error fetching medical profile:', error);
-        medicalProfile.value = null;
-      }
-    }
-    
-    // Set default values if no profile exists
-    if (!medicalProfile.value) {
+      // Set default values if no profile exists
       medicalProfile.value = {
         health_status: 'unknown',
         blood_type: null,
@@ -554,31 +545,24 @@ const fetchMedicalData = async () => {
         requires_psychiatric_medication: false
       };
     }
-    
-    // Fetch chronic diseases if they exist
-    try {
-      const diseasesResponse = await ApiService.get(`/inmates/${props.inmate.id}/chronic-diseases`);
-      chronicDiseases.value = diseasesResponse.data.data || [];
-    } catch (error) {
-      console.error('Error fetching chronic diseases:', error);
-      chronicDiseases.value = [];
-    }
-    
-    // For now, set empty arrays for data that doesn't have endpoints yet
-    activeTreatments.value = [];
-    upcomingConsultations.value = [];
-    activeMedications.value = [];
-    
-    // Extract last consultation date from medical profile if available
-    if (medicalProfile.value?.last_medical_checkup) {
+
+    // Set recent consultations if available
+    if (medicalData.recent_consultations && medicalData.recent_consultations.length > 0) {
+      upcomingConsultations.value = medicalData.recent_consultations;
       lastConsultation.value = {
-        date: medicalProfile.value.last_medical_checkup,
-        doctor: medicalProfile.value.primary_doctor
+        date: medicalData.recent_consultations[0].consultation_date,
+        doctor: medicalData.recent_consultations[0].doctor?.name
       };
     } else {
+      upcomingConsultations.value = [];
       lastConsultation.value = null;
     }
-    
+
+    // For now, set empty arrays for data that doesn't have endpoints yet
+    chronicDiseases.value = [];
+    activeTreatments.value = [];
+    activeMedications.value = [];
+
   } catch (error) {
     console.error('Error fetching medical data:', error);
     // Set default empty values on error

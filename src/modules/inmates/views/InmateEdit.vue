@@ -948,12 +948,19 @@
 
             <div class="col-md-4">
               <label class="form-label">Relación con el Interno</label>
-              <input
-                type="text"
-                v-model="form.emergency_contact_relationship"
-                class="form-control"
-                placeholder="Parentesco o relación"
-              />
+              <select
+                v-model="form.emergency_contact_relationship_id"
+                class="form-select"
+              >
+                <option value="">Seleccionar relación</option>
+                <option
+                  v-for="relationship in relationshipTypes"
+                  :key="relationship.id"
+                  :value="relationship.id"
+                >
+                  {{ relationship.name }}
+                </option>
+              </select>
             </div>
 
             <div class="col-md-4">
@@ -1249,6 +1256,7 @@ const sexualOrientations = ref<any[]>([]);
 const genderIdentities = ref<any[]>([]);
 const languages = ref<any[]>([]);
 const socioeconomicLevels = ref<any[]>([]);
+const relationshipTypes = ref<any[]>([]);
 
 // Initialize fallback data for LGBTIQ+ fields
 sexualOrientations.value = [
@@ -1308,7 +1316,7 @@ const form = ref({
   procedural_status_id: "",
   emergency_contact_name: "",
   emergency_contact_phone: "",
-  emergency_contact_relationship: "",
+  emergency_contact_relationship_id: "",
   emergency_contact_language_id: "",
   // LGBTIQ+ fields
   sexual_orientation_id: "",
@@ -1451,7 +1459,7 @@ const populateForm = async () => {
     procedural_status_id: inmate.procedural_status_id?.toString() || "",
     emergency_contact_name: inmate.emergency_contact_name || "",
     emergency_contact_phone: inmate.emergency_contact_phone || "",
-    emergency_contact_relationship: inmate.emergency_contact_relationship || "",
+    emergency_contact_relationship_id: inmate.emergency_contact_relationship_id?.toString() || "",
     emergency_contact_language_id: inmate.emergency_contact_language_id?.toString() || "",
     // LGBTIQ+ fields
     sexual_orientation_id: inmate.sexual_orientation_id?.toString() || "",
@@ -1693,6 +1701,32 @@ const loadSocioeconomicLevels = async () => {
   }
 };
 
+const loadRelationshipTypes = async () => {
+  try {
+    const response = await ApiService.get("/catalogs/relationship-types");
+    const data = response.data.data || response.data || [];
+    relationshipTypes.value = Array.isArray(data) ? data : [];
+  } catch (error) {
+    console.error("Error loading relationship types:", error);
+    // Use fallback relationship types
+    relationshipTypes.value = [
+      { id: 1, name: "Padre" },
+      { id: 2, name: "Madre" },
+      { id: 3, name: "Hijo(a)" },
+      { id: 4, name: "Esposo(a)" },
+      { id: 5, name: "Conviviente" },
+      { id: 6, name: "Hermano(a)" },
+      { id: 7, name: "Abuelo(a)" },
+      { id: 8, name: "Nieto(a)" },
+      { id: 9, name: "Tío(a)" },
+      { id: 10, name: "Sobrino(a)" },
+      { id: 11, name: "Primo(a)" },
+      { id: 17, name: "Amigo(a)" },
+      { id: 21, name: "Otro" },
+    ];
+  }
+};
+
 const fetchCatalog = async (endpoint: string): Promise<any[]> => {
   try {
     const response = await ApiService.get(endpoint);
@@ -1779,6 +1813,9 @@ const handleSubmit = async () => {
       emergency_contact_language_id: form.value.emergency_contact_language_id
         ? Number(form.value.emergency_contact_language_id)
         : null,
+      emergency_contact_relationship_id: form.value.emergency_contact_relationship_id
+        ? Number(form.value.emergency_contact_relationship_id)
+        : null,
       sexual_orientation_id: form.value.sexual_orientation_id
         ? Number(form.value.sexual_orientation_id)
         : null,
@@ -1841,6 +1878,7 @@ onMounted(async () => {
     loadGenderIdentities(),
     loadLanguages(),
     loadSocioeconomicLevels(),
+    loadRelationshipTypes(),
   ]);
 
   // Load inmate data

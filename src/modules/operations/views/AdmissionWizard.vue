@@ -303,11 +303,9 @@
                         <label class="form-label">Orientación Sexual</label>
                         <select v-model="inmateData.sexual_orientation_id" class="form-select">
                           <option value="">Seleccionar</option>
-                          <option value="1">Heterosexual</option>
-                          <option value="2">Homosexual</option>
-                          <option value="3">Bisexual</option>
-                          <option value="4">Otro</option>
-                          <option value="5">Prefiere no decir</option>
+                          <option v-for="orientation in sexualOrientations" :key="orientation.id" :value="orientation.id">
+                            {{ orientation.name }}
+                          </option>
                         </select>
                       </div>
 
@@ -315,11 +313,9 @@
                         <label class="form-label">Identidad de Género</label>
                         <select v-model="inmateData.gender_identity_id" class="form-select">
                           <option value="">Seleccionar</option>
-                          <option value="1">Masculino</option>
-                          <option value="2">Femenino</option>
-                          <option value="3">Transgénero</option>
-                          <option value="4">No binario</option>
-                          <option value="5">Otro</option>
+                          <option v-for="identity in genderIdentities" :key="identity.id" :value="identity.id">
+                            {{ identity.name }}
+                          </option>
                         </select>
                       </div>
 
@@ -327,16 +323,9 @@
                         <label class="form-label">Religión</label>
                         <select v-model="inmateData.religion_id" class="form-select">
                           <option value="">Seleccionar</option>
-                          <option value="1">Católica</option>
-                          <option value="2">Evangélica</option>
-                          <option value="3">Protestante</option>
-                          <option value="4">Testigo de Jehová</option>
-                          <option value="5">Mormón</option>
-                          <option value="6">Musulmana</option>
-                          <option value="7">Judía</option>
-                          <option value="8">Maya/Indígena</option>
-                          <option value="9">Ninguna</option>
-                          <option value="10">Otra</option>
+                          <option v-for="religion in religions" :key="religion.id" :value="religion.id">
+                            {{ religion.name }}
+                          </option>
                         </select>
                       </div>
 
@@ -344,37 +333,44 @@
                         <label class="form-label">Grado Académico</label>
                         <select v-model="inmateData.academic_degree_id" class="form-select">
                           <option value="">Seleccionar</option>
-                          <option value="1">Analfabeto</option>
-                          <option value="2">Primaria incompleta</option>
-                          <option value="3">Primaria completa</option>
-                          <option value="4">Básicos incompletos</option>
-                          <option value="5">Básicos completos</option>
-                          <option value="6">Diversificado incompleto</option>
-                          <option value="7">Diversificado completo</option>
-                          <option value="8">Universitario incompleto</option>
-                          <option value="9">Universitario completo</option>
-                          <option value="10">Postgrado</option>
+                          <option v-for="degree in academicDegrees" :key="degree.id" :value="degree.id">
+                            {{ degree.name }}
+                          </option>
                         </select>
                       </div>
 
                       <div class="col-md-4">
                         <label class="form-label">Profesión/Oficio</label>
-                        <input
-                          v-model="inmateData.profession"
-                          type="text"
-                          class="form-control"
-                          placeholder="Ej: Carpintero, Agricultor, etc."
-                        />
+                        <select
+                          v-model="inmateData.occupation_id"
+                          class="form-select"
+                        >
+                          <option value="">Seleccione una profesión/oficio</option>
+                          <optgroup v-for="category in occupationCategories" :key="category" :label="category">
+                            <option
+                              v-for="occupation in filterOccupationsByCategory(category)"
+                              :key="occupation.id"
+                              :value="occupation.id"
+                            >
+                              {{ occupation.name }}
+                            </option>
+                          </optgroup>
+                        </select>
                       </div>
 
                       <div class="col-md-4">
                         <label class="form-label">Idiomas (además del español)</label>
-                        <input
-                          v-model="inmateData.languages"
-                          type="text"
-                          class="form-control"
-                          placeholder="Ej: K'iche', Inglés, etc."
-                        />
+                        <select
+                          v-model="inmateData.language_ids"
+                          class="form-select"
+                          multiple
+                          size="4"
+                        >
+                          <option v-for="language in languages" :key="language.id" :value="language.id">
+                            {{ language.name }}
+                          </option>
+                        </select>
+                        <small class="form-text text-muted">Mantenga presionada la tecla Ctrl (Cmd en Mac) para seleccionar varios idiomas</small>
                       </div>
 
                       <!-- Contact Information -->
@@ -431,7 +427,16 @@
 
                       <div class="col-md-4">
                         <label class="form-label">{{ t('admissions.wizard.fields.contactRelationship') }}</label>
-                        <input v-model="inmateData.emergency_contact_relationship" type="text" class="form-control" />
+                        <select v-model="inmateData.emergency_contact_relationship_id" class="form-select">
+                          <option value="">Seleccionar relación</option>
+                          <option
+                            v-for="relationship in relationshipTypes"
+                            :key="relationship.id"
+                            :value="relationship.id"
+                          >
+                            {{ relationship.name }}
+                          </option>
+                        </select>
                       </div>
 
                       <div class="col-md-12">
@@ -558,12 +563,9 @@
                           <label class="form-label required">Tipo de Admisión</label>
                           <select v-model="admissionData.admission_type" class="form-select" required>
                             <option value="">Seleccionar tipo</option>
-                            <option value="new_admission">Ingreso Nuevo</option>
-                            <option value="transfer_in">Traslado desde otro centro</option>
-                            <option value="court_return">Retorno de juzgado</option>
-                            <option value="hospital_return">Retorno de hospital</option>
-                            <option value="recapture">Recaptura después de fuga</option>
-                            <option value="revocation_return">Reingreso por revocatoria</option>
+                            <option v-for="type in admissionTypes" :key="type.value" :value="type.value">
+                              {{ type.label }}
+                            </option>
                           </select>
                         </div>
                         <div class="col-md-4">
@@ -744,9 +746,9 @@
                           <div class="col-md-4">
                             <label class="form-label">Tipo de Defensa</label>
                             <select v-model="profile.defense_type" class="form-select form-select-sm">
-                              <option value="public">Pública</option>
-                              <option value="private">Privada</option>
-                              <option value="self_represented">Auto-representado</option>
+                              <option v-for="type in defenseTypes" :key="type.value" :value="type.value">
+                                {{ type.label }}
+                              </option>
                             </select>
                           </div>
 
@@ -985,6 +987,7 @@
                       <div class="col-md-6">
                         <label class="form-label required">Estado de Afiliación</label>
                         <select v-model="inmateData.gang_affiliation_status" class="form-select" :required="currentStep === 3">
+                          <option value="">Seleccionar</option>
                           <option value="none">Sin afiliación</option>
                           <option value="suspected_ms13">Sospechoso MS-13</option>
                           <option value="confirmed_ms13">Confirmado MS-13</option>
@@ -1180,7 +1183,7 @@
                       <!-- Additional Physical Characteristics -->
                       <div class="col-md-3">
                         <label class="form-label">Color de Piel</label>
-                        <select v-model="physicalProfile.skin_color" class="form-select">
+                        <select v-model="physicalProfile.skin_tone" class="form-select">
                           <option value="">Seleccionar</option>
                           <option value="blanca">Blanca</option>
                           <option value="morena_clara">Morena Clara</option>
@@ -1416,7 +1419,8 @@
                                     <option value="money">Dinero</option>
                                     <option value="documents">Documentos</option>
                                     <option value="electronics">Electrónicos</option>
-                                    <option value="personal">Personal</option>
+                                    <option value="personal_items">Artículos Personales</option>
+                                    <option value="prohibited">Prohibidos</option>
                                     <option value="other">Otro</option>
                                   </select>
                                 </td>
@@ -1922,8 +1926,8 @@ const inmateData = ref({
   gender_identity_id: null,
   religion_id: null,
   academic_degree_id: null,
-  profession: '',
-  languages: '',
+  occupation_id: null,
+  language_ids: [],
   // Información de contacto
   address: '',
   phone: '',
@@ -1931,7 +1935,7 @@ const inmateData = ref({
   // Contacto de emergencia ampliado
   emergency_contact_name: '',
   emergency_contact_phone: '',
-  emergency_contact_relationship: '',
+  emergency_contact_relationship_id: null,
   emergency_contact_address: '',
   gang_affiliation_status: 'none',
   gang_intelligence_notes: ''
@@ -1971,7 +1975,7 @@ const physicalProfile = ref({
   weight: null,
   build_type: '',
   blood_type_id: null,
-  skin_color: '',
+  skin_tone: '',
   eye_color: '',
   hair_color: '',
   hair_type: '',
@@ -2039,6 +2043,15 @@ const birthDepartments = ref([]);
 const birthMunicipalities = ref([]);
 const crimes = ref([]);
 const proceduralStatuses = ref([]);
+const relationshipTypes = ref([]);
+const languages = ref([]);
+const occupations = ref([]);
+const sexualOrientations = ref([]);
+const genderIdentities = ref([]);
+const religions = ref([]);
+const academicDegrees = ref([]);
+const admissionTypes = ref([]);
+const defenseTypes = ref([]);
 
 // Computed
 const filteredSectors = computed(() => {
@@ -2055,6 +2068,17 @@ const filteredSectors = computed(() => {
     return true;
   });
 });
+
+// Occupation categories for grouping
+const occupationCategories = computed(() => {
+  const categories = new Set(occupations.value.map(o => o.category));
+  return Array.from(categories).sort();
+});
+
+// Filter occupations by category
+const filterOccupationsByCategory = (category) => {
+  return occupations.value.filter(o => o.category === category);
+};
 
 // Watchers
 // Sync the center from step 1 to step 7
@@ -2094,6 +2118,9 @@ const handleStepSubmit = async () => {
     case 2: // Legal Reception (now second)
       if (!inmateId.value) {
         success = await startAdmission();
+      } else {
+        // If inmate already exists, update legal profile and crimes
+        success = await saveLegalProfile();
       }
       break;
     case 3: // Security Assessment
@@ -2996,8 +3023,10 @@ const createMinimalInmate = async () => {
         gender_identity_id: inmateData.value.gender_identity_id || null,
         religion_id: inmateData.value.religion_id || null,
         academic_degree_id: inmateData.value.academic_degree_id || null,
-        profession: inmateData.value.profession || null,
-        languages: inmateData.value.languages || null,
+        occupation_id: inmateData.value.occupation_id || null,
+        language_ids: inmateData.value.language_ids && inmateData.value.language_ids.length > 0
+          ? inmateData.value.language_ids
+          : null,
         // Información de contacto
         address: inmateData.value.address || null,
         phone: inmateData.value.phone || null,
@@ -3005,7 +3034,7 @@ const createMinimalInmate = async () => {
         // Emergency contact information
         emergency_contact_name: inmateData.value.emergency_contact_name || null,
         emergency_contact_phone: inmateData.value.emergency_contact_phone || null,
-        emergency_contact_relationship: inmateData.value.emergency_contact_relationship || null,
+        emergency_contact_relationship_id: inmateData.value.emergency_contact_relationship_id || null,
         emergency_contact_address: inmateData.value.emergency_contact_address || null,
         // Current location - use the selected center from admission data
         current_center_id: admissionData.value.current_center_id || 1,
@@ -3039,7 +3068,7 @@ const createMinimalInmate = async () => {
     };
 
     // Ensure current_center_id is at root level (required by backend)
-    payload.current_center_id = admissionData.value.current_center_id || 1; // Default to center 1 if not set
+    payload.current_center_id = admissionData.value.current_center_id || null;
 
     // Ensure case_number is at root level (required by backend) - use from first valid profile
     const firstValidProfile = legalProfiles.value.find(p => p.case_number && p.court_id);
@@ -3175,41 +3204,112 @@ const startAdmission = async () => {
   }
 };
 
+const saveLegalProfile = async () => {
+  try {
+    if (!inmateId.value) {
+      await Swal.fire({
+        title: 'Error',
+        text: 'No se ha creado el registro del interno',
+        icon: 'error'
+      });
+      return false;
+    }
+
+    // Get the first legal profile (for now we support only one profile)
+    const firstProfile = legalProfiles.value[0];
+
+    if (!firstProfile || !firstProfile.case_number) {
+      // No legal profile to save - this is ok, profile is optional
+      return true;
+    }
+
+    // Prepare legal profile data
+    const legalProfileData = {
+      case_number: firstProfile.case_number,
+      court_id: firstProfile.court_id,
+      procedural_status_id: firstProfile.procedural_status_id,
+      defense_type: firstProfile.defense_type,
+      defense_lawyer_name: firstProfile.defense_lawyer_name,
+      defense_lawyer_phone: firstProfile.defense_lawyer_phone,
+      defense_lawyer_email: firstProfile.defense_lawyer_email,
+      public_defender_id: firstProfile.public_defender_id,
+      sentence_type_id: firstProfile.sentence_type_id,
+      in_preventive_detention: firstProfile.in_preventive_detention,
+      preventive_detention_start: firstProfile.preventive_detention_start,
+      preventive_detention_max_end: firstProfile.preventive_detention_max_end,
+      sentence_years: firstProfile.sentence_years,
+      sentence_months: firstProfile.sentence_months,
+      sentence_days: firstProfile.sentence_days,
+      sentence_start_date: firstProfile.sentence_start_date,
+      sentence_end_date: firstProfile.sentence_end_date,
+      crimes: firstProfile.crimes.map(crime => ({
+        crime_id: crime.crime_id,
+        crime_description: crime.crime_description || '',
+        crime_date: crime.crime_date || null,
+        crime_location: crime.crime_location || '',
+        crime_classification_id: crime.crime_classification_id || null
+      }))
+    };
+
+    const response = await ApiService.put(`/admissions/${inmateId.value}/legal-profile`, legalProfileData);
+
+    if (response.data.success) {
+      await Swal.fire({
+        title: 'Éxito',
+        text: `Perfil legal actualizado. ${response.data.data.crimes_count} delito(s) guardado(s).`,
+        icon: 'success',
+        timer: 2000,
+        showConfirmButton: false
+      });
+      return true;
+    }
+
+    return false;
+  } catch (error: any) {
+    console.error('Error saving legal profile:', error);
+    await Swal.fire({
+      title: 'Error',
+      text: error.response?.data?.message || 'No se pudo guardar el perfil legal',
+      icon: 'error'
+    });
+    return false;
+  }
+};
+
 const saveIdentification = async () => {
   if (!inmateId.value) return false;
-  
+
+  // Map frontend fields to backend expected fields (define outside try for error logging)
+  const identificationData = {
+    document_number: inmateData.value.identification_number || '',
+    document_type_id: inmateData.value.document_type_id || 1,
+    case_number: legalProfiles.value[0]?.case_number || 'PENDING-' + Date.now(), // Use case number from first legal profile or generate temporary
+    first_name: inmateData.value.first_name || '',
+    middle_name: inmateData.value.second_name || null,
+    third_name: inmateData.value.third_name || null,
+    last_name: inmateData.value.first_surname || '', // Map first_surname to last_name
+    second_last_name: inmateData.value.second_surname || null,
+    married_surname: inmateData.value.married_surname || null,
+    alias: inmateData.value.alias || null,
+    birth_date: inmateData.value.birth_date || '2000-01-01',
+    gender: inmateData.value.gender || 'M',
+    nationality_id: inmateData.value.nationality_id || null,
+    birth_country_id: inmateData.value.birth_country_id || null,
+    birth_department_id: inmateData.value.birth_department_id || null,
+    birth_municipality_id: inmateData.value.birth_municipality_id || null,
+    civil_status_id: inmateData.value.civil_status_id || null,
+    ethnic_group_id: inmateData.value.ethnic_group_id || null,
+    emergency_contact_name: inmateData.value.emergency_contact_name || null,
+    emergency_contact_phone: inmateData.value.emergency_contact_phone || null,
+    emergency_contact_relationship_id: inmateData.value.emergency_contact_relationship_id || null
+  };
+
   try {
     // Debug log
     console.log('InmateData before saving:', inmateData.value);
     console.log('Legal Profiles:', legalProfiles.value);
-    
-    // Map frontend fields to backend expected fields
-    const identificationData = {
-      document_number: inmateData.value.identification_number || '',
-      document_type_id: inmateData.value.document_type_id || 1,
-      case_number: legalProfiles.value[0]?.case_number || 'PENDING-' + Date.now(), // Use case number from first legal profile or generate temporary
-      first_name: inmateData.value.first_name || '',
-      middle_name: inmateData.value.second_name || null,
-      third_name: inmateData.value.third_name || null,
-      last_name: inmateData.value.first_surname || '', // Map first_surname to last_name
-      second_last_name: inmateData.value.second_surname || null,
-      married_surname: inmateData.value.married_surname || null,
-      alias: inmateData.value.alias || null,
-      birth_date: inmateData.value.birth_date || '2000-01-01',
-      gender: inmateData.value.gender || 'M',
-      nationality_id: inmateData.value.nationality_id || 1, // Default to Guatemala
-      birth_country_id: inmateData.value.birth_country_id || 1, // País de nacimiento
-      birth_department_id: inmateData.value.birth_department_id || 1, // Departamento de nacimiento
-      birth_municipality_id: inmateData.value.birth_municipality_id || 1, // Default to Guatemala municipality
-      civil_status_id: inmateData.value.civil_status_id || null,
-      ethnic_group_id: inmateData.value.ethnic_group_id || null,
-      emergency_contact_name: inmateData.value.emergency_contact_name || null,
-      emergency_contact_phone: inmateData.value.emergency_contact_phone || null,
-      emergency_contact_relationship: inmateData.value.emergency_contact_relationship || null
-    };
-    
     console.log('Data being sent to backend:', identificationData);
-    
+
     await ApiService.put(`/admissions/${inmateId.value}/identification`, identificationData);
     return true;
   } catch (error: any) {
@@ -3366,61 +3466,48 @@ const saveBelongings = async () => {
 
 const saveMedicalEvaluation = async () => {
   if (!inmateId.value) return false;
-  
+
   try {
-    // Map medical evaluation data to the format expected by the medical profile endpoint
-    const medicalProfileData = {
-      inmate_id: inmateId.value,
-      // Chronic diseases
+    // Map medical evaluation data to the format expected by the admission controller
+    const medicalData = {
+      initial_medical_notes: medicalEvaluation.value.medical_notes || null,
       has_chronic_diseases: medicalEvaluation.value.has_chronic_diseases,
-      chronic_diseases_notes: medicalEvaluation.value.chronic_diseases || null,
-      
-      // Medications
-      has_current_medications: medicalEvaluation.value.has_medications,
-      current_medications_notes: medicalEvaluation.value.current_medications || null,
-      
-      // Allergies
-      has_allergies: medicalEvaluation.value.has_allergies,
-      allergies_notes: medicalEvaluation.value.allergies || null,
-      
-      // Disabilities
+      chronic_diseases: medicalEvaluation.value.chronic_diseases || null,
+      requires_medication: medicalEvaluation.value.has_medications,
+      current_medications: medicalEvaluation.value.current_medications || null,
       has_disabilities: medicalEvaluation.value.has_disabilities,
-      disabilities_notes: medicalEvaluation.value.disabilities || null,
-      
-      // Mental health
-      mental_health_status: medicalEvaluation.value.mental_health_status,
-      requires_immediate_medical_attention: medicalEvaluation.value.requires_immediate_attention,
-      
-      // General notes
-      general_health_notes: medicalEvaluation.value.medical_notes || null,
-      
-      // Vital signs (store as JSON string or separate fields)
-      last_blood_pressure: medicalEvaluation.value.vital_signs.blood_pressure || null,
-      last_heart_rate: medicalEvaluation.value.vital_signs.heart_rate || null,
-      last_temperature: medicalEvaluation.value.vital_signs.temperature || null,
-      last_respiratory_rate: medicalEvaluation.value.vital_signs.respiratory_rate || null,
-      
-      // Metadata
-      created_by: authStore.user?.id,
-      initial_evaluation_date: new Date().toISOString()
+      disabilities: medicalEvaluation.value.disabilities || null,
+      has_allergies: medicalEvaluation.value.has_allergies,
+      allergies: medicalEvaluation.value.allergies || null,
+      requires_special_diet: false, // Not in current form
+      special_diet_details: null,
+      mental_health_status: medicalEvaluation.value.mental_health_status || 'stable',
+      suicide_risk: false, // Not in current form
+      requires_psychiatric_care: false // Not in current form
     };
-    
-    // Use the upsert endpoint to create or update the medical profile
-    await ApiService.post('/inmate-medical-profiles/upsert', medicalProfileData);
-    
+
+    // Use the admission medical evaluation endpoint
+    await ApiService.post(`/admissions/${inmateId.value}/medical-evaluation`, medicalData);
+
     // If immediate attention is required, create a medical consultation
     if (medicalEvaluation.value.requires_immediate_attention) {
-      await ApiService.post('/inmate-medical-consultations', {
-        inmate_id: inmateId.value,
-        consultation_date: new Date().toISOString(),
-        consultation_type: 'emergency',
-        reason: 'Requiere atención médica inmediata - Evaluación inicial de admisión',
-        symptoms: medicalEvaluation.value.medical_notes,
-        priority: 'high',
-        status: 'pending'
-      });
+      try {
+        await ApiService.post('/inmate-medical-consultations', {
+          inmate_id: inmateId.value,
+          consultation_date: new Date().toISOString().split('T')[0],
+          consultation_type: 'emergency',
+          reason: 'Requiere atención médica inmediata - Evaluación inicial de admisión',
+          symptoms: medicalEvaluation.value.medical_notes || 'Evaluación inicial',
+          priority: 'high',
+          status: 'pending',
+          created_by: authStore.user?.id
+        });
+      } catch (consultError: any) {
+        console.error('Error creating medical consultation:', consultError);
+        // Don't fail the whole process if consultation creation fails
+      }
     }
-    
+
     return true;
   } catch (error: any) {
     console.error('Error saving medical evaluation:', error.response?.data);
@@ -3581,7 +3668,16 @@ const loadCatalogs = async () => {
       municipalitiesRes,
       countriesRes,
       crimesRes,
-      proceduralStatusesRes
+      proceduralStatusesRes,
+      relationshipTypesRes,
+      languagesRes,
+      occupationsRes,
+      sexualOrientationsRes,
+      genderIdentitiesRes,
+      religionsRes,
+      academicDegreesRes,
+      admissionTypesRes,
+      defenseTypesRes
     ] = await Promise.all([
       ApiService.get('/catalogs/courts?simple=true'),
       ApiService.get('/catalogs/document-types?simple=true'),
@@ -3594,7 +3690,16 @@ const loadCatalogs = async () => {
       ApiService.get('/catalogs/municipalities?simple=true'),
       ApiService.get('/catalogs/countries?simple=true'),
       ApiService.get('/catalogs/crimes?simple=true'),
-      ApiService.get('/catalogs/procedural-statuses?simple=true')
+      ApiService.get('/catalogs/procedural-statuses?simple=true'),
+      ApiService.get('/catalogs/relationship-types?simple=true'),
+      ApiService.get('/catalogs/languages?simple=true'),
+      ApiService.get('/catalogs/occupations?simple=true'),
+      ApiService.get('/catalogs/sexual-orientations'),
+      ApiService.get('/catalogs/gender-identities'),
+      ApiService.get('/catalogs/religions?simple=true'),
+      ApiService.get('/catalogs/academic-degrees?simple=true'),
+      ApiService.get('/catalogs/admission-types'),
+      ApiService.get('/catalogs/defense-types')
     ]);
 
     // Handle paginated responses (data.data.data) and simple responses (data.data)
@@ -3610,6 +3715,15 @@ const loadCatalogs = async () => {
     centers.value = centersRes.data.data?.data || centersRes.data.data || centersRes.data || [];
     municipalities.value = municipalitiesRes.data.data?.data || municipalitiesRes.data.data || municipalitiesRes.data || [];
     countries.value = countriesRes.data.data?.data || countriesRes.data.data || countriesRes.data || [];
+    relationshipTypes.value = relationshipTypesRes.data.data?.data || relationshipTypesRes.data.data || relationshipTypesRes.data || [];
+    languages.value = languagesRes.data.data?.data || languagesRes.data.data || languagesRes.data || [];
+    occupations.value = occupationsRes.data.data?.data || occupationsRes.data.data || occupationsRes.data || [];
+    sexualOrientations.value = sexualOrientationsRes.data.data || sexualOrientationsRes.data || [];
+    genderIdentities.value = genderIdentitiesRes.data.data || genderIdentitiesRes.data || [];
+    religions.value = religionsRes.data.data?.data || religionsRes.data.data || religionsRes.data || [];
+    academicDegrees.value = academicDegreesRes.data.data?.data || academicDegreesRes.data.data || academicDegreesRes.data || [];
+    admissionTypes.value = admissionTypesRes.data.data || admissionTypesRes.data || [];
+    defenseTypes.value = defenseTypesRes.data.data || defenseTypesRes.data || [];
   } catch (error) {
     console.error('Error loading catalogs:', error);
   }

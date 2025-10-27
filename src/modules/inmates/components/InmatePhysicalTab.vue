@@ -637,7 +637,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, computed } from "vue";
+import { ref, onMounted, computed, onUnmounted } from "vue";
 import { useAuthStore } from "@/stores/auth";
 import ApiService from "@/core/services/ApiService";
 import type {
@@ -648,7 +648,6 @@ import type {
 } from "@/types/inmates";
 import Swal from "sweetalert2";
 import KTIcon from "@/core/helpers/kt-icon/KTIcon.vue";
-import { useBiometricService } from "@/composables/useBiometricService";
 
 interface Props {
   inmate: InmateDetail;
@@ -680,9 +679,8 @@ const currentPhotos = ref<InmatePhoto[]>([]);
 const physicalHistory = ref<PhysicalChange[]>([]);
 const showBiometricInfo = ref(false);
 const inmateId = computed(() => props.inmate?.id || 0);
-
-// Biometric service
-const { launchBiometricService, isServiceRunning, checkServiceAvailability } = useBiometricService();
+const isServiceRunning = ref(false);
+const pollingInterval = ref<any>(null);
 
 const loading = ref({
   physical: false,
@@ -712,10 +710,12 @@ const loadPhysicalData = async () => {
   try {
     loading.value.physical = true;
 
-    // Load physical profile from API
-    const response = await ApiService.get(`/inmates/${props.inmate.id}/physical-profile`);
-    if (response.data.data) {
-      physicalProfile.value = response.data.data;
+    // Load physical data from organized endpoint
+    const response = await ApiService.get(`/inmates/${props.inmate.id}/data/physical`);
+    const physicalData = response.data.data;
+
+    if (physicalData.physical_profile) {
+      physicalProfile.value = physicalData.physical_profile;
     } else if (props.inmate.physical_profile) {
       // Fallback to prop data if API doesn't return data
       physicalProfile.value = props.inmate.physical_profile;
@@ -735,27 +735,33 @@ const loadBiometricData = async () => {
   try {
     loading.value.biometrics = true;
 
-    // Load biometric data and photos in parallel
-    const [biometricResponse, photosResponse] = await Promise.all([
-      ApiService.get(`/inmates/${props.inmate.id}/biometric-data`).catch(() => ({ data: { data: null } })),
-      ApiService.get(`/inmates/${props.inmate.id}/photos`).catch(() => ({ data: { data: [] } }))
-    ]);
+    // Load physical data from organized endpoint (includes photos)
+    const response = await ApiService.get(`/inmates/${props.inmate.id}/data/physical`);
+    const physicalData = response.data.data;
 
-    // Set biometric data
-    if (biometricResponse.data.data) {
-      biometricData.value = biometricResponse.data.data;
-    } else if (props.inmate.biometric_data) {
-      biometricData.value = props.inmate.biometric_data;
-    }
-
-    // Set photos
-    if (photosResponse.data.data && photosResponse.data.data.length > 0) {
-      currentPhotos.value = photosResponse.data.data.filter((p: any) => p.is_current);
+    // Set photos from organized endpoint
+    if (physicalData.photos && physicalData.photos.length > 0) {
+      currentPhotos.value = physicalData.photos.filter((p: any) => p.is_current);
     } else if (props.inmate.photos) {
       currentPhotos.value = props.inmate.photos.filter((p) => p.is_current);
     }
+
+    // Load biometric data separately (not in organized endpoint yet)
+    try {
+      const biometricResponse = await ApiService.get(`/inmates/${props.inmate.id}/biometric-data`);
+      if (biometricResponse.data.data) {
+        biometricData.value = biometricResponse.data.data;
+      } else if (props.inmate.biometric_data) {
+        biometricData.value = props.inmate.biometric_data;
+      }
+    } catch (bioError) {
+      console.error("Error loading biometric data:", bioError);
+      if (props.inmate.biometric_data) {
+        biometricData.value = props.inmate.biometric_data;
+      }
+    }
   } catch (error) {
-    console.error("Error loading biometric data:", error);
+    console.error("Error loading physical data:", error);
     // Use prop data as fallback
     if (props.inmate.biometric_data) {
       biometricData.value = props.inmate.biometric_data;
@@ -772,11 +778,13 @@ const loadPhysicalHistory = async () => {
   try {
     loading.value.history = true;
 
-    // Load weight history from API
-    const response = await ApiService.get(`/inmates/${props.inmate.id}/weight-history`);
-    if (response.data.data && response.data.data.length > 0) {
+    // Load physical data from organized endpoint (includes weight_history)
+    const response = await ApiService.get(`/inmates/${props.inmate.id}/data/physical`);
+    const physicalData = response.data.data;
+
+    if (physicalData.weight_history && physicalData.weight_history.length > 0) {
       // Transform weight history into physical history format
-      physicalHistory.value = response.data.data.map((item: any) => ({
+      physicalHistory.value = physicalData.weight_history.map((item: any) => ({
         id: item.id,
         change_date: item.measurement_date,
         change_type: 'measurement',
@@ -815,90 +823,156 @@ const openManageMarksModal = () => {
   });
 };
 
-// Biometric methods
-const captureFingerprints = () => {
-  // Biometric capture is now handled by Java service
-  launchJavaBiometricService();
-};
-
+// Biometric methods - Same approach as BiometricCapture.vue which works correctly
 const launchJavaBiometricService = async () => {
-  // First try to launch the Java service
-  const isAvailable = await checkServiceAvailability();
-  
-  if (!isAvailable) {
-    // Show instructions if service is not available
-    const result = await Swal.fire({
-      title: 'Iniciar Servicio de Captura',
+  if (isServiceRunning.value) {
+    Swal.fire({
+      title: 'Servicio en ejecución',
+      text: 'El servicio biométrico ya está en ejecución',
+      icon: 'warning'
+    });
+    return;
+  }
+
+  try {
+    isServiceRunning.value = true;
+
+    // Show loading message
+    Swal.fire({
+      title: 'Preparando servicio biométrico',
+      text: 'Generando enlace seguro...',
+      icon: 'info',
+      showConfirmButton: false,
+      allowOutsideClick: false,
+      didOpen: () => {
+        Swal.showLoading();
+      }
+    });
+
+    // Get protocol URL from backend - Same endpoint as BiometricCapture.vue
+    const response = await ApiService.get(`/inmates/${props.inmate.id}/biometric/protocol-url`);
+
+    if (!response.data.success) {
+      throw new Error(response.data.message || 'Error al generar URL del servicio biométrico');
+    }
+
+    // Close loading and show instructions
+    Swal.close();
+
+    const confirmResult = await Swal.fire({
+      title: 'Abrir Servicio Biométrico',
       html: `
         <div style="text-align: left;">
-          <p><strong>Opción 1: Ejecución Automática</strong></p>
-          <p>Asegúrese de que el servicio local esté en ejecución.</p>
-          
-          <p><strong>Opción 2: Ejecución Manual</strong></p>
-          <p>Abra una terminal y ejecute:</p>
-          <pre style="background: #f5f5f5; padding: 10px; border-radius: 5px; font-size: 12px;">
-cd BiometricService
-run.bat ${props.inmate.id} "App\\Models\\Inmate"</pre>
-          
-          <p><strong>Opción 3: WebSDK</strong></p>
-          <p>Use el WebSDK integrado (captura limitada).</p>
+          <p>Se abrirá la aplicación de captura de huellas dactilares.</p>
+          <p><strong>Instrucciones:</strong></p>
+          <ol>
+            <li>El navegador solicitará permiso para abrir GP360 Biometric Service</li>
+            <li>Haga clic en "Abrir" o "Permitir"</li>
+            <li>Complete la captura de las 10 huellas dactilares</li>
+            <li>Espere a que termine el proceso</li>
+          </ol>
+          <p class="text-muted small mt-3">Si no se abre automáticamente, asegúrese de que el servicio esté instalado en su equipo.</p>
         </div>
       `,
       icon: 'info',
       showCancelButton: true,
-      showDenyButton: true,
-      confirmButtonText: 'Ya inicié el servicio',
-      denyButtonText: 'Usar WebSDK',
+      confirmButtonText: 'Abrir Servicio',
       cancelButtonText: 'Cancelar'
     });
-    
-    if (result.isConfirmed) {
-      // User says they started the service, proceed
-      await proceedWithJavaService();
-    } else if (result.isDenied) {
-      // Use WebSDK instead
-      // Biometric capture is now handled by Java service
-  launchJavaBiometricService();
+
+    if (!confirmResult.isConfirmed) {
+      isServiceRunning.value = false;
+      return;
     }
-    return;
+
+    // Open protocol URL (will launch Java app) - Same as BiometricCapture.vue
+    window.location.href = response.data.data.protocol_url;
+
+    // Show monitoring message
+    Swal.fire({
+      title: 'Servicio Biométrico Activo',
+      html: `
+        <div style="text-align: left;">
+          <p>La aplicación de captura debería haberse abierto.</p>
+          <p><strong>Monitoreo en curso...</strong></p>
+          <p class="text-muted">Esta ventana se cerrará automáticamente cuando complete la captura.</p>
+        </div>
+      `,
+      icon: 'info',
+      showConfirmButton: false,
+      allowOutsideClick: false,
+      didOpen: () => {
+        Swal.showLoading();
+      }
+    });
+
+    // Start polling for completion - Same as BiometricCapture.vue
+    startEnrollmentPolling();
+
+  } catch (error: any) {
+    console.error('Error launching biometric service:', error);
+    isServiceRunning.value = false;
+
+    Swal.fire({
+      title: 'Error',
+      text: error.message || 'No se pudo iniciar el servicio biométrico',
+      icon: 'error'
+    });
   }
-  
-  // Service is available, proceed
-  await proceedWithJavaService();
 };
 
-const proceedWithJavaService = async () => {
-  // Launch the Java service
-  await launchBiometricService({
-    enrollableId: props.inmate.id,
-    enrollableType: 'App\\Models\\Inmate',
-    onComplete: async (success) => {
-      if (success) {
-        // Reload biometric data
-        await loadBiometricData();
-        
-        Swal.fire({
-          title: '¡Éxito!',
-          text: 'Las 10 huellas dactilares se han registrado correctamente',
-          icon: 'success',
-          timer: 3000,
-          showConfirmButton: false
-        });
+const startEnrollmentPolling = () => {
+  // Poll every 3 seconds to check if enrollment is complete - Same as BiometricCapture.vue
+  pollingInterval.value = setInterval(async () => {
+    try {
+      const response = await ApiService.get(`/inmates/${props.inmate.id}/biometric/enrollment-status`);
+
+      if (response.data.success) {
+        const status = response.data.data;
+
+        // Check if enrollment is complete
+        if (status.is_complete || status.total_enrolled >= 10) {
+          stopEnrollmentPolling();
+          isServiceRunning.value = false;
+
+          // Reload biometric data
+          await loadBiometricData();
+
+          Swal.fire({
+            title: '¡Éxito!',
+            text: `Se han registrado ${status.total_enrolled} huellas dactilares correctamente`,
+            icon: 'success',
+            timer: 3000,
+            showConfirmButton: false
+          });
+        }
       }
-    },
-    onError: (error) => {
-      console.error('Biometric service error:', error);
+    } catch (error) {
+      console.error('Error checking enrollment status:', error);
+    }
+  }, 3000); // Check every 3 seconds
+
+  // Auto-stop after 5 minutes
+  setTimeout(() => {
+    if (pollingInterval.value) {
+      stopEnrollmentPolling();
+      isServiceRunning.value = false;
+
       Swal.fire({
-        title: 'Error',
-        text: 'Hubo un problema con el servicio biométrico',
-        icon: 'error'
+        title: 'Tiempo agotado',
+        text: 'No se detectó la finalización del servicio biométrico. Puede verificar manualmente.',
+        icon: 'warning'
       });
     }
-  });
+  }, 300000); // 5 minutes
 };
 
-// Biometric capture callbacks removed - now handled by Java service
-// The Java BiometricService handles enrollment and capture directly
+const stopEnrollmentPolling = () => {
+  if (pollingInterval.value) {
+    clearInterval(pollingInterval.value);
+    pollingInterval.value = null;
+  }
+};
 
 const capturePhoto = () => {
   Swal.fire({
@@ -1018,6 +1092,10 @@ onMounted(() => {
   loadPhysicalData();
   loadBiometricData();
   loadPhysicalHistory();
+});
+
+onUnmounted(() => {
+  stopEnrollmentPolling();
 });
 </script>
 
