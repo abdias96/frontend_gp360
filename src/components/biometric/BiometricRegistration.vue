@@ -191,6 +191,7 @@
 <script setup lang="ts">
 import { ref, onMounted, watch } from 'vue'
 import { useBiometricMatching } from '@/composables/useBiometricMatching'
+// @ts-ignore - DirectFMDCapture component is in development
 import DirectFMDCapture from '@/components/biometric/DirectFMDCapture.vue'
 import axios from 'axios'
 import Swal from 'sweetalert2'

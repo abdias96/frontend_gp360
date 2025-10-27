@@ -37,6 +37,7 @@ interface IdentificationResult {
   score?: number
   method?: string
   message?: string
+  total_checked?: number
 }
 
 interface ServiceStats {
