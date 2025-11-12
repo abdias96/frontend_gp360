@@ -228,7 +228,7 @@
 
             <div class="col-md-6">
               <label class="form-label fw-bold">Relación:</label>
-              <div class="form-control-plaintext">{{ inmate?.emergency_contact_relationship || "N/A" }}</div>
+              <div class="form-control-plaintext">{{ inmate?.emergency_contact_relationship?.name || "N/A" }}</div>
             </div>
 
             <div class="col-md-6">

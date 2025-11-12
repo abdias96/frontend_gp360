@@ -115,6 +115,16 @@ const routes: Array<RouteRecordRaw> = [
         },
       },
       {
+        path: "/roles/:id/edit",
+        name: "roles-edit",
+        component: () => import("@/modules/roles/views/RoleEdit.vue"),
+        meta: {
+          pageTitle: "Editar Rol",
+          breadcrumbs: ["Roles", "Editar"],
+          permissions: "roles.edit",
+        },
+      },
+      {
         path: "/permissions",
         name: "permissions-list",
         component: () =>
@@ -502,6 +512,26 @@ const routes: Array<RouteRecordRaw> = [
           pageTitle: "Indicadores KPI",
           breadcrumbs: ["Operaciones", "Estadísticas", "KPI"],
           permissions: "operations.statistics.view",
+        },
+      },
+      {
+        path: "/operations/transfers",
+        name: "operations-transfers",
+        component: () => import("@/modules/operations/views/TransferManagement.vue"),
+        meta: {
+          pageTitle: "Gestión de Traslados",
+          breadcrumbs: ["Operaciones", "Traslados"],
+          permissions: "transfers.view",
+        },
+      },
+      {
+        path: "/operations/locations",
+        name: "operations-locations",
+        component: () => import("@/modules/operations/views/LocationManagement.vue"),
+        meta: {
+          pageTitle: "Gestión de Ubicaciones",
+          breadcrumbs: ["Operaciones", "Ubicaciones"],
+          permissions: "locations.view",
         },
       },
       // Visits routes
@@ -1533,27 +1563,6 @@ const routes: Array<RouteRecordRaw> = [
           pageTitle: "Educación Superior",
           breadcrumbs: ["Rehabilitación", "Educación", "Superior"],
           permissions: "education.higher",
-        },
-      },
-      // Operations additional routes
-      {
-        path: "/operations/transfers",
-        name: "operations-transfers",
-        component: () => import("@/modules/operations/views/TransferManagement.vue"),
-        meta: {
-          pageTitle: "Gestión de Traslados",
-          breadcrumbs: ["Operaciones", "Traslados"],
-          permissions: "transfers.view",
-        },
-      },
-      {
-        path: "/operations/locations",
-        name: "operations-locations",
-        component: () => import("@/modules/operations/views/LocationManagement.vue"),
-        meta: {
-          pageTitle: "Gestión de Ubicaciones",
-          breadcrumbs: ["Operaciones", "Ubicaciones"],
-          permissions: "locations.view",
         },
       },
       // Documents Module routes

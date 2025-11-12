@@ -679,11 +679,8 @@
                 <label class="form-label">Tipo de Admisión</label>
                 <select v-model="form.admission_type" class="form-select">
                   <option value="">Seleccionar tipo</option>
-                  <option value="initial">Ingreso Inicial</option>
-                  <option value="transfer">Traslado</option>
-                  <option value="reentry">Reingreso</option>
-                  <option value="court_order">Orden Judicial</option>
-                  <option value="administrative">Administrativa</option>
+                  <option value="new_admission">Ingreso Nuevo</option>
+                  <option value="recapture">Reingreso</option>
                 </select>
               </div>
 
@@ -748,8 +745,13 @@
           <div class="card-body pt-0">
             <div class="row g-6">
               <div class="col-md-4">
-                <label class="form-label">Nacionalidad</label>
-                <select v-model="form.nationality_id" class="form-select">
+                <label class="form-label required">Nacionalidad</label>
+                <select
+                  v-model="form.nationality_id"
+                  class="form-select"
+                  :class="{ 'is-invalid': errors.nationality_id }"
+                  required
+                >
                   <option value="">Seleccionar nacionalidad</option>
                   <option
                     v-for="nationality in nationalities"
@@ -759,6 +761,9 @@
                     {{ nationality.name }}
                   </option>
                 </select>
+                <div v-if="errors.nationality_id" class="invalid-feedback">
+                  {{ errors.nationality_id[0] }}
+                </div>
               </div>
 
               <div class="col-md-4">
@@ -832,10 +837,12 @@
               </div>
 
               <div class="col-md-6">
-                <label class="form-label">Clasificación de Riesgo</label>
+                <label class="form-label required">Clasificación de Riesgo</label>
                 <select
                   v-model="form.risk_classification_id"
                   class="form-select"
+                  :class="{ 'is-invalid': errors.risk_classification_id }"
+                  required
                 >
                   <option value="">Seleccionar clasificación</option>
                   <option
@@ -846,11 +853,19 @@
                     {{ classification.name }}
                   </option>
                 </select>
+                <div v-if="errors.risk_classification_id" class="invalid-feedback">
+                  {{ errors.risk_classification_id[0] }}
+                </div>
               </div>
 
               <div class="col-md-6">
-                <label class="form-label">Estado Procesal</label>
-                <select v-model="form.procedural_status_id" class="form-select">
+                <label class="form-label required">Estado Procesal</label>
+                <select
+                  v-model="form.procedural_status_id"
+                  class="form-select"
+                  :class="{ 'is-invalid': errors.procedural_status_id }"
+                  required
+                >
                   <option value="">Seleccionar estado procesal</option>
                   <option
                     v-for="status in proceduralStatuses"
@@ -860,6 +875,9 @@
                     {{ status.name }}
                   </option>
                 </select>
+                <div v-if="errors.procedural_status_id" class="invalid-feedback">
+                  {{ errors.procedural_status_id[0] }}
+                </div>
               </div>
 
               <div class="col-md-6">
@@ -1239,6 +1257,8 @@ const {
   religionsOptions,
   riskClassificationsOptions,
   proceduralStatusesOptions,
+  socioeconomicLevels,
+  relationshipTypes,
   loadInmateCatalogs,
 } = useCatalogs();
 const route = useRoute();
@@ -1254,9 +1274,6 @@ const departments = ref<any[]>([]);
 const municipalities = ref<any[]>([]);
 const sexualOrientations = ref<any[]>([]);
 const genderIdentities = ref<any[]>([]);
-const languages = ref<any[]>([]);
-const socioeconomicLevels = ref<any[]>([]);
-const relationshipTypes = ref<any[]>([]);
 
 // Initialize fallback data for LGBTIQ+ fields
 sexualOrientations.value = [
@@ -1374,6 +1391,7 @@ const occupations = computed(() => catalogsStore.getCatalog("occupations"));
 const religions = computed(() => catalogsStore.getCatalog("religions"));
 const riskClassifications = computed(() => catalogsStore.getCatalog("risk-classifications"));
 const proceduralStatuses = computed(() => catalogsStore.getCatalog("procedural-statuses"));
+const languages = computed(() => catalogsStore.getCatalog("languages"));
 
 // Filtered data based on selections
 const filteredDepartments = computed(() => {
@@ -1661,71 +1679,6 @@ const loadGenderIdentities = async () => {
   }
 };
 
-const loadLanguages = async () => {
-  try {
-    const response = await ApiService.get("/catalogs/languages");
-    const data = response.data.data || response.data || [];
-    languages.value = Array.isArray(data) ? data : [];
-  } catch (error) {
-    console.error("Error loading languages:", error);
-    // Use fallback languages
-    languages.value = [
-      { id: 1, name: "Español" },
-      { id: 2, name: "Q'eqchi'" },
-      { id: 3, name: "K'iche'" },
-      { id: 4, name: "Kaqchikel" },
-      { id: 5, name: "Mam" },
-      { id: 6, name: "Garífuna" },
-      { id: 7, name: "Xinca" },
-      { id: 8, name: "Inglés" },
-    ];
-  }
-};
-
-const loadSocioeconomicLevels = async () => {
-  try {
-    const response = await ApiService.get("/catalogs/socioeconomic-levels");
-    const data = response.data.data || response.data || [];
-    socioeconomicLevels.value = Array.isArray(data) ? data : [];
-  } catch (error) {
-    console.error("Error loading socioeconomic levels:", error);
-    // Use fallback socioeconomic levels
-    socioeconomicLevels.value = [
-      { id: 1, name: "Muy bajo" },
-      { id: 2, name: "Bajo" },
-      { id: 3, name: "Medio bajo" },
-      { id: 4, name: "Medio" },
-      { id: 5, name: "Medio alto" },
-      { id: 6, name: "Alto" },
-    ];
-  }
-};
-
-const loadRelationshipTypes = async () => {
-  try {
-    const response = await ApiService.get("/catalogs/relationship-types");
-    const data = response.data.data || response.data || [];
-    relationshipTypes.value = Array.isArray(data) ? data : [];
-  } catch (error) {
-    console.error("Error loading relationship types:", error);
-    // Use fallback relationship types
-    relationshipTypes.value = [
-      { id: 1, name: "Padre" },
-      { id: 2, name: "Madre" },
-      { id: 3, name: "Hijo(a)" },
-      { id: 4, name: "Esposo(a)" },
-      { id: 5, name: "Conviviente" },
-      { id: 6, name: "Hermano(a)" },
-      { id: 7, name: "Abuelo(a)" },
-      { id: 8, name: "Nieto(a)" },
-      { id: 9, name: "Tío(a)" },
-      { id: 10, name: "Sobrino(a)" },
-      { id: 11, name: "Primo(a)" },
-      { id: 17, name: "Amigo(a)" },
-      { id: 21, name: "Otro" },
-    ];
-  }
-};
 
 const fetchCatalog = async (endpoint: string): Promise<any[]> => {
   try {
@@ -1742,6 +1695,19 @@ const handleSubmit = async () => {
     loading.value = true;
     errors.value = {};
 
+    // Validate required fields
+    if (!form.value.nationality_id) {
+      errors.value = { nationality_id: ["El campo nacionalidad es requerido."] };
+      loading.value = false;
+      Swal.fire({
+        title: "Error de Validación",
+        text: "Por favor seleccione la nacionalidad del interno",
+        icon: "error",
+        confirmButtonText: "Aceptar",
+      });
+      return;
+    }
+
     // Combine admission date and time into admission_datetime
     let admission_datetime = null;
     if (form.value.admission_date && form.value.admission_time) {
@@ -1754,6 +1720,8 @@ const handleSubmit = async () => {
     const formData = {
       ...form.value,
       admission_datetime,
+      // Ensure admission_type is either a valid value or null
+      admission_type: form.value.admission_type || null,
       document_type_id: form.value.document_type_id
         ? Number(form.value.document_type_id)
         : null,
@@ -1843,7 +1811,8 @@ const handleSubmit = async () => {
       timer: 2000,
     });
 
-    router.push("/inmates");
+    // Redirect to inmate detail view instead of list
+    router.push({ name: 'inmates-detail', params: { id: inmateId } });
   } catch (error: any) {
     if (error.response?.status === 422) {
       errors.value = error.response.data.errors || {};
@@ -1876,9 +1845,6 @@ onMounted(async () => {
   await Promise.all([
     loadSexualOrientations(),
     loadGenderIdentities(),
-    loadLanguages(),
-    loadSocioeconomicLevels(),
-    loadRelationshipTypes(),
   ]);
 
   // Load inmate data

@@ -140,6 +140,7 @@ import { ref, onMounted, computed } from 'vue';
 import { useRouter } from 'vue-router';
 import { useAuthStore } from '@/stores/auth';
 import ApiService from '@/core/services/ApiService';
+import Swal from 'sweetalert2';
 
 const router = useRouter();
 const authStore = useAuthStore();
@@ -180,7 +181,14 @@ const handleSearch = debounce(() => {
 }, 300);
 
 const createProfile = () => {
-  router.push('/inmates/create');
+  // For now, show info message that creation happens from inmate detail page
+  // In the future, could add standalone creation here
+  Swal.fire({
+    title: 'Crear Perfil Legal',
+    text: 'Para crear un nuevo perfil legal, vaya al detalle del interno y use el botón "Nuevo Perfil Legal" en la pestaña Legal.',
+    icon: 'info',
+    confirmButtonText: 'Entendido'
+  });
 };
 
 const getInitials = (firstName: string, lastName: string) => {

@@ -258,8 +258,6 @@ export default defineComponent({
       })).filter((section) => section.pages && section.pages.length > 0);
     });
 
-    // Debug: Log the menu structure
-    console.log('MainMenuConfig inmates section:', MainMenuConfig.find(s => s.heading === 'inmates'));
 
     return {
       hasActiveChildren,

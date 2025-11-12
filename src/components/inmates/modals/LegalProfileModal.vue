@@ -68,6 +68,28 @@
               </div>
             </div>
 
+            <!-- Información de Captura -->
+            <div class="row g-6 mb-6">
+              <div class="col-md-6">
+                <label class="form-label required">Fecha de Captura</label>
+                <input
+                  v-model="form.arrest_date"
+                  type="date"
+                  class="form-control"
+                  required
+                />
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">Lugar de Captura</label>
+                <input
+                  v-model="form.arrest_location"
+                  type="text"
+                  class="form-control"
+                  placeholder="Lugar donde fue capturado"
+                />
+              </div>
+            </div>
+
             <!-- Etapa Procesal -->
             <div class="row g-6 mb-6">
               <div class="col-md-12">
@@ -115,12 +137,12 @@
             <!-- Defensa -->
             <div class="row g-6 mb-6">
               <div class="col-md-4">
-                <label class="form-label">Tipo de Defensa</label>
-                <select v-model="form.defense_type" class="form-select">
+                <label class="form-label required">Tipo de Defensa</label>
+                <select v-model="form.defense_attorney_type" class="form-select" required>
                   <option value="">Seleccionar...</option>
                   <option value="public">Defensa Pública</option>
                   <option value="private">Defensa Privada</option>
-                  <option value="self_represented">Autodefensa</option>
+                  <option value="none">Sin Defensa</option>
                 </select>
               </div>
               <div class="col-md-4">
@@ -324,11 +346,13 @@ const form = ref({
   case_number: '',
   judicial_file_number: '',
   court_id: '',
+  arrest_date: '',
+  arrest_location: '',
   prosecutor_name: '',
   prosecutor_office: '',
   defense_attorney_name: '',
   defense_attorney_phone: '',
-  defense_type: '',
+  defense_attorney_type: '',
   procedural_stage: '',
   procedural_status_id: '',
   in_preventive_detention: false,
@@ -349,11 +373,13 @@ const resetForm = () => {
     case_number: '',
     judicial_file_number: '',
     court_id: '',
+    arrest_date: '',
+    arrest_location: '',
     prosecutor_name: '',
     prosecutor_office: '',
     defense_attorney_name: '',
     defense_attorney_phone: '',
-    defense_type: '',
+    defense_attorney_type: '',
     procedural_stage: '',
     procedural_status_id: '',
     in_preventive_detention: false,
@@ -375,11 +401,13 @@ const loadExistingData = () => {
       case_number: props.existingProfile.case_number || '',
       judicial_file_number: props.existingProfile.judicial_file_number || '',
       court_id: props.existingProfile.court_id || '',
+      arrest_date: formatDateForInput(props.existingProfile.arrest_date),
+      arrest_location: props.existingProfile.arrest_location || '',
       prosecutor_name: props.existingProfile.prosecutor_name || '',
       prosecutor_office: props.existingProfile.prosecutor_office || '',
       defense_attorney_name: props.existingProfile.defense_attorney_name || '',
       defense_attorney_phone: props.existingProfile.defense_attorney_phone || '',
-      defense_type: props.existingProfile.defense_type || '',
+      defense_attorney_type: props.existingProfile.defense_attorney_type || '',
       procedural_stage: props.existingProfile.procedural_stage || '',
       procedural_status_id: props.existingProfile.procedural_status_id || '',
       in_preventive_detention: props.existingProfile.in_preventive_detention || false,
@@ -400,20 +428,32 @@ const submitForm = async () => {
   try {
     loading.value = true;
 
-    const endpoint = `/inmates/${props.inmateId}/legal-profile`;
-    
-    // Always use PUT method as the backend uses updateOrCreate
-    const response = await ApiService.put(endpoint, form.value);
+    let response;
+
+    if (editMode.value && props.existingProfile?.id) {
+      // Update existing profile
+      const endpoint = `/inmate-legal-profiles/${props.existingProfile.id}`;
+      response = await ApiService.put(endpoint, form.value);
+    } else {
+      // Create new profile - include inmate_id in the request body
+      const endpoint = `/inmate-legal-profiles`;
+      const formData = {
+        ...form.value,
+        inmate_id: props.inmateId
+      };
+      response = await ApiService.post(endpoint, formData);
+    }
 
     await Swal.fire({
       title: 'Éxito',
       text: `Perfil legal ${editMode.value ? 'actualizado' : 'creado'} correctamente`,
       icon: 'success',
-      timer: 2000
+      timer: 2000,
+      showConfirmButton: false
     });
 
     emit('saved', response.data);
-    
+
     // Close modal
     const modal = document.getElementById('legalProfileModal');
     const bsModal = Modal.getInstance(modal!);

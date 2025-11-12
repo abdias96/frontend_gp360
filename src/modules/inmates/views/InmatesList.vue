@@ -113,32 +113,27 @@
             </select>
           </div>
           <div class="col-md-3">
-            <label class="form-label fs-7 fw-bold">Estado Legal</label>
+            <label class="form-label fs-7 fw-bold">Género</label>
             <select
-              v-model="localFilters.procedural_status_id"
+              v-model="localFilters.gender"
               class="form-select form-select-solid"
               @change="handleFilterChange"
             >
               <option value="">Todos</option>
-              <option
-                v-for="option in proceduralStatusesOptions"
-                :key="option.value"
-                :value="option.value"
-              >
-                {{ option.label }}
-              </option>
+              <option value="M">Masculino</option>
+              <option value="F">Femenino</option>
             </select>
           </div>
           <div class="col-md-3">
-            <label class="form-label fs-7 fw-bold">Nivel de Seguridad</label>
+            <label class="form-label fs-7 fw-bold">Nacionalidad</label>
             <select
-              v-model="localFilters.risk_classification_id"
+              v-model="localFilters.nationality_id"
               class="form-select form-select-solid"
               @change="handleFilterChange"
             >
-              <option value="">Todos</option>
+              <option value="">Todas</option>
               <option
-                v-for="option in riskClassificationsOptions"
+                v-for="option in nationalitiesOptions"
                 :key="option.value"
                 :value="option.value"
               >
@@ -576,6 +571,21 @@
     </div>
     <!--end::Card body-->
   </div>
+
+  <!-- Modals -->
+  <TransferFormModal
+    :show="showTransferModal"
+    :inmateId="selectedInmate?.id"
+    @saved="handleTransferSaved"
+    @close="closeTransferModal"
+  />
+
+  <ChangeStatusModal
+    v-if="selectedInmate"
+    :inmate="selectedInmate"
+    @statusChanged="handleStatusChanged"
+    @released="handleReleased"
+  />
 </template>
 
 <script setup lang="ts">
@@ -587,6 +597,8 @@ import { useAuthStore } from "@/stores/auth";
 import { useCatalogs } from "@/composables/useCatalogs";
 import type { InmateListItem, InmateStatistics } from "@/types/inmates";
 import Swal from "sweetalert2";
+import TransferFormModal from "@/components/inmates/modals/TransferFormModal.vue";
+import ChangeStatusModal from "@/components/inmates/modals/ChangeStatusModal.vue";
 
 // Stores and composables
 const inmatesStore = useInmatesStore();
@@ -595,8 +607,7 @@ const { t } = useI18n();
 const {
   centers,
   centersOptions,
-  riskClassificationsOptions,
-  proceduralStatusesOptions,
+  nationalitiesOptions,
   loadInmateCatalogs,
 } = useCatalogs();
 const router = useRouter();
@@ -605,13 +616,15 @@ const router = useRouter();
 const searchTerm = ref("");
 const showFilters = ref(false);
 const statistics = ref<InmateStatistics | null>(null);
+const selectedInmate = ref<InmateListItem | null>(null);
+const showTransferModal = ref(false);
 
 // Local filter reactive variables
 const localFilters = ref({
   center_id: null as number | null,
   status: null as string | null,
-  procedural_status_id: null as number | null,
-  risk_classification_id: null as number | null,
+  gender: null as string | null,
+  nationality_id: null as number | null,
 });
 
 // Computed properties
@@ -637,8 +650,8 @@ const hasActiveFilters = computed(() => {
     searchTerm.value ||
     localFilters.value.center_id ||
     localFilters.value.status ||
-    localFilters.value.procedural_status_id ||
-    localFilters.value.risk_classification_id
+    localFilters.value.gender ||
+    localFilters.value.nationality_id
   );
 });
 
@@ -721,11 +734,9 @@ const handleFilterChange = () => {
       ? Number(localFilters.value.center_id)
       : null,
     status: localFilters.value.status || null,
-    procedural_status_id: localFilters.value.procedural_status_id
-      ? Number(localFilters.value.procedural_status_id)
-      : null,
-    risk_classification_id: localFilters.value.risk_classification_id
-      ? Number(localFilters.value.risk_classification_id)
+    gender: localFilters.value.gender || null,
+    nationality_id: localFilters.value.nationality_id
+      ? Number(localFilters.value.nationality_id)
       : null,
   });
   // Reset to first page when filtering
@@ -740,8 +751,8 @@ const clearFilters = () => {
   localFilters.value = {
     center_id: null,
     status: null,
-    procedural_status_id: null,
-    risk_classification_id: null,
+    gender: null,
+    nationality_id: null,
   };
   // Clear store filters
   inmatesStore.clearFilters();
@@ -783,10 +794,8 @@ const loadCatalogs = async () => {
 };
 
 const initiateTransfer = (inmate: InmateListItem) => {
-  router.push({
-    name: "inmates-transfers",
-    query: { inmate_id: inmate.id },
-  });
+  selectedInmate.value = inmate;
+  showTransferModal.value = true;
 };
 
 const openAdvancedSearch = async () => {
@@ -794,7 +803,7 @@ const openAdvancedSearch = async () => {
     .map((option) => `<option value="${option.value}">${option.label}</option>`)
     .join("");
 
-  const riskClassificationsOptionsHtml = riskClassificationsOptions.value
+  const nationalitiesOptionsHtml = nationalitiesOptions.value
     .map((option) => `<option value="${option.value}">${option.label}</option>`)
     .join("");
 
@@ -821,9 +830,27 @@ const openAdvancedSearch = async () => {
           </select>
         </div>
         <div class="col-6">
-          <label for="riskLevels" class="form-label">Niveles de Riesgo</label>
-          <select id="riskLevels" class="swal2-select" multiple>
-            ${riskClassificationsOptionsHtml}
+          <label for="searchNationalities" class="form-label">Nacionalidades</label>
+          <select id="searchNationalities" class="swal2-select" multiple>
+            ${nationalitiesOptionsHtml}
+          </select>
+        </div>
+        <div class="col-6">
+          <label for="searchGender" class="form-label">Género</label>
+          <select id="searchGender" class="swal2-select">
+            <option value="">Todos</option>
+            <option value="M">Masculino</option>
+            <option value="F">Femenino</option>
+          </select>
+        </div>
+        <div class="col-6">
+          <label for="searchStatus" class="form-label">Estado</label>
+          <select id="searchStatus" class="swal2-select">
+            <option value="">Todos</option>
+            <option value="active">Activo</option>
+            <option value="transferred">En traslado</option>
+            <option value="court_hearing">En audiencia</option>
+            <option value="released">Liberado</option>
           </select>
         </div>
         <div class="col-6">
@@ -861,10 +888,16 @@ const openAdvancedSearch = async () => {
         (document.getElementById("searchCenters") as HTMLSelectElement)
           .selectedOptions,
       ).map((option) => parseInt(option.value));
-      const riskLevels = Array.from(
-        (document.getElementById("riskLevels") as HTMLSelectElement)
+      const searchNationalities = Array.from(
+        (document.getElementById("searchNationalities") as HTMLSelectElement)
           .selectedOptions,
       ).map((option) => parseInt(option.value));
+      const searchGender = (
+        document.getElementById("searchGender") as HTMLSelectElement
+      ).value;
+      const searchStatus = (
+        document.getElementById("searchStatus") as HTMLSelectElement
+      ).value;
       const ageMin = (document.getElementById("ageMin") as HTMLInputElement)
         .value;
       const ageMax = (document.getElementById("ageMax") as HTMLInputElement)
@@ -901,7 +934,9 @@ const openAdvancedSearch = async () => {
         document_number: documentNumber || undefined,
         inmate_number: inmateNumber || undefined,
         centers: searchCenters.length > 0 ? searchCenters : undefined,
-        risk_levels: riskLevels.length > 0 ? riskLevels : undefined,
+        nationalities: searchNationalities.length > 0 ? searchNationalities : undefined,
+        gender: searchGender || undefined,
+        status: searchStatus || undefined,
         age_range:
           ageMin || ageMax
             ? {
@@ -954,68 +989,17 @@ const openAdvancedSearch = async () => {
   }
 };
 
-const changeStatus = async (inmate: InmateListItem) => {
-  const { value: formValues } = await Swal.fire({
-    title: "Cambiar Estado del Interno",
-    html: `
-      <div class="mb-3">
-        <label for="status" class="form-label">Nuevo Estado</label>
-        <select id="status" class="swal2-select">
-          <option value="active">Activo</option>
-          <option value="released">Liberado</option>
-          <option value="transferred">Transferido</option>
-          <option value="deceased">Fallecido</option>
-        </select>
-      </div>
-      <div class="mb-3">
-        <label for="reason" class="form-label">Razón del Cambio</label>
-        <textarea id="reason" class="swal2-textarea" placeholder="Describir la razón del cambio de estado..."></textarea>
-      </div>
-    `,
-    showCancelButton: true,
-    confirmButtonText: "Cambiar Estado",
-    cancelButtonText: "Cancelar",
-    preConfirm: () => {
-      const status = (document.getElementById("status") as HTMLSelectElement)
-        .value;
-      const reason = (document.getElementById("reason") as HTMLTextAreaElement)
-        .value;
+const changeStatus = (inmate: InmateListItem) => {
+  selectedInmate.value = inmate;
 
-      if (!status) {
-        Swal.showValidationMessage("Debe seleccionar un estado");
-        return false;
-      }
-
-      if (!reason.trim()) {
-        Swal.showValidationMessage("Debe proporcionar una razón");
-        return false;
-      }
-
-      return { status, reason };
-    },
-  });
-
-  if (formValues) {
-    try {
-      await inmatesStore.changeInmateStatus(
-        inmate.id,
-        formValues.status,
-        formValues.reason,
-      );
-
-      Swal.fire({
-        title: "Estado Cambiado",
-        text: `El estado del interno ${inmate.full_name} ha sido cambiado exitosamente.`,
-        icon: "success",
-      });
-    } catch (error: any) {
-      Swal.fire({
-        title: "Error",
-        text: error.message || "No se pudo cambiar el estado del interno",
-        icon: "error",
-      });
+  // Abrir modal de cambio de estado
+  setTimeout(() => {
+    const modalElement = document.getElementById('changeStatusModal');
+    if (modalElement) {
+      const modal = new bootstrap.Modal(modalElement);
+      modal.show();
     }
-  }
+  }, 100);
 };
 
 // Helper function to get security level translation
@@ -1026,6 +1010,37 @@ const getSecurityLevelLabel = (level: string | null | undefined): string => {
 
   const levelKey = `common.securityLevel.${level}`;
   return t(levelKey);
+};
+
+// Event handlers for modals
+const handleTransferSaved = () => {
+  // Recargar lista de internos
+  fetchInmates();
+  fetchStatistics();
+};
+
+const closeTransferModal = () => {
+  showTransferModal.value = false;
+  selectedInmate.value = null;
+};
+
+const handleStatusChanged = () => {
+  // Recargar lista de internos y estadísticas
+  fetchInmates();
+  fetchStatistics();
+};
+
+const handleReleased = () => {
+  // Recargar lista de internos y estadísticas
+  fetchInmates();
+  fetchStatistics();
+
+  Swal.fire({
+    title: '¡Interno Liberado!',
+    text: 'El interno ha sido liberado exitosamente',
+    icon: 'success',
+    timer: 3000
+  });
 };
 
 // Lifecycle

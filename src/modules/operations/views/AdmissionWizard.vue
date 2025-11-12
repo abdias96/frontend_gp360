@@ -279,8 +279,8 @@
                       </div>
 
                       <div class="col-md-4">
-                        <label class="form-label">{{ t('admissions.wizard.fields.nationality') }}</label>
-                        <select v-model="inmateData.nationality_id" class="form-select">
+                        <label class="form-label required">{{ t('admissions.wizard.fields.nationality') }}</label>
+                        <select v-model="inmateData.nationality_id" class="form-select" required>
                           <option value="">Seleccionar</option>
                           <option v-for="nationality in nationalities" :key="nationality.id" :value="nationality.id">
                             {{ nationality.name }}
@@ -1148,7 +1148,7 @@
                       </div>
 
                       <div class="col-md-3">
-                        <label class="form-label">Peso (kg)</label>
+                        <label class="form-label">Peso (lb)</label>
                         <input 
                           v-model.number="physicalProfile.weight" 
                           type="number" 

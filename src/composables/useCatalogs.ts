@@ -96,6 +96,16 @@ export function useCatalogs() {
     catalogsStore.getCatalogAsOptions("blood-types"),
   );
 
+  const socioeconomicLevels = computed(() => catalogsStore.getCatalog("socioeconomic-levels"));
+  const socioeconomicLevelsOptions = computed(() =>
+    catalogsStore.getCatalogAsOptions("socioeconomic-levels"),
+  );
+
+  const relationshipTypes = computed(() => catalogsStore.getCatalog("relationship-types"));
+  const relationshipTypesOptions = computed(() =>
+    catalogsStore.getCatalogAsOptions("relationship-types"),
+  );
+
   const sectors = computed(() => catalogsStore.getCatalog("sectors"));
   const sectorsOptions = computed(() =>
     catalogsStore.getCatalogAsOptions("sectors"),
@@ -149,6 +159,8 @@ export function useCatalogs() {
       "academic-degrees",
       "occupations",
       "blood-types",
+      "socioeconomic-levels",
+      "relationship-types",
     ];
     return catalogsStore.fetchMultipleCatalogs(catalogNames);
   };
@@ -214,9 +226,13 @@ export function useCatalogs() {
     occupationsOptions,
     bloodTypes,
     bloodTypesOptions,
+    socioeconomicLevels,
+    socioeconomicLevelsOptions,
+    relationshipTypes,
+    relationshipTypesOptions,
     sectors,
     sectorsOptions,
-    
+
     // Legal catalogs
     courts,
     courtsOptions,

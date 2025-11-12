@@ -9,21 +9,13 @@
         </p>
       </div>
       
-      <div class="d-flex gap-3">
-        <button 
-          class="btn btn-sm btn-light-primary"
-          @click="showStats = true"
-        >
-          <i class="ki-outline ki-chart-simple fs-4 me-2"></i>
-          Estadísticas
-        </button>
-        
-        <button 
+      <div>
+        <button
           class="btn btn-sm btn-primary"
-          @click="startNewVerification"
+          @click="resetView"
         >
-          <i class="ki-outline ki-fingerprint-scanning fs-4 me-2"></i>
-          Nueva Verificación
+          <i class="ki-outline ki-arrow-circle-left fs-4 me-2"></i>
+          Limpiar Formulario
         </button>
       </div>
     </div>
@@ -170,38 +162,28 @@
           <div class="card">
             <div class="card-body p-7">
               <h3 class="fw-bold mb-5">Búsqueda por Documento de Identificación</h3>
-              
+
               <div class="row g-5">
-                <div class="col-md-6">
-                  <label class="form-label required">Tipo de Documento</label>
-                  <select 
-                    v-model="searchData.documentType" 
-                    class="form-select"
-                  >
-                    <option value="">Seleccione tipo de documento</option>
-                    <option value="DPI">DPI - Documento Personal de Identificación</option>
-                    <option value="PASSPORT">Pasaporte</option>
-                    <option value="BIRTH_CERTIFICATE">Partida de Nacimiento</option>
-                    <option value="OTHER">Otro</option>
-                  </select>
-                </div>
-                
-                <div class="col-md-6">
+                <div class="col-md-12">
                   <label class="form-label required">Número de Documento</label>
-                  <input 
+                  <input
                     v-model="searchData.documentNumber"
-                    type="text" 
-                    class="form-control" 
-                    placeholder="Ingrese el número de documento"
+                    type="text"
+                    class="form-control form-control-lg"
+                    placeholder="Ingrese el número de documento (puede ser búsqueda parcial)"
+                    @keyup.enter="searchByDocument"
                   />
+                  <div class="form-text">
+                    Puede ingresar el número completo o parcial del documento (DPI, pasaporte, etc.)
+                  </div>
                 </div>
               </div>
-              
+
               <div class="d-flex justify-content-end mt-5">
-                <button 
-                  class="btn btn-primary"
+                <button
+                  class="btn btn-primary btn-lg"
                   @click="searchByDocument"
-                  :disabled="!searchData.documentType || !searchData.documentNumber"
+                  :disabled="!searchData.documentNumber || searchData.documentNumber.length < 3"
                 >
                   <i class="ki-outline ki-search-list fs-4 me-2"></i>
                   Buscar PPL
@@ -220,76 +202,89 @@
               <div class="row g-5">
                 <div class="col-md-6">
                   <label class="form-label">Primer Nombre</label>
-                  <input 
+                  <input
                     v-model="searchData.firstName"
-                    type="text" 
-                    class="form-control" 
-                    placeholder="Ingrese el primer nombre"
+                    type="text"
+                    class="form-control"
+                    placeholder="Ej: Juan, Jose (sin acentos funciona)"
+                    @keyup.enter="searchByName"
                   />
                 </div>
-                
+
                 <div class="col-md-6">
                   <label class="form-label">Segundo Nombre</label>
-                  <input 
-                    v-model="searchData.secondName"
-                    type="text" 
-                    class="form-control" 
-                    placeholder="Ingrese el segundo nombre (opcional)"
+                  <input
+                    v-model="searchData.middleName"
+                    type="text"
+                    class="form-control"
+                    placeholder="Segundo nombre (opcional)"
+                    @keyup.enter="searchByName"
                   />
                 </div>
-                
+
                 <div class="col-md-6">
                   <label class="form-label">Primer Apellido</label>
-                  <input 
-                    v-model="searchData.firstSurname"
-                    type="text" 
-                    class="form-control" 
-                    placeholder="Ingrese el primer apellido"
+                  <input
+                    v-model="searchData.lastName"
+                    type="text"
+                    class="form-control"
+                    placeholder="Ej: Garcia, Lopez"
+                    @keyup.enter="searchByName"
                   />
                 </div>
-                
+
                 <div class="col-md-6">
                   <label class="form-label">Segundo Apellido</label>
-                  <input 
-                    v-model="searchData.secondSurname"
-                    type="text" 
-                    class="form-control" 
-                    placeholder="Ingrese el segundo apellido (opcional)"
+                  <input
+                    v-model="searchData.secondLastName"
+                    type="text"
+                    class="form-control"
+                    placeholder="Segundo apellido (opcional)"
+                    @keyup.enter="searchByName"
                   />
                 </div>
-                
+
                 <div class="col-md-6">
                   <label class="form-label">Apellido de Casada</label>
-                  <input 
+                  <input
                     v-model="searchData.marriedSurname"
-                    type="text" 
-                    class="form-control" 
-                    placeholder="Ingrese el apellido de casada (opcional)"
+                    type="text"
+                    class="form-control"
+                    placeholder="Apellido de casada (opcional)"
+                    @keyup.enter="searchByName"
                   />
                 </div>
-                
+
                 <div class="col-md-6">
-                  <label class="form-label">Fecha de Nacimiento</label>
-                  <input 
+                  <label class="form-label">Fecha de Nacimiento (opcional)</label>
+                  <input
                     v-model="searchData.birthDate"
-                    type="date" 
+                    type="date"
                     class="form-control"
                   />
                 </div>
               </div>
               
               <div class="separator separator-dashed my-5"></div>
-              
-              <div class="alert alert-light-primary d-flex align-items-center p-3">
-                <i class="ki-outline ki-information-5 fs-2 text-primary me-3"></i>
+
+              <div class="alert alert-light-info d-flex align-items-center p-3 mb-3">
+                <i class="ki-outline ki-information-5 fs-2 text-info me-3"></i>
                 <div class="fs-7">
-                  Puede buscar ingresando cualquier combinación de nombres. Se requiere al menos un nombre o apellido.
+                  <strong>Búsqueda flexible:</strong> No importa si escribe con o sin acentos.
+                  Por ejemplo: "Jose" encontrará "José" y viceversa. La búsqueda es parcial.
                 </div>
               </div>
-              
+
+              <div class="alert alert-light-primary d-flex align-items-center p-3">
+                <i class="ki-outline ki-check-circle fs-2 text-primary me-3"></i>
+                <div class="fs-7">
+                  Puede buscar con cualquier combinación de nombres. Se requiere al menos 2 caracteres en algún campo.
+                </div>
+              </div>
+
               <div class="d-flex justify-content-end mt-5">
-                <button 
-                  class="btn btn-primary"
+                <button
+                  class="btn btn-primary btn-lg"
                   @click="searchByName"
                   :disabled="!canSearchByName"
                 >
@@ -442,7 +437,7 @@
                         <i class="ki-outline ki-user fs-4 me-2"></i>
                         Ver Perfil Completo
                       </a>
-                      <button @click="startNewVerification" class="btn btn-light-danger">
+                      <button @click="resetView" class="btn btn-light-danger">
                         <i class="ki-outline ki-arrows-circle fs-4 me-2"></i>
                         Nueva Verificación
                       </button>
@@ -467,7 +462,7 @@
                         <i class="ki-outline ki-user-tick fs-4 me-2"></i>
                         Proceder con Ingreso
                       </button>
-                      <button @click="startNewVerification" class="btn btn-light-success">
+                      <button @click="resetView" class="btn btn-light-success">
                         <i class="ki-outline ki-arrows-circle fs-4 me-2"></i>
                         Nueva Verificación
                       </button>
@@ -491,56 +486,11 @@
       </div>
     </div>
 
-    <!-- Statistics Modal -->
-    <div class="modal fade" :class="{ show: showStats }" :style="{ display: showStats ? 'block' : 'none' }" tabindex="-1">
-      <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h3 class="modal-title">Estadísticas del Sistema</h3>
-            <div class="btn btn-icon btn-sm btn-active-light-primary ms-2" @click="showStats = false">
-              <i class="ki-outline ki-cross fs-1"></i>
-            </div>
-          </div>
-          <div class="modal-body">
-            <div class="row g-5">
-              <div class="col-6">
-                <div class="bg-light rounded p-4">
-                  <div class="fs-7 text-muted">Total Internos</div>
-                  <div class="fs-3 fw-bold">{{ stats.totalInmates }}</div>
-                </div>
-              </div>
-              <div class="col-6">
-                <div class="bg-light rounded p-4">
-                  <div class="fs-7 text-muted">Con Biométricos</div>
-                  <div class="fs-3 fw-bold text-primary">{{ stats.withBiometrics }}</div>
-                </div>
-              </div>
-              <div class="col-6">
-                <div class="bg-light rounded p-4">
-                  <div class="fs-7 text-muted">Total Huellas</div>
-                  <div class="fs-3 fw-bold text-success">{{ stats.totalTemplates }}</div>
-                </div>
-              </div>
-              <div class="col-6">
-                <div class="bg-light rounded p-4">
-                  <div class="fs-7 text-muted">Verificaciones Hoy</div>
-                  <div class="fs-3 fw-bold text-info">{{ stats.verificationsToday }}</div>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-light" @click="showStats = false">Cerrar</button>
-          </div>
-        </div>
-      </div>
-    </div>
-
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, onActivated, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useJavaBiometric } from '@/composables/useJavaBiometric'
 import Swal from 'sweetalert2'
@@ -566,8 +516,7 @@ const {
   launchBiometricVerification,
   startFingerprintCapture,
   verifyOneToMany,
-  initializeDevice,
-  getStatistics
+  initializeDevice
 } = useJavaBiometric()
 
 // State
@@ -575,7 +524,6 @@ const verificationInProgress = ref(false)
 const verificationType = ref<'fingerprint' | 'facial' | 'document' | 'name'>('fingerprint')
 const currentStep = ref(1)
 const isBiometricReady = ref(false)
-const showStats = ref(false)
 const verificationResult = ref<any>(null)
 const verificationError = ref('')
 const capturedFingerprint = ref('') // Variable para almacenar la huella capturada
@@ -587,32 +535,17 @@ const serviceStatus = ref<any>(null)
 const isLocalDevelopment = ref(import.meta.env.DEV || window.location.hostname === 'localhost')
 const searchData = ref({
   // Document search
-  documentType: '',
   documentNumber: '',
   // Name search
   firstName: '',
-  secondName: '',
-  firstSurname: '',
-  secondSurname: '',
+  middleName: '',
+  lastName: '',
+  secondLastName: '',
   marriedSurname: '',
   birthDate: ''
 })
-const stats = ref({
-  totalInmates: 0,
-  withBiometrics: 0,
-  totalTemplates: 0,
-  verificationsToday: 0
-})
 
 // Methods
-const startNewVerification = () => {
-  verificationInProgress.value = false // Corregido: .value en lugar de .ref
-  currentStep.value = 1
-  verificationResult.value = null
-  verificationError.value = ''
-  capturedFingerprint.value = ''
-}
-
 const startFingerprintVerification = async () => {
   verificationType.value = 'fingerprint'
   verificationInProgress.value = true
@@ -667,24 +600,65 @@ const retryVerification = () => {
 }
 
 const proceedToAdmission = () => {
-  router.push('/operations/admission/new')
+  router.push('/inmates/create')
+}
+
+const resetView = () => {
+  // Resetear estado de verificación
+  verificationInProgress.value = false
+  verificationType.value = 'fingerprint'
+  currentStep.value = 1
+  verificationResult.value = null
+  verificationError.value = ''
+  capturedFingerprint.value = ''
+  searchResults.value = []
+  isSearching.value = false
+
+  // Resetear datos de búsqueda
+  searchData.value = {
+    documentNumber: '',
+    firstName: '',
+    middleName: '',
+    lastName: '',
+    secondLastName: '',
+    marriedSurname: '',
+    birthDate: ''
+  }
+
+  // Activar el primer tab (búsqueda biométrica)
+  setTimeout(() => {
+    const biometricTab = document.querySelector('a[href="#biometric-search"]')
+    if (biometricTab) {
+      const tab = new (window as any).bootstrap.Tab(biometricTab)
+      tab.show()
+    }
+  }, 100)
 }
 
 // Computed
 const canSearchByName = computed(() => {
-  return searchData.value.firstName || searchData.value.firstSurname || 
-         searchData.value.secondName || searchData.value.secondSurname
+  return searchData.value.firstName || searchData.value.lastName ||
+         searchData.value.middleName || searchData.value.secondLastName
 })
 
 // Search Methods
 const searchByDocument = async () => {
+  // Validar mínimo 3 caracteres
+  if (!searchData.value.documentNumber || searchData.value.documentNumber.trim().length < 3) {
+    Swal.fire({
+      icon: 'warning',
+      title: 'Búsqueda muy corta',
+      text: 'Por favor ingrese al menos 3 caracteres para buscar'
+    })
+    return
+  }
+
   isSearching.value = true
   searchResults.value = []
-  
+
   try {
     const response = await axios.post('/inmates/search-by-document', {
-      document_type: searchData.value.documentType,
-      document_number: searchData.value.documentNumber
+      document_number: searchData.value.documentNumber.trim()
     })
     
     if (response.data.success) {
@@ -716,18 +690,45 @@ const searchByDocument = async () => {
 }
 
 const searchByName = async () => {
+  // Validar que al menos un campo tenga mínimo 2 caracteres
+  const hasValidField =
+    (searchData.value.firstName && searchData.value.firstName.trim().length >= 2) ||
+    (searchData.value.middleName && searchData.value.middleName.trim().length >= 2) ||
+    (searchData.value.lastName && searchData.value.lastName.trim().length >= 2) ||
+    (searchData.value.secondLastName && searchData.value.secondLastName.trim().length >= 2) ||
+    (searchData.value.marriedSurname && searchData.value.marriedSurname.trim().length >= 2)
+
+  if (!hasValidField) {
+    Swal.fire({
+      icon: 'warning',
+      title: 'Búsqueda muy corta',
+      text: 'Por favor ingrese al menos 2 caracteres en algún campo de nombre o apellido'
+    })
+    return
+  }
+
   isSearching.value = true
   searchResults.value = []
-  
+
   try {
     const searchParams: any = {}
-    if (searchData.value.firstName) searchParams.first_name = searchData.value.firstName
-    if (searchData.value.secondName) searchParams.second_name = searchData.value.secondName
-    if (searchData.value.firstSurname) searchParams.first_surname = searchData.value.firstSurname
-    if (searchData.value.secondSurname) searchParams.second_surname = searchData.value.secondSurname
-    if (searchData.value.marriedSurname) searchParams.married_surname = searchData.value.marriedSurname
+    if (searchData.value.firstName && searchData.value.firstName.trim().length >= 2) {
+      searchParams.first_name = searchData.value.firstName.trim()
+    }
+    if (searchData.value.middleName && searchData.value.middleName.trim().length >= 2) {
+      searchParams.middle_name = searchData.value.middleName.trim()
+    }
+    if (searchData.value.lastName && searchData.value.lastName.trim().length >= 2) {
+      searchParams.last_name = searchData.value.lastName.trim()
+    }
+    if (searchData.value.secondLastName && searchData.value.secondLastName.trim().length >= 2) {
+      searchParams.second_last_name = searchData.value.secondLastName.trim()
+    }
+    if (searchData.value.marriedSurname && searchData.value.marriedSurname.trim().length >= 2) {
+      searchParams.married_surname = searchData.value.marriedSurname.trim()
+    }
     if (searchData.value.birthDate) searchParams.birth_date = searchData.value.birthDate
-    
+
     const response = await axios.post('/inmates/search-by-name', searchParams)
     
     if (response.data.success) {
@@ -817,35 +818,6 @@ const showSearchResults = (inmates: any[]) => {
   })
 }
 
-const loadStats = async () => {
-  // Obtener estadísticas del servicio Java solo si está disponible
-  if (javaServiceAvailable.value) {
-    const javaStats = await getStatistics()
-    if (javaStats) {
-      stats.value.totalTemplates = javaStats.total_templates || 0
-      stats.value.withBiometrics = javaStats.inmates_with_biometrics || 0
-      stats.value.verificationsToday = javaStats.verifications_today || 0
-    }
-  }
-  
-  // Obtener total de internos de la API
-  try {
-    const response = await axios.get('/inmates/count')
-    if (response.data.success) {
-      stats.value.totalInmates = response.data.count || 0
-      // Si el servicio Java no está disponible, usar datos de la BD
-      if (!javaServiceAvailable.value && response.data.breakdown) {
-        stats.value.withBiometrics = response.data.breakdown.active || 0
-      }
-    }
-  } catch (error: any) {
-    // Solo mostrar error si no es un problema de conexión esperado
-    if (error.response?.status !== 404) {
-      console.error('Error al obtener conteo de internos:', error.message)
-    }
-    stats.value.totalInmates = 0
-  }
-}
 
 // Service Control Methods
 const checkServiceFullStatus = async () => {
@@ -995,19 +967,25 @@ const showServiceLogs = async () => {
 
 // Lifecycle
 onMounted(async () => {
+  // Resetear la vista al estado inicial
+  resetView()
+
   // Verificar estado completo del servicio
   await checkServiceFullStatus()
-  
+
   // Verificar estado del servicio Java
   await checkJavaStatus()
-  
-  // Cargar estadísticas
-  await loadStats()
-  
+
   // Marcar como listo
   isBiometricReady.value = true
-  
+
   console.log('BiometricVerification: Vista cargada, servicio Java:', javaServiceAvailable.value)
+})
+
+// Resetear cuando el componente se reactive (al volver de otra ruta)
+onActivated(() => {
+  resetView()
+  console.log('BiometricVerification: Vista reactivada, reseteando estado')
 })
 </script>
 

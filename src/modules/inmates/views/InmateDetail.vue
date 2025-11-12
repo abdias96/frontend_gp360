@@ -342,7 +342,7 @@
 
           <!--begin::Legal Tab-->
           <div class="tab-pane fade" id="legal_tab" role="tabpanel">
-            <InmateLegalTab :inmateId="inmate.id" />
+            <InmateLegalTab :inmateId="inmate.id" :inmate="inmate" />
           </div>
           <!--end::Legal Tab-->
 

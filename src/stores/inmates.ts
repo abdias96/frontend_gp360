@@ -22,8 +22,8 @@ interface InmateState {
     search: string;
     center_id: number | null;
     status: string | null;
-    procedural_status_id: number | null;
-    risk_classification_id: number | null;
+    gender: string | null;
+    nationality_id: number | null;
   };
 }
 
@@ -43,8 +43,8 @@ export const useInmatesStore = defineStore("inmates", {
       search: "",
       center_id: null,
       status: null,
-      procedural_status_id: null,
-      risk_classification_id: null,
+      gender: null,
+      nationality_id: null,
     },
   }),
 
@@ -84,9 +84,8 @@ export const useInmatesStore = defineStore("inmates", {
           search: this.filters.search || undefined,
           center_id: this.filters.center_id || undefined,
           status: this.filters.status || undefined,
-          procedural_status_id: this.filters.procedural_status_id || undefined,
-          risk_classification_id:
-            this.filters.risk_classification_id || undefined,
+          gender: this.filters.gender || undefined,
+          nationality_id: this.filters.nationality_id || undefined,
           with_photos: true, // Include photos for the inmates list
         };
 
@@ -320,12 +319,18 @@ export const useInmatesStore = defineStore("inmates", {
           "/inmates/advanced-search",
           searchParams,
         );
-        this.inmates = response.data.data;
 
-        // Update pagination if included in response
-        if (response.data.pagination) {
-          this.pagination = response.data.pagination;
-        }
+        // Laravel paginate returns data.data for the items
+        const paginatedData = response.data.data;
+        this.inmates = paginatedData.data || [];
+
+        // Update pagination from Laravel paginator
+        this.pagination = {
+          current_page: paginatedData.current_page || 1,
+          last_page: paginatedData.last_page || 1,
+          per_page: paginatedData.per_page || 15,
+          total: paginatedData.total || 0,
+        };
 
         return response.data;
       } catch (error: any) {
@@ -360,8 +365,8 @@ export const useInmatesStore = defineStore("inmates", {
         search: "",
         center_id: null,
         status: null,
-        procedural_status_id: null,
-        risk_classification_id: null,
+        gender: null,
+        nationality_id: null,
       };
     },
 

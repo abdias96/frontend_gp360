@@ -34,7 +34,7 @@ class CatalogService {
   ): Promise<CatalogItem[]> {
     try {
       const defaultParams = {
-        per_page: 1000,
+        simple: true, // Use simple mode to get direct array without pagination
         ...params,
       };
 
@@ -44,11 +44,13 @@ class CatalogService {
       );
 
       if (response.data.success && response.data.data) {
-        // Handle paginated response structure
+        // In simple mode, data is directly an array
+        if (Array.isArray(response.data.data)) {
+          return response.data.data;
+        }
+        // Fallback for paginated response structure
         if (response.data.data.data && Array.isArray(response.data.data.data)) {
           return response.data.data.data;
-        } else if (Array.isArray(response.data.data)) {
-          return response.data.data;
         }
       }
 

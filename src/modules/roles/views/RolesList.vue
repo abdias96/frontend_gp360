@@ -145,7 +145,15 @@
                 <span class="visually-hidden">Cargando permisos...</span>
               </div>
             </div>
+            <div v-else-if="permissionsByModule.length === 0" class="alert alert-warning">
+              <i class="bi bi-exclamation-triangle me-2"></i>
+              No se encontraron permisos disponibles. Por favor, recargue la página.
+            </div>
             <div v-else>
+              <div class="alert alert-info mb-3">
+                <i class="bi bi-info-circle me-2"></i>
+                <strong>Permisos seleccionados:</strong> {{ selectedPermissions.length }} de {{ permissions.length }}
+              </div>
               <div class="row">
                 <div
                   class="col-md-6"
@@ -214,6 +222,7 @@ import { ref, onMounted, computed } from "vue";
 import { useRouter } from "vue-router";
 import { usePermissions } from "@/composables/usePermissions";
 import ApiService from "@/core/services/ApiService";
+import Swal from "sweetalert2";
 
 // Composables
 const router = useRouter();
@@ -242,12 +251,19 @@ const permissionsByModule = computed(() => {
 
   // Ensure permissions.value is an array and has valid items
   if (!Array.isArray(permissions.value)) {
+    console.warn("permissions.value is not an array:", permissions.value);
+    return [];
+  }
+
+  if (permissions.value.length === 0) {
+    console.warn("permissions.value is empty");
     return [];
   }
 
   permissions.value.forEach((permission) => {
     // Ensure permission has required properties
     if (!permission || !permission.module) {
+      console.warn("Permission without module:", permission);
       return;
     }
 
@@ -261,7 +277,10 @@ const permissionsByModule = computed(() => {
     }
     modules[permission.module].permissions.push(permission);
   });
-  return Object.values(modules);
+
+  const result = Object.values(modules);
+  console.log("permissionsByModule computed:", result.length, "modules", result);
+  return result;
 });
 
 // Methods
@@ -291,12 +310,14 @@ const loadRoles = async () => {
     } else {
       roles.value = [];
     }
-  } catch (error) {
-    if (process.env.NODE_ENV === "development") {
-      console.error("Error loading roles:", error);
-    }
+  } catch (error: any) {
+    console.error("Error loading roles:", error);
     roles.value = []; // Ensure it's always an array even on error
-    alert("Error al cargar los roles");
+    Swal.fire({
+      icon: 'error',
+      title: 'Error',
+      text: 'Error al cargar los roles'
+    });
   } finally {
     loading.value = false;
   }
@@ -305,32 +326,40 @@ const loadRoles = async () => {
 const loadPermissions = async () => {
   try {
     loadingPermissions.value = true;
-    const response = await ApiService.get("permissions");
+    // Use grouped format and include inactive permissions for role management
+    const response = await ApiService.get("permissions?grouped=true&include_inactive=true");
 
-    // Ensure we always get an array
+    console.log("Permissions API response:", response.data);
+
     const data = response.data?.data;
+    const flatPermissions = [];
 
     if (Array.isArray(data)) {
-      permissions.value = data;
+      // Grouped format returns array of modules
+      data.forEach((moduleGroup) => {
+        if (moduleGroup.permissions && Array.isArray(moduleGroup.permissions)) {
+          flatPermissions.push(...moduleGroup.permissions);
+        }
+      });
     } else if (data && typeof data === "object") {
-      // Convert grouped permissions object to flat array
-      const flatPermissions = [];
-
+      // Alternative grouped format as object
       for (const module in data) {
         if (Array.isArray(data[module])) {
           flatPermissions.push(...data[module]);
         }
       }
+    }
 
-      permissions.value = flatPermissions;
-    } else {
-      permissions.value = [];
-    }
-  } catch (error) {
-    if (process.env.NODE_ENV === "development") {
-      console.error("Error loading permissions:", error);
-    }
+    permissions.value = flatPermissions;
+    console.log("Loaded permissions:", permissions.value.length, "permissions");
+  } catch (error: any) {
+    console.error("Error loading permissions:", error);
     permissions.value = []; // Ensure it's always an array even on error
+    Swal.fire({
+      icon: 'error',
+      title: 'Error',
+      text: error.response?.data?.message || 'No se pudieron cargar los permisos'
+    });
   } finally {
     loadingPermissions.value = false;
   }
@@ -338,33 +367,61 @@ const loadPermissions = async () => {
 
 const loadRolePermissions = async (roleId) => {
   try {
-    const response = await ApiService.get(`roles/${roleId}/permissions`);
+    console.log("Loading permissions for role ID:", roleId);
+    // Use the correct endpoint: GET /permissions/by-role/{id}
+    const response = await ApiService.get(`permissions/by-role/${roleId}`);
+    console.log("Role permissions response:", response.data);
     const data = response.data?.data;
 
-    if (Array.isArray(data)) {
+    if (data && data.modules) {
+      // Extract permission IDs where assigned is true
+      const assignedIds = [];
+      data.modules.forEach((module) => {
+        module.permissions.forEach((permission) => {
+          if (permission.assigned) {
+            assignedIds.push(permission.id);
+          }
+        });
+      });
+      selectedPermissions.value = assignedIds;
+      console.log("Assigned permissions extracted from modules:", assignedIds);
+    } else if (Array.isArray(data)) {
+      // Fallback: if data is array of permissions
       selectedPermissions.value = data
         .map((p) => p?.id)
         .filter((id) => id !== undefined);
+      console.log("Assigned permissions from array:", selectedPermissions.value);
     } else {
       selectedPermissions.value = [];
+      console.warn("No permissions data found:", data);
     }
-  } catch (error) {
-    if (process.env.NODE_ENV === "development") {
-      console.error("Error loading role permissions:", error);
-    }
+  } catch (error: any) {
+    console.error("Error loading role permissions:", error);
     selectedPermissions.value = [];
+    Swal.fire({
+      icon: 'error',
+      title: 'Error',
+      text: error.response?.data?.message || 'No se pudieron cargar los permisos del rol'
+    });
   }
 };
 
 const managePermissions = async (role) => {
+  console.log("=== Managing permissions for role:", role);
   selectedRole.value = role;
   selectedPermissions.value = [];
 
+  console.log("Current permissions count:", permissions.value.length);
   if (permissions.value.length === 0) {
+    console.log("Loading permissions...");
     await loadPermissions();
+  } else {
+    console.log("Permissions already loaded, skipping...");
   }
 
+  console.log("Loading role permissions...");
   await loadRolePermissions(role.id);
+  console.log("=== Permissions management setup complete");
 };
 
 const savePermissions = async () => {
@@ -373,18 +430,28 @@ const savePermissions = async () => {
   try {
     savingPermissions.value = true;
 
-    await ApiService.post(`roles/${selectedRole.value.id}/permissions`, {
+    // Use the correct endpoint: PUT /permissions/by-role/{id}
+    await ApiService.put(`permissions/by-role/${selectedRole.value.id}`, {
       permission_ids: selectedPermissions.value,
     });
 
-    alert("Permisos actualizados exitosamente");
+    await Swal.fire({
+      icon: 'success',
+      title: '¡Éxito!',
+      text: 'Permisos actualizados exitosamente',
+      timer: 2000,
+      showConfirmButton: false
+    });
+
     selectedRole.value = null;
     await loadRoles(); // Reload to update permissions count
-  } catch (error) {
-    if (process.env.NODE_ENV === "development") {
-      console.error("Error saving permissions:", error);
-    }
-    alert("Error al guardar los permisos");
+  } catch (error: any) {
+    console.error("Error saving permissions:", error);
+    Swal.fire({
+      icon: 'error',
+      title: 'Error',
+      text: error.response?.data?.message || 'Error al guardar los permisos'
+    });
   } finally {
     savingPermissions.value = false;
   }
@@ -392,7 +459,11 @@ const savePermissions = async () => {
 
 const editRole = (role) => {
   if (!canEdit("roles")) {
-    alert("No tienes permisos para editar roles");
+    Swal.fire({
+      icon: 'error',
+      title: 'Acceso Denegado',
+      text: 'No tienes permisos para editar roles'
+    });
     return;
   }
 
@@ -401,28 +472,57 @@ const editRole = (role) => {
 
 const deleteRole = async (role) => {
   if (!canDelete("roles")) {
-    alert("No tienes permisos para eliminar roles");
+    Swal.fire({
+      icon: 'error',
+      title: 'Acceso Denegado',
+      text: 'No tienes permisos para eliminar roles'
+    });
     return;
   }
 
   if (role.slug === "super_admin") {
-    alert("No se puede eliminar el rol de Super Administrador");
+    Swal.fire({
+      icon: 'warning',
+      title: 'Operación no permitida',
+      text: 'No se puede eliminar el rol de Super Administrador'
+    });
     return;
   }
 
-  if (!confirm(`¿Está seguro de eliminar el rol "${role.name}"?`)) {
+  const result = await Swal.fire({
+    title: '¿Está seguro?',
+    text: `¿Desea eliminar el rol "${role.name}"?`,
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonColor: '#d33',
+    cancelButtonColor: '#3085d6',
+    confirmButtonText: 'Sí, eliminar',
+    cancelButtonText: 'Cancelar'
+  });
+
+  if (!result.isConfirmed) {
     return;
   }
 
   try {
     await ApiService.delete(`roles/${role.id}`);
-    alert("Rol eliminado exitosamente");
+
+    await Swal.fire({
+      icon: 'success',
+      title: '¡Éxito!',
+      text: 'Rol eliminado exitosamente',
+      timer: 2000,
+      showConfirmButton: false
+    });
+
     await loadRoles();
-  } catch (error) {
-    if (process.env.NODE_ENV === "development") {
-      console.error("Error deleting role:", error);
-    }
-    alert("Error al eliminar el rol");
+  } catch (error: any) {
+    console.error("Error deleting role:", error);
+    Swal.fire({
+      icon: 'error',
+      title: 'Error',
+      text: error.response?.data?.message || 'Error al eliminar el rol'
+    });
   }
 };
 

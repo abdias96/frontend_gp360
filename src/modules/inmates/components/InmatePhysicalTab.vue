@@ -710,22 +710,20 @@ const loadPhysicalData = async () => {
   try {
     loading.value.physical = true;
 
-    // Load physical data from organized endpoint
-    const response = await ApiService.get(`/inmates/${props.inmate.id}/data/physical`);
-    const physicalData = response.data.data;
+    console.log('Inmate data in physical tab:', props.inmate);
+    console.log('Physical profile from inmate (snake_case):', props.inmate.physical_profile);
 
-    if (physicalData.physical_profile) {
-      physicalProfile.value = physicalData.physical_profile;
-    } else if (props.inmate.physical_profile) {
-      // Fallback to prop data if API doesn't return data
-      physicalProfile.value = props.inmate.physical_profile;
-    }
-  } catch (error) {
-    console.error("Error loading physical data:", error);
-    // Use prop data as fallback
+    // Use data already loaded from InmateController show() method
+    // Backend returns snake_case keys
     if (props.inmate.physical_profile) {
       physicalProfile.value = props.inmate.physical_profile;
+    } else {
+      // No physical profile exists yet
+      physicalProfile.value = null;
     }
+  } catch (error) {
+    console.error("Error processing physical data:", error);
+    physicalProfile.value = null;
   } finally {
     loading.value.physical = false;
   }
@@ -735,40 +733,32 @@ const loadBiometricData = async () => {
   try {
     loading.value.biometrics = true;
 
-    // Load physical data from organized endpoint (includes photos)
-    const response = await ApiService.get(`/inmates/${props.inmate.id}/data/physical`);
-    const physicalData = response.data.data;
+    console.log('Photos from inmate:', props.inmate.photos);
 
-    // Set photos from organized endpoint
-    if (physicalData.photos && physicalData.photos.length > 0) {
-      currentPhotos.value = physicalData.photos.filter((p: any) => p.is_current);
-    } else if (props.inmate.photos) {
+    // Use photos already loaded from InmateController show() method
+    if (props.inmate.photos) {
       currentPhotos.value = props.inmate.photos.filter((p) => p.is_current);
+    } else {
+      currentPhotos.value = [];
     }
 
-    // Load biometric data separately (not in organized endpoint yet)
+    // For biometric data, we still need to make API call as it's not loaded by default
+    // This is because biometric templates are BLOB data and shouldn't be loaded unless needed
     try {
       const biometricResponse = await ApiService.get(`/inmates/${props.inmate.id}/biometric-data`);
       if (biometricResponse.data.data) {
         biometricData.value = biometricResponse.data.data;
-      } else if (props.inmate.biometric_data) {
-        biometricData.value = props.inmate.biometric_data;
+      } else {
+        biometricData.value = null;
       }
     } catch (bioError) {
       console.error("Error loading biometric data:", bioError);
-      if (props.inmate.biometric_data) {
-        biometricData.value = props.inmate.biometric_data;
-      }
+      biometricData.value = null;
     }
   } catch (error) {
-    console.error("Error loading physical data:", error);
-    // Use prop data as fallback
-    if (props.inmate.biometric_data) {
-      biometricData.value = props.inmate.biometric_data;
-    }
-    if (props.inmate.photos) {
-      currentPhotos.value = props.inmate.photos.filter((p) => p.is_current);
-    }
+    console.error("Error processing biometric data:", error);
+    currentPhotos.value = [];
+    biometricData.value = null;
   } finally {
     loading.value.biometrics = false;
   }
@@ -778,26 +768,26 @@ const loadPhysicalHistory = async () => {
   try {
     loading.value.history = true;
 
-    // Load physical data from organized endpoint (includes weight_history)
-    const response = await ApiService.get(`/inmates/${props.inmate.id}/data/physical`);
-    const physicalData = response.data.data;
+    console.log('Weight history from inmate (snake_case):', props.inmate.weight_history);
 
-    if (physicalData.weight_history && physicalData.weight_history.length > 0) {
+    // Use weight history already loaded from InmateController show() method
+    // Backend returns snake_case keys
+    if (props.inmate.weight_history && props.inmate.weight_history.length > 0) {
       // Transform weight history into physical history format
-      physicalHistory.value = physicalData.weight_history.map((item: any) => ({
+      physicalHistory.value = props.inmate.weight_history.map((item: any) => ({
         id: item.id,
         change_date: item.measurement_date,
         change_type: 'measurement',
         description: 'Actualización de peso',
         old_value: item.previous_weight ? `${item.previous_weight} kg` : null,
-        new_value: `${item.weight} kg`,
-        changed_by_name: item.recorded_by_name || 'Sistema'
+        new_value: `${item.weight_kg || item.weight} kg`,
+        changed_by_name: item.recorded_by?.first_name + ' ' + item.recorded_by?.last_name || 'Sistema'
       }));
     } else {
       physicalHistory.value = [];
     }
   } catch (error) {
-    console.error("Error loading physical history:", error);
+    console.error("Error processing physical history:", error);
     physicalHistory.value = [];
   } finally {
     loading.value.history = false;

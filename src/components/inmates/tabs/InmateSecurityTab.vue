@@ -548,17 +548,20 @@ const getIncidentSeverityColor = (severity: string) => {
 const fetchSecurityData = async () => {
   loadingProfile.value = true;
   try {
-    // Fetch security data from organized endpoint
-    const securityResponse = await ApiService.get(`/inmates/${props.inmate.id}/data/security`);
-    const securityData = securityResponse.data.data;
+    console.log('Inmate data in security tab:', props.inmate);
+    console.log('Security classification (snake_case):', props.inmate.current_security_classification);
+    console.log('Gang affiliation (snake_case):', props.inmate.current_gang_affiliation);
+    console.log('Security incidents (snake_case):', props.inmate.security_incidents);
 
-    // Set security classification
-    if (securityData.security_classification) {
-      const classification = securityData.security_classification;
+    // Use data already loaded from InmateController show() method
+    // Backend returns snake_case keys
+    // Set security classification from loaded data
+    if (props.inmate.current_security_classification) {
+      const classification = props.inmate.current_security_classification.classification || props.inmate.current_security_classification;
       securityProfile.value = {
-        risk_level: classification.risk_level || securityData.security_level || 'low',
+        risk_level: classification.risk_level || props.inmate.risk_classification?.name?.toLowerCase() || props.inmate.security_level || 'low',
         security_phase: classification.security_phase || 'Fase 1',
-        gang_affiliation: securityData.gang_affiliation?.name || null,
+        gang_affiliation: props.inmate.current_gang_affiliation?.gang?.name || props.inmate.current_gang_affiliation?.gang_name || null,
         escape_risk: classification.escape_risk || false,
         communication_restrictions: classification.communication_restrictions || null,
         violence_risk_score: classification.violence_risk_score || 0,
@@ -568,37 +571,40 @@ const fetchSecurityData = async () => {
       };
     } else {
       securityProfile.value = {
-        risk_level: securityData.security_level || 'low',
+        risk_level: props.inmate.risk_classification?.name?.toLowerCase() || props.inmate.security_level || 'low',
         security_phase: 'Fase 1',
-        gang_affiliation: securityData.gang_affiliation?.name || null,
+        gang_affiliation: props.inmate.current_gang_affiliation?.gang?.name || props.inmate.current_gang_affiliation?.gang_name || null,
         escape_risk: false,
         communication_restrictions: null
       };
     }
 
-    // Set gang information
-    if (securityData.gang_affiliation) {
+    // Set gang information from loaded data (using snake_case)
+    if (props.inmate.current_gang_affiliation) {
+      const affiliation = props.inmate.current_gang_affiliation;
       gangInfo.value = {
-        name: securityData.gang_affiliation.name,
-        role: securityData.gang_affiliation.role,
-        since: securityData.gang_affiliation.affiliation_date,
-        threat_level: securityData.gang_affiliation.threat_level,
-        known_enemies: securityData.gang_affiliation.known_enemies_count
+        name: affiliation.gang?.name || affiliation.gang_name || 'Desconocido',
+        role: affiliation.role || affiliation.affiliation_level || 'Miembro',
+        since: affiliation.affiliation_date || affiliation.start_date,
+        threat_level: affiliation.threat_level || 'Alto',
+        known_enemies: affiliation.known_enemies_count || 0
       };
     } else {
       gangInfo.value = null;
     }
 
-    // Set recent incidents
-    if (securityData.recent_incidents && securityData.recent_incidents.length > 0) {
-      recentIncidents.value = securityData.recent_incidents.map((item: any) => ({
-        id: item.id,
-        type: item.incident_type?.name || item.type || 'Incidente',
-        description: item.description,
-        date: item.incident_date,
-        location: item.location,
-        severity: item.severity
-      }));
+    // Set recent incidents from loaded data (using snake_case)
+    if (props.inmate.security_incidents && props.inmate.security_incidents.length > 0) {
+      recentIncidents.value = props.inmate.security_incidents
+        .sort((a: any, b: any) => new Date(b.incident_date).getTime() - new Date(a.incident_date).getTime())
+        .map((item: any) => ({
+          id: item.id,
+          type: item.incidentType?.name || item.incident_type || 'Incidente',
+          description: item.description,
+          date: item.incident_date,
+          location: item.location,
+          severity: item.severity
+        }));
 
       lastIncident.value = {
         date: recentIncidents.value[0].date,
@@ -609,13 +615,26 @@ const fetchSecurityData = async () => {
       lastIncident.value = null;
     }
 
-    // TODO: These endpoints need to be implemented in the backend
-    activeSanctions.value = [];
+    // Set active sanctions from loaded data (using snake_case)
+    if (props.inmate.disciplinary_sanctions && props.inmate.disciplinary_sanctions.length > 0) {
+      activeSanctions.value = props.inmate.disciplinary_sanctions
+        .filter((sanction: any) => sanction.is_active || sanction.status === 'active')
+        .map((sanction: any) => ({
+          id: sanction.id,
+          type: sanction.sanctionType?.name || sanction.sanction_type || 'Sanción',
+          reason: sanction.reason || 'N/A',
+          end_date: sanction.end_date
+        }));
+    } else {
+      activeSanctions.value = [];
+    }
+
+    // Communication stats and restrictions
     communicationStats.value = { calls: 0, visits: 0 };
     communicationRestrictions.value = securityProfile.value.communication_restrictions || '';
 
   } catch (error) {
-    console.error('Error fetching security data:', error);
+    console.error('Error processing security data:', error);
     // Set default values on error
     securityProfile.value = {
       risk_level: 'unknown',

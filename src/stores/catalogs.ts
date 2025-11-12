@@ -132,6 +132,8 @@ export const useCatalogsStore = defineStore("catalogs", () => {
   const fetchAllergies = (force = false) => fetchCatalog("allergies", force);
   const fetchSocioeconomicLevels = (force = false) =>
     fetchCatalog("socioeconomic-levels", force);
+  const fetchRelationshipTypes = (force = false) =>
+    fetchCatalog("relationship-types", force);
   const fetchCountries = (force = false) => fetchCatalog("countries", force);
 
   // Clear cache
@@ -215,6 +217,7 @@ export const useCatalogsStore = defineStore("catalogs", () => {
     fetchMentalHealthStatuses,
     fetchAllergies,
     fetchSocioeconomicLevels,
+    fetchRelationshipTypes,
     fetchCountries,
   };
 });

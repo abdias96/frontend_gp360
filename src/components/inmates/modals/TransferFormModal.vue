@@ -34,7 +34,34 @@
             <div class="row mb-7">
               <div class="col-12">
                 <label class="required fs-6 fw-semibold mb-2">Interno a Trasladar</label>
+
+                <!-- Show as read-only card when inmateId is provided -->
+                <div v-if="inmateId && selectedInmate" class="card border border-primary">
+                  <div class="card-body p-4">
+                    <div class="d-flex align-items-center">
+                      <div class="symbol symbol-circle symbol-50px overflow-hidden me-3">
+                        <div class="symbol-label">
+                          <img
+                            :src="selectedInmate.photo_path || '/media/avatars/blank.png'"
+                            :alt="selectedInmate.full_name"
+                            class="w-100"
+                          />
+                        </div>
+                      </div>
+                      <div class="flex-grow-1">
+                        <div class="fw-bold text-gray-800 fs-5">{{ selectedInmate.full_name }}</div>
+                        <div class="text-muted">
+                          <span class="badge badge-light-primary me-2">{{ selectedInmate.inmate_number }}</span>
+                          <span>{{ selectedInmate.document_number }}</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Show as selector when no inmateId is provided -->
                 <select
+                  v-else
                   v-model="form.inmate_id"
                   class="form-select"
                   :class="{ 'is-invalid': errors.inmate_id }"
@@ -42,10 +69,11 @@
                   @change="onInmateChange"
                 >
                   <option value="">Seleccionar interno...</option>
-                  <option v-for="inmate in inmates" :key="inmate.id" :value="inmate.id">
-                    {{ inmate.full_name }} - {{ inmate.inmate_number }}
+                  <option v-for="inmate in inmates" :key="inmate?.id" :value="inmate?.id">
+                    {{ inmate?.full_name }} - {{ inmate?.inmate_number }}
                   </option>
                 </select>
+
                 <div v-if="errors.inmate_id" class="invalid-feedback">{{ errors.inmate_id }}</div>
               </div>
             </div>
@@ -86,8 +114,8 @@
                   @change="onDestinationCenterChange"
                 >
                   <option value="">Seleccionar centro...</option>
-                  <option v-for="center in centers" :key="center.id" :value="center.id">
-                    {{ center.name }}
+                  <option v-for="center in centers" :key="center?.id" :value="center?.id">
+                    {{ center?.name }}
                   </option>
                 </select>
                 <div v-if="errors.destination_center_id" class="invalid-feedback">{{ errors.destination_center_id }}</div>
@@ -101,8 +129,8 @@
                   :disabled="!form.destination_center_id"
                 >
                   <option value="">Seleccionar sector...</option>
-                  <option v-for="sector in destinationSectors" :key="sector.id" :value="sector.id">
-                    {{ sector.name }}
+                  <option v-for="sector in destinationSectors" :key="sector?.id" :value="sector?.id">
+                    {{ sector?.name }}
                   </option>
                 </select>
                 <div v-if="errors.destination_sector_id" class="invalid-feedback">{{ errors.destination_sector_id }}</div>
@@ -119,22 +147,22 @@
                   :class="{ 'is-invalid': errors.transfer_reason_id }"
                 >
                   <option value="">Seleccionar motivo...</option>
-                  <option v-for="reason in transferReasons" :key="reason.id" :value="reason.id">
-                    {{ reason.name }}
+                  <option v-for="reason in transferReasons" :key="reason?.id" :value="reason?.id">
+                    {{ reason?.name }}
                   </option>
                 </select>
                 <div v-if="errors.transfer_reason_id" class="invalid-feedback">{{ errors.transfer_reason_id }}</div>
               </div>
               <div class="col-md-6">
-                <label class="required fs-6 fw-semibold mb-2">Fecha Solicitada de Traslado</label>
+                <label class="required fs-6 fw-semibold mb-2">Fecha y Hora Programada</label>
                 <input
-                  v-model="form.requested_transfer_date"
-                  type="date"
+                  v-model="form.scheduled_departure_datetime"
+                  type="datetime-local"
                   class="form-control"
-                  :class="{ 'is-invalid': errors.requested_transfer_date }"
-                  :min="minDate"
+                  :class="{ 'is-invalid': errors.scheduled_departure_datetime }"
+                  :min="minDatetime"
                 />
-                <div v-if="errors.requested_transfer_date" class="invalid-feedback">{{ errors.requested_transfer_date }}</div>
+                <div v-if="errors.scheduled_departure_datetime" class="invalid-feedback">{{ errors.scheduled_departure_datetime }}</div>
               </div>
             </div>
 
@@ -363,6 +391,7 @@ import { formatDateForInput } from '@/core/helpers/date-formatters';
 interface Props {
   transfer?: any;
   show: boolean;
+  inmateId?: number;
 }
 
 const props = defineProps<Props>();
@@ -393,7 +422,8 @@ const form = ref({
   destination_center_id: '',
   destination_sector_id: '',
   transfer_reason_id: '',
-  requested_transfer_date: '',
+  scheduled_departure_datetime: '',
+  transfer_description: '',
   priority_level: 'normal',
   urgency_level: '',
   justification: '',
@@ -414,10 +444,11 @@ const errors = ref<{ [key: string]: string }>({});
 
 // Computed
 const isEditing = computed(() => !!props.transfer);
-const minDate = computed(() => {
-  const tomorrow = new Date();
-  tomorrow.setDate(tomorrow.getDate() + 1);
-  return tomorrow.toISOString().split('T')[0];
+const inmateId = computed(() => props.inmateId);
+const minDatetime = computed(() => {
+  const now = new Date();
+  now.setHours(now.getHours() + 1); // At least 1 hour from now
+  return now.toISOString().slice(0, 16); // Format: YYYY-MM-DDTHH:mm
 });
 
 // Watchers
@@ -427,12 +458,19 @@ watch(() => props.show, async (show) => {
     if (modalRef.value) {
       modal.value = new Modal(modalRef.value);
       modal.value.show();
+
+      // Reset form first
+      resetForm();
+
+      // Load initial data
       await loadInitialData();
-      
+
       if (props.transfer) {
         populateForm();
-      } else {
-        resetForm();
+      } else if (props.inmateId) {
+        // Pre-select inmate if inmateId is provided
+        // selectedInmate is already set in loadInitialData
+        form.value.inmate_id = props.inmateId.toString();
       }
     }
   } else {
@@ -444,18 +482,38 @@ watch(() => props.show, async (show) => {
 const loadInitialData = async () => {
   try {
     loading.value = true;
-    
+
     // Load all required data in parallel
-    const [inmatesRes, centersRes, reasonsRes] = await Promise.all([
-      ApiService.get('/inmates?per_page=1000&status=active'),
-      ApiService.get('/centers'),
-      ApiService.get('/transfer-reasons')
-    ]);
-    
-    inmates.value = inmatesRes.data.data.data || inmatesRes.data.data;
-    centers.value = centersRes.data.data;
-    transferReasons.value = reasonsRes.data.data;
-    
+    // Use ?simple=true to get unpaginated arrays for dropdowns
+    const promises = [
+      ApiService.get('/catalogs/centers?simple=true'),
+      ApiService.get('/catalogs/transfer-reasons?simple=true')
+    ];
+
+    // Only load all inmates if no inmateId is provided
+    if (!props.inmateId) {
+      promises.push(ApiService.get('/inmates?per_page=1000&status=active'));
+    } else {
+      // Load specific inmate
+      promises.push(ApiService.get(`/inmates/${props.inmateId}`));
+    }
+
+    const [centersRes, reasonsRes, inmatesRes] = await Promise.all(promises);
+
+    // Both centers and transfer reasons use simple mode
+    centers.value = centersRes.data.data || [];
+    transferReasons.value = reasonsRes.data.data || [];
+
+    if (!props.inmateId) {
+      // Inmates endpoint returns paginated data
+      inmates.value = inmatesRes.data.data.data || inmatesRes.data.data || [];
+    } else {
+      // Single inmate was loaded
+      const inmate = inmatesRes.data.data;
+      inmates.value = [inmate];
+      selectedInmate.value = inmate;
+    }
+
   } catch (error) {
     console.error('Error loading initial data:', error);
     await Swal.fire({
@@ -482,7 +540,7 @@ const onDestinationCenterChange = async () => {
   
   if (form.value.destination_center_id) {
     try {
-      const response = await ApiService.get(`/centers/${form.value.destination_center_id}/sectors`);
+      const response = await ApiService.get(`/sectors/by-center/${form.value.destination_center_id}`);
       destinationSectors.value = response.data.data;
     } catch (error) {
       console.error('Error loading sectors:', error);
@@ -497,22 +555,25 @@ const populateForm = () => {
       destination_center_id: props.transfer.destination_center_id,
       destination_sector_id: props.transfer.destination_sector_id,
       transfer_reason_id: props.transfer.transfer_reason_id,
-      requested_transfer_date: formatDateForInput(props.transfer.requested_transfer_date),
-      priority_level: props.transfer.priority_level || 'normal',
-      urgency_level: props.transfer.urgency_level || '',
-      justification: props.transfer.justification || '',
-      detailed_reason: props.transfer.detailed_reason || '',
-      requires_medical_clearance: props.transfer.requires_medical_clearance || false,
-      requires_security_clearance: props.transfer.requires_security_clearance || false,
-      requires_court_authorization: props.transfer.requires_court_authorization || false,
-      requires_medical_escort: props.transfer.requires_medical_escort || false,
-      requires_security_escort: props.transfer.requires_security_escort || false,
-      min_security_personnel: props.transfer.min_security_personnel || 2,
-      security_considerations: props.transfer.security_considerations || '',
-      medical_considerations: props.transfer.medical_considerations || '',
-      observations: props.transfer.observations || ''
+      scheduled_departure_datetime: props.transfer.scheduled_departure_datetime
+        ? new Date(props.transfer.scheduled_departure_datetime).toISOString().slice(0, 16)
+        : '',
+      transfer_description: props.transfer.transfer_description || '',
+      justification: props.transfer.transfer_description || '',
+      detailed_reason: '',
+      priority_level: 'normal',
+      urgency_level: '',
+      requires_medical_clearance: false,
+      requires_security_clearance: false,
+      requires_court_authorization: false,
+      requires_medical_escort: false,
+      requires_security_escort: false,
+      min_security_personnel: 2,
+      security_considerations: '',
+      medical_considerations: '',
+      observations: ''
     });
-    
+
     // Trigger dependent data loading
     onInmateChange();
     onDestinationCenterChange();
@@ -525,7 +586,8 @@ const resetForm = () => {
     destination_center_id: '',
     destination_sector_id: '',
     transfer_reason_id: '',
-    requested_transfer_date: '',
+    scheduled_departure_datetime: '',
+    transfer_description: '',
     priority_level: 'normal',
     urgency_level: '',
     justification: '',
@@ -540,7 +602,7 @@ const resetForm = () => {
     medical_considerations: '',
     observations: ''
   });
-  
+
   errors.value = {};
   selectedInmate.value = null;
   destinationSectors.value = [];
@@ -548,39 +610,27 @@ const resetForm = () => {
 
 const validateForm = () => {
   errors.value = {};
-  
+
   if (!form.value.inmate_id) {
     errors.value.inmate_id = 'El interno es requerido';
   }
-  
+
   if (!form.value.destination_center_id) {
     errors.value.destination_center_id = 'El centro de destino es requerido';
   }
-  
+
   if (!form.value.destination_sector_id) {
     errors.value.destination_sector_id = 'El sector de destino es requerido';
   }
-  
+
   if (!form.value.transfer_reason_id) {
     errors.value.transfer_reason_id = 'El motivo del traslado es requerido';
   }
-  
-  if (!form.value.requested_transfer_date) {
-    errors.value.requested_transfer_date = 'La fecha de traslado es requerida';
+
+  if (!form.value.scheduled_departure_datetime) {
+    errors.value.scheduled_departure_datetime = 'La fecha y hora de traslado es requerida';
   }
-  
-  if (!form.value.priority_level) {
-    errors.value.priority_level = 'El nivel de prioridad es requerido';
-  }
-  
-  if (!form.value.justification) {
-    errors.value.justification = 'La justificación es requerida';
-  }
-  
-  if (form.value.requires_security_escort && (!form.value.min_security_personnel || form.value.min_security_personnel < 1)) {
-    errors.value.min_security_personnel = 'Debe especificar el mínimo personal de seguridad';
-  }
-  
+
   return Object.keys(errors.value).length === 0;
 };
 
@@ -588,35 +638,55 @@ const submitForm = async () => {
   if (!validateForm()) {
     return;
   }
-  
+
   try {
     saving.value = true;
-    
+
+    // Build transfer description from justification and detailed_reason
+    let transferDescription = '';
+    if (form.value.justification) {
+      transferDescription = form.value.justification;
+    }
+    if (form.value.detailed_reason) {
+      transferDescription += transferDescription ? '\n\n' + form.value.detailed_reason : form.value.detailed_reason;
+    }
+
+    // Prepare data matching backend expectations
+    const transferData = {
+      inmate_id: form.value.inmate_id,
+      destination_center_id: form.value.destination_center_id,
+      destination_sector_id: form.value.destination_sector_id,
+      transfer_reason_id: form.value.transfer_reason_id,
+      scheduled_departure_datetime: form.value.scheduled_departure_datetime,
+      transfer_description: transferDescription || undefined
+    };
+
     const url = isEditing.value ? `/transfers/${props.transfer.id}` : '/transfers';
     const method = isEditing.value ? 'put' : 'post';
-    
-    const response = await ApiService[method](url, form.value);
-    
+
+    const response = await ApiService[method](url, transferData);
+
     if (response.data.success) {
       await Swal.fire({
         title: '¡Éxito!',
-        text: isEditing.value 
+        text: isEditing.value
           ? 'La solicitud de traslado ha sido actualizada correctamente'
           : 'La solicitud de traslado ha sido creada correctamente',
         icon: 'success',
         timer: 2000
       });
-      
+
       emit('saved', response.data.data);
+      close();
     }
   } catch (error: any) {
     console.error('Error saving transfer:', error);
-    
+
     if (error.response?.status === 422) {
       // Validation errors
       errors.value = error.response.data.errors || {};
     }
-    
+
     await Swal.fire({
       title: 'Error',
       text: error.response?.data?.message || 'Error al guardar la solicitud de traslado',

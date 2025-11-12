@@ -46,7 +46,8 @@
               class="form-control"
               id="dpi"
               placeholder="Ingrese el DPI"
-              required
+              disabled
+              title="El DPI no puede ser modificado"
             />
           </div>
 
@@ -132,7 +133,8 @@
               class="form-control"
               id="username"
               placeholder="Nombre de usuario"
-              required
+              disabled
+              title="El nombre de usuario no puede ser modificado"
             />
           </div>
 
@@ -157,20 +159,28 @@
           <div class="col-12 mt-5">
             <h5 class="fw-bold text-primary">Cambiar Contraseña</h5>
             <hr />
-            <div class="form-check mb-3">
+          </div>
+
+          <div class="col-12">
+            <div class="form-check form-switch mb-3">
               <input
                 v-model="changePassword"
                 class="form-check-input"
                 type="checkbox"
+                role="switch"
                 id="change_password"
+                @change="onChangePasswordToggle"
               />
-              <label class="form-check-label" for="change_password">
-                Cambiar contraseña
+              <label class="form-check-label fw-semibold" for="change_password">
+                {{ changePassword ? 'Cancelar cambio de contraseña' : 'Cambiar contraseña del usuario' }}
               </label>
             </div>
+            <small v-if="!changePassword" class="form-text text-muted">
+              Active esta opción si desea cambiar la contraseña del usuario
+            </small>
           </div>
 
-          <div v-if="changePassword" class="col-md-6">
+          <div v-show="changePassword" class="col-md-6">
             <label for="password" class="form-label"
               >Nueva Contraseña <span class="text-danger">*</span></label
             >
@@ -185,7 +195,7 @@
             <small class="form-text text-muted"> Mínimo 8 caracteres </small>
           </div>
 
-          <div v-if="changePassword" class="col-md-6">
+          <div v-show="changePassword" class="col-md-6">
             <label for="password_confirmation" class="form-label"
               >Confirmar Contraseña <span class="text-danger">*</span></label
             >
@@ -258,6 +268,7 @@ import { ref, onMounted } from "vue";
 import { useRouter, useRoute } from "vue-router";
 import { usePermissions } from "@/composables/usePermissions";
 import ApiService from "@/core/services/ApiService";
+import Swal from "sweetalert2";
 
 // Composables
 const router = useRouter();
@@ -286,6 +297,15 @@ const form = ref({
 });
 
 // Methods
+const onChangePasswordToggle = () => {
+  // Clear password fields when toggling off
+  if (!changePassword.value) {
+    form.value.password = "";
+    form.value.password_confirmation = "";
+  }
+  console.log("Change password toggled:", changePassword.value);
+};
+
 const loadUser = async () => {
   const userId = route.params.id;
 
@@ -325,15 +345,34 @@ const loadUser = async () => {
 const loadRoles = async () => {
   try {
     const response = await ApiService.get("roles");
-    roles.value = response.data.data || [];
+
+    // Handle different response structures
+    if (response.data.success) {
+      const rolesData = response.data.data;
+      // Check if it's paginated
+      roles.value = Array.isArray(rolesData) ? rolesData : (rolesData.data || []);
+    } else {
+      roles.value = response.data.data || response.data || [];
+    }
+
+    console.log("Roles loaded:", roles.value);
   } catch (error) {
     console.error("Error loading roles:", error);
+    Swal.fire({
+      icon: 'error',
+      title: 'Error',
+      text: 'No se pudieron cargar los roles'
+    });
   }
 };
 
 const handleSubmit = async () => {
   if (!canEdit("users")) {
-    alert("No tienes permisos para editar usuarios");
+    Swal.fire({
+      icon: 'error',
+      title: 'Error',
+      text: 'No tienes permisos para editar usuarios'
+    });
     return;
   }
 
@@ -341,7 +380,11 @@ const handleSubmit = async () => {
     changePassword.value &&
     form.value.password !== form.value.password_confirmation
   ) {
-    alert("Las contraseñas no coinciden");
+    Swal.fire({
+      icon: 'error',
+      title: 'Error',
+      text: 'Las contraseñas no coinciden'
+    });
     return;
   }
 
@@ -360,18 +403,24 @@ const handleSubmit = async () => {
     await ApiService.put(`users/${userId}`, updateData);
 
     // Mostrar mensaje de éxito
-    alert("Usuario actualizado exitosamente");
+    await Swal.fire({
+      icon: 'success',
+      title: '¡Éxito!',
+      text: 'Usuario actualizado exitosamente',
+      timer: 2000,
+      showConfirmButton: false
+    });
 
     // Redirigir a la lista de usuarios
     router.push("/users");
   } catch (error: any) {
     console.error("Error updating user:", error);
 
-    if (error.response?.data?.message) {
-      alert(error.response.data.message);
-    } else {
-      alert("Error al actualizar el usuario. Por favor intente nuevamente.");
-    }
+    Swal.fire({
+      icon: 'error',
+      title: 'Error',
+      text: error.response?.data?.message || 'Error al actualizar el usuario. Por favor intente nuevamente.'
+    });
   } finally {
     loading.value = false;
   }

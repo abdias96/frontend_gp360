@@ -750,26 +750,176 @@
                     class="menu-sub menu-sub-accordion"
                     v-show="operationsMenuOpen"
                   >
-                    <div
-                      class="menu-item"
-                      v-if="isSuperAdmin || hasPermission('transport.schedule')"
-                    >
-                      <router-link to="/operations/transfer-management" class="menu-link">
+                    <div class="menu-item">
+                      <router-link to="/operations/admissions" class="menu-link">
                         <span class="menu-bullet"
                           ><span class="bullet bullet-dot"></span
                         ></span>
-                        <span class="menu-title">{{ $t("menu.transferManagement") }}</span>
+                        <span class="menu-title">{{ $t("menu.admissions") }}</span>
+                      </router-link>
+                    </div>
+                    <div class="menu-item">
+                      <router-link to="/operations/transfers" class="menu-link">
+                        <span class="menu-bullet"
+                          ><span class="bullet bullet-dot"></span
+                        ></span>
+                        <span class="menu-title">{{ $t("menu.transfers") }}</span>
+                      </router-link>
+                    </div>
+                    <div class="menu-item">
+                      <router-link to="/operations/movements" class="menu-link">
+                        <span class="menu-bullet"
+                          ><span class="bullet bullet-dot"></span
+                        ></span>
+                        <span class="menu-title">{{ $t("menu.movements") }}</span>
+                      </router-link>
+                    </div>
+                    <div class="menu-item">
+                      <router-link to="/operations/counts" class="menu-link">
+                        <span class="menu-bullet"
+                          ><span class="bullet bullet-dot"></span
+                        ></span>
+                        <span class="menu-title">{{ $t("menu.counts") }}</span>
+                      </router-link>
+                    </div>
+                    <div class="menu-item">
+                      <router-link to="/operations/releases" class="menu-link">
+                        <span class="menu-bullet"
+                          ><span class="bullet bullet-dot"></span
+                        ></span>
+                        <span class="menu-title">{{ $t("menu.releases") }}</span>
+                      </router-link>
+                    </div>
+                    <div class="menu-item">
+                      <router-link to="/operations/locations" class="menu-link">
+                        <span class="menu-bullet"
+                          ><span class="bullet bullet-dot"></span
+                        ></span>
+                        <span class="menu-title">{{ $t("menu.locations") }}</span>
                       </router-link>
                     </div>
                     <div
                       class="menu-item"
-                      v-if="isSuperAdmin || hasPermission('operations.locations')"
+                      v-if="isSuperAdmin || hasPermission('operations.teams.view')"
                     >
-                      <router-link to="/operations/location-management" class="menu-link">
+                      <router-link to="/operations/multidisciplinary-teams" class="menu-link">
                         <span class="menu-bullet"
                           ><span class="bullet bullet-dot"></span
                         ></span>
-                        <span class="menu-title">{{ $t("menu.locationManagement") }}</span>
+                        <span class="menu-title">Equipos Multidisciplinarios</span>
+                      </router-link>
+                    </div>
+                    <div
+                      class="menu-item"
+                      v-if="isSuperAdmin || hasPermission('operations.transport.view')"
+                    >
+                      <router-link to="/operations/transport" class="menu-link">
+                        <span class="menu-bullet"
+                          ><span class="bullet bullet-dot"></span
+                        ></span>
+                        <span class="menu-title">Transporte y Logística</span>
+                      </router-link>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Inmate Services Section -->
+                <div
+                  class="menu-item"
+                  v-if="isSuperAdmin || canAccess('grievances')"
+                >
+                  <div class="menu-content pt-8 pb-2">
+                    <span
+                      class="menu-section text-muted text-uppercase fs-8 ls-1"
+                      >ATENCIÓN AL PPL</span
+                    >
+                  </div>
+                </div>
+
+                <!-- Grievances Menu -->
+                <div
+                  class="menu-item menu-accordion"
+                  :class="{ show: grievancesMenuOpen }"
+                  v-if="isSuperAdmin || canAccess('grievances')"
+                >
+                  <span class="menu-link" @click="toggleGrievancesMenu">
+                    <span class="menu-icon">
+                      <KTIcon icon-name="message-text" icon-class="fs-2" />
+                    </span>
+                    <span class="menu-title fw-bold">Quejas y Peticiones</span>
+                    <span
+                      class="menu-arrow"
+                      :class="{ rotate: grievancesMenuOpen }"
+                    ></span>
+                  </span>
+                  <div
+                    class="menu-sub menu-sub-accordion"
+                    v-show="grievancesMenuOpen"
+                  >
+                    <div
+                      class="menu-item"
+                      v-if="isSuperAdmin || hasPermission('grievances.create')"
+                    >
+                      <router-link to="/grievances/new" class="menu-link">
+                        <span class="menu-bullet"
+                          ><span class="bullet bullet-dot"></span
+                        ></span>
+                        <span class="menu-title">Nueva Queja</span>
+                      </router-link>
+                    </div>
+                    <div
+                      class="menu-item"
+                      v-if="isSuperAdmin || hasPermission('grievances.view')"
+                    >
+                      <router-link to="/grievances/pending" class="menu-link">
+                        <span class="menu-bullet"
+                          ><span class="bullet bullet-dot"></span
+                        ></span>
+                        <span class="menu-title">Quejas Pendientes</span>
+                      </router-link>
+                    </div>
+                    <div
+                      class="menu-item"
+                      v-if="isSuperAdmin || hasPermission('grievances.process')"
+                    >
+                      <router-link to="/grievances/in-progress" class="menu-link">
+                        <span class="menu-bullet"
+                          ><span class="bullet bullet-dot"></span
+                        ></span>
+                        <span class="menu-title">En Investigación</span>
+                      </router-link>
+                    </div>
+                    <div
+                      class="menu-item"
+                      v-if="isSuperAdmin || hasPermission('grievances.view')"
+                    >
+                      <router-link to="/grievances/resolved" class="menu-link">
+                        <span class="menu-bullet"
+                          ><span class="bullet bullet-dot"></span
+                        ></span>
+                        <span class="menu-title">Resueltas</span>
+                      </router-link>
+                    </div>
+                    <div
+                      class="menu-item"
+                      v-if="isSuperAdmin || hasPermission('grievances.appeals')"
+                    >
+                      <router-link to="/grievances/appeals" class="menu-link">
+                        <span class="menu-bullet"
+                          ><span class="bullet bullet-dot"></span
+                        ></span>
+                        <span class="menu-title">Apelaciones</span>
+                      </router-link>
+                    </div>
+                    <div
+                      class="menu-item"
+                      v-if="isSuperAdmin || hasPermission('grievances.statistics')"
+                    >
+                      <router-link to="/grievances/statistics" class="menu-link">
+                        <span class="menu-bullet"
+                          ><span class="bullet bullet-dot"></span
+                        ></span>
+                        <span class="menu-title">Estadísticas</span>
                       </router-link>
                     </div>
                   </div>
@@ -808,43 +958,31 @@
                     class="menu-sub menu-sub-accordion"
                     v-show="documentsMenuOpen"
                   >
-                    <div
-                      class="menu-item"
-                      v-if="isSuperAdmin || hasPermission('documents.digital')"
-                    >
-                      <router-link to="/documents/digital-files" class="menu-link">
+                    <div class="menu-item">
+                      <router-link to="/documents/files" class="menu-link">
                         <span class="menu-bullet"
                           ><span class="bullet bullet-dot"></span
                         ></span>
                         <span class="menu-title">{{ $t("menu.digitalFiles") }}</span>
                       </router-link>
                     </div>
-                    <div
-                      class="menu-item"
-                      v-if="isSuperAdmin || hasPermission('documents.legal')"
-                    >
-                      <router-link to="/documents/legal-documents" class="menu-link">
+                    <div class="menu-item">
+                      <router-link to="/documents/legal" class="menu-link">
                         <span class="menu-bullet"
                           ><span class="bullet bullet-dot"></span
                         ></span>
                         <span class="menu-title">{{ $t("menu.legalDocuments") }}</span>
                       </router-link>
                     </div>
-                    <div
-                      class="menu-item"
-                      v-if="isSuperAdmin || hasPermission('documents.medical')"
-                    >
-                      <router-link to="/documents/medical-documents" class="menu-link">
+                    <div class="menu-item">
+                      <router-link to="/documents/medical" class="menu-link">
                         <span class="menu-bullet"
                           ><span class="bullet bullet-dot"></span
                         ></span>
                         <span class="menu-title">{{ $t("menu.medicalDocuments") }}</span>
                       </router-link>
                     </div>
-                    <div
-                      class="menu-item"
-                      v-if="isSuperAdmin || hasPermission('mail.incoming')"
-                    >
+                    <div class="menu-item">
                       <router-link to="/documents/correspondence" class="menu-link">
                         <span class="menu-bullet"
                           ><span class="bullet bullet-dot"></span
@@ -888,10 +1026,7 @@
                     class="menu-sub menu-sub-accordion"
                     v-show="emergencyMenuOpen"
                   >
-                    <div
-                      class="menu-item"
-                      v-if="isSuperAdmin || hasPermission('emergency.incidents')"
-                    >
+                    <div class="menu-item">
                       <router-link to="/emergency/incidents" class="menu-link">
                         <span class="menu-bullet"
                           ><span class="bullet bullet-dot"></span
@@ -899,10 +1034,7 @@
                         <span class="menu-title">{{ $t("menu.incidents") }}</span>
                       </router-link>
                     </div>
-                    <div
-                      class="menu-item"
-                      v-if="isSuperAdmin || hasPermission('emergency.protocols')"
-                    >
+                    <div class="menu-item">
                       <router-link to="/emergency/protocols" class="menu-link">
                         <span class="menu-bullet"
                           ><span class="bullet bullet-dot"></span
@@ -910,21 +1042,15 @@
                         <span class="menu-title">{{ $t("menu.protocols") }}</span>
                       </router-link>
                     </div>
-                    <div
-                      class="menu-item"
-                      v-if="isSuperAdmin || hasPermission('emergency.response_teams')"
-                    >
-                      <router-link to="/emergency/response-teams" class="menu-link">
+                    <div class="menu-item">
+                      <router-link to="/emergency/teams" class="menu-link">
                         <span class="menu-bullet"
                           ><span class="bullet bullet-dot"></span
                         ></span>
                         <span class="menu-title">{{ $t("menu.responseTeams") }}</span>
                       </router-link>
                     </div>
-                    <div
-                      class="menu-item"
-                      v-if="isSuperAdmin || hasPermission('emergency.evacuations')"
-                    >
+                    <div class="menu-item">
                       <router-link to="/emergency/evacuations" class="menu-link">
                         <span class="menu-bullet"
                           ><span class="bullet bullet-dot"></span
@@ -1032,17 +1158,6 @@
                           ><span class="bullet bullet-dot"></span
                         ></span>
                         <span class="menu-title">{{ $t("menu.visitMonitoring") }}</span>
-                      </router-link>
-                    </div>
-                    <div
-                      class="menu-item"
-                      v-if="isSuperAdmin || hasPermission('visits.reports.view')"
-                    >
-                      <router-link to="/visits/reports" class="menu-link">
-                        <span class="menu-bullet"
-                          ><span class="bullet bullet-dot"></span
-                        ></span>
-                        <span class="menu-title">{{ $t("menu.visitReports") }}</span>
                       </router-link>
                     </div>
                   </div>
@@ -1845,6 +1960,17 @@
                         <span class="menu-title">{{ $t("menu.statisticalReports") }}</span>
                       </router-link>
                     </div>
+                    <div
+                      class="menu-item"
+                      v-if="isSuperAdmin || hasPermission('reports.visits')"
+                    >
+                      <router-link to="/visits/reports" class="menu-link">
+                        <span class="menu-bullet"
+                          ><span class="bullet bullet-dot"></span
+                        ></span>
+                        <span class="menu-title">{{ $t("menu.visitReports") }}</span>
+                      </router-link>
+                    </div>
                   </div>
                 </div>
 
@@ -2183,6 +2309,7 @@ export default defineComponent({
     const documentsMenuOpen = ref(false);
     const emergencyMenuOpen = ref(false);
     const systemMenuOpen = ref(false);
+    const grievancesMenuOpen = ref(false);
 
     const asideSecondaryDisplay = computed(() => {
       return true; // Always show for GP360
@@ -2413,6 +2540,11 @@ export default defineComponent({
 
     const toggleSystemMenu = () => {
       systemMenuOpen.value = !systemMenuOpen.value;
+      resetAutoCollapseTimer();
+    };
+
+    const toggleGrievancesMenu = () => {
+      grievancesMenuOpen.value = !grievancesMenuOpen.value;
       resetAutoCollapseTimer();
     };
 

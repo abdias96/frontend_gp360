@@ -1,5 +1,242 @@
 <template>
   <div class="d-flex flex-column gap-7">
+    <!--begin::Legal Profiles List-->
+    <div class="card">
+      <div class="card-header">
+        <h3 class="card-title align-items-start flex-column">
+          <span class="card-label fw-bold text-gray-900">Perfiles Legales</span>
+          <span class="text-muted mt-1 fw-semibold fs-7">Historial de procesos judiciales del interno</span>
+          <div v-if="legalProfiles.length > 0" class="mt-2">
+            <span class="badge badge-light-success me-2">
+              {{ activeProfilesCount }} Activo{{ activeProfilesCount !== 1 ? 's' : '' }}
+            </span>
+            <span v-if="completedProfilesCount > 0" class="badge badge-light-secondary">
+              {{ completedProfilesCount }} Completado{{ completedProfilesCount !== 1 ? 's' : '' }}
+            </span>
+          </div>
+        </h3>
+        <div class="card-toolbar">
+          <button
+            v-if="canEdit"
+            type="button"
+            class="btn btn-sm btn-primary"
+            @click="createNewLegalProfile"
+          >
+            <i class="ki-duotone ki-plus fs-2">
+              <span class="path1"></span>
+              <span class="path2"></span>
+            </i>
+            Nuevo Perfil Legal
+          </button>
+        </div>
+      </div>
+      <div class="card-body p-0">
+        <div v-if="loadingProfiles" class="d-flex justify-content-center py-10">
+          <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Cargando perfiles...</span>
+          </div>
+        </div>
+
+        <div v-else-if="legalProfiles.length === 0" class="text-center py-10">
+          <i class="ki-duotone ki-document fs-3x text-muted mb-3">
+            <span class="path1"></span>
+            <span class="path2"></span>
+          </i>
+          <div class="text-muted fw-semibold fs-6 mb-3">No hay perfiles legales registrados</div>
+          <button
+            v-if="canEdit"
+            type="button"
+            class="btn btn-sm btn-primary"
+            @click="createNewLegalProfile"
+          >
+            <i class="ki-duotone ki-plus fs-2">
+              <span class="path1"></span>
+              <span class="path2"></span>
+            </i>
+            Crear Primer Perfil Legal
+          </button>
+        </div>
+
+        <div v-else class="accordion accordion-flush" id="legalProfilesAccordion">
+          <div
+            v-for="(profile, index) in legalProfiles"
+            :key="profile.id"
+            class="accordion-item border-bottom"
+          >
+            <h2 class="accordion-header" :id="`heading-${profile.id}`">
+              <button
+                class="accordion-button fw-bold"
+                :class="{ collapsed: expandedProfileId !== profile.id }"
+                type="button"
+                @click="toggleProfile(profile.id)"
+              >
+                <div class="d-flex align-items-center w-100 me-3">
+                  <!-- Status Badge -->
+                  <span
+                    class="badge me-3"
+                    :class="{
+                      'badge-success': profile.profile_status === 'active',
+                      'badge-secondary': profile.profile_status === 'completed',
+                      'badge-info': profile.profile_status === 'transferred',
+                      'badge-danger': profile.profile_status === 'deceased'
+                    }"
+                  >
+                    {{ getProfileStatusLabel(profile.profile_status) }}
+                  </span>
+
+                  <!-- Profile Info -->
+                  <div class="flex-grow-1">
+                    <div class="d-flex align-items-center gap-3">
+                      <span class="text-gray-900">
+                        Perfil #{{ profile.admission_number }}
+                        <span v-if="profile.is_reentry" class="badge badge-light-warning ms-1">Reingreso</span>
+                      </span>
+                      <span class="text-muted">•</span>
+                      <span class="text-gray-800">Caso: {{ profile.case_number }}</span>
+                      <span class="text-muted">•</span>
+                      <span class="text-muted">{{ profile.court?.name || 'Sin tribunal' }}</span>
+                    </div>
+                    <div class="text-muted fs-7 mt-1">
+                      Ingreso: {{ formatDate(profile.admission_date) }}
+                      <span v-if="profile.release_date"> • Liberación: {{ formatDate(profile.release_date) }}</span>
+                    </div>
+                  </div>
+
+                  <!-- Quick Actions -->
+                  <div class="d-flex gap-2 ms-auto me-3" @click.stop>
+                    <button
+                      v-if="canEdit"
+                      type="button"
+                      class="btn btn-sm btn-icon btn-light-primary"
+                      @click="editLegalProfile(profile.id)"
+                      title="Editar perfil"
+                    >
+                      <i class="ki-duotone ki-pencil fs-4">
+                        <span class="path1"></span>
+                        <span class="path2"></span>
+                      </i>
+                    </button>
+                    <button
+                      v-if="canEdit && profile.profile_status === 'active'"
+                      type="button"
+                      class="btn btn-sm btn-icon btn-light-success"
+                      @click="completeProfile(profile)"
+                      title="Marcar como completado"
+                    >
+                      <i class="ki-duotone ki-check-circle fs-4">
+                        <span class="path1"></span>
+                        <span class="path2"></span>
+                      </i>
+                    </button>
+                    <router-link
+                      :to="`/legal/profiles/${profile.id}`"
+                      class="btn btn-sm btn-icon btn-light-info"
+                      title="Ver detalles completos"
+                    >
+                      <i class="ki-duotone ki-eye fs-4">
+                        <span class="path1"></span>
+                        <span class="path2"></span>
+                        <span class="path3"></span>
+                      </i>
+                    </router-link>
+                  </div>
+                </div>
+              </button>
+            </h2>
+            <div
+              :id="`collapse-${profile.id}`"
+              class="accordion-collapse collapse"
+              :class="{ show: expandedProfileId === profile.id }"
+              :aria-labelledby="`heading-${profile.id}`"
+            >
+              <div class="accordion-body">
+                <div class="row g-5">
+                  <!-- Legal Status -->
+                  <div class="col-md-3">
+                    <label class="text-muted fw-semibold mb-2">Estado Procesal</label>
+                    <div class="fw-bold text-gray-900">
+                      {{ profile.procedural_status?.name || 'Sin definir' }}
+                    </div>
+                  </div>
+
+                  <!-- Court -->
+                  <div class="col-md-3">
+                    <label class="text-muted fw-semibold mb-2">Tribunal</label>
+                    <div class="fw-bold text-gray-900">
+                      {{ profile.court?.name || 'N/A' }}
+                    </div>
+                  </div>
+
+                  <!-- Defense Attorney -->
+                  <div class="col-md-3">
+                    <label class="text-muted fw-semibold mb-2">Defensa</label>
+                    <div class="fw-bold text-gray-900">
+                      {{ getDefenseTypeLabel(profile.defense_type) }}
+                    </div>
+                    <div v-if="profile.defense_attorney_name" class="text-muted fs-7">
+                      {{ profile.defense_attorney_name }}
+                    </div>
+                  </div>
+
+                  <!-- Sentence -->
+                  <div class="col-md-3">
+                    <label class="text-muted fw-semibold mb-2">Condena</label>
+                    <div class="fw-bold text-gray-900">
+                      {{ formatSentenceYears(profile.sentence_years, profile.sentence_months, profile.sentence_days) }}
+                    </div>
+                    <div v-if="profile.sentence_type?.name" class="text-muted fs-7">
+                      {{ profile.sentence_type.name }}
+                    </div>
+                  </div>
+
+                  <!-- Preventive Detention -->
+                  <div v-if="profile.in_preventive_detention" class="col-md-6">
+                    <div class="alert alert-warning d-flex align-items-center p-3 mb-0">
+                      <i class="ki-duotone ki-information fs-2 me-3">
+                        <span class="path1"></span>
+                        <span class="path2"></span>
+                        <span class="path3"></span>
+                      </i>
+                      <div>
+                        <div class="fw-bold">Prisión Preventiva</div>
+                        <div class="fs-7">
+                          Inicio: {{ formatDate(profile.preventive_detention_start) }}
+                          <span v-if="profile.preventive_detention_days_remaining">
+                            • {{ profile.preventive_detention_days_remaining }} días restantes
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Next Hearing -->
+                  <div v-if="profile.next_hearing_date" class="col-md-6">
+                    <div class="alert alert-info d-flex align-items-center p-3 mb-0">
+                      <i class="ki-duotone ki-calendar fs-2 me-3">
+                        <span class="path1"></span>
+                        <span class="path2"></span>
+                      </i>
+                      <div>
+                        <div class="fw-bold">Próxima Audiencia</div>
+                        <div class="fs-7">{{ formatDate(profile.next_hearing_date) }}</div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Legal Notes -->
+                  <div v-if="profile.legal_notes" class="col-12">
+                    <label class="text-muted fw-semibold mb-2">Notas Legales</label>
+                    <div class="text-gray-700">{{ profile.legal_notes }}</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!--end::Legal Profiles List-->
+
     <!--begin::Legal Overview Card-->
     <div class="card">
       <div class="card-header">
@@ -408,6 +645,14 @@
       </div>
     </div>
     <!--end::Quick Actions-->
+
+    <!--begin::Legal Profile Modal-->
+    <LegalProfileModal
+      :inmate-id="inmateId"
+      @saved="handleProfileSaved"
+      @close="handleModalClose"
+    />
+    <!--end::Legal Profile Modal-->
   </div>
 </template>
 
@@ -419,10 +664,13 @@ import ApiService from '@/core/services/ApiService';
 import Swal from 'sweetalert2';
 import { formatDate, formatDateTime } from '@/core/helpers/formatters';
 import ResolutionList from '@/components/legal/ResolutionList.vue';
+import LegalProfileModal from '@/components/inmates/modals/LegalProfileModal.vue';
+import { Modal } from 'bootstrap';
 
 // Props
 interface Props {
   inmateId: number;
+  inmate?: any; // Full inmate object with legalProfiles
 }
 
 const props = defineProps<Props>();
@@ -433,6 +681,9 @@ const { t } = useI18n();
 
 // State
 const legalProfile = ref<any>(null);
+const legalProfiles = ref<any[]>([]);
+const loadingProfiles = ref(false);
+const expandedProfileId = ref<number | null>(null);
 const activeCrimes = ref<any[]>([]);
 const upcomingHearings = ref<any[]>([]);
 const activeAppeals = ref<any[]>([]);
@@ -449,6 +700,26 @@ const canScheduleHearings = computed(() => authStore.hasPermission('legal.hearin
 const canManageResolutions = computed(() => authStore.hasPermission('legal.resolutions'));
 const canManageAppeals = computed(() => authStore.hasPermission('legal.appeals'));
 const canManageDeadlines = computed(() => authStore.hasPermission('legal.deadlines'));
+
+// Count active and completed profiles
+const activeProfilesCount = computed(() => {
+  return legalProfiles.value.filter((p: any) => {
+    return p.profile_status === 'active' ||
+           p.status === 'active' ||
+           p.is_active === true ||
+           p.is_active === 1 ||
+           (!p.status && !p.profile_status && p.is_active === undefined);
+  }).length;
+});
+
+const completedProfilesCount = computed(() => {
+  return legalProfiles.value.filter((p: any) => {
+    return p.profile_status === 'completed' ||
+           p.status === 'completed' ||
+           p.is_active === false ||
+           p.is_active === 0;
+  }).length;
+});
 
 // Method to update alerts based on current data
 const updateLegalAlerts = () => {
@@ -590,35 +861,66 @@ const getBenefitStatusColor = (status: string) => {
 const fetchLegalData = async () => {
   loadingProfile.value = true;
   try {
-    // Fetch complete legal information from organized endpoint
-    const legalResponse = await ApiService.get(`/inmates/${props.inmateId}/data/legal`);
-    const legalData = legalResponse.data.data;
-    
-    console.log('Legal data received:', legalData);
-    
-    // Set legal profile with proper defaults
-    if (legalData.legal_profile) {
-      legalProfile.value = {
-        ...legalData.legal_profile,
-        legal_status: legalData.legal_profile.procedural_status?.slug || 
-                     legalData.legal_profile.in_preventive_detention ? 'preventive_detention' : 'pending_trial',
-        total_sentence: calculateTotalSentence(legalData.legal_profile),
-        admission_date: legalData.inmate?.admission_date || legalData.legal_profile.preventive_detention_start,
-        projected_release_date: legalData.legal_profile.sentence_end_date
+    let legalData;
+
+    // Use inmate prop if available (preferred), otherwise fetch
+    if (props.inmate?.legal_profiles) {
+      console.log('Using inmate data from props with legal profiles:', props.inmate.legal_profiles);
+      legalData = {
+        inmate: props.inmate,
+        legal_profiles: props.inmate.legal_profiles
       };
     } else {
-      // Create default profile if not exists
-      legalProfile.value = {
-        legal_status: 'pending_trial',
-        total_sentence: null,
-        admission_date: legalData.inmate?.admission_date || new Date().toISOString(),
-        projected_release_date: null,
-        in_preventive_detention: false
-      };
+      // Fallback: Fetch complete legal information from organized endpoint
+      const legalResponse = await ApiService.get(`/inmates/${props.inmateId}/data/legal`);
+      legalData = legalResponse.data.data;
     }
-    
-    // Set crimes with proper mapping
-    activeCrimes.value = (legalData.crimes || []).map((crime: any) => ({
+
+    console.log('Legal data received:', legalData);
+    console.log('Legal profiles array:', legalData.legal_profiles);
+    if (legalData.legal_profiles && legalData.legal_profiles.length > 0) {
+      console.log('First legal profile fields:', Object.keys(legalData.legal_profiles[0]));
+      console.log('First legal profile status field:', legalData.legal_profiles[0].status);
+      console.log('First legal profile is_active field:', legalData.legal_profiles[0].is_active);
+    }
+
+    // Get all active legal profiles (multiple processes can be active simultaneously)
+    // Check multiple possible status field names: profile_status, status, is_active
+    const activeProfiles = (legalData.legal_profiles || []).filter((p: any) => {
+      // Check various ways a profile might be marked as active
+      return p.profile_status === 'active' ||
+             p.status === 'active' ||
+             p.is_active === true ||
+             p.is_active === 1 ||
+             (!p.status && !p.profile_status && p.is_active === undefined); // If no status field, assume active
+    });
+
+    // Use the most recent active profile for summary display (by created_at or id)
+    const activeProfile = activeProfiles.sort((a: any, b: any) => {
+      if (a.admission_number && b.admission_number) {
+        return b.admission_number - a.admission_number;
+      }
+      if (a.created_at && b.created_at) {
+        return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+      }
+      return b.id - a.id;
+    })[0] || (legalData.legal_profiles || [])[0]; // Fallback to first profile if no active ones
+
+    console.log(`Found ${activeProfiles.length} active legal profile(s) out of ${legalData.legal_profiles?.length || 0} total`);
+
+    // Set legal profile with proper defaults
+    if (activeProfile) {
+      legalProfile.value = {
+        ...activeProfile,
+        legal_status: activeProfile.procedural_status?.slug ||
+                     activeProfile.in_preventive_detention ? 'preventive_detention' : 'pending_trial',
+        total_sentence: calculateTotalSentence(activeProfile),
+        admission_date: legalData.inmate?.admission_date || activeProfile.preventive_detention_start,
+        projected_release_date: activeProfile.sentence_end_date
+      };
+
+      // Get crimes from active profile
+      activeCrimes.value = (activeProfile.crimes || []).map((crime: any) => ({
       id: crime.id,
       name: crime.crime?.name || 'Delito sin especificar',
       article: crime.crime?.article || 'Art. N/A',
@@ -629,66 +931,63 @@ const fetchLegalData = async () => {
       location: crime.crime_location
     }));
 
-    console.log('Active crimes loaded:', activeCrimes.value.length, activeCrimes.value);
-    
-    // Filter upcoming hearings (future dates)
-    const now = new Date();
-    upcomingHearings.value = (legalData.hearings || [])
-      .filter((hearing: any) => hearing.hearing_date && new Date(hearing.hearing_date) > now)
-      .sort((a: any, b: any) => new Date(a.hearing_date).getTime() - new Date(b.hearing_date).getTime())
-      .map((hearing: any) => ({
-        id: hearing.id,
-        hearing_type: hearing.hearing_type,
-        type: hearing.hearing_type,
-        scheduled_at: hearing.hearing_date,
-        court: hearing.court?.name || 'Tribunal por definir'
-      }))
-      .slice(0, 3);
-    
-    // Filter active appeals with proper mapping
-    activeAppeals.value = (legalData.appeals || [])
-      .filter((appeal: any) => !['resolved', 'rejected', 'withdrawn'].includes(appeal.status))
-      .map((appeal: any) => ({
-        id: appeal.id,
-        appeal_type: appeal.appeal_type,
-        type: appeal.appeal_type,
-        status: mapAppealStatus(appeal.status),
-        filed_date: appeal.appeal_filed_date,
-        deadline: appeal.response_deadline
-      }));
-    
-    // Process deadlines if present
-    if (legalData.deadlines && legalData.deadlines.length > 0) {
-      processDeadlines(legalData.deadlines);
+      console.log('Active crimes loaded:', activeCrimes.value.length, activeCrimes.value);
+
+      // Filter upcoming hearings (future dates) from active profile
+      const now = new Date();
+      upcomingHearings.value = (activeProfile.hearings || [])
+        .filter((hearing: any) => hearing.hearing_date && new Date(hearing.hearing_date) > now)
+        .sort((a: any, b: any) => new Date(a.hearing_date).getTime() - new Date(b.hearing_date).getTime())
+        .map((hearing: any) => ({
+          id: hearing.id,
+          hearing_type: hearing.hearing_type,
+          type: hearing.hearing_type,
+          scheduled_at: hearing.hearing_date,
+          court: hearing.court?.name || 'Tribunal por definir'
+        }))
+        .slice(0, 3);
+
+      // Filter active appeals from active profile
+      activeAppeals.value = (activeProfile.appeals || [])
+        .filter((appeal: any) => !['resolved_favorable', 'resolved_unfavorable', 'rejected', 'withdrawn'].includes(appeal.appeal_status))
+        .map((appeal: any) => ({
+          id: appeal.id,
+          appeal_type: appeal.appeal_type,
+          type: appeal.appeal_type,
+          status: mapAppealStatus(appeal.appeal_status),
+          filed_date: appeal.appeal_filed_date,
+          deadline: appeal.resolution_date
+        }));
+
+      // Process deadlines from active profile
+      if (activeProfile.procedural_deadlines && activeProfile.procedural_deadlines.length > 0) {
+        processDeadlines(activeProfile.procedural_deadlines);
+      }
+
+      // Load benefits from active profile
+      benefits.value = (activeProfile.benefit_applications || [])
+        .filter((benefit: any) => ['pending', 'under_review', 'approved', 'granted'].includes(benefit.status))
+        .map((benefit: any) => ({
+          id: benefit.id,
+          type: benefit.benefit_type?.name || 'Beneficio',
+          status: mapBenefitStatus(benefit.status),
+          progress: calculateBenefitProgress(benefit),
+          application_date: benefit.application_date
+        }));
+    } else {
+      // No active profile - initialize empty
+      legalProfile.value = {
+        legal_status: 'pending_trial',
+        total_sentence: null,
+        admission_date: legalData.inmate?.admission_date || new Date().toISOString(),
+        projected_release_date: null,
+        in_preventive_detention: false
+      };
+      activeCrimes.value = [];
+      upcomingHearings.value = [];
+      activeAppeals.value = [];
+      benefits.value = [];
     }
-    
-    // Process preventive detention status if applicable
-    if (legalData.preventive_detention_status) {
-      updatePreventiveDetentionAlerts(legalData.preventive_detention_status);
-    }
-    
-    // Load resolutions if available
-    if (legalData.resolutions) {
-      // Process resolutions for display
-      processResolutions(legalData.resolutions);
-    }
-    
-    // Load measures if available
-    if (legalData.measures) {
-      // Process legal measures
-      processLegalMeasures(legalData.measures);
-    }
-    
-    // Load benefits if available
-    benefits.value = (legalData.benefit_applications || [])
-      .filter((benefit: any) => ['pending', 'under_review', 'approved', 'granted'].includes(benefit.status))
-      .map((benefit: any) => ({
-        id: benefit.id,
-        type: benefit.benefit_type?.name || 'Beneficio',
-        status: mapBenefitStatus(benefit.status),
-        progress: calculateBenefitProgress(benefit),
-        application_date: benefit.application_date
-      }));
     
   } catch (error: any) {
     console.error('Error fetching legal data:', error);
@@ -937,12 +1236,166 @@ const openReleaseProcess = async () => {
 };
 
 // Watch for data changes to update alerts
+// Load all legal profiles for the inmate
+const loadLegalProfiles = async () => {
+  try {
+    loadingProfiles.value = true;
+    const response = await ApiService.get(`/inmates/${props.inmateId}`);
+    legalProfiles.value = response.data.data?.legal_profiles || [];
+
+    // Auto-expand the active profile
+    const activeProfile = legalProfiles.value.find((p: any) => {
+      return p.profile_status === 'active' ||
+             p.status === 'active' ||
+             p.is_active === true ||
+             p.is_active === 1 ||
+             (!p.status && !p.profile_status && p.is_active === undefined);
+    });
+    if (activeProfile && legalProfiles.value.length > 0) {
+      expandedProfileId.value = activeProfile.id;
+    }
+  } catch (error) {
+    console.error('Error loading legal profiles:', error);
+    Swal.fire({
+      title: 'Error',
+      text: 'No se pudieron cargar los perfiles legales',
+      icon: 'error'
+    });
+  } finally {
+    loadingProfiles.value = false;
+  }
+};
+
+// Toggle profile expansion
+const toggleProfile = (profileId: number) => {
+  expandedProfileId.value = expandedProfileId.value === profileId ? null : profileId;
+};
+
+// Create new legal profile
+const createNewLegalProfile = () => {
+  const modalElement = document.getElementById('legalProfileModal');
+  if (modalElement) {
+    const modal = new Modal(modalElement);
+    modal.show();
+  }
+};
+
+// Edit legal profile
+const editLegalProfile = (profileId: number) => {
+  window.location.href = `/legal/profiles/${profileId}/edit`;
+};
+
+// Complete a legal profile (mark as resolved)
+const completeProfile = async (profile: any) => {
+  const result = await Swal.fire({
+    title: '¿Completar Perfil Legal?',
+    html: `
+      <p>¿Está seguro de marcar el perfil <strong>#${profile.admission_number}</strong> como completado?</p>
+      <p class="text-muted fs-7 mt-2">Caso: ${profile.case_number}</p>
+      <p class="text-warning fs-8 mt-3">Esta acción indica que el proceso judicial ha finalizado.</p>
+    `,
+    icon: 'question',
+    showCancelButton: true,
+    confirmButtonText: 'Sí, completar',
+    cancelButtonText: 'Cancelar',
+    confirmButtonColor: '#50cd89',
+    cancelButtonColor: '#f1416c'
+  });
+
+  if (result.isConfirmed) {
+    try {
+      await ApiService.put(`/inmate-legal-profiles/${profile.id}`, {
+        profile_status: 'completed',
+        release_date: new Date().toISOString().split('T')[0]
+      });
+
+      await Swal.fire({
+        title: '¡Completado!',
+        text: 'El perfil legal ha sido marcado como completado',
+        icon: 'success',
+        timer: 2000,
+        showConfirmButton: false
+      });
+
+      // Reload profiles
+      await loadLegalProfiles();
+      await fetchLegalData();
+    } catch (error: any) {
+      await Swal.fire({
+        title: 'Error',
+        text: error.response?.data?.message || 'No se pudo completar el perfil legal',
+        icon: 'error'
+      });
+    }
+  }
+};
+
+// Handle profile saved event
+const handleProfileSaved = async () => {
+  // Reload legal profiles
+  await loadLegalProfiles();
+
+  // Show success message
+  await Swal.fire({
+    title: '¡Éxito!',
+    text: 'El perfil legal ha sido creado correctamente',
+    icon: 'success',
+    timer: 2000,
+    showConfirmButton: false
+  });
+};
+
+// Handle modal close event
+const handleModalClose = () => {
+  // Modal will close automatically
+};
+
+// Helper functions for legal profiles
+const getProfileStatusLabel = (status: string) => {
+  const labels: Record<string, string> = {
+    active: 'ACTIVO',
+    completed: 'COMPLETADO',
+    transferred: 'TRANSFERIDO',
+    deceased: 'FALLECIDO'
+  };
+  return labels[status] || status.toUpperCase();
+};
+
+const getDefenseTypeLabel = (type: string) => {
+  const labels: Record<string, string> = {
+    public: 'Defensa Pública',
+    private: 'Defensa Privada',
+    self_represented: 'Auto-representación'
+  };
+  return labels[type] || 'No especificado';
+};
+
+const formatSentenceYears = (years: number | null, months: number | null, days: number | null) => {
+  if (!years && !months && !days) return 'Sin condena';
+
+  const parts = [];
+  if (years) parts.push(`${years} año${years > 1 ? 's' : ''}`);
+  if (months) parts.push(`${months} mes${months > 1 ? 'es' : ''}`);
+  if (days) parts.push(`${days} día${days > 1 ? 's' : ''}`);
+
+  return parts.join(', ');
+};
+
 watch([legalProfile, upcomingHearings, activeAppeals], () => {
   updateLegalAlerts();
+}, { deep: true });
+
+// Watch for changes in inmate prop
+watch(() => props.inmate, (newInmate) => {
+  if (newInmate?.legal_profiles) {
+    console.log('Inmate prop changed, reloading legal data');
+    fetchLegalData();
+  }
 }, { deep: true });
 
 // Lifecycle
 onMounted(() => {
   fetchLegalData();
+  loadLegalProfiles();
 });
 </script>

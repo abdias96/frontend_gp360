@@ -29,7 +29,7 @@
           <button
             type="button"
             class="btn btn-primary"
-            @click="showCreateUserModal = true"
+            @click="openCreateModal"
           >
             <i class="ki-duotone ki-plus fs-2"></i>
             Agregar Usuario
@@ -61,7 +61,23 @@
 
           <!--begin::Table body-->
           <tbody class="text-gray-600 fw-semibold">
-            <tr v-for="user in filteredUsers" :key="user.id">
+            <!-- Loading indicator -->
+            <tr v-if="loading">
+              <td colspan="5" class="text-center py-10">
+                <div class="spinner-border text-primary" role="status">
+                  <span class="visually-hidden">Cargando...</span>
+                </div>
+                <p class="text-muted mt-3">Cargando usuarios...</p>
+              </td>
+            </tr>
+            <!-- Empty state -->
+            <tr v-else-if="filteredUsers.length === 0">
+              <td colspan="5" class="text-center py-10">
+                <p class="text-muted">No se encontraron usuarios</p>
+              </td>
+            </tr>
+            <!-- Users list -->
+            <tr v-else v-for="user in filteredUsers" :key="user.id">
               <!--begin::User=-->
               <td class="d-flex align-items-center">
                 <!--begin::Avatar-->
@@ -146,13 +162,13 @@
     tabindex="-1"
     style="background-color: rgba(0, 0, 0, 0.5)"
   >
-    <div class="modal-dialog modal-dialog-centered mw-650px">
+    <div class="modal-dialog modal-dialog-centered modal-xl modal-dialog-scrollable">
       <div class="modal-content">
         <div class="modal-header">
           <h2 class="fw-bold">Agregar Usuario</h2>
           <div
             class="btn btn-icon btn-sm btn-active-icon-primary"
-            @click="showCreateUserModal = false"
+            @click="closeCreateModal"
           >
             <i class="ki-duotone ki-cross fs-1">
               <span class="path1"></span>
@@ -160,17 +176,230 @@
             </i>
           </div>
         </div>
-        <div class="modal-body scroll-y mx-5 mx-xl-15 my-7">
-          <!-- Form content would go here -->
-          <p>Formulario de creación de usuario aquí...</p>
-        </div>
+        <form @submit.prevent="handleCreateUser">
+          <div class="modal-body scroll-y mx-5 mx-xl-15 my-7">
+            <!-- Información Personal -->
+            <div class="mb-10">
+              <h5 class="fw-bold text-primary mb-5">Información Personal</h5>
+
+              <div class="row g-5">
+                <div class="col-md-6">
+                  <label class="form-label required">DPI</label>
+                  <input
+                    v-model="newUserForm.dpi"
+                    type="text"
+                    class="form-control"
+                    :class="{ 'is-invalid': formErrors.dpi }"
+                    placeholder="Ingrese el DPI"
+                    required
+                  />
+                  <div v-if="formErrors.dpi" class="invalid-feedback">
+                    {{ formErrors.dpi }}
+                  </div>
+                </div>
+
+                <div class="col-md-6">
+                  <label class="form-label required">Email</label>
+                  <input
+                    v-model="newUserForm.email"
+                    type="email"
+                    class="form-control"
+                    :class="{ 'is-invalid': formErrors.email }"
+                    placeholder="correo@ejemplo.com"
+                    required
+                  />
+                  <div v-if="formErrors.email" class="invalid-feedback">
+                    {{ formErrors.email }}
+                  </div>
+                </div>
+
+                <div class="col-md-6">
+                  <label class="form-label required">Primer Nombre</label>
+                  <input
+                    v-model="newUserForm.first_name"
+                    type="text"
+                    class="form-control"
+                    :class="{ 'is-invalid': formErrors.first_name }"
+                    placeholder="Primer nombre"
+                    required
+                    @input="generateUsername"
+                  />
+                  <div v-if="formErrors.first_name" class="invalid-feedback">
+                    {{ formErrors.first_name }}
+                  </div>
+                </div>
+
+                <div class="col-md-6">
+                  <label class="form-label">Segundo Nombre</label>
+                  <input
+                    v-model="newUserForm.middle_name"
+                    type="text"
+                    class="form-control"
+                    placeholder="Segundo nombre (opcional)"
+                  />
+                </div>
+
+                <div class="col-md-6">
+                  <label class="form-label required">Primer Apellido</label>
+                  <input
+                    v-model="newUserForm.last_name"
+                    type="text"
+                    class="form-control"
+                    :class="{ 'is-invalid': formErrors.last_name }"
+                    placeholder="Primer apellido"
+                    required
+                    @input="generateUsername"
+                  />
+                  <div v-if="formErrors.last_name" class="invalid-feedback">
+                    {{ formErrors.last_name }}
+                  </div>
+                </div>
+
+                <div class="col-md-6">
+                  <label class="form-label">Segundo Apellido</label>
+                  <input
+                    v-model="newUserForm.second_last_name"
+                    type="text"
+                    class="form-control"
+                    placeholder="Segundo apellido (opcional)"
+                    @input="generateUsername"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <!-- Información de Cuenta -->
+            <div class="mb-10">
+              <h5 class="fw-bold text-primary mb-5">Información de Cuenta</h5>
+
+              <div class="row g-5">
+                <div class="col-md-6">
+                  <label class="form-label required">Nombre de Usuario</label>
+                  <div class="input-group">
+                    <input
+                      v-model="newUserForm.username"
+                      type="text"
+                      class="form-control"
+                      :class="{ 'is-invalid': formErrors.username }"
+                      placeholder="Generado automáticamente"
+                      disabled
+                      title="El nombre de usuario se genera automáticamente"
+                    />
+                    <span v-if="checkingUsername" class="input-group-text">
+                      <span class="spinner-border spinner-border-sm"></span>
+                    </span>
+                    <span v-else-if="newUserForm.username" class="input-group-text">
+                      <i class="bi bi-check-circle-fill text-success"></i>
+                    </span>
+                  </div>
+                  <div v-if="formErrors.username" class="invalid-feedback d-block">
+                    {{ formErrors.username }}
+                  </div>
+                  <small class="form-text text-muted">
+                    <i class="bi bi-info-circle me-1"></i>
+                    Se genera automáticamente: primera letra del nombre + apellido + primera letra del segundo apellido
+                  </small>
+                </div>
+
+                <div class="col-md-6">
+                  <label class="form-label required">Rol</label>
+                  <select
+                    v-model="newUserForm.role_id"
+                    class="form-select"
+                    :class="{ 'is-invalid': formErrors.role_id }"
+                    required
+                  >
+                    <option value="">Seleccione un rol</option>
+                    <option v-for="role in roles" :key="role.id" :value="role.id">
+                      {{ role.name }}
+                    </option>
+                  </select>
+                  <div v-if="formErrors.role_id" class="invalid-feedback">
+                    {{ formErrors.role_id }}
+                  </div>
+                </div>
+
+                <div class="col-md-6">
+                  <label class="form-label required">Contraseña</label>
+                  <input
+                    v-model="newUserForm.password"
+                    type="password"
+                    class="form-control"
+                    :class="{ 'is-invalid': formErrors.password }"
+                    placeholder="Mínimo 8 caracteres"
+                    required
+                  />
+                  <div v-if="formErrors.password" class="invalid-feedback">
+                    {{ formErrors.password }}
+                  </div>
+                  <small class="form-text text-muted">Mínimo 8 caracteres</small>
+                </div>
+
+                <div class="col-md-6">
+                  <label class="form-label required">Confirmar Contraseña</label>
+                  <input
+                    v-model="newUserForm.password_confirmation"
+                    type="password"
+                    class="form-control"
+                    :class="{ 'is-invalid': formErrors.password_confirmation }"
+                    placeholder="Repita la contraseña"
+                    required
+                  />
+                  <div v-if="formErrors.password_confirmation" class="invalid-feedback">
+                    {{ formErrors.password_confirmation }}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Estado -->
+            <div>
+              <h5 class="fw-bold text-primary mb-5">Estado</h5>
+              <div class="form-check form-switch">
+                <input
+                  v-model="newUserForm.active"
+                  class="form-check-input"
+                  type="checkbox"
+                  id="newUserActive"
+                />
+                <label class="form-check-label" for="newUserActive">
+                  Usuario activo
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <div class="modal-footer">
+            <button
+              type="button"
+              class="btn btn-light"
+              @click="closeCreateModal"
+              :disabled="creatingUser"
+            >
+              Cancelar
+            </button>
+            <button
+              type="submit"
+              class="btn btn-primary"
+              :disabled="creatingUser"
+            >
+              <span v-if="creatingUser" class="spinner-border spinner-border-sm me-2"></span>
+              {{ creatingUser ? 'Creando...' : 'Crear Usuario' }}
+            </button>
+          </div>
+        </form>
       </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from "vue";
+import { ref, computed, onMounted } from "vue";
+import { useRouter } from "vue-router";
+import ApiService from "@/core/services/ApiService";
+import Swal from "sweetalert2";
+
+const router = useRouter();
 
 interface User {
   id: number;
@@ -184,37 +413,81 @@ interface User {
 
 const searchTerm = ref("");
 const showCreateUserModal = ref(false);
+const users = ref<User[]>([]);
+const roles = ref<any[]>([]);
+const loading = ref(false);
+const creatingUser = ref(false);
+const checkingUsername = ref(false);
+const formErrors = ref<any>({});
 
-// Sample data - replace with actual API call
-const users = ref<User[]>([
-  {
-    id: 1,
-    name: "Juan Pérez",
-    email: "juan.perez@siapen.gov.co",
-    role: "Administrador",
-    status: "Activo",
-    last_login: "Hace 2 horas",
-    initials: "JP",
-  },
-  {
-    id: 2,
-    name: "María García",
-    email: "maria.garcia@siapen.gov.co",
-    role: "Operador",
-    status: "Activo",
-    last_login: "Hace 1 día",
-    initials: "MG",
-  },
-  {
-    id: 3,
-    name: "Carlos López",
-    email: "carlos.lopez@siapen.gov.co",
-    role: "Supervisor",
-    status: "Inactivo",
-    last_login: "Hace 1 semana",
-    initials: "CL",
-  },
-]);
+const newUserForm = ref({
+  dpi: "",
+  first_name: "",
+  middle_name: "",
+  last_name: "",
+  second_last_name: "",
+  email: "",
+  username: "",
+  password: "",
+  password_confirmation: "",
+  role_id: "",
+  active: true
+});
+
+// Load users from API
+const loadUsers = async () => {
+  loading.value = true;
+  try {
+    const response = await ApiService.get("/users");
+
+    if (response.data.success) {
+      const usersData = response.data.data.data || response.data.data;
+
+      users.value = usersData.map((user: any) => {
+        const fullName = `${user.first_name || ''} ${user.middle_name || ''} ${user.last_name || ''} ${user.second_last_name || ''}`.trim();
+        const initials = (user.first_name?.[0] || '') + (user.last_name?.[0] || '');
+
+        return {
+          id: user.id,
+          name: fullName,
+          email: user.email,
+          role: user.role?.name || 'Sin rol',
+          status: user.active ? 'Activo' : 'Inactivo',
+          last_login: user.last_login ? formatDate(user.last_login) : 'Nunca',
+          initials: initials.toUpperCase()
+        };
+      });
+    }
+  } catch (error: any) {
+    console.error("Error loading users:", error);
+    Swal.fire({
+      icon: 'error',
+      title: 'Error',
+      text: 'No se pudieron cargar los usuarios'
+    });
+  } finally {
+    loading.value = false;
+  }
+};
+
+const formatDate = (dateString: string) => {
+  const date = new Date(dateString);
+  const now = new Date();
+  const diffMs = now.getTime() - date.getTime();
+  const diffMins = Math.floor(diffMs / 60000);
+  const diffHours = Math.floor(diffMs / 3600000);
+  const diffDays = Math.floor(diffMs / 86400000);
+
+  if (diffMins < 60) {
+    return `Hace ${diffMins} minuto${diffMins !== 1 ? 's' : ''}`;
+  } else if (diffHours < 24) {
+    return `Hace ${diffHours} hora${diffHours !== 1 ? 's' : ''}`;
+  } else if (diffDays < 7) {
+    return `Hace ${diffDays} día${diffDays !== 1 ? 's' : ''}`;
+  } else {
+    return date.toLocaleDateString('es-GT');
+  }
+};
 
 const filteredUsers = computed(() => {
   if (!searchTerm.value) return users.value;
@@ -237,12 +510,282 @@ const getStatusClass = (status: string) => {
 };
 
 const editUser = (user: User) => {
-  console.log("Editar usuario:", user);
-  // Implement edit functionality
+  router.push({ name: 'users-edit', params: { id: user.id } });
 };
 
-const deleteUser = (userId: number) => {
-  console.log("Eliminar usuario:", userId);
-  // Implement delete functionality with confirmation
+const deleteUser = async (userId: number) => {
+  const result = await Swal.fire({
+    title: '¿Estás seguro?',
+    text: "Esta acción no se puede revertir",
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonColor: '#d33',
+    cancelButtonColor: '#3085d6',
+    confirmButtonText: 'Sí, eliminar',
+    cancelButtonText: 'Cancelar'
+  });
+
+  if (result.isConfirmed) {
+    try {
+      await ApiService.delete(`/users/${userId}`);
+      await loadUsers(); // Reload the list
+      Swal.fire({
+        icon: 'success',
+        title: 'Usuario eliminado',
+        timer: 2000,
+        showConfirmButton: false
+      });
+    } catch (error) {
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: 'No se pudo eliminar el usuario'
+      });
+    }
+  }
 };
+
+// Load roles from API
+const loadRoles = async () => {
+  try {
+    const response = await ApiService.get("/roles");
+
+    if (response.data.success) {
+      const rolesData = response.data.data;
+      roles.value = Array.isArray(rolesData) ? rolesData : (rolesData.data || []);
+    } else {
+      roles.value = response.data.data || response.data || [];
+    }
+  } catch (error) {
+    console.error("Error loading roles:", error);
+  }
+};
+
+// Normalize string (remove accents and special characters)
+const normalizeString = (str: string): string => {
+  return str
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "") // Remove accents
+    .replace(/[^a-z0-9]/g, ""); // Remove special characters
+};
+
+// Generate username based on name
+const generateUsername = async () => {
+  const firstName = newUserForm.value.first_name.trim();
+  const lastName = newUserForm.value.last_name.trim();
+  const secondLastName = newUserForm.value.second_last_name.trim();
+
+  // Need at least first name and last name
+  if (!firstName || !lastName) {
+    newUserForm.value.username = "";
+    return;
+  }
+
+  // Generate base username: first letter of first name + last name + first letter of second last name
+  const firstInitial = normalizeString(firstName.charAt(0));
+  const lastNameNormalized = normalizeString(lastName);
+  const secondInitial = secondLastName ? normalizeString(secondLastName.charAt(0)) : "";
+
+  let baseUsername = firstInitial + lastNameNormalized + secondInitial;
+
+  // Check if username exists
+  await checkUsernameAvailability(baseUsername);
+};
+
+// Check if username is available
+const checkUsernameAvailability = async (baseUsername: string) => {
+  checkingUsername.value = true;
+  formErrors.value.username = "";
+
+  try {
+    // Check if username exists in the database
+    const response = await ApiService.get(`/users?search=${baseUsername}`);
+
+    let finalUsername = baseUsername;
+
+    if (response.data.success) {
+      const usersData = response.data.data.data || response.data.data;
+
+      // Check if exact username exists
+      const exactMatch = usersData.find((u: any) =>
+        u.username.toLowerCase() === baseUsername.toLowerCase()
+      );
+
+      if (exactMatch) {
+        // Username exists, add random number
+        let attempts = 0;
+        let usernameExists = true;
+
+        while (usernameExists && attempts < 10) {
+          const randomNum = Math.floor(Math.random() * 9000) + 1000; // 4-digit random number
+          finalUsername = baseUsername + randomNum;
+
+          // Check if this combination exists
+          const checkResponse = await ApiService.get(`/users?search=${finalUsername}`);
+          const checkData = checkResponse.data.data.data || checkResponse.data.data;
+          const existsCheck = checkData.find((u: any) =>
+            u.username.toLowerCase() === finalUsername.toLowerCase()
+          );
+
+          if (!existsCheck) {
+            usernameExists = false;
+          }
+
+          attempts++;
+        }
+      }
+    }
+
+    newUserForm.value.username = finalUsername;
+  } catch (error) {
+    console.error("Error checking username:", error);
+    // If there's an error, just use the base username
+    newUserForm.value.username = baseUsername;
+  } finally {
+    checkingUsername.value = false;
+  }
+};
+
+// Reset form
+const resetForm = () => {
+  newUserForm.value = {
+    dpi: "",
+    first_name: "",
+    middle_name: "",
+    last_name: "",
+    second_last_name: "",
+    email: "",
+    username: "",
+    password: "",
+    password_confirmation: "",
+    role_id: "",
+    active: true
+  };
+  formErrors.value = {};
+  checkingUsername.value = false;
+};
+
+// Open create modal
+const openCreateModal = async () => {
+  resetForm();
+  showCreateUserModal.value = true;
+  // Load roles if not loaded yet
+  if (roles.value.length === 0) {
+    await loadRoles();
+  }
+};
+
+// Close create modal
+const closeCreateModal = () => {
+  showCreateUserModal.value = false;
+  resetForm();
+};
+
+// Handle create user
+const handleCreateUser = async () => {
+  formErrors.value = {};
+
+  // Validate username was generated
+  if (!newUserForm.value.username) {
+    Swal.fire({
+      icon: 'error',
+      title: 'Error',
+      text: 'Debe completar el nombre y apellidos para generar el nombre de usuario'
+    });
+    return;
+  }
+
+  // Wait if still checking username
+  if (checkingUsername.value) {
+    Swal.fire({
+      icon: 'info',
+      title: 'Espere un momento',
+      text: 'Verificando disponibilidad del nombre de usuario...'
+    });
+    return;
+  }
+
+  // Validate passwords match
+  if (newUserForm.value.password !== newUserForm.value.password_confirmation) {
+    formErrors.value.password_confirmation = "Las contraseñas no coinciden";
+    return;
+  }
+
+  // Validate password length
+  if (newUserForm.value.password.length < 8) {
+    formErrors.value.password = "La contraseña debe tener al menos 8 caracteres";
+    return;
+  }
+
+  creatingUser.value = true;
+
+  try {
+    await ApiService.post("/users", newUserForm.value);
+
+    await Swal.fire({
+      icon: 'success',
+      title: '¡Éxito!',
+      text: 'Usuario creado exitosamente',
+      timer: 2000,
+      showConfirmButton: false
+    });
+
+    closeCreateModal();
+    await loadUsers(); // Reload the list
+  } catch (error: any) {
+    console.error("Error creating user:", error);
+
+    if (error.response?.data?.errors) {
+      // Laravel validation errors
+      formErrors.value = error.response.data.errors;
+    } else {
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: error.response?.data?.message || 'No se pudo crear el usuario'
+      });
+    }
+  } finally {
+    creatingUser.value = false;
+  }
+};
+
+// Load users and roles when component mounts
+onMounted(() => {
+  loadUsers();
+  loadRoles();
+});
 </script>
+
+<style scoped>
+.form-label.required::after {
+  content: " *";
+  color: #dc3545;
+}
+
+.modal-dialog-scrollable .modal-body {
+  max-height: calc(100vh - 250px);
+  overflow-y: auto;
+}
+
+.invalid-feedback {
+  display: block;
+}
+
+.input-group .form-control:disabled {
+  background-color: #f5f8fa;
+  cursor: not-allowed;
+}
+
+.input-group-text {
+  background-color: #f5f8fa;
+  border-color: #e4e6ef;
+}
+
+.spinner-border-sm {
+  width: 1rem;
+  height: 1rem;
+  border-width: 0.15em;
+}
+</style>

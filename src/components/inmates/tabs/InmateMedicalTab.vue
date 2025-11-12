@@ -523,14 +523,12 @@ const fetchMedicalData = async () => {
   loadingProfile.value = true;
   try {
     console.log('Inmate data in medical tab:', props.inmate);
+    console.log('Medical profile from inmate (snake_case):', props.inmate.medical_profile);
 
-    // Fetch medical data from organized endpoint
-    const medicalResponse = await ApiService.get(`/inmates/${props.inmate.id}/data/medical`);
-    const medicalData = medicalResponse.data.data;
-
-    // Set medical profile
-    if (medicalData.medical_profile) {
-      medicalProfile.value = medicalData.medical_profile;
+    // Use data already loaded from InmateController show() method
+    // Backend returns snake_case keys
+    if (props.inmate.medical_profile) {
+      medicalProfile.value = props.inmate.medical_profile;
     } else {
       // Set default values if no profile exists
       medicalProfile.value = {
@@ -546,25 +544,77 @@ const fetchMedicalData = async () => {
       };
     }
 
-    // Set recent consultations if available
-    if (medicalData.recent_consultations && medicalData.recent_consultations.length > 0) {
-      upcomingConsultations.value = medicalData.recent_consultations;
-      lastConsultation.value = {
-        date: medicalData.recent_consultations[0].consultation_date,
-        doctor: medicalData.recent_consultations[0].doctor?.name
-      };
+    // Set chronic diseases from loaded data (using snake_case)
+    if (props.inmate.medical_profile?.chronic_diseases) {
+      chronicDiseases.value = props.inmate.medical_profile.chronic_diseases.map((cd: any) => ({
+        id: cd.id,
+        name: cd.chronic_disease?.name || 'Desconocido',
+        diagnosed_date: cd.diagnosis_date || cd.created_at,
+        controlled: cd.is_controlled || false
+      }));
+    } else {
+      chronicDiseases.value = [];
+    }
+
+    // Set active treatments from loaded data (using snake_case)
+    if (props.inmate.medical_profile?.medications) {
+      activeTreatments.value = props.inmate.medical_profile.medications
+        .filter((med: any) => med.is_active)
+        .map((med: any) => ({
+          id: med.id,
+          name: med.medication_name || med.name,
+          frequency: med.frequency || 'N/A',
+          type: med.medication_type || 'Medicamento'
+        }));
+    } else {
+      activeTreatments.value = [];
+    }
+
+    // Set active medications from loaded data (using snake_case)
+    if (props.inmate.medical_profile?.medications) {
+      activeMedications.value = props.inmate.medical_profile.medications
+        .filter((med: any) => med.is_active)
+        .map((med: any) => ({
+          id: med.id,
+          name: med.medication_name || med.name,
+          dosage: med.dosage || 'N/A',
+          frequency: med.frequency || 'N/A',
+          is_controlled: med.is_controlled || false
+        }));
+    } else {
+      activeMedications.value = [];
+    }
+
+    // Set recent consultations from loaded data (using snake_case)
+    if (props.inmate.medical_profile?.consultations && props.inmate.medical_profile.consultations.length > 0) {
+      const consultations = props.inmate.medical_profile.consultations;
+      upcomingConsultations.value = consultations
+        .filter((c: any) => new Date(c.consultation_date) >= new Date())
+        .map((c: any) => ({
+          id: c.id,
+          specialty: c.specialty || c.consultation_type || 'General',
+          scheduled_at: c.consultation_date
+        }));
+
+      // Get last consultation
+      const lastConsult = consultations
+        .sort((a: any, b: any) => new Date(b.consultation_date).getTime() - new Date(a.consultation_date).getTime())[0];
+
+      if (lastConsult) {
+        lastConsultation.value = {
+          date: lastConsult.consultation_date,
+          doctor: lastConsult.doctor?.name || lastConsult.doctor_name
+        };
+      } else {
+        lastConsultation.value = null;
+      }
     } else {
       upcomingConsultations.value = [];
       lastConsultation.value = null;
     }
 
-    // For now, set empty arrays for data that doesn't have endpoints yet
-    chronicDiseases.value = [];
-    activeTreatments.value = [];
-    activeMedications.value = [];
-
   } catch (error) {
-    console.error('Error fetching medical data:', error);
+    console.error('Error processing medical data:', error);
     // Set default empty values on error
     medicalProfile.value = {
       health_status: 'unknown',

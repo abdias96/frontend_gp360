@@ -280,37 +280,30 @@ const MainMenuConfig: Array<MenuItem> = [
         route: "/operations",
         keenthemesIcon: "setting-3",
         bootstrapIcon: "bi-gear-wide-connected",
-        permission: "operations.view",
         sub: [
           {
             heading: "admissions",
             route: "/operations/admissions",
-            permission: "admissions.view",
           },
           {
             heading: "transfers",
             route: "/operations/transfers",
-            permission: "transfers.view",
           },
           {
             heading: "movements",
             route: "/operations/movements",
-            permission: "movements.view",
           },
           {
             heading: "counts",
             route: "/operations/counts",
-            permission: "counts.view",
           },
           {
             heading: "releases",
             route: "/operations/releases",
-            permission: "releases.view",
           },
           {
             heading: "locations",
             route: "/operations/locations",
-            permission: "locations.view",
           },
         ],
       },
@@ -365,27 +358,22 @@ const MainMenuConfig: Array<MenuItem> = [
         route: "/documents",
         keenthemesIcon: "document",
         bootstrapIcon: "bi-file-earmark-text",
-        permission: "documents.view",
         sub: [
           {
             heading: "digitalFiles",
             route: "/documents/files",
-            permission: "documents.files",
           },
           {
             heading: "legalDocuments",
             route: "/documents/legal",
-            permission: "documents.legal",
           },
           {
             heading: "medicalDocuments",
             route: "/documents/medical",
-            permission: "documents.medical",
           },
           {
             heading: "correspondence",
             route: "/documents/correspondence",
-            permission: "mail.view",
           },
         ],
       },
@@ -400,27 +388,22 @@ const MainMenuConfig: Array<MenuItem> = [
         route: "/emergency",
         keenthemesIcon: "notification-status",
         bootstrapIcon: "bi-exclamation-triangle",
-        permission: "emergency.view",
         sub: [
           {
             heading: "incidents",
             route: "/emergency/incidents",
-            permission: "emergency.incidents",
           },
           {
             heading: "protocols",
             route: "/emergency/protocols",
-            permission: "emergency.protocols",
           },
           {
             heading: "responseTeams",
             route: "/emergency/teams",
-            permission: "emergency.teams",
           },
           {
             heading: "evacuations",
             route: "/emergency/evacuations",
-            permission: "emergency.evacuations",
           },
         ],
       },

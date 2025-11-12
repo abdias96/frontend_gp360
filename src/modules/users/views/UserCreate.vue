@@ -68,6 +68,7 @@
               id="first_name"
               placeholder="Primer nombre"
               required
+              @input="generateUsername"
             />
           </div>
 
@@ -93,6 +94,7 @@
               id="last_name"
               placeholder="Primer apellido"
               required
+              @input="generateUsername"
             />
           </div>
 
@@ -106,6 +108,7 @@
               class="form-control"
               id="second_last_name"
               placeholder="Segundo apellido (opcional)"
+              @input="generateUsername"
             />
           </div>
 
@@ -119,14 +122,27 @@
             <label for="username" class="form-label"
               >Usuario <span class="text-danger">*</span></label
             >
-            <input
-              v-model="form.username"
-              type="text"
-              class="form-control"
-              id="username"
-              placeholder="Nombre de usuario"
-              required
-            />
+            <div class="input-group">
+              <input
+                v-model="form.username"
+                type="text"
+                class="form-control"
+                id="username"
+                placeholder="Generado automáticamente"
+                disabled
+                title="El nombre de usuario se genera automáticamente"
+              />
+              <span v-if="checkingUsername" class="input-group-text">
+                <span class="spinner-border spinner-border-sm"></span>
+              </span>
+              <span v-else-if="form.username" class="input-group-text">
+                <i class="bi bi-check-circle-fill text-success"></i>
+              </span>
+            </div>
+            <small class="form-text text-muted">
+              <i class="bi bi-info-circle me-1"></i>
+              Se genera automáticamente: primera letra del nombre + apellido + primera letra del segundo apellido
+            </small>
           </div>
 
           <div class="col-md-6">
@@ -225,6 +241,7 @@ import { ref, onMounted } from "vue";
 import { useRouter } from "vue-router";
 import { usePermissions } from "@/composables/usePermissions";
 import ApiService from "@/core/services/ApiService";
+import Swal from "sweetalert2";
 
 // Composables
 const router = useRouter();
@@ -232,6 +249,7 @@ const { canCreate } = usePermissions();
 
 // Reactive data
 const loading = ref(false);
+const checkingUsername = ref(false);
 const roles = ref([]);
 
 const form = ref({
@@ -249,6 +267,91 @@ const form = ref({
 });
 
 // Methods
+// Normalize string (remove accents and special characters)
+const normalizeString = (str: string): string => {
+  return str
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "") // Remove accents
+    .replace(/[^a-z0-9]/g, ""); // Remove special characters
+};
+
+// Generate username based on name
+const generateUsername = async () => {
+  const firstName = form.value.first_name.trim();
+  const lastName = form.value.last_name.trim();
+  const secondLastName = form.value.second_last_name.trim();
+
+  // Need at least first name and last name
+  if (!firstName || !lastName) {
+    form.value.username = "";
+    return;
+  }
+
+  // Generate base username: first letter of first name + last name + first letter of second last name
+  const firstInitial = normalizeString(firstName.charAt(0));
+  const lastNameNormalized = normalizeString(lastName);
+  const secondInitial = secondLastName ? normalizeString(secondLastName.charAt(0)) : "";
+
+  let baseUsername = firstInitial + lastNameNormalized + secondInitial;
+
+  // Check if username exists
+  await checkUsernameAvailability(baseUsername);
+};
+
+// Check if username is available
+const checkUsernameAvailability = async (baseUsername: string) => {
+  checkingUsername.value = true;
+
+  try {
+    // Check if username exists in the database
+    const response = await ApiService.get(`/users?search=${baseUsername}`);
+
+    let finalUsername = baseUsername;
+
+    if (response.data.success) {
+      const usersData = response.data.data.data || response.data.data;
+
+      // Check if exact username exists
+      const exactMatch = usersData.find((u: any) =>
+        u.username.toLowerCase() === baseUsername.toLowerCase()
+      );
+
+      if (exactMatch) {
+        // Username exists, add random number
+        let attempts = 0;
+        let usernameExists = true;
+
+        while (usernameExists && attempts < 10) {
+          const randomNum = Math.floor(Math.random() * 9000) + 1000; // 4-digit random number
+          finalUsername = baseUsername + randomNum;
+
+          // Check if this combination exists
+          const checkResponse = await ApiService.get(`/users?search=${finalUsername}`);
+          const checkData = checkResponse.data.data.data || checkResponse.data.data;
+          const existsCheck = checkData.find((u: any) =>
+            u.username.toLowerCase() === finalUsername.toLowerCase()
+          );
+
+          if (!existsCheck) {
+            usernameExists = false;
+          }
+
+          attempts++;
+        }
+      }
+    }
+
+    form.value.username = finalUsername;
+  } catch (error) {
+    console.error("Error checking username:", error);
+    // If there's an error, just use the base username
+    form.value.username = baseUsername;
+  } finally {
+    checkingUsername.value = false;
+  }
+};
+
 const loadRoles = async () => {
   try {
     const response = await ApiService.get("roles");
@@ -268,12 +371,49 @@ const loadRoles = async () => {
 
 const handleSubmit = async () => {
   if (!canCreate("users")) {
-    alert("No tienes permisos para crear usuarios");
+    Swal.fire({
+      icon: 'error',
+      title: 'Error',
+      text: 'No tienes permisos para crear usuarios'
+    });
+    return;
+  }
+
+  // Validate username was generated
+  if (!form.value.username) {
+    Swal.fire({
+      icon: 'error',
+      title: 'Error',
+      text: 'Debe completar el nombre y apellidos para generar el nombre de usuario'
+    });
+    return;
+  }
+
+  // Wait if still checking username
+  if (checkingUsername.value) {
+    Swal.fire({
+      icon: 'info',
+      title: 'Espere un momento',
+      text: 'Verificando disponibilidad del nombre de usuario...'
+    });
     return;
   }
 
   if (form.value.password !== form.value.password_confirmation) {
-    alert("Las contraseñas no coinciden");
+    Swal.fire({
+      icon: 'error',
+      title: 'Error',
+      text: 'Las contraseñas no coinciden'
+    });
+    return;
+  }
+
+  if (form.value.password.length < 8) {
+    Swal.fire({
+      icon: 'error',
+      title: 'Error',
+      text: 'La contraseña debe tener al menos 8 caracteres'
+    });
     return;
   }
 
@@ -283,18 +423,24 @@ const handleSubmit = async () => {
     await ApiService.post("users", form.value);
 
     // Mostrar mensaje de éxito
-    alert("Usuario creado exitosamente");
+    await Swal.fire({
+      icon: 'success',
+      title: '¡Éxito!',
+      text: 'Usuario creado exitosamente',
+      timer: 2000,
+      showConfirmButton: false
+    });
 
     // Redirigir a la lista de usuarios
     router.push("/users");
   } catch (error: any) {
     console.error("Error creating user:", error);
 
-    if (error.response?.data?.message) {
-      alert(error.response.data.message);
-    } else {
-      alert("Error al crear el usuario. Por favor intente nuevamente.");
-    }
+    Swal.fire({
+      icon: 'error',
+      title: 'Error',
+      text: error.response?.data?.message || 'Error al crear el usuario. Por favor intente nuevamente.'
+    });
   } finally {
     loading.value = false;
   }
@@ -325,5 +471,21 @@ onMounted(() => {
 
 hr {
   margin: 0.5rem 0 1rem 0;
+}
+
+.input-group .form-control:disabled {
+  background-color: #f5f8fa;
+  cursor: not-allowed;
+}
+
+.input-group-text {
+  background-color: #f5f8fa;
+  border-color: #e4e6ef;
+}
+
+.spinner-border-sm {
+  width: 1rem;
+  height: 1rem;
+  border-width: 0.15em;
 }
 </style>

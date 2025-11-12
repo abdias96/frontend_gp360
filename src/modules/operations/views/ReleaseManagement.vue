@@ -2,228 +2,244 @@
   <div class="card">
     <div class="card-header">
       <div class="card-title">
-        <h3>{{ $t('operations.releases.title') }}</h3>
-        <p class="text-muted">{{ $t('operations.releases.subtitle') }}</p>
+        <h3><i class="bi bi-box-arrow-right me-2"></i>Gestión de Liberaciones</h3>
+        <p class="text-muted">Administración de liberaciones programadas y completadas</p>
       </div>
       <div class="card-toolbar">
-        <router-link 
-          :to="{ name: 'operations-release-plans' }"
-          class="btn btn-light-warning btn-sm me-2"
+        <button
+          @click="loadData"
+          class="btn btn-light btn-sm me-2"
+          :disabled="releasesLoading"
         >
-          <i class="fas fa-calendar-alt me-2"></i>
-          Planificación
-        </router-link>
-        <button 
-          @click="showNewReleaseModal = true"
-          class="btn btn-primary btn-sm"
-          v-if="canCreate"
-        >
-          <i class="fas fa-plus me-2"></i>
-          Nueva Liberación
+          <i class="bi bi-arrow-clockwise me-2"></i>
+          Actualizar
         </button>
       </div>
     </div>
 
     <div class="card-body">
-      <!-- Today's Releases Alert -->
-      <div v-if="todayReleases > 0" class="alert alert-info d-flex align-items-center mb-6">
-        <i class="fas fa-info-circle fa-2x me-3"></i>
-        <div>
-          <h5 class="mb-1">Liberaciones del Día</h5>
-          <p class="mb-0">Hay {{ todayReleases }} liberaciones programadas para hoy.</p>
-        </div>
-      </div>
-
-      <!-- Filters -->
-      <div class="row mb-6">
-        <div class="col-md-3">
-          <label class="form-label">Tipo de Liberación</label>
-          <select v-model="filters.release_type" class="form-select">
-            <option value="">Todos</option>
-            <option value="sentence_completion">Cumplimiento de Condena</option>
-            <option value="parole">Libertad Condicional</option>
-            <option value="bail">Fianza</option>
-            <option value="court_order">Orden Judicial</option>
-            <option value="amnesty">Amnistía</option>
-            <option value="transfer">Traslado</option>
-          </select>
-        </div>
-        <div class="col-md-3">
-          <label class="form-label">Estado</label>
-          <select v-model="filters.status" class="form-select">
-            <option value="">Todos</option>
-            <option value="scheduled">Programado</option>
-            <option value="in_process">En Proceso</option>
-            <option value="completed">Completado</option>
-            <option value="cancelled">Cancelado</option>
-          </select>
-        </div>
-        <div class="col-md-3">
-          <label class="form-label">Fecha</label>
-          <input 
-            type="date" 
-            v-model="filters.date"
-            class="form-control"
-          >
-        </div>
-        <div class="col-md-3">
-          <label class="form-label">Buscar PPL</label>
-          <input 
-            type="text" 
-            v-model="filters.search"
-            class="form-control"
-            placeholder="Nombre o DPI..."
-          >
-        </div>
-      </div>
-
       <!-- Statistics Cards -->
-      <div class="row mb-6">
+      <div class="row mb-6" v-if="statistics">
         <div class="col-md-3">
           <div class="card bg-light-warning">
-            <div class="card-body">
-              <div class="d-flex align-items-center">
-                <i class="fas fa-clock fa-2x text-warning me-3"></i>
-                <div>
-                  <div class="fs-4 fw-bold">{{ statistics.scheduled }}</div>
-                  <div class="fs-7 text-muted">Programadas</div>
-                </div>
+            <div class="card-body d-flex align-items-center">
+              <i class="bi bi-clock-history fs-2x text-warning me-3"></i>
+              <div>
+                <div class="fs-4 fw-bold">{{ statistics.pending }}</div>
+                <div class="fs-7 text-muted">Pendientes</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="card bg-light-danger">
+            <div class="card-body d-flex align-items-center">
+              <i class="bi bi-calendar-event fs-2x text-danger me-3"></i>
+              <div>
+                <div class="fs-4 fw-bold">{{ statistics.today }}</div>
+                <div class="fs-7 text-muted">Hoy</div>
               </div>
             </div>
           </div>
         </div>
         <div class="col-md-3">
           <div class="card bg-light-primary">
-            <div class="card-body">
-              <div class="d-flex align-items-center">
-                <i class="fas fa-spinner fa-2x text-primary me-3"></i>
-                <div>
-                  <div class="fs-4 fw-bold">{{ statistics.in_process }}</div>
-                  <div class="fs-7 text-muted">En Proceso</div>
-                </div>
+            <div class="card-body d-flex align-items-center">
+              <i class="bi bi-exclamation-triangle fs-2x text-primary me-3"></i>
+              <div>
+                <div class="fs-4 fw-bold">{{ statistics.overdue }}</div>
+                <div class="fs-7 text-muted">Vencidas</div>
               </div>
             </div>
           </div>
         </div>
         <div class="col-md-3">
           <div class="card bg-light-success">
-            <div class="card-body">
-              <div class="d-flex align-items-center">
-                <i class="fas fa-check-circle fa-2x text-success me-3"></i>
-                <div>
-                  <div class="fs-4 fw-bold">{{ statistics.completed_today }}</div>
-                  <div class="fs-7 text-muted">Completadas Hoy</div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div class="col-md-3">
-          <div class="card bg-light-info">
-            <div class="card-body">
-              <div class="d-flex align-items-center">
-                <i class="fas fa-calendar-check fa-2x text-info me-3"></i>
-                <div>
-                  <div class="fs-4 fw-bold">{{ statistics.this_week }}</div>
-                  <div class="fs-7 text-muted">Esta Semana</div>
-                </div>
+            <div class="card-body d-flex align-items-center">
+              <i class="bi bi-check-circle fs-2x text-success me-3"></i>
+              <div>
+                <div class="fs-4 fw-bold">{{ statistics.completed }}</div>
+                <div class="fs-7 text-muted">Completadas</div>
               </div>
             </div>
           </div>
         </div>
       </div>
 
+      <!-- Tabs Navigation -->
+      <ul class="nav nav-tabs nav-line-tabs mb-5 fs-6">
+        <li class="nav-item">
+          <a
+            class="nav-link"
+            :class="{ active: activeTab === 'all' }"
+            @click.prevent="activeTab = 'all'"
+            href="#"
+          >
+            Todas
+          </a>
+        </li>
+        <li class="nav-item">
+          <a
+            class="nav-link"
+            :class="{ active: activeTab === 'pending' }"
+            @click.prevent="activeTab = 'pending'"
+            href="#"
+          >
+            Pendientes
+            <span v-if="statistics" class="badge badge-light-warning ms-2">{{ statistics.pending }}</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a
+            class="nav-link"
+            :class="{ active: activeTab === 'today' }"
+            @click.prevent="activeTab = 'today'"
+            href="#"
+          >
+            Hoy
+            <span v-if="statistics" class="badge badge-light-danger ms-2">{{ statistics.today }}</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a
+            class="nav-link"
+            :class="{ active: activeTab === 'overdue' }"
+            @click.prevent="activeTab = 'overdue'"
+            href="#"
+          >
+            Vencidas
+            <span v-if="statistics" class="badge badge-light-primary ms-2">{{ statistics.overdue }}</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a
+            class="nav-link"
+            :class="{ active: activeTab === 'completed' }"
+            @click.prevent="activeTab = 'completed'"
+            href="#"
+          >
+            Completadas
+          </a>
+        </li>
+      </ul>
+
+      <!-- Filters -->
+      <div class="row mb-6">
+        <div class="col-md-3">
+          <label class="form-label">Motivo de Liberación</label>
+          <select v-model="filters.exit_reason_id" class="form-select" :disabled="loadingCatalogs">
+            <option value="">Todos</option>
+            <option
+              v-for="reason in exitReasons"
+              :key="reason.id"
+              :value="reason.id"
+            >
+              {{ reason.name }}
+            </option>
+          </select>
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">Desde</label>
+          <input
+            type="date"
+            v-model="filters.date_from"
+            class="form-control"
+          >
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">Hasta</label>
+          <input
+            type="date"
+            v-model="filters.date_to"
+            class="form-control"
+          >
+        </div>
+        <div class="col-md-3 d-flex align-items-end">
+          <button
+            @click="clearFilters"
+            class="btn btn-light w-100"
+          >
+            <i class="bi bi-x-circle me-2"></i>
+            Limpiar Filtros
+          </button>
+        </div>
+      </div>
+
+      <!-- Loading State -->
+      <div v-if="releasesLoading" class="text-center py-10">
+        <div class="spinner-border text-primary" role="status">
+          <span class="visually-hidden">Cargando...</span>
+        </div>
+        <p class="text-muted mt-3">Cargando liberaciones...</p>
+      </div>
+
       <!-- Releases Table -->
-      <div class="table-responsive">
-        <table class="table table-rounded table-striped border gy-7 gs-7">
+      <div v-else-if="filteredReleases.length > 0" class="table-responsive">
+        <table class="table table-row-bordered table-row-gray-100 align-middle gs-0 gy-3">
           <thead>
-            <tr class="fw-semibold fs-6 text-gray-800 border-bottom-2 border-gray-200">
-              <th>PPL</th>
-              <th>Tipo de Liberación</th>
-              <th>Fecha Programada</th>
-              <th>Estado</th>
-              <th>Progreso</th>
-              <th>Documentos</th>
-              <th>Responsable</th>
-              <th>Acciones</th>
+            <tr class="fw-bold text-muted">
+              <th class="min-w-150px">Número</th>
+              <th class="min-w-200px">PPL</th>
+              <th class="min-w-150px">Fecha Programada</th>
+              <th class="min-w-150px">Motivo</th>
+              <th class="min-w-120px">Estado</th>
+              <th class="text-end min-w-150px">Acciones</th>
             </tr>
           </thead>
           <tbody>
-            <tr v-for="release in releases" :key="release.id">
+            <tr v-for="release in filteredReleases" :key="release.id">
+              <td>
+                <span class="text-dark fw-bold d-block fs-6">{{ release.release_number }}</span>
+              </td>
               <td>
                 <div class="d-flex flex-column">
-                  <span class="text-gray-800 fw-bold">{{ release.inmate.full_name }}</span>
-                  <span class="text-muted fs-7">{{ release.inmate.document_number }}</span>
+                  <span class="text-dark fw-bold">{{ release.inmate?.first_name }} {{ release.inmate?.last_name }}</span>
+                  <span class="text-muted fs-7">{{ release.inmate?.document_number }}</span>
                 </div>
               </td>
               <td>
-                <span class="badge" :class="getReleaseTypeBadgeClass(release.release_type)">
-                  {{ formatReleaseType(release.release_type) }}
+                <span
+                  class="badge"
+                  :class="getDateBadgeClass(release.scheduled_release_date, release.release_completed)"
+                >
+                  {{ formatDate(release.scheduled_release_date) }}
                 </span>
               </td>
               <td>
-                <div class="d-flex flex-column">
-                  <span class="text-gray-800 fw-bold">{{ formatDate(release.scheduled_date) }}</span>
-                  <span class="text-muted fs-7">{{ formatTime(release.scheduled_time) }}</span>
-                </div>
+                <span class="text-dark">{{ release.exitReason?.name || 'N/A' }}</span>
               </td>
               <td>
-                <span class="badge" :class="getStatusBadgeClass(release.status)">
-                  {{ formatStatus(release.status) }}
+                <span
+                  class="badge"
+                  :class="release.release_completed ? 'badge-light-success' : 'badge-light-warning'"
+                >
+                  {{ release.release_completed ? 'Completada' : 'Pendiente' }}
                 </span>
               </td>
-              <td>
-                <div class="d-flex flex-column">
-                  <div class="progress h-6px mb-1">
-                    <div 
-                      class="progress-bar bg-primary"
-                      :style="`width: ${release.completion_percentage}%`"
-                    ></div>
-                  </div>
-                  <span class="fs-7 text-muted">
-                    {{ release.completed_steps }}/{{ release.total_steps }} pasos
-                  </span>
-                </div>
-              </td>
-              <td>
-                <div class="d-flex align-items-center">
-                  <span v-if="release.documents_complete" class="badge badge-light-success">
-                    <i class="fas fa-check me-1"></i>
-                    Completos
-                  </span>
-                  <span v-else class="badge badge-light-warning">
-                    <i class="fas fa-exclamation me-1"></i>
-                    Pendientes
-                  </span>
-                </div>
-              </td>
-              <td>{{ release.assigned_to?.name || 'Sin asignar' }}</td>
-              <td>
-                <div class="btn-group">
-                  <button 
-                    @click="viewRelease(release)"
-                    class="btn btn-light btn-sm"
-                    title="Ver detalles"
-                  >
-                    <i class="fas fa-eye"></i>
-                  </button>
-                  <button 
-                    v-if="canProcess && release.status === 'scheduled'"
-                    @click="startProcess(release)"
-                    class="btn btn-primary btn-sm"
-                    title="Iniciar proceso"
-                  >
-                    <i class="fas fa-play"></i>
-                  </button>
-                  <button 
-                    v-if="canProcess && release.status === 'in_process'"
-                    @click="continueProcess(release)"
-                    class="btn btn-warning btn-sm"
-                    title="Continuar proceso"
-                  >
-                    <i class="fas fa-forward"></i>
-                  </button>
-                </div>
+              <td class="text-end">
+                <button
+                  @click="viewDetails(release)"
+                  class="btn btn-icon btn-bg-light btn-active-color-primary btn-sm me-1"
+                  title="Ver detalles"
+                >
+                  <i class="bi bi-eye fs-4"></i>
+                </button>
+                <button
+                  v-if="!release.release_completed"
+                  @click="openCompleteModal(release)"
+                  class="btn btn-icon btn-bg-light btn-active-color-success btn-sm me-1"
+                  title="Completar liberación"
+                >
+                  <i class="bi bi-check-circle fs-4"></i>
+                </button>
+                <button
+                  v-if="!release.release_completed"
+                  @click="handleCancelRelease(release)"
+                  class="btn btn-icon btn-bg-light btn-active-color-danger btn-sm"
+                  title="Cancelar liberación"
+                >
+                  <i class="bi bi-x-circle fs-4"></i>
+                </button>
               </td>
             </tr>
           </tbody>
@@ -231,222 +247,236 @@
       </div>
 
       <!-- Empty State -->
-      <div v-if="releases.length === 0" class="text-center py-10">
-        <i class="fas fa-door-open fa-4x text-muted mb-4"></i>
-        <h4 class="text-muted">No hay liberaciones registradas</h4>
-        <p class="text-muted">No se encontraron liberaciones con los filtros aplicados.</p>
+      <div v-else class="text-center py-10">
+        <i class="bi bi-inbox fs-3x text-muted mb-4"></i>
+        <h4 class="text-muted">No hay liberaciones</h4>
+        <p class="text-muted">No se encontraron liberaciones para el filtro seleccionado.</p>
       </div>
     </div>
+
+    <!-- Modals -->
+    <CompleteReleaseModal
+      v-if="selectedRelease"
+      :release="selectedRelease"
+      @completed="handleReleaseCompleted"
+      @close="selectedRelease = null"
+    />
+
+    <ReleaseDetailModal
+      v-if="detailRelease"
+      :release="detailRelease"
+      @close="detailRelease = null"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, computed, onMounted, watch } from 'vue'
-import { useRouter } from 'vue-router'
-import { useI18n } from 'vue-i18n'
-import { useAuthStore } from '@/stores/auth'
-import Swal from 'sweetalert2'
+import { ref, computed, onMounted, watch } from 'vue';
+import { useReleases } from '@/composables/useReleases';
+import { useCatalogs } from '@/composables/useCatalogs';
+import Swal from 'sweetalert2';
+import dayjs from 'dayjs';
+import CompleteReleaseModal from '@/components/releases/modals/CompleteReleaseModal.vue';
+import ReleaseDetailModal from '@/components/releases/modals/ReleaseDetailModal.vue';
 
-const { t } = useI18n()
-const router = useRouter()
-const authStore = useAuthStore()
+// Composables
+const {
+  loading: releasesLoading,
+  releases,
+  getReleases,
+  getReleaseDetails,
+  getTodayReleases,
+  getOverdueReleases,
+  cancelRelease
+} = useReleases();
 
-// Data
-const loading = ref(false)
-const showNewReleaseModal = ref(false)
-const releases = ref<any[]>([])
-const todayReleases = ref(0)
+const { fetchCatalog } = useCatalogs();
 
-const filters = reactive({
-  release_type: '',
-  status: '',
-  date: '',
-  search: ''
-})
+// State
+const activeTab = ref('all');
+const exitReasons = ref<any[]>([]);
+const loadingCatalogs = ref(false);
+const selectedRelease = ref<any>(null);
+const detailRelease = ref<any>(null);
+
+const filters = ref({
+  exit_reason_id: '',
+  date_from: '',
+  date_to: ''
+});
 
 const statistics = ref({
-  scheduled: 0,
-  in_process: 0,
-  completed_today: 0,
-  this_week: 0
-})
+  pending: 0,
+  today: 0,
+  overdue: 0,
+  completed: 0
+});
 
 // Computed
-const canCreate = computed(() => {
-  return authStore.hasPermission('operations.releases.create')
-})
+const filteredReleases = computed(() => {
+  let result = releases.value;
 
-const canProcess = computed(() => {
-  return authStore.hasPermission('operations.releases.process')
-})
+  // Filter by tab
+  if (activeTab.value === 'pending') {
+    result = result.filter((r: any) => !r.release_completed && !isOverdue(r.scheduled_release_date));
+  } else if (activeTab.value === 'today') {
+    result = result.filter((r: any) => isToday(r.scheduled_release_date) && !r.release_completed);
+  } else if (activeTab.value === 'overdue') {
+    result = result.filter((r: any) => isOverdue(r.scheduled_release_date) && !r.release_completed);
+  } else if (activeTab.value === 'completed') {
+    result = result.filter((r: any) => r.release_completed);
+  }
+
+  // Apply additional filters
+  if (filters.value.exit_reason_id) {
+    result = result.filter((r: any) => r.exit_reason_id === parseInt(filters.value.exit_reason_id));
+  }
+
+  if (filters.value.date_from) {
+    result = result.filter((r: any) => r.scheduled_release_date >= filters.value.date_from);
+  }
+
+  if (filters.value.date_to) {
+    result = result.filter((r: any) => r.scheduled_release_date <= filters.value.date_to);
+  }
+
+  return result;
+});
 
 // Methods
+const loadData = async () => {
+  await Promise.all([
+    loadReleases(),
+    loadCatalogs()
+  ]);
+  calculateStatistics();
+};
+
 const loadReleases = async () => {
-  loading.value = true
+  const params: any = {};
+
+  if (activeTab.value === 'pending') {
+    params.status = 'pending';
+  } else if (activeTab.value === 'completed') {
+    params.status = 'completed';
+  }
+
+  await getReleases(params);
+};
+
+const loadCatalogs = async () => {
+  loadingCatalogs.value = true;
   try {
-    // TODO: Implement API call
-    // Mock data for now
-    releases.value = [
-      {
-        id: 1,
-        inmate: {
-          full_name: 'Juan Pérez García',
-          document_number: '1234567890101'
-        },
-        release_type: 'sentence_completion',
-        scheduled_date: '2024-01-16',
-        scheduled_time: '08:00:00',
-        status: 'scheduled',
-        completion_percentage: 60,
-        completed_steps: 3,
-        total_steps: 5,
-        documents_complete: false,
-        assigned_to: { name: 'María López' }
-      },
-      {
-        id: 2,
-        inmate: {
-          full_name: 'Carlos Rodríguez',
-          document_number: '2345678901234'
-        },
-        release_type: 'parole',
-        scheduled_date: '2024-01-16',
-        scheduled_time: '10:00:00',
-        status: 'in_process',
-        completion_percentage: 80,
-        completed_steps: 4,
-        total_steps: 5,
-        documents_complete: true,
-        assigned_to: { name: 'Juan Martínez' }
-      }
-    ]
-    
-    todayReleases.value = 3
-    
-    statistics.value = {
-      scheduled: 8,
-      in_process: 2,
-      completed_today: 5,
-      this_week: 15
-    }
+    exitReasons.value = await fetchCatalog('exit-reasons', true);
   } catch (error) {
-    console.error('Error loading releases:', error)
-    await Swal.fire({
-      icon: 'error',
-      title: 'Error',
-      text: 'No se pudieron cargar las liberaciones'
-    })
+    console.error('Error loading catalogs:', error);
   } finally {
-    loading.value = false
+    loadingCatalogs.value = false;
   }
-}
+};
 
-const viewRelease = (release: any) => {
-  router.push({ 
-    name: 'operations-release-detail', 
-    params: { id: release.id } 
-  })
-}
+const calculateStatistics = () => {
+  const today = dayjs().format('YYYY-MM-DD');
 
-const startProcess = async (release: any) => {
-  const result = await Swal.fire({
-    title: 'Iniciar proceso de liberación',
-    text: `¿Desea iniciar el proceso de liberación para ${release.inmate.full_name}?`,
-    icon: 'question',
+  statistics.value = {
+    pending: releases.value.filter((r: any) =>
+      !r.release_completed && !isOverdue(r.scheduled_release_date)
+    ).length,
+    today: releases.value.filter((r: any) =>
+      r.scheduled_release_date === today && !r.release_completed
+    ).length,
+    overdue: releases.value.filter((r: any) =>
+      isOverdue(r.scheduled_release_date) && !r.release_completed
+    ).length,
+    completed: releases.value.filter((r: any) => r.release_completed).length
+  };
+};
+
+const clearFilters = () => {
+  filters.value = {
+    exit_reason_id: '',
+    date_from: '',
+    date_to: ''
+  };
+};
+
+const openCompleteModal = (release: any) => {
+  selectedRelease.value = release;
+};
+
+const viewDetails = async (release: any) => {
+  // Cargar detalles completos desde el backend
+  const fullDetails = await getReleaseDetails(release.id);
+  if (fullDetails) {
+    detailRelease.value = fullDetails;
+  }
+};
+
+const handleCancelRelease = async (release: any) => {
+  const { value: reason } = await Swal.fire({
+    title: 'Cancelar Liberación',
+    text: '¿Por qué desea cancelar esta liberación?',
+    input: 'textarea',
+    inputPlaceholder: 'Ingrese el motivo de la cancelación...',
+    inputAttributes: {
+      'aria-label': 'Motivo de cancelación'
+    },
     showCancelButton: true,
-    confirmButtonText: 'Sí, iniciar',
-    cancelButtonText: 'Cancelar'
-  })
-  
-  if (result.isConfirmed) {
-    try {
-      // TODO: Implement API call
-      await Swal.fire({
-        icon: 'success',
-        title: 'Proceso iniciado',
-        text: 'El proceso de liberación ha sido iniciado'
-      })
-      loadReleases()
-    } catch (error) {
-      await Swal.fire({
-        icon: 'error',
-        title: 'Error',
-        text: 'No se pudo iniciar el proceso'
-      })
+    confirmButtonText: 'Cancelar Liberación',
+    cancelButtonText: 'No, volver',
+    confirmButtonColor: '#d33',
+    inputValidator: (value) => {
+      if (!value) {
+        return '¡Debe ingresar un motivo!';
+      }
+      return null;
+    }
+  });
+
+  if (reason) {
+    const result = await cancelRelease(release.id, reason);
+    if (result) {
+      loadData();
     }
   }
-}
+};
 
-const continueProcess = (release: any) => {
-  router.push({ 
-    name: 'operations-release-process', 
-    params: { id: release.id } 
-  })
-}
+const handleReleaseCompleted = () => {
+  selectedRelease.value = null;
+  loadData();
+};
 
-// Formatting methods
-const formatReleaseType = (type: string) => {
-  const types: Record<string, string> = {
-    'sentence_completion': 'Cumplimiento',
-    'parole': 'Condicional',
-    'bail': 'Fianza',
-    'court_order': 'Orden Judicial',
-    'amnesty': 'Amnistía',
-    'transfer': 'Traslado'
-  }
-  return types[type] || type
-}
+// Helper methods
+const isToday = (date: string) => {
+  return dayjs(date).format('YYYY-MM-DD') === dayjs().format('YYYY-MM-DD');
+};
 
-const formatStatus = (status: string) => {
-  const statuses: Record<string, string> = {
-    'scheduled': 'Programado',
-    'in_process': 'En Proceso',
-    'completed': 'Completado',
-    'cancelled': 'Cancelado'
-  }
-  return statuses[status] || status
-}
+const isOverdue = (date: string) => {
+  return dayjs(date).isBefore(dayjs(), 'day');
+};
 
 const formatDate = (date: string) => {
-  return new Date(date).toLocaleDateString('es-GT')
-}
+  return dayjs(date).format('DD/MM/YYYY');
+};
 
-const formatTime = (time: string) => {
-  return new Date(`2000-01-01 ${time}`).toLocaleTimeString('es-GT', { 
-    hour: '2-digit', 
-    minute: '2-digit' 
-  })
-}
-
-const getReleaseTypeBadgeClass = (type: string) => {
-  const classes: Record<string, string> = {
-    'sentence_completion': 'badge-light-success',
-    'parole': 'badge-light-warning',
-    'bail': 'badge-light-info',
-    'court_order': 'badge-light-primary',
-    'amnesty': 'badge-light-secondary',
-    'transfer': 'badge-light-dark'
-  }
-  return classes[type] || 'badge-light-secondary'
-}
-
-const getStatusBadgeClass = (status: string) => {
-  const classes: Record<string, string> = {
-    'scheduled': 'badge-light-warning',
-    'in_process': 'badge-light-primary',
-    'completed': 'badge-light-success',
-    'cancelled': 'badge-light-danger'
-  }
-  return classes[status] || 'badge-light-secondary'
-}
+const getDateBadgeClass = (date: string, completed: boolean) => {
+  if (completed) return 'badge-light-success';
+  if (isToday(date)) return 'badge-danger';
+  if (isOverdue(date)) return 'badge-primary';
+  return 'badge-light';
+};
 
 // Watchers
+watch(activeTab, () => {
+  loadReleases();
+});
+
 watch(filters, () => {
-  loadReleases()
-}, { deep: true })
+  // Filtering happens in computed property
+}, { deep: true });
 
 // Lifecycle
 onMounted(() => {
-  loadReleases()
-})
+  loadData();
+});
 </script>
