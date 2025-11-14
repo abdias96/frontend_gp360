@@ -365,7 +365,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from "vue";
+import { computed, onMounted } from "vue";
 import { useAuthStore } from "@/stores/auth";
 import type { InmateDetail, InmateCrime } from "@/types/inmates";
 import Swal from "sweetalert2";
@@ -377,8 +377,29 @@ interface Props {
 const props = defineProps<Props>();
 const authStore = useAuthStore();
 
+// Debug logging on mount
+onMounted(() => {
+  console.log('InmateLegalTab - Inmate data:', props.inmate);
+  console.log('InmateLegalTab - legal_profile (singular):', props.inmate.legal_profile);
+  console.log('InmateLegalTab - legal_profiles (plural):', props.inmate.legal_profiles);
+  console.log('InmateLegalTab - legalProfile (camelCase):', props.inmate.legalProfile);
+  console.log('InmateLegalTab - legalProfiles (camelCase):', props.inmate.legalProfiles);
+});
+
 // Computed properties
-const legalProfile = computed(() => props.inmate.legal_profile);
+// Try legal_profiles first (new structure), then fall back to legal_profile (old structure)
+const legalProfile = computed(() => {
+  // If we have multiple legal profiles, get the active one
+  if (props.inmate.legal_profiles && props.inmate.legal_profiles.length > 0) {
+    // Find active profile or return the first one
+    const activeProfile = props.inmate.legal_profiles.find((profile: any) => profile.profile_status === 'active');
+    return activeProfile || props.inmate.legal_profiles[0];
+  }
+
+  // Fall back to singular legal_profile
+  return props.inmate.legal_profile || null;
+});
+
 const canEdit = computed(() => authStore.hasPermission("inmates.legal"));
 
 const hasSentenceTime = computed(() => {

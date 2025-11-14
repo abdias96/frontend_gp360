@@ -305,39 +305,6 @@
               <KTIcon icon-name="fingerprint-scanning" icon-class="fs-2 me-1" />
               {{ isServiceRunning ? 'Capturando...' : 'Capturar Huellas' }}
             </button>
-              <div
-                class="dropdown-menu menu menu-sub menu-sub-dropdown menu-column menu-rounded menu-gray-600 menu-state-bg-light-primary fw-semibold fs-7 w-200px py-4"
-              >
-                <div v-if="canManageBiometrics" class="menu-item px-3">
-                  <a
-                    @click.prevent="captureFingerprints"
-                    class="menu-link px-3"
-                  >
-                    <KTIcon
-                      icon-name="fingerprint-scanning"
-                      icon-class="fs-6 me-2"
-                    />
-                    Capturar Huellas
-                  </a>
-                </div>
-                <div v-if="canManageBiometrics" class="menu-item px-3">
-                  <a @click.prevent="capturePhoto" class="menu-link px-3">
-                    <KTIcon icon-name="camera" icon-class="fs-6 me-2" />
-                    Tomar Fotografía
-                  </a>
-                </div>
-                <div class="menu-separator"></div>
-                <div class="menu-item px-3">
-                  <a
-                    @click.prevent="viewBiometricHistory"
-                    class="menu-link px-3"
-                  >
-                    <KTIcon icon-name="time" icon-class="fs-6 me-2" />
-                    Historial
-                  </a>
-                </div>
-              </div>
-            </div>
           </div>
         </div>
         <div class="card-body pt-0">
@@ -355,19 +322,19 @@
               <span
                 class="badge badge-lg"
                 :class="
-                  inmate.has_biometric_data
+                  hasBiometricData
                     ? 'badge-light-success'
                     : 'badge-light-warning'
                 "
               >
                 <KTIcon
                   :icon-name="
-                    inmate.has_biometric_data ? 'shield-check' : 'warning-2'
+                    hasBiometricData ? 'shield-check' : 'warning-2'
                   "
                   icon-class="fs-6 me-1"
                 />
                 {{
-                  inmate.has_biometric_data
+                  hasBiometricData
                     ? "Datos Completos"
                     : "Datos Pendientes"
                 }}
@@ -401,15 +368,15 @@
                   <div class="text-gray-600 fs-7">
                     {{
                       biometricData?.fingerprint_template
-                        ? "Registradas"
+                        ? `${biometricData.fingerprint_count} huella(s) registrada(s)`
                         : "Pendientes de captura"
                     }}
                   </div>
                   <div
-                    v-if="biometricData?.fingerprint_quality"
+                    v-if="biometricData?.average_quality"
                     class="text-gray-600 fs-8"
                   >
-                    Calidad: {{ biometricData.fingerprint_quality }}%
+                    Calidad promedio: {{ Math.round(biometricData.average_quality) }}%
                   </div>
                 </div>
                 <span
@@ -705,6 +672,16 @@ const bmiValue = computed(() => {
   return bmi.toFixed(1);
 });
 
+// Computed to check if inmate actually has biometric data
+const hasBiometricData = computed(() => {
+  // Check if we have actual biometric data loaded
+  if (biometricData.value?.fingerprint_template || biometricData.value?.facial_template) {
+    return true;
+  }
+  // Fall back to the flag from the database
+  return props.inmate.has_biometric_data || false;
+});
+
 // Methods
 const loadPhysicalData = async () => {
   try {
@@ -733,11 +710,14 @@ const loadBiometricData = async () => {
   try {
     loading.value.biometrics = true;
 
+    console.log('=== BIOMETRIC DATA DEBUG ===');
+    console.log('Inmate has_biometric_data flag:', props.inmate.has_biometric_data);
     console.log('Photos from inmate:', props.inmate.photos);
 
     // Use photos already loaded from InmateController show() method
     if (props.inmate.photos) {
       currentPhotos.value = props.inmate.photos.filter((p) => p.is_current);
+      console.log('Current photos count:', currentPhotos.value.length);
     } else {
       currentPhotos.value = [];
     }
@@ -745,16 +725,44 @@ const loadBiometricData = async () => {
     // For biometric data, we still need to make API call as it's not loaded by default
     // This is because biometric templates are BLOB data and shouldn't be loaded unless needed
     try {
+      console.log('Fetching biometric data from API...');
       const biometricResponse = await ApiService.get(`/inmates/${props.inmate.id}/biometric-data`);
-      if (biometricResponse.data.data) {
-        biometricData.value = biometricResponse.data.data;
+      console.log('Biometric API response:', biometricResponse.data);
+
+      if (biometricResponse.data.data && Array.isArray(biometricResponse.data.data)) {
+        // Backend returns an array of biometric records (one per finger)
+        const biometricRecords = biometricResponse.data.data;
+        console.log('Biometric records count:', biometricRecords.length);
+
+        if (biometricRecords.length > 0) {
+          // Convert array to a summary object for easier consumption
+          biometricData.value = {
+            records: biometricRecords,
+            fingerprint_template: biometricRecords.some((r: any) => r.has_template),
+            fingerprint_count: biometricRecords.filter((r: any) => r.has_template).length,
+            average_quality: biometricRecords.reduce((sum: number, r: any) => sum + (r.fingerprint_quality || 0), 0) / biometricRecords.length,
+            last_capture_date: biometricRecords[0]?.capture_date,
+            capture_device: biometricRecords[0]?.capture_device
+          };
+          console.log('Biometric data summary:', {
+            fingerprint_template: biometricData.value.fingerprint_template,
+            fingerprint_count: biometricData.value.fingerprint_count,
+            average_quality: biometricData.value.average_quality
+          });
+        } else {
+          biometricData.value = null;
+          console.log('No biometric records found');
+        }
       } else {
         biometricData.value = null;
+        console.log('No biometric data available');
       }
-    } catch (bioError) {
+    } catch (bioError: any) {
       console.error("Error loading biometric data:", bioError);
+      console.error("Error response:", bioError.response?.data);
       biometricData.value = null;
     }
+    console.log('=== END BIOMETRIC DEBUG ===');
   } catch (error) {
     console.error("Error processing biometric data:", error);
     currentPhotos.value = [];
