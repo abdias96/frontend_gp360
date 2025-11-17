@@ -1002,179 +1002,7 @@
           </div>
         </div>
 
-        <!--begin::Step 5: Legal Information-->
-        <div class="card mb-7">
-          <div class="card-header border-0 pt-6">
-            <div class="card-title">
-              <h4 class="fw-bold text-gray-800">Información Legal</h4>
-            </div>
-          </div>
-          <div class="card-body pt-0">
-            <div class="row g-6">
-              <div class="col-md-6">
-                <label class="form-label">Número de Caso</label>
-                <input
-                  type="text"
-                  v-model="form.case_number"
-                  class="form-control"
-                  placeholder="Número de expediente judicial"
-                />
-              </div>
-
-              <div class="col-md-6">
-                <label class="form-label">Estado Legal</label>
-                <select
-                  v-model="form.legal_status"
-                  class="form-select"
-                >
-                  <option value="">Seleccionar estado legal</option>
-                  <option value="preventive_detention">
-                    Prisión Preventiva
-                  </option>
-                  <option value="sentenced">Sentenciado</option>
-                  <option value="appeal_pending">Apelación Pendiente</option>
-                  <option value="execution_pending">Ejecución Pendiente</option>
-                  <option value="conditional_release">
-                    Libertad Condicional
-                  </option>
-                  <option value="house_arrest">Arresto Domiciliario</option>
-                </select>
-              </div>
-
-              <div class="col-md-6">
-                <label class="form-label">Razón de Admisión</label>
-                <input
-                  type="text"
-                  v-model="form.admission_reason"
-                  class="form-control"
-                  placeholder="Motivo del ingreso"
-                />
-              </div>
-
-              <div v-if="form.legal_status === 'preventive_detention'" class="col-md-6">
-                <label class="form-label">Inicio Prisión Preventiva</label>
-                <input
-                  type="date"
-                  v-model="form.preventive_detention_start"
-                  class="form-control"
-                />
-              </div>
-
-              <div class="col-md-12">
-                <label class="form-label">Observaciones Legales</label>
-                <textarea
-                  v-model="form.observations"
-                  class="form-control"
-                  rows="3"
-                  placeholder="Observaciones sobre el caso legal (opcional)"
-                ></textarea>
-              </div>
-            </div>
-          </div>
-        </div>
-        <!--end::Step 5-->
-
-        <!--begin::Step 6: Security Information (Optional)-->
-        <div class="card mb-7">
-          <div class="card-header border-0 pt-6">
-            <div class="card-title">
-              <h4 class="fw-bold text-gray-800">
-                Información de Seguridad (Opcional)
-              </h4>
-            </div>
-          </div>
-          <div class="card-body pt-0">
-            <div class="row g-6">
-              <div class="col-md-6">
-                <label class="form-label">Número de Celda</label>
-                <input
-                  type="text"
-                  v-model="form.current_cell_number"
-                  class="form-control"
-                  placeholder="Número de celda (opcional)"
-                />
-              </div>
-
-              <div class="col-md-6">
-                <label class="form-label">Nivel de Seguridad</label>
-                <select v-model="form.security_level" class="form-select">
-                  <option value="">Seleccionar nivel</option>
-                  <option value="minimum">Mínimo</option>
-                  <option value="medium">Medio</option>
-                  <option value="maximum">Máximo</option>
-                  <option value="super_maximum">Súper Máximo</option>
-                </select>
-              </div>
-
-              <div class="col-md-6">
-                <label class="form-label"
-                  >Estado de Afiliación Pandilleril</label
-                >
-                <select
-                  v-model="form.gang_affiliation_status"
-                  class="form-select"
-                >
-                  <option value="">Sin información</option>
-                  <option value="none">Sin afiliación</option>
-                  <option value="suspected_ms13">Sospechoso MS-13</option>
-                  <option value="confirmed_ms13">Confirmado MS-13</option>
-                  <option value="suspected_barrio18">
-                    Sospechoso Barrio 18
-                  </option>
-                  <option value="confirmed_barrio18">
-                    Confirmado Barrio 18
-                  </option>
-                  <option value="other_gang">Otra pandilla</option>
-                  <option value="gang_leader">Líder pandilleril</option>
-                  <option value="protected_witness">Testigo protegido</option>
-                </select>
-              </div>
-
-              <div class="col-md-6">
-                <div
-                  class="form-check form-switch form-check-custom form-check-solid"
-                >
-                  <input
-                    class="form-check-input"
-                    type="checkbox"
-                    v-model="form.requires_special_protection"
-                  />
-                  <label class="form-check-label">
-                    Requiere Protección Especial
-                  </label>
-                </div>
-              </div>
-
-              <div class="col-md-6">
-                <div
-                  class="form-check form-switch form-check-custom form-check-solid"
-                >
-                  <input
-                    class="form-check-input"
-                    type="checkbox"
-                    v-model="form.communication_monitoring"
-                  />
-                  <label class="form-check-label">
-                    Monitoreo de Comunicaciones
-                  </label>
-                </div>
-              </div>
-
-              <div v-if="form.requires_special_protection" class="col-md-12">
-                <label class="form-label">Razones de Protección</label>
-                <textarea
-                  v-model="form.protection_reasons"
-                  class="form-control"
-                  rows="3"
-                  placeholder="Describir las razones por las que requiere protección especial"
-                ></textarea>
-              </div>
-            </div>
-          </div>
-        </div>
-        <!--end::Step 6-->
-
-        <!--begin::Step 7: Medical Information (Optional)-->
+        <!--begin::Step 5: Medical Information (Optional)-->
         <div class="card mb-7">
           <div class="card-header border-0 pt-6">
             <div class="card-title">
@@ -1197,9 +1025,9 @@
             </div>
           </div>
         </div>
-        <!--end::Step 7-->
+        <!--end::Step 5-->
 
-        <!--begin::Step 8: Additional Notes-->
+        <!--begin::Step 6: Additional Notes-->
         <div class="card mb-7">
           <div class="card-header border-0 pt-6">
             <div class="card-title">
@@ -1220,7 +1048,7 @@
             </div>
           </div>
         </div>
-        <!--end::Step 8-->
+        <!--end::Step 6-->
 
       </form>
     </div>
@@ -1348,19 +1176,6 @@ const form = ref({
   address: "",
   phone: "",
   email: "",
-  // Legal fields
-  case_number: "",
-  legal_status: "",
-  admission_reason: "",
-  preventive_detention_start: "",
-  observations: "",
-  // Security fields
-  current_cell_number: "",
-  security_level: "",
-  gang_affiliation_status: "",
-  requires_special_protection: false,
-  protection_reasons: "",
-  communication_monitoring: false,
   // Professional fields
   occupation_details: "",
   previous_occupation: "",
@@ -1492,19 +1307,6 @@ const populateForm = async () => {
     address: inmate.address || "",
     phone: inmate.phone || "",
     email: inmate.email || "",
-    // Legal fields
-    case_number: inmate.case_number || "",
-    legal_status: inmate.legal_status || "",
-    admission_reason: inmate.admission_reason || "",
-    preventive_detention_start: formatDateForInput(inmate.preventive_detention_start),
-    observations: inmate.observations || "",
-    // Security fields
-    current_cell_number: inmate.current_cell_number || "",
-    security_level: inmate.security_level || "",
-    gang_affiliation_status: inmate.gang_affiliation_status || "",
-    requires_special_protection: inmate.requires_special_protection || false,
-    protection_reasons: inmate.protection_reasons || "",
-    communication_monitoring: inmate.communication_monitoring || false,
     // Professional fields
     occupation_details: inmate.occupation_details || "",
     previous_occupation: inmate.previous_occupation || "",
