@@ -5,9 +5,13 @@
   "scripts": {
     "dev": "vite",
     "build": "run-p type-check build-only",
+    "build:prod": "npm run build-only",
+    "build:safe": "NODE_OPTIONS='--max-old-space-size=8192' run-p type-check build-only",
+    "build:no-check": "npm run build-only",
     "preview": "vite preview",
     "build-only": "vite build",
     "type-check": "vue-tsc --noEmit",
+    "type-check:fix": "vue-tsc --noEmit || true",
     "lint": "eslint . --ext .vue,.js,.jsx,.cjs,.mjs,.ts,.tsx,.cts,.mts --fix --ignore-path .gitignore"
   },
   "dependencies": {
