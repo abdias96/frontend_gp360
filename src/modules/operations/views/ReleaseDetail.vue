@@ -316,11 +316,11 @@ const canPrint = computed(() => {
 })
 
 const canProcess = computed(() => {
-  return authStore.hasPermission('operations.releases.process')
+  return authStore.hasPermission('operations.releases_process')
 })
 
 const canComplete = computed(() => {
-  return authStore.hasPermission('operations.releases.complete')
+  return authStore.hasPermission('operations.releases_complete')
 })
 
 // Methods

@@ -150,7 +150,7 @@ const error = ref<string | null>(null);
 const searchTerm = ref('');
 const profiles = ref<any>({});
 
-const canCreate = computed(() => authStore.hasPermission('inmates.legal.edit'));
+const canCreate = computed(() => authStore.hasPermission('inmates.legal_edit'));
 
 const loadProfiles = async () => {
   try {

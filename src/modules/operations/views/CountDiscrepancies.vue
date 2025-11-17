@@ -199,7 +199,7 @@ const filters = reactive({
 
 // Computed
 const canManage = computed(() => {
-  return authStore.hasPermission('operations.counts.manage_discrepancies')
+  return authStore.hasPermission('operations.counts_manage_discrepancies')
 })
 
 // Methods

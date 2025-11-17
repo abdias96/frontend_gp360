@@ -254,7 +254,7 @@
                       title="Capturar Fotografía"
                       @click="goPhoto(inmate.id)"
                     >
-                      <KTIcon icon-name="camera" icon-class="fs-3" />
+                      <i class="fas fa-camera"></i>
                     </button>
                   </div>
                 </td>
@@ -317,17 +317,27 @@ const loadInmates = async () => {
         ? response.data.data 
         : (response.data.data.data || []);
         
-      arrInmates.value = inmatesData.map((inmate: any) => ({
-        id: inmate.id,
-        full_name: `${inmate.first_name || ''} ${inmate.last_name || ''}`.trim() || 'Sin nombre',
-        identification_number: inmate.document_number || 'Sin DPI',
-        center_name: inmate.current_center?.name || 'Sin asignar',
-        sector_name: inmate.current_sector?.name || 'Sin asignar',
-        physical_profile: inmate.physical_profile || null,
-        biometric_count: inmate.biometric_count || 0,
-        photo_count: inmate.photo_count || 0,
-        primary_photo: inmate.photos?.[0]?.photo_url || null
-      }));
+      arrInmates.value = inmatesData.map((inmate: any) => {
+        // Get primary photo with fallback logic (same as InmateDetail)
+        let primaryPhoto = null;
+        if (inmate.photos && inmate.photos.length > 0) {
+          const currentPhoto = inmate.photos.find((photo: any) => photo.is_current);
+          const photoToUse = currentPhoto || inmate.photos[0];
+          primaryPhoto = photoToUse.photo_data || photoToUse.photo_url || photoToUse.photo_path;
+        }
+
+        return {
+          id: inmate.id,
+          full_name: `${inmate.first_name || ''} ${inmate.last_name || ''}`.trim() || 'Sin nombre',
+          identification_number: inmate.document_number || 'Sin DPI',
+          center_name: inmate.current_center?.name || 'Sin asignar',
+          sector_name: inmate.current_sector?.name || 'Sin asignar',
+          physical_profile: inmate.physical_profile || null,
+          biometric_count: inmate.biometric_count || 0,
+          photo_count: inmate.photo_count || 0,
+          primary_photo: primaryPhoto
+        };
+      });
       
       // Update statistics
       updateStats();

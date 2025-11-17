@@ -19,9 +19,9 @@
                 Exportar
               </button>
               <button 
-                @click="openNewVisitorModal" 
+                @click="openNewVisitorModal"
                 class="btn btn-primary"
-                v-if="hasPermission('visits.visitors.create')"
+                v-if="hasPermission('visits.visitors_create')"
               >
                 <i class="fas fa-plus me-2"></i>
                 Nuevo Visitante
@@ -273,7 +273,7 @@
                     <button 
                       @click="editVisitor(visitor)"
                       class="btn btn-primary"
-                      v-if="hasPermission('visits.visitors.edit')"
+                      v-if="hasPermission('visits.visitors_edit')"
                       title="Editar"
                     >
                       <i class="fas fa-edit"></i>
@@ -317,10 +317,10 @@
                             Historial de Visitas
                           </a>
                         </li>
-                        <li v-if="hasPermission('visits.visitors.delete')">
+                        <li v-if="hasPermission('visits.visitors_delete')">
                           <hr class="dropdown-divider">
                         </li>
-                        <li v-if="hasPermission('visits.visitors.delete')">
+                        <li v-if="hasPermission('visits.visitors_delete')">
                           <a class="dropdown-item text-danger" @click="deleteVisitor(visitor)">
                             <i class="fas fa-trash me-2"></i>
                             Eliminar
@@ -754,18 +754,18 @@ const isExpiringSoon = (date: string) => {
 };
 
 const canEnrollBiometrics = (visitor: any) => {
-  return !visitor.biometric_enrolled && 
+  return !visitor.biometric_enrolled &&
          ['background_check', 'biometric_enrollment', 'approved'].includes(visitor.accreditation_status) &&
-         hasPermission('visits.visitors.biometrics');
+         hasPermission('visits.visitors_biometrics');
 };
 
 const canUpdateStatus = (visitor: any) => {
-  return hasPermission('visits.visitors.status');
+  return hasPermission('visits.visitors_status');
 };
 
 const canPerformBackgroundCheck = (visitor: any) => {
-  return !visitor.background_check_completed && 
-         hasPermission('visits.visitors.background_check');
+  return !visitor.background_check_completed &&
+         hasPermission('visits.visitors_background_check');
 };
 
 // Lifecycle

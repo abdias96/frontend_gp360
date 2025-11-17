@@ -839,9 +839,23 @@ const loadSecurityMeasures = async () => {
   try {
     loading.value.measures = true;
 
-    // Mock data - this would come from backend
+    // Load active security alerts from props
+    const alertsData = props.inmate.activeSecurityAlerts || props.inmate.active_security_alerts || props.inmate.securityAlerts || props.inmate.security_alerts;
+    if (alertsData && Array.isArray(alertsData)) {
+      activeAlerts.value = alertsData.map((alert: any) => ({
+        id: alert.id,
+        alert_type: alert.alert_type || 'general',
+        description: alert.alert_description || alert.description || '',
+        created_date: alert.alert_date || alert.created_at,
+        priority: alert.priority || 'medium',
+      }));
+    } else {
+      activeAlerts.value = [];
+    }
+
+    // Security measures would come from a different relationship if available
+    // For now, keep as empty array as there's no specific security_measures table
     securityMeasures.value = [];
-    activeAlerts.value = [];
   } catch (error) {
     console.error("Error loading security measures:", error);
   } finally {
@@ -853,8 +867,27 @@ const loadSecurityHistory = async () => {
   try {
     loading.value.history = true;
 
-    // Mock data - this would come from backend
-    securityHistory.value = [];
+    // Load security incidents from props
+    const incidentsData = props.inmate.securityIncidents || props.inmate.security_incidents;
+    if (incidentsData && Array.isArray(incidentsData)) {
+      securityHistory.value = incidentsData
+        .map((incident: any) => ({
+          id: incident.id,
+          incident_date: incident.incident_date || incident.created_at,
+          incident_type: incident.incidentType?.name || incident.incident_type?.name || incident.incident_type_name || 'Otro',
+          description: incident.description || incident.incident_description || '',
+          location: incident.incident_location || incident.location,
+          people_involved: incident.people_involved || incident.involved_parties,
+          severity: incident.severity_level || incident.severity || 'medium',
+          reported_by_name: incident.reportedBy?.name || incident.reported_by?.name || incident.reported_by_name || 'N/A',
+          reported_by_role: incident.reportedBy?.role || incident.reported_by?.role || 'Personal',
+          status: incident.incident_status || incident.status || 'reported',
+          resolution: incident.resolution_notes || incident.resolution,
+        }))
+        .sort((a: any, b: any) => new Date(b.incident_date).getTime() - new Date(a.incident_date).getTime());
+    } else {
+      securityHistory.value = [];
+    }
   } catch (error) {
     console.error("Error loading security history:", error);
   } finally {

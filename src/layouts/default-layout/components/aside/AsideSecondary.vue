@@ -68,9 +68,9 @@
                 </div>
 
                 <!-- Biometric Operations - Quick Access -->
-                <div 
+                <div
                   class="menu-item pt-5 pb-2"
-                  v-if="isSuperAdmin || hasPermission('inmates.biometric') || hasPermission('security.biometric')"
+                  v-if="isSuperAdmin || hasPermission('biometric.view') || hasPermission('biometric.identify')"
                 >
                   <div class="menu-content">
                     <span class="menu-section text-muted text-uppercase fs-8 ls-1">
@@ -78,14 +78,14 @@
                     </span>
                   </div>
                 </div>
-                
+
                 <!-- Biometric Identification 1:N -->
                 <div
                   class="menu-item"
-                  v-if="isSuperAdmin || hasPermission('inmates.biometric')"
+                  v-if="isSuperAdmin || hasPermission('biometric.view') || hasPermission('biometric.identify')"
                 >
-                  <router-link 
-                    to="/inmates/biometric-verification" 
+                  <router-link
+                    to="/inmates/biometric-verification"
                     class="menu-link bg-light-primary"
                     :class="{ 'bg-primary text-white': $route.path === '/inmates/biometric-verification' }"
                   >
@@ -800,7 +800,7 @@
                     </div>
                     <div
                       class="menu-item"
-                      v-if="isSuperAdmin || hasPermission('operations.teams.view')"
+                      v-if="isSuperAdmin || hasPermission('operations.teams_view')"
                     >
                       <router-link to="/operations/multidisciplinary-teams" class="menu-link">
                         <span class="menu-bullet"
@@ -811,7 +811,7 @@
                     </div>
                     <div
                       class="menu-item"
-                      v-if="isSuperAdmin || hasPermission('operations.transport.view')"
+                      v-if="isSuperAdmin || hasPermission('operations.transport_view')"
                     >
                       <router-link to="/operations/transport" class="menu-link">
                         <span class="menu-bullet"
@@ -1118,7 +1118,7 @@
                     </div>
                     <div
                       class="menu-item"
-                      v-if="isSuperAdmin || hasPermission('visits.requests.view')"
+                      v-if="isSuperAdmin || hasPermission('visits.requests_view')"
                     >
                       <router-link to="/visits/requests" class="menu-link">
                         <span class="menu-bullet"

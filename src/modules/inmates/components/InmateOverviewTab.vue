@@ -37,10 +37,10 @@
                   >Documento de Identidad</span
                 >
                 <span class="text-gray-800">{{
-                  inmate.identification_number
+                  inmate.document_number || "N/A"
                 }}</span>
-                <span v-if="inmate.document_type_name" class="text-muted ms-2"
-                  >({{ inmate.document_type_name }})</span
+                <span v-if="inmate.documentType?.name || inmate.document_type?.name" class="text-muted ms-2"
+                  >({{ inmate.documentType?.name || inmate.document_type?.name }})</span
                 >
               </div>
 
@@ -63,20 +63,20 @@
                 }}</span>
               </div>
 
-              <div v-if="inmate.civil_status_name" class="mb-4">
+              <div v-if="inmate.civilStatus?.name || inmate.civil_status?.name" class="mb-4">
                 <span class="fw-bold text-gray-600 d-block mb-2"
                   >Estado Civil</span
                 >
                 <span class="text-gray-800">{{
-                  inmate.civil_status_name
+                  inmate.civilStatus?.name || inmate.civil_status?.name
                 }}</span>
               </div>
 
-              <div v-if="inmate.nationality_name" class="mb-4">
+              <div v-if="inmate.nationality?.name" class="mb-4">
                 <span class="fw-bold text-gray-600 d-block mb-2"
                   >Nacionalidad</span
                 >
-                <span class="text-gray-800">{{ inmate.nationality_name }}</span>
+                <span class="text-gray-800">{{ inmate.nationality?.name }}</span>
               </div>
             </div>
           </div>
@@ -94,21 +94,21 @@
               </h3>
             </div>
             <div class="card-body pt-0">
-              <div v-if="inmate.ethnic_group_name" class="mb-4">
+              <div v-if="inmate.ethnicGroup?.name || inmate.ethnic_group?.name" class="mb-4">
                 <span class="fw-bold text-gray-600 d-block mb-2"
                   >Grupo Étnico</span
                 >
                 <span class="text-gray-800">{{
-                  inmate.ethnic_group_name
+                  inmate.ethnicGroup?.name || inmate.ethnic_group?.name
                 }}</span>
               </div>
 
-              <div v-if="inmate.primary_language_name" class="mb-4">
+              <div v-if="inmate.primaryLanguage?.name || inmate.primary_language?.name" class="mb-4">
                 <span class="fw-bold text-gray-600 d-block mb-2"
                   >Idioma Principal</span
                 >
                 <span class="text-gray-800">{{
-                  inmate.primary_language_name
+                  inmate.primaryLanguage?.name || inmate.primary_language?.name
                 }}</span>
               </div>
 
@@ -143,9 +143,9 @@
                 </span>
               </div>
 
-              <div v-if="inmate.religion_name" class="mb-4">
+              <div v-if="inmate.religion?.name" class="mb-4">
                 <span class="fw-bold text-gray-600 d-block mb-2">Religión</span>
-                <span class="text-gray-800">{{ inmate.religion_name }}</span>
+                <span class="text-gray-800">{{ inmate.religion?.name }}</span>
               </div>
 
               <div v-if="inmate.cultural_practices" class="mb-4">
@@ -181,20 +181,20 @@
               </h3>
             </div>
             <div class="card-body pt-0">
-              <div v-if="inmate.academic_degree_name" class="mb-4">
+              <div v-if="inmate.academicDegree?.name || inmate.academic_degree?.name" class="mb-4">
                 <span class="fw-bold text-gray-600 d-block mb-2"
                   >Nivel Educativo</span
                 >
                 <span class="text-gray-800">{{
-                  inmate.academic_degree_name
+                  inmate.academicDegree?.name || inmate.academic_degree?.name
                 }}</span>
               </div>
 
-              <div v-if="inmate.occupation_name" class="mb-4">
+              <div v-if="inmate.occupation?.name" class="mb-4">
                 <span class="fw-bold text-gray-600 d-block mb-2"
                   >Ocupación</span
                 >
-                <span class="text-gray-800">{{ inmate.occupation_name }}</span>
+                <span class="text-gray-800">{{ inmate.occupation?.name }}</span>
               </div>
 
               <div v-if="inmate.occupation_details" class="mb-4">
@@ -231,12 +231,12 @@
                 }}</span>
               </div>
 
-              <div v-if="inmate.socioeconomic_level_name" class="mb-4">
+              <div v-if="inmate.socioeconomicLevel?.name || inmate.socioeconomic_level?.name" class="mb-4">
                 <span class="fw-bold text-gray-600 d-block mb-2"
                   >Nivel Socioeconómico</span
                 >
                 <span class="text-gray-800">{{
-                  inmate.socioeconomic_level_name
+                  inmate.socioeconomicLevel?.name || inmate.socioeconomic_level?.name
                 }}</span>
               </div>
             </div>
@@ -262,14 +262,14 @@
                 <span class="text-gray-800">{{ inmate.address }}</span>
               </div>
 
-              <div v-if="inmate.municipality_name" class="mb-4">
+              <div v-if="inmate.municipality?.name" class="mb-4">
                 <span class="fw-bold text-gray-600 d-block mb-2"
                   >Municipio</span
                 >
                 <span class="text-gray-800">
-                  {{ inmate.municipality_name }}
-                  <span v-if="inmate.department_name" class="text-muted"
-                    >, {{ inmate.department_name }}</span
+                  {{ inmate.municipality?.name }}
+                  <span v-if="inmate.department?.name" class="text-muted"
+                    >, {{ inmate.department?.name }}</span
                   >
                 </span>
               </div>
@@ -289,10 +289,10 @@
                     {{ inmate.emergency_contact_phone }}
                   </div>
                   <div
-                    v-if="inmate.emergency_contact_language_name"
+                    v-if="inmate.emergencyContactLanguage?.name || inmate.emergency_contact_language?.name"
                     class="text-muted"
                   >
-                    Idioma: {{ inmate.emergency_contact_language_name }}
+                    Idioma: {{ inmate.emergencyContactLanguage?.name || inmate.emergency_contact_language?.name }}
                   </div>
                 </div>
               </div>
@@ -316,7 +316,7 @@
                 <span class="fw-bold text-gray-600 d-block mb-2"
                   >Número Interno</span
                 >
-                <span class="text-gray-800">{{ inmate.internal_number }}</span>
+                <span class="text-gray-800">{{ inmate.inmate_number || "N/A" }}</span>
               </div>
 
               <div v-if="inmate.case_number" class="mb-4">
@@ -330,12 +330,12 @@
                 <span class="fw-bold text-gray-600 d-block mb-2"
                   >Centro Actual</span
                 >
-                <span class="text-gray-800">{{ inmate.center_name }}</span>
+                <span class="text-gray-800">{{ inmate.currentCenter?.name || inmate.current_center?.name || "N/A" }}</span>
               </div>
 
-              <div v-if="inmate.sector_name" class="mb-4">
+              <div v-if="inmate.currentSector?.name || inmate.current_sector?.name" class="mb-4">
                 <span class="fw-bold text-gray-600 d-block mb-2">Sector</span>
-                <span class="text-gray-800">{{ inmate.sector_name }}</span>
+                <span class="text-gray-800">{{ inmate.currentSector?.name || inmate.current_sector?.name }}</span>
               </div>
 
               <div v-if="inmate.current_cell_number" class="mb-4">
@@ -365,7 +365,7 @@
                 <span class="fw-bold text-gray-600 d-block mb-2"
                   >Estado Legal</span
                 >
-                <span class="text-gray-800">{{ inmate.legal_status }}</span>
+                <span class="text-gray-800">{{ getLegalStatusText(inmate.legal_status) }}</span>
               </div>
             </div>
           </div>
@@ -504,6 +504,17 @@ const getStatusText = (status: string): string => {
     transferred: "Trasladado",
     released: "Liberado",
     deceased: "Fallecido",
+  };
+  return texts[status] || status;
+};
+
+const getLegalStatusText = (status: string): string => {
+  const texts: Record<string, string> = {
+    preventive_detention: "Prisión Preventiva",
+    sentenced: "Sentenciado",
+    conditional_release: "Libertad Condicional",
+    provisional_release: "Libertad Provisional",
+    house_arrest: "Arresto Domiciliario",
   };
   return texts[status] || status;
 };

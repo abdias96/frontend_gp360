@@ -170,7 +170,7 @@ const processSteps = ref<any[]>([])
 
 // Computed
 const canEdit = computed(() => {
-  return authStore.hasPermission('operations.admissions.edit')
+  return authStore.hasPermission('operations.admissions_edit')
 })
 
 // Methods

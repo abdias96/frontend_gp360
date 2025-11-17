@@ -275,7 +275,7 @@ const releasePlan = ref<any>(null)
 
 // Computed
 const canApprove = computed(() => {
-  return authStore.hasPermission('operations.releases.approve')
+  return authStore.hasPermission('operations.releases_approve')
 })
 
 // Methods

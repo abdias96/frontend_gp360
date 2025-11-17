@@ -457,10 +457,10 @@
                   <div class="card card-flush">
                     <div class="card-body p-2">
                       <img
-                        :src="photo.photo_url"
+                        :src="photo.photo_data || photo.photo_url"
                         :alt="photo.description || 'Foto del interno'"
                         class="w-100 rounded"
-                        style="height: 120px; object-fit: cover"
+                        style="height: 120px; object-fit: cover; cursor: pointer;"
                         @click="viewPhotoDetail(photo)"
                       />
                       <div class="text-center mt-2">
@@ -469,7 +469,7 @@
                         </span>
                       </div>
                       <div class="text-center text-gray-600 fs-8">
-                        {{ formatDate(photo.capture_date) }}
+                        {{ formatDate(photo.photo_date) }}
                       </div>
                     </div>
                   </div>
@@ -1032,6 +1032,15 @@ const getDistinctiveMarks = (): Array<{
 
 const getPhotoTypeText = (type: string): string => {
   const types: Record<string, string> = {
+    frontal_mugshot: "Foto Frontal",
+    profile_left: "Perfil Izquierdo",
+    profile_right: "Perfil Derecho",
+    full_body: "Cuerpo Completo",
+    identifying_marks: "Marcas Identificativas",
+    tattoos: "Tatuajes",
+    scars: "Cicatrices",
+    updated_appearance: "Apariencia Actualizada",
+    // Legacy values for backwards compatibility
     mugshot: "Ficha",
     profile: "Perfil",
     identification: "Identificación",

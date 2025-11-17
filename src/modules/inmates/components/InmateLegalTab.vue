@@ -65,26 +65,26 @@
                 }}</span>
               </div>
 
-              <div v-if="legalProfile.court_name" class="mb-4">
+              <div v-if="legalProfile.court?.name" class="mb-4">
                 <span class="fw-bold text-gray-600 d-block mb-2">Juzgado</span>
-                <span class="text-gray-800">{{ legalProfile.court_name }}</span>
+                <span class="text-gray-800">{{ legalProfile.court.name }}</span>
               </div>
 
-              <div v-if="legalProfile.procedural_status_name" class="mb-4">
+              <div v-if="legalProfile.procedural_status?.name" class="mb-4">
                 <span class="fw-bold text-gray-600 d-block mb-2"
                   >Estado Procesal</span
                 >
                 <span class="text-gray-800">{{
-                  legalProfile.procedural_status_name
+                  legalProfile.procedural_status.name
                 }}</span>
               </div>
 
-              <div v-if="legalProfile.sentence_type_name" class="mb-4">
+              <div v-if="legalProfile.sentence_type?.name" class="mb-4">
                 <span class="fw-bold text-gray-600 d-block mb-2"
                   >Tipo de Sentencia</span
                 >
                 <span class="text-gray-800">{{
-                  legalProfile.sentence_type_name
+                  legalProfile.sentence_type.name
                 }}</span>
               </div>
 
@@ -139,37 +139,37 @@
                 }}</span>
               </div>
 
-              <div v-if="inmate.preventive_detention_start" class="mb-4">
+              <div v-if="legalProfile.preventive_detention_start" class="mb-4">
                 <span class="fw-bold text-gray-600 d-block mb-2"
                   >Inicio Prisión Preventiva</span
                 >
                 <span class="text-gray-800">{{
-                  formatDate(inmate.preventive_detention_start)
+                  formatDate(legalProfile.preventive_detention_start)
                 }}</span>
               </div>
 
-              <div v-if="inmate.preventive_detention_max_end" class="mb-4">
+              <div v-if="legalProfile.preventive_detention_max_end" class="mb-4">
                 <span class="fw-bold text-gray-600 d-block mb-2"
                   >Límite Prisión Preventiva</span
                 >
                 <div class="d-flex align-items-center">
                   <span class="text-gray-800 me-2">{{
-                    formatDate(inmate.preventive_detention_max_end)
+                    formatDate(legalProfile.preventive_detention_max_end)
                   }}</span>
                   <span
-                    v-if="inmate.preventive_detention_expired"
+                    v-if="legalProfile.preventive_detention_expired"
                     class="badge badge-light-danger"
                   >
                     VENCIDA
                   </span>
                   <span
                     v-else-if="
-                      inmate.preventive_detention_days_remaining &&
-                      inmate.preventive_detention_days_remaining <= 30
+                      legalProfile.preventive_detention_days_remaining &&
+                      legalProfile.preventive_detention_days_remaining <= 30
                     "
                     class="badge badge-light-warning"
                   >
-                    {{ inmate.preventive_detention_days_remaining }} días
+                    {{ legalProfile.preventive_detention_days_remaining }} días
                     restantes
                   </span>
                 </div>
@@ -191,7 +191,7 @@
             </div>
             <div class="card-body pt-0">
               <div
-                v-if="!legalProfile.primary_crime_name"
+                v-if="!primaryCrimeName"
                 class="text-center py-5"
               >
                 <div class="text-gray-600">
@@ -205,7 +205,7 @@
                       >Delito</span
                     >
                     <span class="text-gray-800">{{
-                      legalProfile.primary_crime_name
+                      primaryCrimeName
                     }}</span>
                   </div>
                 </div>
@@ -223,10 +223,7 @@
 
         <!--begin::Secondary Crimes-->
         <div
-          v-if="
-            legalProfile.secondary_crimes &&
-            Object.keys(legalProfile.secondary_crimes).length > 0
-          "
+          v-if="secondaryCrimes && secondaryCrimes.length > 0"
           class="col-12"
         >
           <div class="card card-flush">
@@ -251,11 +248,11 @@
                   </thead>
                   <tbody>
                     <tr
-                      v-for="(crime, index) in legalProfile.secondary_crimes"
+                      v-for="(crime, index) in secondaryCrimes"
                       :key="index"
                     >
-                      <td>{{ crime.name || "N/A" }}</td>
-                      <td>{{ crime.description || "N/A" }}</td>
+                      <td>{{ crime.crime?.name || crime.crime_description || "N/A" }}</td>
+                      <td>{{ crime.crime_location || "N/A" }}</td>
                       <td>
                         <span class="badge badge-light-warning"
                           >Secundario</span
@@ -271,7 +268,7 @@
         <!--end::Secondary Crimes-->
 
         <!--begin::All Crimes List-->
-        <div v-if="inmate.crimes && inmate.crimes.length > 0" class="col-12">
+        <div v-if="legalProfile && legalProfile.crimes && legalProfile.crimes.length > 0" class="col-12">
           <div class="card card-flush">
             <div class="card-header pt-7">
               <h3 class="card-title align-items-start flex-column">
@@ -279,7 +276,7 @@
                   >Todos los Delitos</span
                 >
                 <span class="card-label text-muted mt-1 fw-semibold fs-7">
-                  {{ inmate.crimes.length }} delito(s) registrado(s)
+                  {{ legalProfile.crimes.length }} delito(s) registrado(s)
                 </span>
               </h3>
             </div>
@@ -291,18 +288,18 @@
                       class="fw-bold fs-6 text-gray-800 border-bottom-2 border-gray-200"
                     >
                       <th>Delito</th>
-                      <th>Código</th>
+                      <th>Clasificación</th>
                       <th>Fecha</th>
-                      <th>Sentencia</th>
+                      <th>Ubicación</th>
                       <th>Tipo</th>
                     </tr>
                   </thead>
                   <tbody>
-                    <tr v-for="crime in inmate.crimes" :key="crime.id">
+                    <tr v-for="crime in legalProfile.crimes" :key="crime.id">
                       <td>
                         <div class="d-flex flex-column">
                           <span class="text-gray-800 fw-bold">{{
-                            crime.crime_name
+                            crime.crime?.name || crime.crime_description || "N/A"
                           }}</span>
                           <span
                             v-if="crime.crime_description"
@@ -312,31 +309,17 @@
                           </span>
                         </div>
                       </td>
-                      <td>{{ crime.crime_code || "N/A" }}</td>
+                      <td>{{ crime.crime_classification?.name || "N/A" }}</td>
                       <td>
                         <div class="d-flex flex-column">
                           <span v-if="crime.crime_date">{{
                             formatDate(crime.crime_date)
                           }}</span>
-                          <span
-                            v-if="crime.conviction_date"
-                            class="text-muted fs-7"
-                          >
-                            Convicción: {{ formatDate(crime.conviction_date) }}
-                          </span>
+                          <span v-else class="text-muted">N/A</span>
                         </div>
                       </td>
                       <td>
-                        <span
-                          v-if="
-                            crime.sentence_years ||
-                            crime.sentence_months ||
-                            crime.sentence_days
-                          "
-                        >
-                          {{ formatCrimeSentence(crime) }}
-                        </span>
-                        <span v-else class="text-muted">N/A</span>
+                        {{ crime.crime_location || "N/A" }}
                       </td>
                       <td>
                         <span
@@ -387,17 +370,20 @@ onMounted(() => {
 });
 
 // Computed properties
-// Try legal_profiles first (new structure), then fall back to legal_profile (old structure)
+// Try legalProfiles first (camelCase from backend), then fall back to legal_profiles (snake_case)
 const legalProfile = computed(() => {
+  // Try camelCase first (legalProfiles)
+  const profiles = props.inmate.legalProfiles || props.inmate.legal_profiles;
+
   // If we have multiple legal profiles, get the active one
-  if (props.inmate.legal_profiles && props.inmate.legal_profiles.length > 0) {
+  if (profiles && profiles.length > 0) {
     // Find active profile or return the first one
-    const activeProfile = props.inmate.legal_profiles.find((profile: any) => profile.profile_status === 'active');
-    return activeProfile || props.inmate.legal_profiles[0];
+    const activeProfile = profiles.find((profile: any) => profile.profile_status === 'active');
+    return activeProfile || profiles[0];
   }
 
-  // Fall back to singular legal_profile
-  return props.inmate.legal_profile || null;
+  // Fall back to singular legalProfile (camelCase) or legal_profile (snake_case)
+  return props.inmate.legalProfile || props.inmate.legal_profile || null;
 });
 
 const canEdit = computed(() => authStore.hasPermission("inmates.legal"));
@@ -409,6 +395,35 @@ const hasSentenceTime = computed(() => {
     legalProfile.value.sentence_months ||
     legalProfile.value.sentence_days
   );
+});
+
+// Computed property for primary crime
+const primaryCrime = computed(() => {
+  if (!legalProfile.value || !legalProfile.value.crimes || legalProfile.value.crimes.length === 0) {
+    return null;
+  }
+  // Return the first crime or the one marked as primary
+  const primaryFound = legalProfile.value.crimes.find((c: any) => c.is_primary);
+  return primaryFound || legalProfile.value.crimes[0];
+});
+
+// Computed property for primary crime name
+const primaryCrimeName = computed(() => {
+  if (!primaryCrime.value) return null;
+  // Try to get from the crime relation first, then from crime_description
+  return primaryCrime.value.crime?.name || primaryCrime.value.crime_description || 'N/A';
+});
+
+// Computed property for secondary crimes
+const secondaryCrimes = computed(() => {
+  if (!legalProfile.value || !legalProfile.value.crimes || legalProfile.value.crimes.length === 0) {
+    return [];
+  }
+  // Return all crimes except the primary one
+  if (primaryCrime.value) {
+    return legalProfile.value.crimes.filter((c: any) => c.id !== primaryCrime.value.id);
+  }
+  return legalProfile.value.crimes.slice(1); // Skip first if no primary is marked
 });
 
 // Methods

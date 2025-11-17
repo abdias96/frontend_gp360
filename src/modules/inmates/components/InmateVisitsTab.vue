@@ -682,6 +682,7 @@ import { useAuthStore } from "@/stores/auth";
 import type { InmateDetail, InmateVisitorRelationship } from "@/types/inmates";
 import Swal from "sweetalert2";
 import KTIcon from "@/core/helpers/kt-icon/KTIcon.vue";
+import CatalogService from "@/core/services/CatalogService";
 
 interface Props {
   inmate: InmateDetail;
@@ -794,14 +795,34 @@ const loadVisitorData = async () => {
   try {
     loading.value.visits = true;
 
-    // Load authorized visitors
-    if (props.inmate.visitor_relationships) {
-      authorizedVisitors.value = props.inmate.visitor_relationships;
+    // Load authorized visitors from props
+    if (props.inmate.visitorRelationships || props.inmate.visitor_relationships) {
+      authorizedVisitors.value = props.inmate.visitorRelationships || props.inmate.visitor_relationships || [];
     }
 
-    // Load recent visits (this would need backend API)
-    // For now, using mock data
-    recentVisits.value = [];
+    // Load recent visits from props (visit_requests or visitRequests)
+    const visitRequestsData = props.inmate.visitRequests || props.inmate.visit_requests;
+    if (visitRequestsData && Array.isArray(visitRequestsData)) {
+      // Map visit requests to Visit interface
+      recentVisits.value = visitRequestsData
+        .map((request: any) => ({
+          id: request.id,
+          inmate_id: request.inmate_id,
+          visitor_dpi: request.visitor?.visitor_dpi || request.visitor_dpi || 'N/A',
+          visitor_name: request.visitor?.full_name || request.visitor_name || 'N/A',
+          visit_date: request.requested_visit_date,
+          duration_minutes: request.requested_duration_minutes || 0,
+          visit_type_id: request.visit_type_id,
+          visit_type_name: request.visitType?.name || request.visit_type?.name || 'N/A',
+          status: request.status,
+          notes: request.visit_purpose || request.decision_notes,
+          created_at: request.created_at,
+        }))
+        .sort((a: any, b: any) => new Date(b.visit_date).getTime() - new Date(a.visit_date).getTime())
+        .slice(0, 10); // Last 10 visits
+    } else {
+      recentVisits.value = [];
+    }
 
     // Load relationship types
     await loadRelationshipTypes();
@@ -815,21 +836,65 @@ const loadVisitorData = async () => {
 const loadVisitStatistics = async () => {
   try {
     loading.value.statistics = true;
-    // This would call backend API to get visit statistics
-    // For now, using mock data
+
+    // Calculate real statistics from visit data
+    const visitRequestsData = props.inmate.visitRequests || props.inmate.visit_requests || [];
+    const now = new Date();
+    const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+
+    // Filter visits from last 30 days
+    const recentVisits = visitRequestsData.filter((request: any) => {
+      const visitDate = new Date(request.requested_visit_date || request.created_at);
+      return visitDate >= thirtyDaysAgo;
+    });
+
+    // Calculate total visits (completed and in_progress)
+    const completedVisits = recentVisits.filter((v: any) =>
+      v.status === 'completed' || v.status === 'in_progress' || v.status === 'approved'
+    );
+
+    // Calculate unique visitors
+    const uniqueVisitorDPIs = new Set(
+      completedVisits.map((v: any) => v.visitor?.visitor_dpi || v.visitor_dpi)
+    );
+
+    // Calculate average duration
+    const totalDuration = completedVisits.reduce((sum: number, v: any) =>
+      sum + (v.requested_duration_minutes || 0), 0
+    );
+    const avgDuration = completedVisits.length > 0
+      ? Math.round(totalDuration / completedVisits.length)
+      : 0;
+
+    // Count scheduled visits
+    const scheduledCount = visitRequestsData.filter((v: any) =>
+      v.status === 'pending' || v.status === 'approved'
+    ).length;
+
+    // Visit types distribution
+    const typeDistribution: Record<string, number> = {};
+    completedVisits.forEach((v: any) => {
+      const typeName = v.visitType?.name || v.visit_type?.name || 'Otro';
+      typeDistribution[typeName] = (typeDistribution[typeName] || 0) + 1;
+    });
+
     visitStatistics.value = {
-      total_visits_last_30_days: 12,
-      unique_visitors_last_30_days: 8,
-      average_duration_minutes: 45,
-      scheduled_visits: 3,
-      visit_types_distribution: {
-        Familiar: 8,
-        Legal: 3,
-        Médica: 1,
-      },
+      total_visits_last_30_days: completedVisits.length,
+      unique_visitors_last_30_days: uniqueVisitorDPIs.size,
+      average_duration_minutes: avgDuration,
+      scheduled_visits: scheduledCount,
+      visit_types_distribution: typeDistribution,
     };
   } catch (error) {
     console.error("Error loading visit statistics:", error);
+    // Set default values on error
+    visitStatistics.value = {
+      total_visits_last_30_days: 0,
+      unique_visitors_last_30_days: 0,
+      average_duration_minutes: 0,
+      scheduled_visits: 0,
+      visit_types_distribution: {},
+    };
   } finally {
     loading.value.statistics = false;
   }
@@ -839,7 +904,8 @@ const loadBiometricData = async () => {
   try {
     loading.value.biometrics = true;
 
-    // Load biometric devices status
+    // Load biometric devices status (this would require a separate endpoint)
+    // For now, keep as static data since it's device status, not inmate-specific
     biometricDevices.value = [
       {
         id: 1,
@@ -859,8 +925,28 @@ const loadBiometricData = async () => {
       },
     ];
 
-    // Load recent biometric logs
-    biometricLogs.value = [];
+    // Load recent biometric logs from props
+    const biometricLogsData = props.inmate.visitBiometricLogs || props.inmate.visit_biometric_logs;
+    if (biometricLogsData && Array.isArray(biometricLogsData)) {
+      // Map biometric logs to BiometricLog interface
+      biometricLogs.value = biometricLogsData
+        .map((log: any) => ({
+          id: log.id,
+          visitor_dpi: log.visitor_dpi || 'N/A',
+          visitor_name: log.visitor_name || log.visitor?.full_name || 'N/A',
+          device_id: log.device_id || 0,
+          device_name: log.device?.device_name || log.device_name || 'N/A',
+          access_datetime: log.access_datetime || log.created_at,
+          access_type: log.access_type || 'entry',
+          verification_status: log.verification_status || 'success',
+          quality_score: log.quality_score || log.biometric_quality_score || 0,
+          notes: log.notes || log.verification_notes,
+        }))
+        .sort((a: any, b: any) => new Date(b.access_datetime).getTime() - new Date(a.access_datetime).getTime())
+        .slice(0, 20); // Last 20 logs
+    } else {
+      biometricLogs.value = [];
+    }
   } catch (error) {
     console.error("Error loading biometric data:", error);
   } finally {
@@ -870,18 +956,13 @@ const loadBiometricData = async () => {
 
 const loadRelationshipTypes = async () => {
   try {
-    // This would call backend API
-    relationshipTypes.value = [
-      { id: 1, name: "Padre/Madre" },
-      { id: 2, name: "Hijo/Hija" },
-      { id: 3, name: "Esposo/Esposa" },
-      { id: 4, name: "Hermano/Hermana" },
-      { id: 5, name: "Abogado" },
-      { id: 6, name: "Familiar Directo" },
-      { id: 7, name: "Otro Familiar" },
-    ];
+    // Load relationship types from catalog service
+    const types = await CatalogService.getCatalog('relationship-types');
+    relationshipTypes.value = types;
   } catch (error) {
     console.error("Error loading relationship types:", error);
+    // Fallback to empty array
+    relationshipTypes.value = [];
   }
 };
 

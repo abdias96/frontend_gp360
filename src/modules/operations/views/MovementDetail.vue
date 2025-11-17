@@ -282,11 +282,11 @@ const canPrint = computed(() => {
 })
 
 const canCancel = computed(() => {
-  return authStore.hasPermission('operations.movements.cancel')
+  return authStore.hasPermission('operations.movements_cancel')
 })
 
 const canComplete = computed(() => {
-  return authStore.hasPermission('operations.movements.complete')
+  return authStore.hasPermission('operations.movements_complete')
 })
 
 // Methods

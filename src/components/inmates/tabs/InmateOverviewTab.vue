@@ -27,8 +27,8 @@
               <label class="form-label fw-bold">Documento:</label>
               <div class="form-control-plaintext">
                 {{ inmate?.document_number || "N/A" }}
-                <span v-if="inmate?.document_type" class="text-muted">
-                  ({{ inmate.document_type.name }})
+                <span v-if="inmate?.documentType?.name || inmate?.document_type?.name" class="text-muted">
+                  ({{ inmate?.documentType?.name || inmate?.document_type?.name }})
                 </span>
               </div>
             </div>
@@ -56,17 +56,17 @@
 
             <div class="col-md-6">
               <label class="form-label fw-bold">Identidad de Género:</label>
-              <div class="form-control-plaintext">{{ inmate?.gender_identity?.name || "N/A" }}</div>
+              <div class="form-control-plaintext">{{ inmate?.genderIdentity?.name || inmate?.gender_identity?.name || "N/A" }}</div>
             </div>
 
             <div class="col-md-6">
               <label class="form-label fw-bold">Orientación Sexual:</label>
-              <div class="form-control-plaintext">{{ inmate?.sexual_orientation?.name || "N/A" }}</div>
+              <div class="form-control-plaintext">{{ inmate?.sexualOrientation?.name || inmate?.sexual_orientation?.name || "N/A" }}</div>
             </div>
 
             <div class="col-md-6">
               <label class="form-label fw-bold">Estado Civil:</label>
-              <div class="form-control-plaintext">{{ inmate?.civil_status?.name || "N/A" }}</div>
+              <div class="form-control-plaintext">{{ inmate?.civilStatus?.name || inmate?.civil_status?.name || "N/A" }}</div>
             </div>
 
             <div class="col-md-6">
@@ -76,7 +76,7 @@
 
             <div class="col-md-6">
               <label class="form-label fw-bold">Grupo Étnico:</label>
-              <div class="form-control-plaintext">{{ inmate?.ethnic_group?.name || "N/A" }}</div>
+              <div class="form-control-plaintext">{{ inmate?.ethnicGroup?.name || inmate?.ethnic_group?.name || "N/A" }}</div>
             </div>
 
             <div class="col-md-6">
@@ -86,7 +86,7 @@
 
             <div class="col-md-6">
               <label class="form-label fw-bold">Idioma Principal:</label>
-              <div class="form-control-plaintext">{{ inmate?.primary_language?.name || "N/A" }}</div>
+              <div class="form-control-plaintext">{{ inmate?.primaryLanguage?.name || inmate?.primary_language?.name || "N/A" }}</div>
             </div>
 
             <div class="col-md-6">
@@ -112,7 +112,7 @@
           <div class="row g-3">
             <div class="col-md-6">
               <label class="form-label fw-bold">Grado Académico:</label>
-              <div class="form-control-plaintext">{{ inmate?.academic_degree?.name || "N/A" }}</div>
+              <div class="form-control-plaintext">{{ inmate?.academicDegree?.name || inmate?.academic_degree?.name || "N/A" }}</div>
             </div>
 
             <div class="col-md-6">
@@ -142,12 +142,12 @@
 
             <div class="col-md-6">
               <label class="form-label fw-bold">Nivel Socioeconómico:</label>
-              <div class="form-control-plaintext">{{ inmate?.socioeconomic_level?.name || "N/A" }}</div>
+              <div class="form-control-plaintext">{{ inmate?.socioeconomicLevel?.name || inmate?.socioeconomic_level?.name || "N/A" }}</div>
             </div>
 
             <div class="col-md-6">
               <label class="form-label fw-bold">Tipo de Sangre:</label>
-              <div class="form-control-plaintext">{{ inmate?.blood_type?.name || "N/A" }}</div>
+              <div class="form-control-plaintext">{{ inmate?.bloodType?.name || inmate?.blood_type?.name || "N/A" }}</div>
             </div>
 
             <div class="col-12" v-if="inmate?.cultural_practices">
@@ -228,12 +228,12 @@
 
             <div class="col-md-6">
               <label class="form-label fw-bold">Relación:</label>
-              <div class="form-control-plaintext">{{ inmate?.emergency_contact_relationship?.name || "N/A" }}</div>
+              <div class="form-control-plaintext">{{ inmate?.emergencyContactRelationship?.name || inmate?.emergency_contact_relationship?.name || "N/A" }}</div>
             </div>
 
             <div class="col-md-6">
               <label class="form-label fw-bold">Idioma del Contacto:</label>
-              <div class="form-control-plaintext">{{ inmate?.emergency_contact_language?.name || "N/A" }}</div>
+              <div class="form-control-plaintext">{{ inmate?.emergencyContactLanguage?.name || inmate?.emergency_contact_language?.name || "N/A" }}</div>
             </div>
           </div>
         </div>
@@ -260,12 +260,12 @@
 
             <div class="col-md-6">
               <label class="form-label fw-bold">Centro Actual:</label>
-              <div class="form-control-plaintext">{{ inmate?.current_center?.name || "Sin centro asignado" }}</div>
+              <div class="form-control-plaintext">{{ inmate?.currentCenter?.name || inmate?.current_center?.name || "Sin centro asignado" }}</div>
             </div>
 
             <div class="col-md-6">
               <label class="form-label fw-bold">Sector:</label>
-              <div class="form-control-plaintext">{{ inmate?.current_sector?.name || "Sin sector asignado" }}</div>
+              <div class="form-control-plaintext">{{ inmate?.currentSector?.name || inmate?.current_sector?.name || "Sin sector asignado" }}</div>
             </div>
 
             <div class="col-md-6">
@@ -326,7 +326,7 @@
 
             <div class="col-md-6">
               <label class="form-label fw-bold">Juzgado Remitente:</label>
-              <div class="form-control-plaintext">{{ inmate?.remitting_court?.name || "N/A" }}</div>
+              <div class="form-control-plaintext">{{ inmate?.remittingCourt?.name || inmate?.remitting_court?.name || "N/A" }}</div>
             </div>
 
             <div class="col-md-6">
@@ -354,18 +354,18 @@
 
             <div class="col-md-6">
               <label class="form-label fw-bold">Estado Procesal:</label>
-              <div class="form-control-plaintext">{{ inmate?.procedural_status?.name || "N/A" }}</div>
+              <div class="form-control-plaintext">{{ inmate?.proceduralStatus?.name || inmate?.procedural_status?.name || "N/A" }}</div>
             </div>
 
             <div class="col-md-6">
               <label class="form-label fw-bold">Clasificación de Riesgo:</label>
               <div class="form-control-plaintext">
                 <span
-                  v-if="inmate?.risk_classification"
+                  v-if="inmate?.riskClassification || inmate?.risk_classification"
                   class="badge"
-                  :class="getRiskBadgeClass(inmate.risk_classification.level)"
+                  :class="getRiskBadgeClass((inmate?.riskClassification || inmate?.risk_classification)?.level)"
                 >
-                  {{ inmate.risk_classification.name }}
+                  {{ (inmate?.riskClassification || inmate?.risk_classification)?.name }}
                 </span>
                 <span v-else class="text-muted">No asignada</span>
               </div>
@@ -554,21 +554,26 @@ const getCulturalPracticesLabel = (practice: string) => {
 
 const getBirthPlaceLabel = () => {
   if (!props.inmate) return "N/A";
-  
+
   const parts = [];
-  
-  if (props.inmate.birth_municipality?.name) {
-    parts.push(props.inmate.birth_municipality.name);
+
+  // Support both camelCase (from backend) and snake_case (legacy)
+  const municipality = props.inmate.birthMunicipality || props.inmate.birth_municipality;
+  const department = props.inmate.birthDepartment || props.inmate.birth_department;
+  const country = props.inmate.birthCountry || props.inmate.birth_country;
+
+  if (municipality?.name) {
+    parts.push(municipality.name);
   }
-  
-  if (props.inmate.birth_department?.name) {
-    parts.push(props.inmate.birth_department.name);
+
+  if (department?.name) {
+    parts.push(department.name);
   }
-  
-  if (props.inmate.birth_country?.name) {
-    parts.push(props.inmate.birth_country.name);
+
+  if (country?.name) {
+    parts.push(country.name);
   }
-  
+
   return parts.length > 0 ? parts.join(", ") : "N/A";
 };
 </script>

@@ -2373,70 +2373,74 @@ const startBiometricCapture = async () => {
     }
   }
 
-  // Get the current authentication token
-  const token = JwtService.getToken();
-  if (!token) {
-    await Swal.fire({
-      title: 'Error',
-      text: 'No se encontró token de autenticación. Por favor inicie sesión nuevamente.',
-      icon: 'error'
-    });
-    return;
-  }
-  
-  // Launch the Java biometric service with parameters
+  // Launch the Java biometric service - Same approach as InmatePhysicalTab.vue
   try {
-    const params = {
-      inmateId: inmateId.value,
-      token: token,
-      apiUrl: import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api'
-    };
-
-    // Encode all parameters as Base64 to avoid URL issues
-    const paramString = JSON.stringify({
-      id: params.inmateId,
-      type: 'inmate',
-      token: params.token,
-      api: params.apiUrl
+    // Show loading message
+    Swal.fire({
+      title: 'Preparando servicio biométrico',
+      text: 'Generando enlace seguro...',
+      icon: 'info',
+      showConfirmButton: false,
+      allowOutsideClick: false,
+      didOpen: () => {
+        Swal.showLoading();
+      }
     });
-    const encodedParams = btoa(paramString);
 
-    // Use a simple protocol URL with Base64 encoded data
-    const protocolUrl = `gp360://enroll?data=${encodedParams}`;
+    // Get protocol URL from backend - Same endpoint as InmatePhysicalTab.vue
+    const response = await ApiService.get(`/inmates/${inmateId.value}/biometric/protocol-url`);
 
-    // Try to open with protocol handler
-    const protocolOpened = await tryProtocolHandler(protocolUrl);
-
-    if (protocolOpened) {
-      // Protocol handler worked - show success message
-      await Swal.fire({
-        title: 'Captura Biométrica',
-        html: `
-          <div class="text-start">
-            <p>La aplicación de captura biométrica se está abriendo...</p>
-            <ol>
-              <li>Siga las instrucciones en la aplicación de captura</li>
-              <li>Una vez completado, haga clic en "Verificar Estado"</li>
-            </ol>
-            <div class="alert alert-info mt-3">
-              <strong>Nota:</strong> Asegúrese de tener el lector de huellas conectado.
-            </div>
-          </div>
-        `,
-        icon: 'info',
-        confirmButtonText: 'Aceptar'
-      });
-    } else {
-      // Show installation instructions if protocol not installed
-      await showInstallationInstructions(params);
+    if (!response.data.success) {
+      throw new Error(response.data.message || 'Error al generar URL del servicio biométrico');
     }
 
-    // Wait a bit and then check status
-    setTimeout(() => {
-      checkBiometricStatus();
-    }, 5000);
+    // Close loading and show instructions
+    Swal.close();
 
-  } catch (error) {
+    const confirmResult = await Swal.fire({
+      title: 'Abrir Servicio Biométrico',
+      html: `
+        <div style="text-align: left;">
+          <p>Se abrirá la aplicación de captura de huellas dactilares.</p>
+          <p><strong>Instrucciones:</strong></p>
+          <ol>
+            <li>El navegador solicitará permiso para abrir GP360 Biometric Service</li>
+            <li>Haga clic en "Abrir" o "Permitir"</li>
+            <li>Complete la captura de las 10 huellas dactilares</li>
+            <li>Espere a que termine el proceso</li>
+            <li>Regrese aquí y haga clic en "Verificar Estado"</li>
+          </ol>
+          <p class="text-muted small mt-3">Si no se abre automáticamente, asegúrese de que el servicio esté instalado en su equipo.</p>
+        </div>
+      `,
+      icon: 'info',
+      showCancelButton: true,
+      confirmButtonText: 'Abrir Servicio',
+      cancelButtonText: 'Cancelar'
+    });
+
+    if (!confirmResult.isConfirmed) {
+      return;
+    }
+
+    // Open protocol URL (will launch Java app) - Same as InmatePhysicalTab.vue
+    window.location.href = response.data.data.protocol_url;
+
+    // Show monitoring message
+    await Swal.fire({
+      title: 'Servicio Biométrico Activo',
+      html: `
+        <div style="text-align: left;">
+          <p>La aplicación de captura debería haberse abierto.</p>
+          <p><strong>Complete la captura en la aplicación Java.</strong></p>
+          <p class="text-muted mt-3">Cuando termine, haga clic en "Verificar Estado" en esta página.</p>
+        </div>
+      `,
+      icon: 'info',
+      confirmButtonText: 'Entendido'
+    });
+
+  } catch (error: any) {
     console.error('Error launching biometric service:', error);
     await Swal.fire({
       title: 'Error',
@@ -3036,8 +3040,8 @@ const createMinimalInmate = async () => {
         emergency_contact_phone: inmateData.value.emergency_contact_phone || null,
         emergency_contact_relationship_id: inmateData.value.emergency_contact_relationship_id || null,
         emergency_contact_address: inmateData.value.emergency_contact_address || null,
-        // Current location - use the selected center from admission data
-        current_center_id: admissionData.value.current_center_id || 1,
+        // Current location - optional in step 1, required in final assignment (step 7)
+        current_center_id: admissionData.value.current_center_id || null,
         status: 'active'
       },
       // Include only valid legal profiles with required fields

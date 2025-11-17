@@ -203,9 +203,9 @@ const routes: Array<RouteRecordRaw> = [
         name: "inmates-biometric-verification",
         component: () => import("@/modules/inmates/views/BiometricVerification.vue"),
         meta: {
-          pageTitle: "Verificación Biométrica",
-          breadcrumbs: ["Internos", "Verificación Biométrica"],
-          permissions: "inmates.biometric",
+          pageTitle: "Identificación Biométrica 1:N",
+          breadcrumbs: ["Internos", "Identificación Biométrica 1:N"],
+          permissions: ["biometric.view", "biometric.identify"],
         },
       },
       {
@@ -215,7 +215,7 @@ const routes: Array<RouteRecordRaw> = [
         meta: {
           pageTitle: "Identificación Biométrica 1:N",
           breadcrumbs: ["Internos", "Identificación Biométrica"],
-          permissions: "inmates.biometric",
+          permissions: ["biometric.view", "biometric.identify"],
         },
       },
       {
@@ -225,7 +225,7 @@ const routes: Array<RouteRecordRaw> = [
         meta: {
           pageTitle: "Test Directo Biométrico",
           breadcrumbs: ["Test", "Biométrico Directo"],
-          permissions: "inmates.biometric",
+          permissions: ["biometric.view", "biometric.identify"],
         },
       },
       {
@@ -1207,7 +1207,7 @@ const routes: Array<RouteRecordRaw> = [
         meta: {
           pageTitle: "Captura Biométrica",
           breadcrumbs: ["Seguridad", "Captura Biométrica"],
-          permissions: "security.biometric",
+          permissions: ["biometric.view", "biometric.enroll"],
         },
       },
       {

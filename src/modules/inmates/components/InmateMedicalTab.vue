@@ -36,7 +36,7 @@
                 >Tipo de Sangre</span
               >
               <span class="text-gray-800">
-                {{ medicalProfile?.blood_type_name || "No especificado" }}
+                {{ medicalProfile?.bloodType?.name || medicalProfile?.blood_type?.name || "No especificado" }}
               </span>
             </div>
 
@@ -62,7 +62,7 @@
                 >Estado de Salud Mental</span
               >
               <span class="text-gray-800">
-                {{ medicalProfile?.mental_health_status_name || "No evaluado" }}
+                {{ medicalProfile?.mentalHealthStatus?.name || medicalProfile?.mental_health_status?.name || "No evaluado" }}
               </span>
             </div>
 
@@ -892,9 +892,9 @@ const loadMedicalData = async () => {
   try {
     loading.value.profile = true;
 
-    // Load medical profile
-    if (props.inmate.medical_profile) {
-      medicalProfile.value = props.inmate.medical_profile;
+    // Load medical profile - support both camelCase and snake_case
+    if (props.inmate.medicalProfile || props.inmate.medical_profile) {
+      medicalProfile.value = props.inmate.medicalProfile || props.inmate.medical_profile;
     }
 
     // Load reference data
@@ -910,25 +910,20 @@ const loadMedicalConditions = async () => {
   try {
     loading.value.conditions = true;
 
-    // Load from medical profile or mock data
-    if (medicalProfile.value?.chronic_diseases) {
-      chronicDiseases.value = Array.isArray(
-        medicalProfile.value.chronic_diseases,
-      )
-        ? medicalProfile.value.chronic_diseases
-        : [];
+    // Load from medical profile - support both camelCase and snake_case
+    const chronicDiseasesData = medicalProfile.value?.chronicDiseases || medicalProfile.value?.chronic_diseases;
+    if (chronicDiseasesData) {
+      chronicDiseases.value = Array.isArray(chronicDiseasesData) ? chronicDiseasesData : [];
     }
 
-    if (medicalProfile.value?.disabilities) {
-      disabilities.value = Array.isArray(medicalProfile.value.disabilities)
-        ? medicalProfile.value.disabilities
-        : [];
+    const disabilitiesData = medicalProfile.value?.disabilities;
+    if (disabilitiesData) {
+      disabilities.value = Array.isArray(disabilitiesData) ? disabilitiesData : [];
     }
 
-    if (medicalProfile.value?.allergies) {
-      allergies.value = Array.isArray(medicalProfile.value.allergies)
-        ? medicalProfile.value.allergies
-        : [];
+    const allergiesData = medicalProfile.value?.allergies;
+    if (allergiesData) {
+      allergies.value = Array.isArray(allergiesData) ? allergiesData : [];
     }
   } catch (error) {
     console.error("Error loading medical conditions:", error);
@@ -941,19 +936,13 @@ const loadTreatments = async () => {
   try {
     loading.value.treatments = true;
 
-    // Mock data - this would come from backend
-    activeTreatments.value = [
-      {
-        id: 1,
-        medication_name: "Metformina",
-        dosage: "500mg",
-        frequency: "2 veces al día",
-        start_date: "2024-01-15",
-        status: "active",
-        priority: "normal",
-        prescribing_doctor: "Dr. García",
-      },
-    ];
+    // Load from medical profile medications
+    const medicationsData = medicalProfile.value?.medications;
+    if (medicationsData && Array.isArray(medicationsData)) {
+      activeTreatments.value = medicationsData.filter((m: any) => m.status === 'active');
+    } else {
+      activeTreatments.value = [];
+    }
   } catch (error) {
     console.error("Error loading treatments:", error);
   } finally {
@@ -965,18 +954,16 @@ const loadConsultations = async () => {
   try {
     loading.value.consultations = true;
 
-    // Mock data - this would come from backend
-    medicalConsultations.value = [
-      {
-        id: 1,
-        consultation_date: "2024-06-20",
-        consultation_type: "Consulta General",
-        doctor_name: "Dr. Rodríguez",
-        medical_center: "Clínica Central",
-        primary_diagnosis: "Diabetes tipo 2 controlada",
-        status: "completed",
-      },
-    ];
+    // Load from medical profile consultations
+    const consultationsData = medicalProfile.value?.consultations;
+    if (consultationsData && Array.isArray(consultationsData)) {
+      // Get most recent 5 consultations
+      medicalConsultations.value = consultationsData
+        .sort((a: any, b: any) => new Date(b.consultation_date).getTime() - new Date(a.consultation_date).getTime())
+        .slice(0, 5);
+    } else {
+      medicalConsultations.value = [];
+    }
   } catch (error) {
     console.error("Error loading consultations:", error);
   } finally {
@@ -988,12 +975,17 @@ const loadStatistics = async () => {
   try {
     loading.value.statistics = true;
 
-    // Mock data - this would come from backend
+    // Calculate statistics from real data
+    const consultationsCount = medicalProfile.value?.consultations?.length || 0;
+    const lastConsultation = medicalProfile.value?.consultations && medicalProfile.value.consultations.length > 0
+      ? medicalProfile.value.consultations[0].consultation_date
+      : null;
+
     medicalStatistics.value = {
-      total_consultations: 15,
+      total_consultations: consultationsCount,
       active_treatments: activeTreatments.value.length,
-      last_consultation_date: "2024-06-20",
-      risk_level: "medium",
+      last_consultation_date: lastConsultation,
+      risk_level: medicalProfile.value?.medical_risk_level || "low",
     };
   } catch (error) {
     console.error("Error loading statistics:", error);
