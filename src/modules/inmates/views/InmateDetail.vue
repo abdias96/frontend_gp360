@@ -400,7 +400,7 @@ import { useRoute, useRouter } from "vue-router";
 import { useInmatesStore } from "@/stores/inmates";
 import { useAuthStore } from "@/stores/auth";
 import InmateOverviewTab from "@/modules/inmates/components/InmateOverviewTab.vue";
-import InmateLegalTab from "@/modules/inmates/components/InmateLegalTab.vue";
+import InmateLegalTab from "@/components/inmates/tabs/InmateLegalTab.vue";
 import InmatePhysicalTab from "@/modules/inmates/components/InmatePhysicalTab.vue";
 import InmateMedicalTab from "@/modules/inmates/components/InmateMedicalTab.vue";
 import InmateSecurityTab from "@/modules/inmates/components/InmateSecurityTab.vue";

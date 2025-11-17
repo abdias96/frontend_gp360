@@ -180,15 +180,30 @@ const handleSearch = debounce(() => {
   loadProfiles();
 }, 300);
 
-const createProfile = () => {
-  // For now, show info message that creation happens from inmate detail page
-  // In the future, could add standalone creation here
-  Swal.fire({
+const createProfile = async () => {
+  // Show selector to choose an inmate first
+  const result = await Swal.fire({
     title: 'Crear Perfil Legal',
-    text: 'Para crear un nuevo perfil legal, vaya al detalle del interno y use el botón "Nuevo Perfil Legal" en la pestaña Legal.',
+    html: `
+      <div class="text-start">
+        <p class="mb-3">Para crear un nuevo perfil legal, primero seleccione el interno:</p>
+        <ol class="text-muted fs-7">
+          <li>Busque el interno en el listado de internos</li>
+          <li>Haga clic en "Ver Detalle" del interno</li>
+          <li>Vaya a la pestaña "Legal"</li>
+          <li>Use el botón "Nuevo Perfil Legal"</li>
+        </ol>
+      </div>
+    `,
     icon: 'info',
-    confirmButtonText: 'Entendido'
+    showCancelButton: true,
+    confirmButtonText: 'Ir a Listado de Internos',
+    cancelButtonText: 'Cancelar'
   });
+
+  if (result.isConfirmed) {
+    router.push('/inmates');
+  }
 };
 
 const getInitials = (firstName: string, lastName: string) => {
