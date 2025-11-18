@@ -58,9 +58,10 @@
                 Instrucciones
               </h5>
               <ol class="mb-0">
-                <li>Haga clic en "Capturar TODAS las Huellas" para lanzar el BiometricService</li>
+                <li>Haga clic en "Capturar Huellas" para lanzar el BiometricService</li>
                 <li>El sistema abrirá la aplicación de captura biométrica</li>
-                <li>Siga las instrucciones en pantalla para capturar las 10 huellas dactilares</li>
+                <li>Capture las huellas disponibles del PPL (mínimo 1, recomendado 4 o más)</li>
+                <li>Si el PPL no tiene todos los dedos disponibles, capture los que pueda</li>
                 <li>Una vez completado, los datos se sincronizarán automáticamente</li>
               </ol>
             </div>
@@ -156,7 +157,7 @@
                 >
                   <span v-if="isCapturing" class="spinner-border spinner-border-sm me-2"></span>
                   <i v-else class="fas fa-fingerprint me-2"></i>
-                  {{ isCapturing ? 'Lanzando BiometricService...' : 'Capturar TODAS las Huellas' }}
+                  {{ isCapturing ? 'Lanzando BiometricService...' : 'Capturar Huellas Disponibles' }}
                 </button>
 
                 <button
@@ -198,10 +199,13 @@
                 </div>
                 <div class="mt-3 text-center">
                   <span v-if="capturedCount >= 4" class="badge badge-success fs-6">
-                    ✓ Mínimo requerido alcanzado (4 huellas)
+                    ✓ Cantidad recomendada alcanzada (4+ huellas)
                   </span>
-                  <span v-else class="badge badge-warning fs-6">
-                    Faltan {{ 4 - capturedCount }} huellas para el mínimo requerido
+                  <span v-else-if="capturedCount >= 1" class="badge badge-info fs-6">
+                    {{ capturedCount }} huella(s) capturada(s) - Se recomiendan 4 o más para mejor identificación
+                  </span>
+                  <span v-else class="badge badge-light fs-6">
+                    No hay huellas capturadas - Capture al menos 1 huella
                   </span>
                 </div>
               </div>

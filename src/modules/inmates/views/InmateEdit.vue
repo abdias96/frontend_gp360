@@ -386,13 +386,12 @@
               </div>
 
               <div class="col-md-4">
-                <label class="form-label required">Municipio de Nacimiento</label>
+                <label class="form-label">Municipio de Nacimiento</label>
                 <select
                   v-model="form.birth_municipality_id"
                   class="form-select"
                   :class="{ 'is-invalid': errors.birth_municipality_id }"
                   :disabled="!form.birth_department_id"
-                  required
                 >
                   <option value="">Seleccionar municipio</option>
                   <option
@@ -470,13 +469,12 @@
               </div>
 
               <div class="col-md-4">
-                <label class="form-label required">Municipio</label>
+                <label class="form-label">Municipio</label>
                 <select
                   v-model="form.municipality_id"
                   class="form-select"
                   :class="{ 'is-invalid': errors.municipality_id }"
                   :disabled="!form.department_id"
-                  required
                 >
                   <option value="">Seleccionar municipio</option>
                   <option

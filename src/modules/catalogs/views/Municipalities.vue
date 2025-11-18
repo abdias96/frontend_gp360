@@ -113,12 +113,12 @@ const modalFields = ref<ModalField[]>([
 const loadCountries = async () => {
   try {
     const response = await ApiService.query("/catalogs/countries", {
+      simple: true,
       active: "Y",
-      per_page: 1000,
     });
 
     if (response.data.success) {
-      const countryOptions = response.data.data.data.map((country: any) => ({
+      const countryOptions = response.data.data.map((country: any) => ({
         value: country.id,
         label: country.name,
       }));
@@ -139,8 +139,8 @@ const loadCountries = async () => {
 const loadDepartments = async (countryId?: number) => {
   try {
     const params: any = {
+      simple: true,
       active: "Y",
-      per_page: 1000,
     };
 
     if (countryId) {
@@ -150,7 +150,7 @@ const loadDepartments = async (countryId?: number) => {
     const response = await ApiService.query("/catalogs/departments", params);
 
     if (response.data.success) {
-      const departmentOptions = response.data.data.data.map((dept: any) => ({
+      const departmentOptions = response.data.data.map((dept: any) => ({
         value: dept.id,
         label: dept.name,
       }));
