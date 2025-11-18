@@ -638,10 +638,10 @@ const filters = computed(() => inmatesStore.filters);
 const canCreate = computed(() => authStore.hasPermission("inmates.create"));
 const canEdit = computed(() => authStore.hasPermission("inmates.edit"));
 const canTransfer = computed(() =>
-  authStore.hasPermission("inmates.transfers"),
+  authStore.hasPermission("inmates.transfer"),
 );
 const canChangeStatus = computed(() =>
-  authStore.hasPermission("inmates.status"),
+  authStore.hasPermission("inmates.change_status"),
 );
 
 // Check if any filter is active

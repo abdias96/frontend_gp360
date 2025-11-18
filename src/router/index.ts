@@ -265,7 +265,7 @@ const routes: Array<RouteRecordRaw> = [
         meta: {
           pageTitle: "Traslados de Internos",
           breadcrumbs: ["Internos", "Traslados"],
-          permissions: "inmates.transfers",
+          permissions: "inmates.transfer",
         },
       },
       {
