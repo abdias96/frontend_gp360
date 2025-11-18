@@ -49,7 +49,7 @@
                   >Fecha de Nacimiento</span
                 >
                 <span class="text-gray-800"
-                  >{{ formatDate(inmate.birth_date) }} ({{
+                  >{{ formatDate(inmate.birth_date, 'd \'de\' MMMM \'de\' yyyy') }} ({{
                     inmate.age
                   }}
                   años)</span
@@ -350,7 +350,7 @@
                   >Fecha de Ingreso</span
                 >
                 <span class="text-gray-800">{{
-                  formatDate(inmate.admission_date)
+                  formatDate(inmate.admission_date, 'd \'de\' MMMM \'de\' yyyy')
                 }}</span>
               </div>
 
@@ -438,7 +438,7 @@
                   >Registro Creado</span
                 >
                 <span class="text-gray-800">{{
-                  formatDateTime(inmate.created_at)
+                  formatDateTime(inmate.created_at, 'd \'de\' MMM \'de\' yyyy, HH:mm')
                 }}</span>
               </div>
 
@@ -447,7 +447,7 @@
                   >Última Actualización</span
                 >
                 <span class="text-gray-800">{{
-                  formatDateTime(inmate.updated_at)
+                  formatDateTime(inmate.updated_at, 'd \'de\' MMM \'de\' yyyy, HH:mm')
                 }}</span>
               </div>
             </div>
@@ -462,31 +462,13 @@
 
 <script setup lang="ts">
 import type { InmateDetail } from "@/types/inmates";
+import { formatDate, formatDateTime } from "@/core/helpers/formatters";
 
 interface Props {
   inmate: InmateDetail;
 }
 
 defineProps<Props>();
-
-// Methods
-const formatDate = (date: string): string => {
-  return new Date(date).toLocaleDateString("es-GT", {
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-  });
-};
-
-const formatDateTime = (date: string): string => {
-  return new Date(date).toLocaleDateString("es-GT", {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
-};
 
 const getStatusClass = (status: string): string => {
   const classes: Record<string, string> = {

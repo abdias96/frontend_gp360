@@ -440,6 +440,7 @@
 <script setup lang="ts">
 import { computed } from "vue";
 import { useI18n } from "vue-i18n";
+import { formatDate as formatDateHelper } from "@/core/helpers/formatters";
 
 interface Props {
   inmate: any;
@@ -463,11 +464,7 @@ const getInmateFullName = computed(() => {
 });
 
 const formatDate = (date: string) => {
-  return new Date(date).toLocaleDateString("es-GT", {
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-  });
+  return formatDateHelper(date, 'd \'de\' MMMM \'de\' yyyy');
 };
 
 const getAdmissionTypeLabel = (type: string | null | undefined): string => {

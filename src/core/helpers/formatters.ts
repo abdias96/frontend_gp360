@@ -3,15 +3,30 @@ import { es } from 'date-fns/locale';
 
 /**
  * Format a date string to a readable format
- * @param dateString - ISO date string
+ * Handles date-only strings (YYYY-MM-DD) without timezone issues
+ * @param dateString - ISO date string or Date object
  * @param formatString - Optional format string (default: 'dd/MM/yyyy')
  * @returns Formatted date string
  */
 export const formatDate = (dateString: string | Date | null | undefined, formatString: string = 'dd/MM/yyyy'): string => {
   if (!dateString) return '';
-  
+
   try {
-    const date = typeof dateString === 'string' ? parseISO(dateString) : dateString;
+    let date: Date;
+
+    if (typeof dateString === 'string') {
+      // For date-only strings (YYYY-MM-DD), parse as local date to avoid timezone issues
+      if (/^\d{4}-\d{2}-\d{2}$/.test(dateString.trim())) {
+        const [year, month, day] = dateString.split('-').map(Number);
+        date = new Date(year, month - 1, day); // month is 0-indexed
+      } else {
+        // For ISO datetime strings, use parseISO
+        date = parseISO(dateString);
+      }
+    } else {
+      date = dateString;
+    }
+
     return format(date, formatString, { locale: es });
   } catch (error) {
     console.error('Error formatting date:', error);
