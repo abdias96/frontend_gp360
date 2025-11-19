@@ -25,19 +25,38 @@
                     <label class="form-label required">{{ t('legal.crimes.form.inmate') }}</label>
                     <Multiselect
                       v-model="formData.inmate_id"
-                      :options="inmatesOptions"
+                      :options="searchInmates"
                       :searchable="true"
-                      :placeholder="t('common.select')"
-                      :noOptionsText="t('common.noOptions')"
-                      :noResultsText="t('common.noResults')"
+                      :filterResults="false"
+                      :minChars="2"
+                      :resolveOnLoad="props.mode === 'edit' && formData.inmate_id"
+                      :delay="300"
+                      :placeholder="t('legal.crimes.form.searchInmatePlaceholder') || 'Escriba al menos 2 caracteres para buscar...'"
+                      :noOptionsText="t('legal.crimes.form.typeToSearch') || 'Escriba para buscar PPL'"
+                      :noResultsText="t('common.noResults') || 'No se encontraron resultados'"
                       label="label"
                       valueProp="value"
                       :class="{ 'is-invalid': errors.inmate_id }"
+                      :loading="isSearchingInmates"
                       @change="onInmateChange"
                       required
-                    />
+                    >
+                      <template #nooptions>
+                        <div class="multiselect-no-options">
+                          {{ t('legal.crimes.form.typeToSearch') || 'Escriba al menos 2 caracteres para buscar PPL...' }}
+                        </div>
+                      </template>
+                      <template #noresults>
+                        <div class="multiselect-no-results">
+                          {{ t('common.noResults') || 'No se encontraron resultados' }}
+                        </div>
+                      </template>
+                    </Multiselect>
                     <div v-if="errors.inmate_id" class="invalid-feedback d-block">
                       {{ errors.inmate_id }}
+                    </div>
+                    <div class="form-text text-muted mt-1">
+                      Escriba el nombre, apellido o número de interno para buscar
                     </div>
                   </div>
                 </div>
@@ -471,6 +490,7 @@ const loading = ref(false);
 const errors = reactive<any>({});
 const inmatesOptions = ref<any[]>([]);
 const legalProfilesOptions = ref<any[]>([]);
+const isSearchingInmates = ref(false);
 
 const formData = reactive({
   inmate_id: '',
@@ -501,31 +521,53 @@ const formData = reactive({
   status: 'active'
 });
 
-// Load inmates
-const loadInmates = async () => {
+// Async search function for inmates (remote search)
+const searchInmates = async (query: string): Promise<any[]> => {
+  // Don't search if query is too short
+  if (!query || query.length < 2) {
+    return inmatesOptions.value; // Return preloaded options if any (for edit mode)
+  }
+
+  isSearchingInmates.value = true;
+
   try {
-    const response = await ApiService.query('/inmates', { per_page: 1000 });
-    // Handle paginated response structure
+    const response = await ApiService.get('/inmates/simple-list', {
+      params: { search: query }
+    });
+
     let inmates = [];
     if (response.data && response.data.data) {
-      // Check if it's a paginated response
-      if (Array.isArray(response.data.data)) {
-        inmates = response.data.data;
-      } else if (response.data.data.data && Array.isArray(response.data.data.data)) {
-        inmates = response.data.data.data;
-      }
-    } else if (response.data && Array.isArray(response.data)) {
-      inmates = response.data;
+      inmates = response.data.data;
     }
 
-    inmatesOptions.value = inmates.map((inmate: any) => ({
+    // Return options in the format Multiselect expects
+    return inmates.map((inmate: any) => ({
       value: inmate.id,
-      label: `${inmate.first_name} ${inmate.last_name} (${inmate.inmate_number})`
+      label: inmate.label || `${inmate.full_name} - ${inmate.inmate_number}`
     }));
   } catch (error) {
-    console.error('Error loading inmates:', error);
-    // Continue without inmates list
-    inmatesOptions.value = [];
+    console.error('Error searching inmates:', error);
+    return [];
+  } finally {
+    isSearchingInmates.value = false;
+  }
+};
+
+// Load specific inmate by ID (for edit mode)
+const loadInmateById = async (inmateId: number) => {
+  try {
+    const response = await ApiService.get(`/inmates/${inmateId}`);
+
+    if (response.data && response.data.data) {
+      const inmate = response.data.data;
+      // Preload this inmate into options so it displays correctly
+      inmatesOptions.value = [{
+        value: inmate.id,
+        label: `${inmate.first_name} ${inmate.last_name} (${inmate.inmate_number})`
+      }];
+    }
+  } catch (error) {
+    console.error('Error loading inmate:', error);
   }
 };
 
@@ -611,8 +653,9 @@ const initializeForm = async () => {
       status: props.crime.status || 'active'
     });
 
-    // Load legal profiles for the selected inmate
+    // Load the selected inmate info for display in the select
     if (props.crime.inmate_id) {
+      await loadInmateById(props.crime.inmate_id);
       await loadLegalProfiles(props.crime.inmate_id);
     }
   }
@@ -651,7 +694,6 @@ const handleSubmit = async () => {
 // Lifecycle
 onMounted(async () => {
   await catalogsStore.fetchMultipleCatalogs(['crimes', 'crime-classifications']);
-  await loadInmates();
   await initializeForm();
 });
 </script>
