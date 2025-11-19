@@ -28,7 +28,7 @@
           </div>
           <div class="col-md-3">
             <label class="form-label">Centro</label>
-            <select v-model="filters.center_id" class="form-select" @change="loadInmates">
+            <select v-model="filters.center_id" class="form-select" @change="handleFilterChange">
               <option value="">Todos los centros</option>
               <option v-for="center in centers" :key="center?.id || 0" :value="center?.id">
                 {{ center?.name }}
@@ -37,7 +37,7 @@
           </div>
           <div class="col-md-3">
             <label class="form-label">Estado Biométrico</label>
-            <select v-model="filters.biometric_status" class="form-select" @change="loadInmates">
+            <select v-model="filters.biometric_status" class="form-select" @change="handleFilterChange">
               <option value="">Todos</option>
               <option value="complete">Completo</option>
               <option value="partial">Parcial</option>
@@ -80,7 +80,7 @@
               </span>
               <div class="text-white">
                 <div class="fs-2 fw-bold">{{ stats.with_biometrics }}</div>
-                <div class="fs-7">Con Biometría</div>
+                <div class="fs-7">Con Biometría (página)</div>
               </div>
             </div>
           </div>
@@ -95,7 +95,7 @@
               </span>
               <div class="text-white">
                 <div class="fs-2 fw-bold">{{ stats.with_photos }}</div>
-                <div class="fs-7">Con Fotografías</div>
+                <div class="fs-7">Con Fotografías (página)</div>
               </div>
             </div>
           </div>
@@ -110,7 +110,7 @@
               </span>
               <div class="text-white">
                 <div class="fs-2 fw-bold">{{ stats.incomplete }}</div>
-                <div class="fs-7">Incompletos</div>
+                <div class="fs-7">Incompletos (página)</div>
               </div>
             </div>
           </div>
@@ -262,13 +262,96 @@
             </tbody>
           </table>
         </div>
+
+        <!-- Pagination Controls -->
+        <div class="card-footer d-flex justify-content-between align-items-center">
+          <div class="d-flex align-items-center gap-3">
+            <div class="text-muted">
+              Mostrando {{ pagination.from }} a {{ pagination.to }} de {{ pagination.total }} registros
+            </div>
+            <div class="d-flex align-items-center gap-2">
+              <label class="form-label mb-0 me-2">Por página:</label>
+              <select
+                v-model.number="pagination.perPage"
+                class="form-select form-select-sm"
+                style="width: 80px;"
+                @change="changePerPage(pagination.perPage)"
+              >
+                <option :value="10">10</option>
+                <option :value="15">15</option>
+                <option :value="25">25</option>
+                <option :value="50">50</option>
+                <option :value="100">100</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="d-flex align-items-center gap-2">
+            <!-- Previous Button -->
+            <button
+              type="button"
+              class="btn btn-sm btn-light"
+              :disabled="pagination.currentPage === 1"
+              @click="prevPage"
+            >
+              <i class="fas fa-chevron-left"></i>
+            </button>
+
+            <!-- Page Numbers -->
+            <div class="d-flex gap-1">
+              <!-- First Page -->
+              <button
+                v-if="pagination.currentPage > 3"
+                type="button"
+                class="btn btn-sm btn-light"
+                @click="changePage(1)"
+              >
+                1
+              </button>
+              <span v-if="pagination.currentPage > 4" class="align-self-center">...</span>
+
+              <!-- Pages around current -->
+              <button
+                v-for="page in visiblePages"
+                :key="page"
+                type="button"
+                class="btn btn-sm"
+                :class="page === pagination.currentPage ? 'btn-primary' : 'btn-light'"
+                @click="changePage(page)"
+              >
+                {{ page }}
+              </button>
+
+              <!-- Last Page -->
+              <span v-if="pagination.currentPage < pagination.lastPage - 3" class="align-self-center">...</span>
+              <button
+                v-if="pagination.currentPage < pagination.lastPage - 2"
+                type="button"
+                class="btn btn-sm btn-light"
+                @click="changePage(pagination.lastPage)"
+              >
+                {{ pagination.lastPage }}
+              </button>
+            </div>
+
+            <!-- Next Button -->
+            <button
+              type="button"
+              class="btn btn-sm btn-light"
+              :disabled="pagination.currentPage === pagination.lastPage"
+              @click="nextPage"
+            >
+              <i class="fas fa-chevron-right"></i>
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, computed } from 'vue';
 import { useRouter } from 'vue-router';
 import ApiService from '@/core/services/ApiService';
 import { formatDate } from '@/core/helpers/formatters';
@@ -289,11 +372,45 @@ const filters = ref({
   biometric_status: ''
 });
 
+const pagination = ref({
+  currentPage: 1,
+  perPage: 15,
+  total: 0,
+  lastPage: 1,
+  from: 0,
+  to: 0
+});
+
 const stats = ref({
   total_inmates: 0,
   with_biometrics: 0,
   with_photos: 0,
   incomplete: 0
+});
+
+// Computed
+const visiblePages = computed(() => {
+  const pages: number[] = [];
+  const current = pagination.value.currentPage;
+  const last = pagination.value.lastPage;
+
+  // Show up to 5 pages around current
+  let start = Math.max(1, current - 2);
+  let end = Math.min(last, current + 2);
+
+  // Adjust if we're near the beginning or end
+  if (current <= 3) {
+    end = Math.min(5, last);
+  }
+  if (current >= last - 2) {
+    start = Math.max(1, last - 4);
+  }
+
+  for (let i = start; i <= end; i++) {
+    pages.push(i);
+  }
+
+  return pages;
 });
 
 // Methods
@@ -304,19 +421,32 @@ const loadInmates = async () => {
       with_physical: 'true',
       with_biometrics: 'true',
       with_photos: 'true',
+      page: pagination.value.currentPage.toString(),
+      per_page: pagination.value.perPage.toString(),
       ...Object.fromEntries(
         Object.entries(filters.value).filter(([_, v]) => v !== '')
       )
     });
 
     const response = await ApiService.get(`/inmates?${params.toString()}`);
-    
+
     if (response.data && response.data.data) {
-      // Handle paginated response
-      const inmatesData = Array.isArray(response.data.data) 
-        ? response.data.data 
-        : (response.data.data.data || []);
-        
+      // Handle paginated response from Laravel
+      const paginatedData = response.data.data;
+      const inmatesData = Array.isArray(paginatedData)
+        ? paginatedData
+        : (paginatedData.data || []);
+
+      // Update pagination metadata
+      if (!Array.isArray(paginatedData)) {
+        pagination.value.currentPage = paginatedData.current_page || 1;
+        pagination.value.total = paginatedData.total || 0;
+        pagination.value.lastPage = paginatedData.last_page || 1;
+        pagination.value.from = paginatedData.from || 0;
+        pagination.value.to = paginatedData.to || 0;
+        pagination.value.perPage = paginatedData.per_page || 15;
+      }
+
       arrInmates.value = inmatesData.map((inmate: any) => {
         // Get primary photo with fallback logic (same as InmateDetail)
         let primaryPhoto = null;
@@ -367,7 +497,10 @@ const loadCenters = async () => {
 };
 
 const updateStats = () => {
-  stats.value.total_inmates = arrInmates.value.length;
+  // Use pagination total for total inmates
+  stats.value.total_inmates = pagination.value.total;
+
+  // Calculate other stats from current page (visible records)
   stats.value.with_biometrics = arrInmates.value.filter(i => i.biometric_count > 0).length;
   stats.value.with_photos = arrInmates.value.filter(i => i.photo_count > 0).length;
   stats.value.incomplete = arrInmates.value.filter(
@@ -376,8 +509,14 @@ const updateStats = () => {
 };
 
 const handleSearch = debounce(() => {
+  pagination.value.currentPage = 1; // Reset to first page on search
   loadInmates();
 }, 500);
+
+const handleFilterChange = () => {
+  pagination.value.currentPage = 1; // Reset to first page on filter change
+  loadInmates();
+};
 
 const resetFilters = () => {
   filters.value = {
@@ -385,7 +524,34 @@ const resetFilters = () => {
     center_id: '',
     biometric_status: ''
   };
+  pagination.value.currentPage = 1; // Reset to first page
   loadInmates();
+};
+
+// Pagination methods
+const changePage = (page: number) => {
+  if (page >= 1 && page <= pagination.value.lastPage) {
+    pagination.value.currentPage = page;
+    loadInmates();
+  }
+};
+
+const changePerPage = (perPage: number) => {
+  pagination.value.perPage = perPage;
+  pagination.value.currentPage = 1; // Reset to first page
+  loadInmates();
+};
+
+const nextPage = () => {
+  if (pagination.value.currentPage < pagination.value.lastPage) {
+    changePage(pagination.value.currentPage + 1);
+  }
+};
+
+const prevPage = () => {
+  if (pagination.value.currentPage > 1) {
+    changePage(pagination.value.currentPage - 1);
+  }
 };
 
 const viewProfile = (inmateId: number) => {
