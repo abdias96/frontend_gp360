@@ -550,11 +550,16 @@ const searchInmates = async (query: string): Promise<any[]> => {
       inmates = response.data.data;
     }
 
-    // Return options in the format Multiselect expects
-    return inmates.map((inmate: any) => ({
+    // Map to options format
+    const options = inmates.map((inmate: any) => ({
       value: inmate.id,
       label: inmate.label || `${inmate.full_name} - ${inmate.inmate_number}`
     }));
+
+    // Store options for later use (keeps selected value visible)
+    inmatesOptions.value = options;
+
+    return options;
   } catch (error) {
     console.error('Error searching inmates:', error);
     return [];
