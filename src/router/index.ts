@@ -310,7 +310,7 @@ const routes: Array<RouteRecordRaw> = [
         meta: {
           pageTitle: "Información Legal",
           breadcrumbs: ["Internos", "Información Legal"],
-          permissions: "legal.view",
+          permissions: ["inmates.legal", "legal.profiles", "legal.manage"],
         },
       },
       // Operations routes
@@ -1046,7 +1046,7 @@ const routes: Array<RouteRecordRaw> = [
         meta: {
           pageTitle: "Gestión Legal",
           breadcrumbs: ["Legal"],
-          permissions: "legal.view",
+          permissions: ["legal.profiles", "legal.manage"],
         },
       },
       {
@@ -1076,7 +1076,7 @@ const routes: Array<RouteRecordRaw> = [
         meta: {
           pageTitle: "Editar Perfil Legal",
           breadcrumbs: ["Legal", "Perfiles", "Editar"],
-          permissions: "legal.profiles.edit",
+          permissions: ["inmates.legal_edit", "legal.manage"],
         },
       },
       {
