@@ -91,15 +91,36 @@ export interface InmateDetail extends InmateListItem {
   // Related data
   physical_profile?: InmatePhysicalProfile;
   legal_profile?: InmateLegalProfile;
+  legal_profiles?: InmateLegalProfile[];
   security_classification?: InmateSecurityClassification;
   medical_profile?: InmateMedicalProfile;
-  biometric_data?: InmateBiometricData;
+  biometric_data?: InmateBiometricData[]; // Array de huellas (una por dedo)
   photos?: InmatePhoto[];
   crimes?: InmateCrime[];
   gang_affiliations?: InmateGangAffiliation[];
   visitor_relationships?: InmateVisitorRelationship[];
   digital_files?: InmateDigitalFile[];
   transfers?: InmateTransfer[];
+  family_members?: any[]; // Agregar tipo apropiado
+  current_center?: any;
+  current_sector?: any;
+  current_cell?: any;
+  nationality?: any;
+  ethnic_group?: any;
+  civil_status?: any;
+  blood_type?: any;
+  academic_degree?: any;
+  occupation?: any;
+  religion?: any;
+  primary_language?: any;
+  birth_municipality?: any;
+  birth_department?: any;
+  municipality?: any;
+  department?: any;
+  risk_classification?: any;
+  current_security_classification?: any;
+  current_gang_affiliation?: any;
+  emergency_contact_relationship?: any;
 }
 
 export interface InmateCreate {
@@ -257,8 +278,16 @@ export interface InmateMedicalProfile {
 export interface InmateBiometricData {
   id: number;
   inmate_id: number;
+  finger_type: 'right_thumb' | 'right_index' | 'right_middle' | 'right_ring' | 'right_pinky' |
+                'left_thumb' | 'left_index' | 'left_middle' | 'left_ring' | 'left_pinky';
   fingerprint_template?: string;
+  fingerprint_image?: string; // PNG en base64
   fingerprint_quality?: number;
+  image_width?: number;
+  image_height?: number;
+  capture_date: string;
+  capture_device?: string;
+  is_active: boolean;
   facial_template?: string;
   iris_template?: string;
   voice_template?: string;

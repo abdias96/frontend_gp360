@@ -149,7 +149,7 @@ export const useInmatesStore = defineStore("inmates", {
         this.loading = true;
         this.error = null;
 
-        const response = await ApiService.get(`/inmates/${id}?with_photos=true`);
+        const response = await ApiService.get(`/inmates/${id}?with_photos=true&with_biometrics=true&include_images=true`);
         this.currentInmate = response.data.data;
 
         return this.currentInmate;
