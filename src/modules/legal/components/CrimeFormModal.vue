@@ -38,7 +38,7 @@
                       valueProp="value"
                       :class="{ 'is-invalid': errors.inmate_id }"
                       :loading="isSearchingInmates"
-                      @change="onInmateChange"
+                      @select="onInmateChange"
                       required
                     >
                       <template #nooptions>
@@ -501,6 +501,7 @@ const inmatesOptions = ref<any[]>([]);
 const legalProfilesOptions = ref<any[]>([]);
 const isSearchingInmates = ref(false);
 const isLoadingProfiles = ref(false);
+const isInitializing = ref(false);
 
 const formData = reactive({
   inmate_id: '',
@@ -651,49 +652,68 @@ const loadLegalProfiles = async (inmateId: string | number) => {
   }
 };
 
-// Handle inmate change
-const onInmateChange = async () => {
-  formData.legal_profile_id = ''; // Reset legal profile selection
-  await loadLegalProfiles(formData.inmate_id);
+// Handle inmate selection (triggered by @select event)
+const onInmateChange = async (option: any) => {
+  // Skip if initializing to avoid resetting during setup
+  if (isInitializing.value) {
+    return;
+  }
+
+  // Reset legal profile selection only when inmate actually changes
+  formData.legal_profile_id = '';
+  legalProfilesOptions.value = [];
+
+  // Load legal profiles for new inmate
+  // The option parameter contains the selected option object with value and label
+  const inmateId = option?.value || option;
+  if (inmateId) {
+    await loadLegalProfiles(inmateId);
+  }
 };
 
 // Initialize form data
 const initializeForm = async () => {
-  if (props.mode === 'edit' && props.crime) {
-    Object.assign(formData, {
-      inmate_id: props.crime.inmate_id,
-      legal_profile_id: props.crime.legal_profile_id || '',
-      crime_id: props.crime.crime_id,
-      crime_classification: props.crime.crime_classification || 'felony',
-      crime_role: props.crime.crime_role || '',
-      crime_description: props.crime.crime_description || '',
-      crime_date: formatDateForInput(props.crime.crime_date),
-      crime_location: props.crime.crime_location || '',
-      damage_amount: props.crime.damage_amount,
-      evidence_description: props.crime.evidence_description || '',
-      admits_guilt: props.crime.admits_guilt || false,
-      is_primary_crime: props.crime.is_primary_crime || props.crime.is_main || false, // Handle both field names
-      violence_level: props.crime.violence_level || 'none',
-      sentence_years: props.crime.sentence_years,
-      sentence_months: props.crime.sentence_months,
-      sentence_days: props.crime.sentence_days,
-      sentence_type: props.crime.sentence_type || '',
-      sentence_category: props.crime.sentence_category || '',
-      fine_amount: props.crime.fine_amount,
-      civil_reparation_amount: props.crime.civil_reparation_amount,
-      victim_count: props.crime.victim_count,
-      victim_details: props.crime.victim_details || '',
-      modus_operandi: props.crime.modus_operandi || '',
-      criminal_organization_involved: props.crime.criminal_organization_involved || false,
-      reoffense_indicator: props.crime.reoffense_indicator || false,
-      status: props.crime.status || 'active'
-    });
+  isInitializing.value = true;
 
-    // Load the selected inmate info for display in the select
-    if (props.crime.inmate_id) {
-      await loadInmateById(props.crime.inmate_id);
-      await loadLegalProfiles(props.crime.inmate_id);
+  try {
+    if (props.mode === 'edit' && props.crime) {
+      Object.assign(formData, {
+        inmate_id: props.crime.inmate_id,
+        legal_profile_id: props.crime.legal_profile_id || '',
+        crime_id: props.crime.crime_id,
+        crime_classification: props.crime.crime_classification || 'felony',
+        crime_role: props.crime.crime_role || '',
+        crime_description: props.crime.crime_description || '',
+        crime_date: formatDateForInput(props.crime.crime_date),
+        crime_location: props.crime.crime_location || '',
+        damage_amount: props.crime.damage_amount,
+        evidence_description: props.crime.evidence_description || '',
+        admits_guilt: props.crime.admits_guilt || false,
+        is_primary_crime: props.crime.is_primary_crime || props.crime.is_main || false, // Handle both field names
+        violence_level: props.crime.violence_level || 'none',
+        sentence_years: props.crime.sentence_years,
+        sentence_months: props.crime.sentence_months,
+        sentence_days: props.crime.sentence_days,
+        sentence_type: props.crime.sentence_type || '',
+        sentence_category: props.crime.sentence_category || '',
+        fine_amount: props.crime.fine_amount,
+        civil_reparation_amount: props.crime.civil_reparation_amount,
+        victim_count: props.crime.victim_count,
+        victim_details: props.crime.victim_details || '',
+        modus_operandi: props.crime.modus_operandi || '',
+        criminal_organization_involved: props.crime.criminal_organization_involved || false,
+        reoffense_indicator: props.crime.reoffense_indicator || false,
+        status: props.crime.status || 'active'
+      });
+
+      // Load the selected inmate info for display in the select
+      if (props.crime.inmate_id) {
+        await loadInmateById(props.crime.inmate_id);
+        await loadLegalProfiles(props.crime.inmate_id);
+      }
     }
+  } finally {
+    isInitializing.value = false;
   }
 };
 
