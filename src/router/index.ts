@@ -2368,9 +2368,16 @@ router.beforeEach(async (to, from, next) => {
         ? authStore.hasAllPermissions(requiredPermissions)
         : authStore.hasAnyPermission(requiredPermissions);
 
+      // Debug logging
+      console.log("🔐 Permission Check for route:", to.name);
+      console.log("  Required permissions:", requiredPermissions);
+      console.log("  User permissions:", authStore.permissions.map(p => p.slug));
+      console.log("  Has permission:", hasPermission);
+      console.log("  Is super admin:", authStore.isSuperAdmin);
+
       if (!hasPermission) {
         console.warn(
-          "Access denied: insufficient permissions for route",
+          "❌ Access denied: insufficient permissions for route",
           to.name,
         );
 
@@ -2381,6 +2388,8 @@ router.beforeEach(async (to, from, next) => {
 
         return next({ name: "dashboard", replace: true });
       }
+
+      console.log("✅ Permission check passed for route:", to.name);
     }
 
     // Proceed to route
