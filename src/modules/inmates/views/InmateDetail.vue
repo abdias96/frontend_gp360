@@ -410,6 +410,7 @@ import InmateDocumentsTab from "@/modules/inmates/components/InmateDocumentsTab.
 import InmateOperationsTab from "@/components/inmates/tabs/InmateOperationsTab.vue";
 import Swal from "sweetalert2";
 import { useBiometricMatching } from "@/composables/useBiometricMatching";
+import { formatDate as formatDateHelper } from "@/core/helpers/formatters";
 
 // Stores
 const inmatesStore = useInmatesStore();
@@ -446,17 +447,22 @@ const loadInmate = async () => {
 
 const formatDate = (date: string | null) => {
   if (!date) return "N/A";
-  return new Date(date).toLocaleDateString("es-GT", {
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-  });
+  return formatDateHelper(date, "d 'de' MMMM 'de' yyyy");
 };
 
 const calculateAge = (birthDate: string | null) => {
   if (!birthDate) return "N/A";
   const today = new Date();
-  const birth = new Date(birthDate);
+
+  // Parse date correctly to avoid timezone issues
+  let birth: Date;
+  if (/^\d{4}-\d{2}-\d{2}$/.test(birthDate.trim())) {
+    const [year, month, day] = birthDate.split('-').map(Number);
+    birth = new Date(year, month - 1, day); // month is 0-indexed
+  } else {
+    birth = new Date(birthDate);
+  }
+
   let age = today.getFullYear() - birth.getFullYear();
   const monthDiff = today.getMonth() - birth.getMonth();
 

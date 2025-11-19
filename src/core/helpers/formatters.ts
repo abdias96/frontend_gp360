@@ -19,8 +19,16 @@ export const formatDate = (dateString: string | Date | null | undefined, formatS
       if (/^\d{4}-\d{2}-\d{2}$/.test(dateString.trim())) {
         const [year, month, day] = dateString.split('-').map(Number);
         date = new Date(year, month - 1, day); // month is 0-indexed
-      } else {
-        // For ISO datetime strings, use parseISO
+      }
+      // For ISO datetime strings with midnight time (00:00:00), extract date part only
+      // to avoid timezone conversion issues (e.g., 2022-02-15T00:00:00.000000Z)
+      else if (/^\d{4}-\d{2}-\d{2}T00:00:00/.test(dateString.trim())) {
+        const datePart = dateString.split('T')[0];
+        const [year, month, day] = datePart.split('-').map(Number);
+        date = new Date(year, month - 1, day); // month is 0-indexed
+      }
+      else {
+        // For ISO datetime strings with actual time, use parseISO
         date = parseISO(dateString);
       }
     } else {

@@ -403,6 +403,7 @@ import { ref, reactive, computed, onMounted, watch } from 'vue'
 import { useToast } from '@/composables/useToast'
 import { useAuthStore } from '@/stores/auth'
 import { visitorsApi } from '@/services/api/visits'
+import { formatDate as formatDateHelper } from '@/core/helpers/formatters'
 // import VisitorModal from '../components/VisitorModal.vue'
 // import VisitorDetailModal from '../components/VisitorDetailModal.vue'
 // import BiometricCaptureModal from '../components/BiometricCaptureModal.vue'
@@ -603,13 +604,22 @@ const handleBiometricCaptured = () => {
 
 // Formatting methods
 const formatDate = (date) => {
-  return date ? new Date(date).toLocaleDateString('es-GT') : ''
+  return date ? formatDateHelper(date, 'dd/MM/yyyy') : ''
 }
 
 const getAge = (birthDate) => {
   if (!birthDate) return 0
   const today = new Date()
-  const birth = new Date(birthDate)
+
+  // Parse date correctly to avoid timezone issues
+  let birth
+  if (/^\d{4}-\d{2}-\d{2}$/.test(birthDate.trim())) {
+    const [year, month, day] = birthDate.split('-').map(Number)
+    birth = new Date(year, month - 1, day) // month is 0-indexed
+  } else {
+    birth = new Date(birthDate)
+  }
+
   let age = today.getFullYear() - birth.getFullYear()
   const monthDiff = today.getMonth() - birth.getMonth()
   if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {

@@ -554,6 +554,7 @@ import { ref, reactive, computed, onMounted } from 'vue'
 import { useToast } from '@/composables/useToast'
 import { admissionsApi } from '@/services/api/operations'
 import { catalogsApi } from '@/services/api/catalogs'
+import { formatDate as formatDateHelper } from '@/core/helpers/formatters'
 
 const emit = defineEmits(['close', 'saved'])
 const { showToast } = useToast()
@@ -685,7 +686,7 @@ const loadCatalogs = async () => {
 }
 
 const formatDate = (date) => {
-  return date ? new Date(date).toLocaleDateString('es-GT') : ''
+  return date ? formatDateHelper(date, 'dd/MM/yyyy') : ''
 }
 
 const formatAdmissionType = (type) => {
