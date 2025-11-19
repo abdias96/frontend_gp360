@@ -1347,26 +1347,17 @@ const onBirthCountryChange = async () => {
   form.value.birth_municipality_id = "";
   birthDepartments.value = [];
   birthMunicipalities.value = [];
-  
+
   if (form.value.birth_country_id) {
     try {
       // Load all departments
       await catalogsStore.fetchDepartments();
       const allDepartments = catalogsStore.getCatalog("departments");
-      
-      // Check if selected country is Guatemala (by name or common IDs)
-      const selectedCountry = countries.value.find(
-        c => c.id === Number(form.value.birth_country_id)
+
+      // Filter departments by selected country
+      birthDepartments.value = allDepartments.filter(
+        (d: any) => d.country_id === Number(form.value.birth_country_id)
       );
-      
-      const isGuatemala = selectedCountry && (
-        selectedCountry.name?.toLowerCase().includes('guatemala') ||
-        selectedCountry.code === 'GT' ||
-        Number(form.value.birth_country_id) === 1
-      );
-      
-      // For Guatemala, show all departments; for others, no departments
-      birthDepartments.value = isGuatemala ? allDepartments : [];
     } catch (error) {
       console.error("Error loading birth departments:", error);
     }
@@ -1397,26 +1388,17 @@ const onCountryChange = async () => {
   form.value.municipality_id = "";
   departments.value = [];
   municipalities.value = [];
-  
+
   if (form.value.country_id) {
     try {
       // Load all departments
       await catalogsStore.fetchDepartments();
       const allDepartments = catalogsStore.getCatalog("departments");
-      
-      // Check if selected country is Guatemala (by name or common IDs)
-      const selectedCountry = countries.value.find(
-        c => c.id === Number(form.value.country_id)
+
+      // Filter departments by selected country
+      departments.value = allDepartments.filter(
+        (d: any) => d.country_id === Number(form.value.country_id)
       );
-      
-      const isGuatemala = selectedCountry && (
-        selectedCountry.name?.toLowerCase().includes('guatemala') ||
-        selectedCountry.code === 'GT' ||
-        Number(form.value.country_id) === 1
-      );
-      
-      // For Guatemala, show all departments; for others, no departments
-      departments.value = isGuatemala ? allDepartments : [];
     } catch (error) {
       console.error("Error loading departments:", error);
     }

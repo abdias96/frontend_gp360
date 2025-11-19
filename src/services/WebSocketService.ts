@@ -15,6 +15,7 @@ class WebSocketService {
   private reconnectAttempts: number = 0;
   private maxReconnectAttempts: number = 5;
   private reconnectInterval: number = 5000;
+  private isEnabled: boolean = import.meta.env.VITE_ENABLE_WEBSOCKET !== 'false';
 
   constructor() {
     // Make Pusher available globally for Laravel Echo
@@ -26,10 +27,8 @@ class WebSocketService {
    */
   public connect(): void {
     // Check if WebSocket is enabled in environment
-    const isWebSocketEnabled = import.meta.env.VITE_ENABLE_WEBSOCKET !== 'false';
-    
-    if (!isWebSocketEnabled) {
-      console.info('WebSocket is disabled in environment configuration');
+    if (!this.isEnabled) {
+      // Silently return when WebSocket is disabled
       return;
     }
 
@@ -117,7 +116,10 @@ class WebSocketService {
    */
   public listenToPrivateChannel(channelName: string, eventName: string, callback: (data: any) => void): void {
     if (!this.echo) {
-      console.error('WebSocket not connected');
+      // Only log error if WebSocket is enabled
+      if (this.isEnabled) {
+        console.error('WebSocket not connected');
+      }
       return;
     }
 
@@ -133,7 +135,10 @@ class WebSocketService {
    */
   public joinPresenceChannel(channelName: string): any {
     if (!this.echo) {
-      console.error('WebSocket not connected');
+      // Only log error if WebSocket is enabled
+      if (this.isEnabled) {
+        console.error('WebSocket not connected');
+      }
       return null;
     }
 
@@ -145,7 +150,10 @@ class WebSocketService {
    */
   public listenToChannel(channelName: string, eventName: string, callback: (data: any) => void): void {
     if (!this.echo) {
-      console.error('WebSocket not connected');
+      // Only log error if WebSocket is enabled
+      if (this.isEnabled) {
+        console.error('WebSocket not connected');
+      }
       return;
     }
 
