@@ -63,27 +63,36 @@
                 <div class="row mb-5">
                   <div class="col-md-6">
                     <label class="form-label required">{{ t('legal.crimes.form.legalProfile') }}</label>
-                    <select
-                      v-model="formData.legal_profile_id"
-                      class="form-select"
-                      :class="{ 'is-invalid': errors.legal_profile_id }"
-                      :disabled="!formData.inmate_id || legalProfilesOptions.length === 0"
-                      required
-                    >
-                      <option value="">{{ formData.inmate_id ? t('common.select') : t('legal.crimes.form.selectInmateFirst') }}</option>
-                      <option
-                        v-for="profile in legalProfilesOptions"
-                        :key="profile.value"
-                        :value="profile.value"
+                    <div class="position-relative">
+                      <select
+                        v-model="formData.legal_profile_id"
+                        class="form-select"
+                        :class="{ 'is-invalid': errors.legal_profile_id }"
+                        :disabled="!formData.inmate_id || legalProfilesOptions.length === 0 || isLoadingProfiles"
+                        required
                       >
-                        {{ profile.label }}
-                      </option>
-                    </select>
+                        <option value="">
+                          {{ isLoadingProfiles ? 'Cargando perfiles legales...' : (formData.inmate_id ? t('common.select') : t('legal.crimes.form.selectInmateFirst')) }}
+                        </option>
+                        <option
+                          v-for="profile in legalProfilesOptions"
+                          :key="profile.value"
+                          :value="profile.value"
+                        >
+                          {{ profile.label }}
+                        </option>
+                      </select>
+                      <span v-if="isLoadingProfiles" class="position-absolute top-50 end-0 translate-middle-y me-5">
+                        <span class="spinner-border spinner-border-sm text-primary"></span>
+                      </span>
+                    </div>
                     <div v-if="errors.legal_profile_id" class="invalid-feedback">
                       {{ errors.legal_profile_id }}
                     </div>
-                    <div v-if="formData.inmate_id && legalProfilesOptions.length === 0" class="form-text text-warning">
-                      Este interno no tiene perfiles legales activos. Debe crear un perfil legal primero.
+                    <div v-if="formData.inmate_id && !isLoadingProfiles && legalProfilesOptions.length === 0" class="alert alert-warning mt-2 py-2 px-3 mb-0">
+                      <i class="bi bi-exclamation-triangle me-2"></i>
+                      <strong>No hay perfiles legales activos para este PPL.</strong><br>
+                      <small>Debe crear un perfil legal antes de poder agregar delitos. Vaya al perfil del interno y cree un perfil legal primero.</small>
                     </div>
                   </div>
                   <div class="col-md-6">
@@ -491,6 +500,7 @@ const errors = reactive<any>({});
 const inmatesOptions = ref<any[]>([]);
 const legalProfilesOptions = ref<any[]>([]);
 const isSearchingInmates = ref(false);
+const isLoadingProfiles = ref(false);
 
 const formData = reactive({
   inmate_id: '',
@@ -578,11 +588,16 @@ const loadLegalProfiles = async (inmateId: string | number) => {
     return;
   }
 
+  isLoadingProfiles.value = true;
+
   try {
+    console.log('Loading legal profiles for inmate:', inmateId);
     const response = await ApiService.query('/inmate-legal-profiles', {
       inmate_id: inmateId,
       per_page: 100
     });
+
+    console.log('Legal profiles response:', response.data);
 
     let profiles = [];
     if (response.data && response.data.data) {
@@ -595,10 +610,15 @@ const loadLegalProfiles = async (inmateId: string | number) => {
       profiles = response.data;
     }
 
+    console.log('Total profiles found:', profiles.length);
+    console.log('Profiles:', profiles);
+
     // Filter for active profiles and sort by admission number
     const activeProfiles = profiles
       .filter((profile: any) => profile.profile_status === 'active')
       .sort((a: any, b: any) => b.admission_number - a.admission_number);
+
+    console.log('Active profiles found:', activeProfiles.length);
 
     legalProfilesOptions.value = activeProfiles.map((profile: any) => ({
       value: profile.id,
@@ -609,9 +629,20 @@ const loadLegalProfiles = async (inmateId: string | number) => {
     if (activeProfiles.length === 1) {
       formData.legal_profile_id = activeProfiles[0].id;
     }
+
+    // Show warning if inmate has no active legal profiles
+    if (profiles.length > 0 && activeProfiles.length === 0) {
+      console.warn('Inmate has legal profiles but none are active:', profiles);
+    }
+
+    if (profiles.length === 0) {
+      console.warn('Inmate has no legal profiles');
+    }
   } catch (error) {
     console.error('Error loading legal profiles:', error);
     legalProfilesOptions.value = [];
+  } finally {
+    isLoadingProfiles.value = false;
   }
 };
 
