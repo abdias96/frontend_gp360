@@ -23,23 +23,20 @@
                 <div class="row mb-5">
                   <div class="col-md-12">
                     <label class="form-label required">{{ t('legal.crimes.form.inmate') }}</label>
-                    <select
+                    <Multiselect
                       v-model="formData.inmate_id"
-                      class="form-select"
+                      :options="inmatesOptions"
+                      :searchable="true"
+                      :placeholder="t('common.select')"
+                      :noOptionsText="t('common.noOptions')"
+                      :noResultsText="t('common.noResults')"
+                      label="label"
+                      valueProp="value"
                       :class="{ 'is-invalid': errors.inmate_id }"
                       @change="onInmateChange"
                       required
-                    >
-                      <option value="">{{ t('common.select') }}</option>
-                      <option
-                        v-for="inmate in inmatesOptions"
-                        :key="inmate.value"
-                        :value="inmate.value"
-                      >
-                        {{ inmate.label }}
-                      </option>
-                    </select>
-                    <div v-if="errors.inmate_id" class="invalid-feedback">
+                    />
+                    <div v-if="errors.inmate_id" class="invalid-feedback d-block">
                       {{ errors.inmate_id }}
                     </div>
                   </div>
@@ -451,6 +448,7 @@ import { useCatalogsStore } from '@/stores/catalogs';
 import ApiService from '@/core/services/ApiService';
 import Swal from 'sweetalert2';
 import { formatDateForInput } from '@/core/helpers/date-formatters';
+import Multiselect from '@vueform/multiselect';
 
 const { t } = useI18n();
 const catalogsStore = useCatalogsStore();
