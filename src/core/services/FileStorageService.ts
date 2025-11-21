@@ -118,7 +118,12 @@ class FileStorageService {
   /**
    * Obtener URL completa del archivo
    */
-  getFileUrl(path: string, bustCache: boolean = false): string {
+  getFileUrl(path: string | null | undefined, bustCache: boolean = false): string | null {
+    // Retornar null si no hay path
+    if (!path) {
+      return null;
+    }
+
     let url = "";
 
     // Si la ruta ya incluye /storage, devolverla tal cual
@@ -149,7 +154,7 @@ class FileStorageService {
   /**
    * Obtener URL de imagen de perfil con cache busting
    */
-  getProfilePhotoUrl(path: string): string {
+  getProfilePhotoUrl(path: string | null | undefined): string | null {
     return this.getFileUrl(path, true);
   }
 

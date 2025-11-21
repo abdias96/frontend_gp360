@@ -604,8 +604,18 @@ const populateForm = () => {
   // Format birth_date to YYYY-MM-DD for date input
   let birthDate = ''
   if (visitor.birth_date) {
-    // Extract only the date part (YYYY-MM-DD) if it's a datetime string
-    birthDate = visitor.birth_date.split(' ')[0]
+    // Handle different date formats: ISO (2000-01-15T00:00:00.000Z) or SQL (2000-01-15 00:00:00)
+    const dateStr = visitor.birth_date
+    if (dateStr.includes('T')) {
+      // ISO format: split by T
+      birthDate = dateStr.split('T')[0]
+    } else if (dateStr.includes(' ')) {
+      // SQL format: split by space
+      birthDate = dateStr.split(' ')[0]
+    } else {
+      // Already in YYYY-MM-DD format or just date
+      birthDate = dateStr.substring(0, 10)
+    }
   }
 
   form.value = {

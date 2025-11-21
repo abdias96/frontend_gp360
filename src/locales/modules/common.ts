@@ -7,6 +7,7 @@ export const commonTranslations = {
       edit: "Edit",
       yes: "Yes",
       no: "No",
+      noData: "No data available",
       actions: {
         title: "Actions",
         save: "Save",
@@ -327,6 +328,7 @@ export const commonTranslations = {
       edit: "Editar",
       yes: "Sí",
       no: "No",
+      noData: "No hay datos disponibles",
       cancel: "Cancelar",
       update: "Actualizar",
       create: "Crear",

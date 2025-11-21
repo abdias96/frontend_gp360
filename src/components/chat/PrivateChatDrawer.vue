@@ -77,8 +77,8 @@
             >
               <div class="symbol symbol-45px me-3">
                 <img
-                  v-if="user.photo"
-                  :src="user.photo"
+                  v-if="getUserPhotoUrl(user.photo)"
+                  :src="getUserPhotoUrl(user.photo)!"
                   :alt="user.name"
                 />
                 <div v-else class="symbol-label bg-light-primary text-primary fs-6 fw-bolder">
@@ -158,14 +158,14 @@
               :name="msg.sender_name"
               :text="msg.message"
               :time="msg.created_at"
-              :image="msg.sender_photo"
+              :image="getUserPhotoUrl(msg.sender_photo)"
               :attachment="msg.attachment"
             />
             <MessageOut
               v-else
               :text="msg.message"
               :time="msg.created_at"
-              :image="msg.sender_photo"
+              :image="getUserPhotoUrl(msg.sender_photo)"
               :attachment="msg.attachment"
             />
           </div>
@@ -243,6 +243,7 @@ import { usePrivateChat } from '@/composables/usePrivateChat';
 import { useAuthStore } from '@/stores/auth';
 import MessageIn from '@/components/messenger-parts/MessageIn.vue';
 import MessageOut from '@/components/messenger-parts/MessageOut.vue';
+import FileStorageService from '@/core/services/FileStorageService';
 import Swal from 'sweetalert2';
 
 const authStore = useAuthStore();
@@ -253,6 +254,7 @@ const {
   availableUsers,
   selectedUser,
   isConnected,
+  isLoading,
   loadAvailableUsers,
   sendPrivateMessage,
   uploadAttachment,
@@ -416,6 +418,12 @@ const formatFileSize = (bytes: number) => {
   const sizes = ['Bytes', 'KB', 'MB', 'GB'];
   const i = Math.floor(Math.log(bytes) / Math.log(k));
   return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
+};
+
+// Get user photo URL or null
+const getUserPhotoUrl = (photoPath: string | null | undefined): string | null => {
+  if (!photoPath) return null;
+  return FileStorageService.getFileUrl(photoPath);
 };
 </script>
 

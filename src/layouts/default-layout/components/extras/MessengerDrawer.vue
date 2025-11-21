@@ -212,7 +212,6 @@
 import { defineComponent, ref, computed, watch, nextTick, onMounted } from "vue";
 import { useAuthStore } from "@/stores/auth";
 import FileStorageService from "@/core/services/FileStorageService";
-import { getAssetPath } from "@/core/helpers/assets";
 import MessageIn from "@/components/messenger-parts/MessageIn.vue";
 import MessageOut from "@/components/messenger-parts/MessageOut.vue";
 import KTIcon from "@/core/helpers/kt-icon/KTIcon.vue";
@@ -257,7 +256,7 @@ export default defineComponent({
         name: msg.user_name,
         image: msg.user_photo
           ? FileStorageService.getFileUrl(msg.user_photo)
-          : getAssetPath("media/avatars/300-25.jpg"),
+          : null, // No image - component will show icon with initial
         time: msg.timestamp
           ? new Date(msg.timestamp).toLocaleTimeString('es-CO', {
               hour: '2-digit',
@@ -413,7 +412,6 @@ export default defineComponent({
       handleFileSelect,
       clearFile,
       formatFileSize,
-      getAssetPath,
     };
   },
 });

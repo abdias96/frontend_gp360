@@ -12,22 +12,31 @@
               <i class="fas fa-arrow-left"></i>
               {{ $t('common.back') }}
             </router-link>
-            <button class="btn btn-warning" @click="handleSuspend" v-if="relationship.status === 'active'">
-              <i class="fas fa-pause"></i>
-              {{ $t('visits.relationshipDetail.suspend') }}
-            </button>
-            <button class="btn btn-success" @click="handleActivate" v-else>
-              <i class="fas fa-play"></i>
-              {{ $t('visits.relationshipDetail.activate') }}
-            </button>
+            <template v-if="relationship">
+              <button class="btn btn-warning" @click="handleSuspend" v-if="relationship.status === 'active'">
+                <i class="fas fa-pause"></i>
+                {{ $t('visits.relationships.suspend') }}
+              </button>
+              <button class="btn btn-success" @click="handleActivate" v-else>
+                <i class="fas fa-play"></i>
+                {{ $t('visits.relationships.reactivate') }}
+              </button>
+            </template>
           </div>
         </div>
       </div>
     </div>
     <!-- end::page-header -->
 
+    <!-- Loading State -->
+    <div v-if="loading" class="d-flex justify-content-center align-items-center" style="min-height: 400px;">
+      <div class="spinner-border text-primary" role="status">
+        <span class="visually-hidden">Cargando...</span>
+      </div>
+    </div>
+
     <!-- begin::content -->
-    <div class="row gy-5 g-xl-10">
+    <div v-else-if="relationship" class="row gy-5 g-xl-10">
       <!-- Relationship Summary Card -->
       <div class="col-xl-12">
         <div class="card">
@@ -274,79 +283,131 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
-import { useRoute } from 'vue-router'
+import { ref, computed, onMounted } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import Swal from 'sweetalert2'
+import { visitorRelationshipsApi } from '@/services/api/visits'
+import ApiService from '@/core/services/ApiService'
 
 // Composables
 const route = useRoute()
+const router = useRouter()
 const { t } = useI18n()
 
 // Refs
-const relationship = ref({
-  id: 1,
-  visitorId: 1,
-  visitorName: 'María García López',
-  visitorPhoto: null,
-  inmateId: 1,
-  inmateName: 'Juan García López',
-  inmateCode: 'REC-2024-001',
-  inmatePhoto: null,
-  relationshipType: 'Hermano',
-  status: 'active',
-  registrationDate: '2024-01-15',
-  verified: true,
-  verificationMethod: 'Documentación presentada',
-  documents: [
-    { id: 1, name: 'Certificado de Nacimiento.pdf' },
-    { id: 2, name: 'DPI del visitante.pdf' }
-  ],
-  notes: 'Relación verificada mediante certificados de nacimiento'
-})
+const loading = ref(true)
+const relationshipData = ref<any>(null)
 
-const statistics = ref({
-  totalVisits: 15,
-  averageDuration: '52 min',
-  lastVisit: '2024-03-10',
-  visitFrequency: 'Quincenal',
-  preferredDay: 'Domingo',
-  preferredTime: '14:00 - 16:00'
-})
+// Computed
+const relationship = computed(() => {
+  if (!relationshipData.value) return null
 
-const recentVisits = ref([
-  {
-    id: 1,
-    date: '2024-03-10',
-    time: '14:30',
-    type: 'Familiar',
-    duration: 45,
-    status: 'completed',
-    observations: 'Visita sin novedades'
-  },
-  {
-    id: 2,
-    date: '2024-02-25',
-    time: '14:00',
-    type: 'Familiar',
-    duration: 60,
-    status: 'completed',
-    observations: null
-  },
-  {
-    id: 3,
-    date: '2024-03-24',
-    time: '14:00',
-    type: 'Familiar',
-    duration: 0,
-    status: 'scheduled',
-    observations: null
+  const rel = relationshipData.value
+  return {
+    id: rel.id,
+    visitorId: rel.visitor_id,
+    visitorName: rel.visitor?.full_name || 'N/A',
+    visitorPhoto: rel.visitor?.photo_url || null,
+    inmateId: rel.inmate_id,
+    inmateName: rel.inmate?.full_name || 'N/A',
+    inmateCode: rel.inmate?.inmate_number || 'N/A',
+    inmatePhoto: rel.inmate?.photo_url || null,
+    relationshipType: rel.relationship_type?.name || 'N/A',
+    status: rel.authorization_status || 'pending',
+    registrationDate: rel.created_at,
+    verified: rel.relationship_verified || false,
+    verificationMethod: rel.relationship_description || null,
+    documents: rel.supporting_documents || [],
+    notes: rel.special_conditions || null
   }
-])
+})
 
+const statistics = computed(() => {
+  if (!relationshipData.value) return null
+
+  const stats = relationshipData.value.visit_statistics
+  return {
+    totalVisits: stats?.total_visits || 0,
+    averageDuration: '-',
+    lastVisit: relationshipData.value.last_visit_date || null,
+    visitFrequency: '-',
+    preferredDay: '-',
+    preferredTime: `-`
+  }
+})
+
+const recentVisits = ref([])
 const restrictions = ref([])
 
 // Methods
+const loadRelationshipData = async () => {
+  try {
+    loading.value = true
+    const response = await visitorRelationshipsApi.getById(route.params.id)
+    relationshipData.value = response.data.data
+
+    // Load visit logs for this relationship
+    await loadRecentVisits()
+  } catch (error: any) {
+    console.error('Error loading relationship:', error)
+    Swal.fire({
+      title: 'Error',
+      text: error.response?.data?.message || 'No se pudo cargar la relación',
+      icon: 'error'
+    }).then(() => {
+      router.push('/visits/relationships')
+    })
+  } finally {
+    loading.value = false
+  }
+}
+
+const loadRecentVisits = async () => {
+  try {
+    // Load visit logs for this visitor-inmate pair
+    const response = await ApiService.get('/visit-logs', {
+      params: {
+        visitor_id: relationshipData.value.visitor_id,
+        inmate_id: relationshipData.value.inmate_id,
+        per_page: 10
+      }
+    })
+
+    // Handle both paginated and direct array responses
+    let visits = null
+    if (response.data?.data) {
+      // Paginated response
+      if (Array.isArray(response.data.data)) {
+        visits = response.data.data
+      } else if (response.data.data.data && Array.isArray(response.data.data.data)) {
+        // Nested paginated response
+        visits = response.data.data.data
+      }
+    } else if (Array.isArray(response.data)) {
+      // Direct array response
+      visits = response.data
+    }
+
+    if (visits && Array.isArray(visits)) {
+      recentVisits.value = visits.map((visit: any) => ({
+        id: visit.id,
+        date: visit.actual_entry_datetime?.split('T')[0] || visit.requested_visit_date,
+        time: visit.actual_entry_datetime?.split('T')[1]?.substring(0, 5) || visit.requested_start_time,
+        type: visit.visit_type?.name || 'N/A',
+        duration: visit.actual_duration_minutes || visit.requested_duration_minutes || 0,
+        status: visit.status,
+        observations: visit.visit_purpose || visit.entry_notes || visit.exit_notes || null
+      }))
+    } else {
+      recentVisits.value = []
+    }
+  } catch (error) {
+    console.error('Error loading recent visits:', error)
+    recentVisits.value = []
+  }
+}
+
 const formatDate = (dateString: string | null) => {
   if (!dateString) return null
   return new Date(dateString).toLocaleDateString('es-GT')
@@ -354,9 +415,11 @@ const formatDate = (dateString: string | null) => {
 
 const getStatusBadgeClass = (status: string) => {
   const classes: Record<string, string> = {
-    active: 'badge badge-success',
-    suspended: 'badge badge-warning',
-    blocked: 'badge badge-danger'
+    approved: 'badge badge-success',
+    pending: 'badge badge-warning',
+    rejected: 'badge badge-danger',
+    suspended: 'badge badge-secondary',
+    expired: 'badge badge-dark'
   }
   return classes[status] || 'badge badge-secondary'
 }
@@ -364,9 +427,11 @@ const getStatusBadgeClass = (status: string) => {
 const getVisitStatusBadgeClass = (status: string) => {
   const classes: Record<string, string> = {
     scheduled: 'badge badge-light-primary',
-    inProgress: 'badge badge-light-warning',
+    approved: 'badge badge-light-info',
+    in_progress: 'badge badge-light-warning',
     completed: 'badge badge-light-success',
-    cancelled: 'badge badge-light-danger'
+    cancelled: 'badge badge-light-danger',
+    no_show: 'badge badge-light-secondary'
   }
   return classes[status] || 'badge badge-secondary'
 }
@@ -382,22 +447,42 @@ const handleSuspend = async () => {
   })
 
   if (result.isConfirmed) {
-    relationship.value.status = 'suspended'
-    Swal.fire({
-      title: t('common.success'),
-      text: t('visits.relationshipDetail.suspendSuccess'),
-      icon: 'success'
-    })
+    try {
+      await visitorRelationshipsApi.suspend(relationship.value.id, {
+        reason: 'Suspendido por el usuario'
+      })
+      await loadRelationshipData()
+      Swal.fire({
+        title: t('common.success'),
+        text: t('visits.relationshipDetail.suspendSuccess'),
+        icon: 'success'
+      })
+    } catch (error) {
+      Swal.fire({
+        title: 'Error',
+        text: 'No se pudo suspender la relación',
+        icon: 'error'
+      })
+    }
   }
 }
 
 const handleActivate = async () => {
-  relationship.value.status = 'active'
-  Swal.fire({
-    title: t('common.success'),
-    text: t('visits.relationshipDetail.activateSuccess'),
-    icon: 'success'
-  })
+  try {
+    await visitorRelationshipsApi.reactivate(relationship.value.id)
+    await loadRelationshipData()
+    Swal.fire({
+      title: t('common.success'),
+      text: t('visits.relationshipDetail.activateSuccess'),
+      icon: 'success'
+    })
+  } catch (error) {
+    Swal.fire({
+      title: 'Error',
+      text: 'No se pudo reactivar la relación',
+      icon: 'error'
+    })
+  }
 }
 
 const handleAddRestriction = () => {
@@ -423,7 +508,6 @@ const handleRemoveRestriction = async (id: number) => {
 
 // Lifecycle
 onMounted(() => {
-  // Load relationship data based on route.params.id
-  console.log('Loading relationship:', route.params.id)
+  loadRelationshipData()
 })
 </script>

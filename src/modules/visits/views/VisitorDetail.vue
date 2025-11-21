@@ -147,6 +147,11 @@
                   </tr>
                 </thead>
                 <tbody>
+                  <tr v-if="relatedInmates.length === 0">
+                    <td colspan="6" class="text-center text-muted py-10">
+                      No hay relaciones con PPL registradas para este visitante
+                    </td>
+                  </tr>
                   <tr v-for="relation in relatedInmates" :key="relation.id">
                     <td>{{ relation.inmateName }}</td>
                     <td>
@@ -160,7 +165,7 @@
                     </td>
                     <td>{{ formatDate(relation.lastVisit) || '-' }}</td>
                     <td class="text-end">
-                      <router-link 
+                      <router-link
                         :to="`/visits/relationships/${relation.id}`"
                         class="btn btn-icon btn-bg-light btn-active-color-primary btn-sm"
                       >
@@ -195,6 +200,11 @@
                   </tr>
                 </thead>
                 <tbody>
+                  <tr v-if="visitHistory.length === 0">
+                    <td colspan="6" class="text-center text-muted py-10">
+                      No hay visitas registradas para este visitante
+                    </td>
+                  </tr>
                   <tr v-for="visit in visitHistory" :key="visit.id">
                     <td>{{ formatDate(visit.date) }}</td>
                     <td>{{ visit.time }}</td>
@@ -255,7 +265,7 @@ const visitor = computed(() => {
     phone: v.phone_number || v.phone || 'N/A',
     email: v.email,
     address: v.address || 'N/A',
-    photo: v.front_photo_path ? `/storage/${v.front_photo_path}` : null,
+    photo: v.photo_path ? `/storage/${v.photo_path}` : null,
     status: v.status || 'active',
     biometricRegistered: v.has_biometric_data || false,
     registrationDate: v.created_at,
@@ -270,32 +280,55 @@ const relatedInmates = computed(() => {
   return visitorData.value.relationships.map((rel: any) => ({
     id: rel.id,
     inmateName: rel.inmate ?
-      [rel.inmate.first_name, rel.inmate.first_surname].filter(Boolean).join(' ') :
+      [rel.inmate.first_name, rel.inmate.last_name].filter(Boolean).join(' ') :
       'N/A',
-    inmateCode: rel.inmate?.inmate_code || 'N/A',
-    relationship: rel.relationshipType?.name || rel.relationship_type?.name || 'N/A',
-    hasPermission: rel.status === 'active',
+    inmateCode: rel.inmate?.inmate_number || rel.inmate?.inmate_code || 'N/A',
+    relationship: rel.relationship_type?.name || 'N/A',
+    hasPermission: rel.authorization_status === 'approved',
     lastVisit: rel.last_visit_date
   }))
 })
 
 const visitHistory = computed(() => {
-  if (!visitorData.value?.visitRequests) return []
+  if (!visitorData.value?.visit_logs) return []
 
-  return visitorData.value.visitRequests.map((visit: any) => {
-    const visitDate = visit.requested_visit_date || visit.created_at
+  return visitorData.value.visit_logs.map((visit: any) => {
+    // Use actual_entry_datetime for completed visits
+    const visitDate = visit.actual_entry_datetime || visit.requested_visit_date || visit.created_at
     const date = new Date(visitDate)
+
+    // Extract date and time from different formats
+    let dateOnly = ''
+    let timeOnly = ''
+
+    if (visitDate) {
+      if (visitDate.includes('T')) {
+        // ISO format: 2024-01-15T14:30:00.000Z
+        const parts = visitDate.split('T')
+        dateOnly = parts[0]
+        timeOnly = parts[1]?.substring(0, 5) || ''
+      } else if (visitDate.includes(' ')) {
+        // SQL format: 2024-01-15 14:30:00
+        const parts = visitDate.split(' ')
+        dateOnly = parts[0]
+        timeOnly = parts[1]?.substring(0, 5) || ''
+      } else {
+        // Just date: 2024-01-15
+        dateOnly = visitDate.substring(0, 10)
+        timeOnly = date.toLocaleTimeString('es-GT', { hour: '2-digit', minute: '2-digit' })
+      }
+    }
 
     return {
       id: visit.id,
-      date: visitDate.split(' ')[0], // Solo la fecha
-      time: visitDate.split(' ')[1]?.substring(0, 5) || date.toLocaleTimeString('es-GT', { hour: '2-digit', minute: '2-digit' }),
+      date: dateOnly,
+      time: timeOnly || date.toLocaleTimeString('es-GT', { hour: '2-digit', minute: '2-digit' }),
       inmateName: visit.inmate ?
-        [visit.inmate.first_name, visit.inmate.first_surname].filter(Boolean).join(' ') :
+        [visit.inmate.first_name, visit.inmate.last_name].filter(Boolean).join(' ') :
         'N/A',
-      type: visit.visitType?.name || visit.visit_type?.name || 'N/A',
-      duration: visit.requested_duration_minutes || visit.duration_minutes || 0,
-      observations: visit.visit_purpose || visit.decision_notes
+      type: visit.visit_type?.name || 'N/A',
+      duration: visit.actual_duration_minutes || visit.requested_duration_minutes || visit.duration_minutes || 0,
+      observations: visit.visit_purpose || visit.entry_notes || visit.exit_notes || visit.decision_notes || '-'
     }
   })
 })
