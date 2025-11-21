@@ -272,6 +272,62 @@ class WebSocketService {
         callback(data);
       });
   }
+
+  /**
+   * Subscribe to private chat channel with a specific user
+   */
+  public subscribeToPrivateChat(currentUserId: number, otherUserId: number): any {
+    if (!this.echo) {
+      console.error('WebSocket not connected');
+      return null;
+    }
+
+    // Sort IDs to match backend convention
+    const userId1 = Math.min(currentUserId, otherUserId);
+    const userId2 = Math.max(currentUserId, otherUserId);
+    const channelName = `chat.private.${userId1}.${userId2}`;
+
+    return this.echo.private(channelName);
+  }
+
+  /**
+   * Listen for private messages from a specific user
+   */
+  public listenForPrivateMessages(
+    currentUserId: number,
+    otherUserId: number,
+    callback: (message: any) => void
+  ): void {
+    if (!this.echo) {
+      console.error('WebSocket not connected');
+      return;
+    }
+
+    const userId1 = Math.min(currentUserId, otherUserId);
+    const userId2 = Math.max(currentUserId, otherUserId);
+    const channelName = `chat.private.${userId1}.${userId2}`;
+
+    this.echo
+      .private(channelName)
+      .listen('.private.message.sent', (data: any) => {
+        callback(data);
+      });
+  }
+
+  /**
+   * Leave private chat channel
+   */
+  public leavePrivateChat(currentUserId: number, otherUserId: number): void {
+    if (!this.echo) {
+      return;
+    }
+
+    const userId1 = Math.min(currentUserId, otherUserId);
+    const userId2 = Math.max(currentUserId, otherUserId);
+    const channelName = `chat.private.${userId1}.${userId2}`;
+
+    this.echo.leave(channelName);
+  }
 }
 
 // Export singleton instance

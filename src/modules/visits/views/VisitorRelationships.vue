@@ -388,10 +388,11 @@
     />
 
     <!-- Relationship Detail Modal -->
-    <RelationshipDetailModal 
+    <RelationshipDetailModal
       v-if="showDetailModal"
       :relationship="selectedRelationship"
       @close="showDetailModal = false"
+      @edit="handleEdit"
       @updated="handleRelationshipUpdated"
     />
 
@@ -411,7 +412,7 @@ import { ref, reactive, computed, onMounted, watch } from 'vue'
 import { useToast } from '@/composables/useToast'
 import { useAuthStore } from '@/stores/auth'
 import { visitorRelationshipsApi } from '@/services/api/visits'
-import { catalogsApi } from '@/services/api/catalogs'
+import ApiService from '@/core/services/ApiService'
 import RelationshipModal from '../components/RelationshipModal.vue'
 import RelationshipDetailModal from '../components/RelationshipDetailModal.vue'
 import AuthorizationModal from '../components/AuthorizationModal.vue'
@@ -461,15 +462,15 @@ const filters = reactive({
 
 // Computed
 const canCreate = computed(() => {
-  return user.permissions?.includes('visits.relationships.create')
+  return authStore.isSuperAdmin || authStore.hasPermission('visits.relationships_create')
 })
 
 const canEdit = computed(() => {
-  return user.permissions?.includes('visits.relationships.edit')
+  return authStore.isSuperAdmin || authStore.hasPermission('visits.relationships_edit')
 })
 
 const canAuthorize = computed(() => {
-  return user.permissions?.includes('visits.relationships.authorize')
+  return authStore.isSuperAdmin || authStore.hasPermission('visits.relationships_authorize')
 })
 
 const visiblePages = computed(() => {
@@ -496,10 +497,32 @@ const loadRelationships = async (page = 1) => {
       per_page: 20,
       ...filters
     }
-    
+
     const response = await visitorRelationshipsApi.getList(params)
-    relationships.value = response.data.relationships
-    summary.value = response.data.summary
+
+    // Backend returns standard Laravel pagination in response.data.data
+    const paginatedData = response.data.data || response.data
+
+    relationships.value = {
+      data: paginatedData.data || [],
+      current_page: paginatedData.current_page || 1,
+      last_page: paginatedData.last_page || 1,
+      per_page: paginatedData.per_page || 20,
+      total: paginatedData.total || 0,
+      from: paginatedData.from || 0,
+      to: paginatedData.to || 0,
+      prev_page_url: paginatedData.prev_page_url || null,
+      next_page_url: paginatedData.next_page_url || null
+    }
+
+    // Calculate summary from data
+    const data = relationships.value.data
+    summary.value = {
+      approved: data.filter(r => r.authorization_status === 'approved').length,
+      pending: data.filter(r => r.authorization_status === 'pending').length,
+      consanguineous: data.filter(r => r.is_consanguineous).length,
+      requiring_supervision: data.filter(r => r.requires_supervision).length
+    }
   } catch (error) {
     showToast('Error al cargar relaciones', 'error')
     console.error('Error loading relationships:', error)
@@ -510,15 +533,21 @@ const loadRelationships = async (page = 1) => {
 
 const loadCatalogs = async () => {
   try {
-    const [inmatesRes, relationshipTypesRes] = await Promise.all([
-      catalogsApi.inmates.getActive(),
-      catalogsApi.relationshipTypes.getAll()
-    ])
-    
-    inmates.value = inmatesRes.data
-    relationshipTypes.value = relationshipTypesRes.data
+    // Load active inmates (status = active)
+    const inmatesRes = await ApiService.get('/inmates', {
+      params: {
+        simple: true,
+        status: 'active'
+      }
+    })
+    inmates.value = inmatesRes.data.data || inmatesRes.data || []
+
+    // Load relationship types catalog
+    const relationshipTypesRes = await ApiService.get('/catalogs/relationship-types?simple=true')
+    relationshipTypes.value = relationshipTypesRes.data.data || relationshipTypesRes.data || []
   } catch (error) {
     console.error('Error loading catalogs:', error)
+    showToast('Error al cargar catálogos', 'error')
   }
 }
 
@@ -570,6 +599,12 @@ const viewRelationship = (relationship) => {
 
 const editRelationship = (relationship) => {
   selectedRelationship.value = relationship
+  showEditModal.value = true
+}
+
+const handleEdit = (relationship) => {
+  selectedRelationship.value = relationship
+  showDetailModal.value = false
   showEditModal.value = true
 }
 

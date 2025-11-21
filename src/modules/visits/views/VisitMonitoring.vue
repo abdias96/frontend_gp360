@@ -5,16 +5,12 @@
       <div class="col-md-12">
         <div class="d-flex flex-column flex-md-row align-items-center justify-content-between">
           <h1 class="fs-2x fw-bold text-gray-900 mb-4 mb-md-0">
-            {{ $t('visits.visitMonitoring.title') }}
+            Control de Entradas y Salidas
           </h1>
           <div class="d-flex gap-2">
-            <button class="btn btn-light-danger" @click="handleEndAllVisits">
-              <i class="fas fa-stop"></i>
-              {{ $t('visits.visitMonitoring.endAllVisits') }}
-            </button>
-            <button class="btn btn-light-primary" @click="handleFullScreen">
-              <i class="fas fa-expand"></i>
-              {{ $t('visits.visitMonitoring.fullScreen') }}
+            <button class="btn btn-light-success" @click="refreshActiveVisits">
+              <i class="fas fa-sync"></i>
+              Actualizar
             </button>
           </div>
         </div>
@@ -22,590 +18,855 @@
     </div>
     <!-- end::page-header -->
 
-    <!-- begin::monitoring grid -->
+    <!-- begin::visit control -->
     <div class="row g-5">
-      <!-- Camera Grid -->
-      <div class="col-xl-9">
+      <!-- Visit Registration Form -->
+      <div class="col-xl-5" v-if="canRegister">
         <div class="card">
           <div class="card-header">
-            <h3 class="card-title">{{ $t('visits.visitMonitoring.liveMonitoring') }}</h3>
-            <div class="card-toolbar">
-              <div class="btn-group" role="group">
-                <button 
-                  type="button" 
-                  class="btn btn-sm"
-                  :class="gridLayout === '1x1' ? 'btn-primary' : 'btn-light'"
-                  @click="gridLayout = '1x1'"
-                >
-                  1x1
-                </button>
-                <button 
-                  type="button" 
-                  class="btn btn-sm"
-                  :class="gridLayout === '2x2' ? 'btn-primary' : 'btn-light'"
-                  @click="gridLayout = '2x2'"
-                >
-                  2x2
-                </button>
-                <button 
-                  type="button" 
-                  class="btn btn-sm"
-                  :class="gridLayout === '3x3' ? 'btn-primary' : 'btn-light'"
-                  @click="gridLayout = '3x3'"
-                >
-                  3x3
-                </button>
-              </div>
-            </div>
-          </div>
-          <div class="card-body p-3">
-            <div class="row g-3">
-              <div 
-                v-for="camera in visibleCameras" 
-                :key="camera.id"
-                :class="getCameraGridClass()"
-              >
-                <div class="position-relative bg-dark rounded overflow-hidden h-100">
-                  <!-- Camera Feed Placeholder -->
-                  <div class="d-flex align-items-center justify-content-center" style="min-height: 300px;">
-                    <div v-if="camera.status === 'active'" class="text-center text-white">
-                      <i class="fas fa-video fs-3x mb-3"></i>
-                      <p class="mb-0">{{ camera.name }}</p>
-                      <small class="text-muted">{{ camera.location }}</small>
-                    </div>
-                    <div v-else class="text-center text-muted">
-                      <i class="fas fa-video-slash fs-3x mb-3"></i>
-                      <p class="mb-0">{{ $t('visits.visitMonitoring.cameraOffline') }}</p>
-                    </div>
-                  </div>
-                  
-                  <!-- Camera Controls Overlay -->
-                  <div class="position-absolute top-0 start-0 p-2 w-100 bg-gradient-dark">
-                    <div class="d-flex justify-content-between align-items-center">
-                      <span class="text-white fw-bold">{{ camera.name }}</span>
-                      <div class="d-flex gap-1">
-                        <button 
-                          class="btn btn-sm btn-icon btn-light-primary"
-                          @click="handleZoomIn(camera.id)"
-                          :title="$t('visits.visitMonitoring.zoomIn')"
-                        >
-                          <i class="fas fa-search-plus"></i>
-                        </button>
-                        <button 
-                          class="btn btn-sm btn-icon btn-light-primary"
-                          @click="handleZoomOut(camera.id)"
-                          :title="$t('visits.visitMonitoring.zoomOut')"
-                        >
-                          <i class="fas fa-search-minus"></i>
-                        </button>
-                        <button 
-                          class="btn btn-sm btn-icon btn-light-warning"
-                          @click="handleSnapshot(camera.id)"
-                          :title="$t('visits.visitMonitoring.snapshot')"
-                        >
-                          <i class="fas fa-camera"></i>
-                        </button>
-                        <button 
-                          class="btn btn-sm btn-icon btn-light-danger"
-                          @click="handleRecord(camera.id)"
-                          :title="$t('visits.visitMonitoring.record')"
-                        >
-                          <i class="fas fa-circle"></i>
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-
-                  <!-- Visit Info Overlay -->
-                  <div v-if="camera.currentVisit" class="position-absolute bottom-0 start-0 p-2 w-100 bg-gradient-dark">
-                    <div class="text-white small">
-                      <div class="mb-1">
-                        <strong>{{ $t('visits.visitMonitoring.visitor') }}:</strong> 
-                        {{ camera.currentVisit.visitorName }}
-                      </div>
-                      <div class="mb-1">
-                        <strong>{{ $t('visits.visitMonitoring.inmate') }}:</strong> 
-                        {{ camera.currentVisit.inmateName }}
-                      </div>
-                      <div class="d-flex justify-content-between">
-                        <span>
-                          <strong>{{ $t('visits.visitMonitoring.started') }}:</strong> 
-                          {{ camera.currentVisit.startTime }}
-                        </span>
-                        <span class="text-warning">
-                          <i class="fas fa-clock me-1"></i>
-                          {{ camera.currentVisit.elapsed }}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Control Panel -->
-      <div class="col-xl-3">
-        <!-- Active Visits List -->
-        <div class="card mb-5">
-          <div class="card-header">
-            <h3 class="card-title">{{ $t('visits.visitMonitoring.activeVisits') }}</h3>
-          </div>
-          <div class="card-body p-3">
-            <div 
-              v-for="visit in activeVisits" 
-              :key="visit.id"
-              class="d-flex align-items-center p-3 mb-3 bg-light rounded cursor-pointer"
-              :class="{ 'bg-light-primary': selectedVisit?.id === visit.id }"
-              @click="selectVisit(visit)"
-            >
-              <div class="symbol symbol-50px me-3">
-                <img :src="visit.visitorPhoto || '/media/avatars/blank.png'" alt="" />
-              </div>
-              <div class="flex-grow-1">
-                <div class="fw-bold text-gray-900">{{ visit.room }}</div>
-                <div class="text-muted fs-7">{{ visit.visitorName }}</div>
-                <div class="d-flex align-items-center mt-1">
-                  <span class="badge badge-light-success me-2">{{ visit.elapsed }}</span>
-                  <span v-if="visit.alerts > 0" class="badge badge-light-danger">
-                    <i class="fas fa-exclamation-triangle me-1"></i>
-                    {{ visit.alerts }}
-                  </span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Monitoring Alerts -->
-        <div class="card mb-5">
-          <div class="card-header">
-            <h3 class="card-title">{{ $t('visits.visitMonitoring.alerts') }}</h3>
-            <div class="card-toolbar">
-              <span class="badge badge-danger">{{ alerts.length }}</span>
-            </div>
-          </div>
-          <div class="card-body p-3">
-            <div v-if="alerts.length > 0">
-              <div v-for="alert in alerts" :key="alert.id" class="mb-3">
-                <div class="d-flex align-items-start">
-                  <div class="symbol symbol-30px me-3">
-                    <span :class="`symbol-label bg-light-${alert.type}`">
-                      <i :class="`fas ${getAlertIcon(alert.type)} text-${alert.type}`"></i>
-                    </span>
-                  </div>
-                  <div class="flex-grow-1">
-                    <div class="text-gray-900 fs-7 fw-bold">{{ alert.message }}</div>
-                    <div class="text-muted fs-8">
-                      {{ alert.location }} - {{ alert.time }}
-                    </div>
-                  </div>
-                  <button 
-                    class="btn btn-sm btn-icon btn-light"
-                    @click="dismissAlert(alert.id)"
-                  >
-                    <i class="fas fa-times fs-7"></i>
-                  </button>
-                </div>
-              </div>
-            </div>
-            <div v-else class="text-center py-5">
-              <p class="text-muted mb-0">{{ $t('visits.visitMonitoring.noAlerts') }}</p>
-            </div>
-          </div>
-        </div>
-
-        <!-- Quick Actions -->
-        <div class="card">
-          <div class="card-header">
-            <h3 class="card-title">{{ $t('visits.visitMonitoring.quickActions') }}</h3>
+            <h3 class="card-title">
+              <i class="fas fa-sign-in-alt me-2"></i>
+              Registrar Nueva Visita
+            </h3>
           </div>
           <div class="card-body">
-            <div class="d-grid gap-2">
-              <button 
-                class="btn btn-light-primary"
-                @click="handleSendMessage"
-                :disabled="!selectedVisit"
-              >
-                <i class="fas fa-comment me-2"></i>
-                {{ $t('visits.visitMonitoring.sendMessage') }}
-              </button>
-              <button 
-                class="btn btn-light-warning"
-                @click="handleCallGuard"
-              >
-                <i class="fas fa-phone me-2"></i>
-                {{ $t('visits.visitMonitoring.callGuard') }}
-              </button>
-              <button 
-                class="btn btn-light-danger"
-                @click="handleEmergency"
-              >
+            <!-- Step 1: Search Visitor -->
+            <div class="mb-6">
+              <label class="form-label fw-bold required">Buscar Visitante por DPI</label>
+              <div class="position-relative">
+                <input
+                  v-model="visitorDpi"
+                  type="text"
+                  class="form-control"
+                  placeholder="Ingrese al menos 4 dígitos del DPI..."
+                  @input="handleVisitorSearch"
+                  @focus="showSearchResults = true"
+                  @blur="handleSearchBlur"
+                  :disabled="loading"
+                  autocomplete="off"
+                />
+                <small class="text-muted">Ingrese al menos 4 dígitos para buscar</small>
+
+                <!-- Search Results Dropdown -->
+                <div
+                  v-if="showSearchResults && searchResults.length > 0"
+                  class="position-absolute w-100 mt-1 bg-white border rounded shadow-sm"
+                  style="max-height: 300px; overflow-y: auto; z-index: 1050;"
+                >
+                  <div
+                    v-for="visitor in searchResults"
+                    :key="visitor.id"
+                    class="p-3 border-bottom cursor-pointer hover-bg-light-primary"
+                    @mousedown.prevent="selectVisitor(visitor)"
+                  >
+                    <div class="d-flex align-items-center">
+                      <div class="symbol symbol-40px me-3">
+                        <img
+                          :src="visitor.front_photo_path
+                            ? `${apiUrl}/storage/${visitor.front_photo_path}`
+                            : '/media/avatars/blank.png'"
+                          alt=""
+                          class="rounded"
+                        />
+                      </div>
+                      <div class="flex-grow-1">
+                        <div class="fw-bold">{{ visitor.full_name }}</div>
+                        <div class="text-muted fs-7">DPI: {{ visitor.document_number }}</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- No Results Message -->
+                <div
+                  v-if="showSearchResults && searchResults.length === 0 && visitorDpi.length >= 4"
+                  class="position-absolute w-100 mt-1 bg-white border rounded shadow-sm p-3"
+                  style="z-index: 1050;"
+                >
+                  <div class="text-muted text-center">
+                    <i class="fas fa-search me-2"></i>
+                    No se encontraron visitantes
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Visitor Info (if found) -->
+            <div v-if="selectedVisitor" class="mb-6">
+              <div class="alert alert-success d-flex align-items-center">
+                <div class="symbol symbol-50px me-3">
+                  <img
+                    :src="selectedVisitor.front_photo_path
+                      ? `${apiUrl}/storage/${selectedVisitor.front_photo_path}`
+                      : '/media/avatars/blank.png'"
+                    alt="Visitante"
+                    class="rounded"
+                  />
+                </div>
+                <div class="flex-grow-1">
+                  <div class="fw-bold text-gray-900">{{ selectedVisitor.full_name }}</div>
+                  <div class="text-muted fs-7">DPI: {{ selectedVisitor.document_number }}</div>
+                  <div class="text-muted fs-7">
+                    <span class="badge badge-light-success">{{ selectedVisitor.status }}</span>
+                  </div>
+                </div>
+                <button
+                  class="btn btn-sm btn-icon btn-light"
+                  @click="clearVisitor"
+                >
+                  <i class="fas fa-times"></i>
+                </button>
+              </div>
+
+              <!-- Step 2: Select Inmate -->
+              <div v-if="approvedRelationships.length > 0" class="mb-6">
+                <label class="form-label fw-bold required">Seleccionar PPL a Visitar</label>
+                <select
+                  v-model="selectedRelationship"
+                  class="form-select"
+                  @change="onRelationshipChange"
+                >
+                  <option :value="null">Seleccione un interno</option>
+                  <option
+                    v-for="rel in approvedRelationships"
+                    :key="rel.id"
+                    :value="rel"
+                  >
+                    {{ rel.inmate?.first_name }} {{ rel.inmate?.last_name }}
+                    ({{ rel.inmate?.document_number || 'Sin DPI' }}) -
+                    {{ rel.inmate?.current_center?.name || rel.inmate?.currentCenter?.name || 'Sin centro asignado' }}
+                  </option>
+                </select>
+              </div>
+              <div v-else class="alert alert-warning">
                 <i class="fas fa-exclamation-triangle me-2"></i>
-                {{ $t('visits.visitMonitoring.emergency') }}
-              </button>
+                Este visitante no tiene PPL autorizados para visitar.
+              </div>
+
+              <!-- Step 3: Visit Details -->
+              <div v-if="selectedRelationship">
+                <div class="mb-4">
+                  <label class="form-label fw-bold required">Tipo de Visita</label>
+                  <select v-model="visitForm.visit_type_id" class="form-select">
+                    <option :value="null">Seleccione tipo de visita</option>
+                    <option
+                      v-for="type in visitTypes.filter(t => t && t.id)"
+                      :key="type.id"
+                      :value="type.id"
+                    >
+                      {{ type.name }}
+                    </option>
+                  </select>
+                </div>
+
+                <div class="mb-4">
+                  <label class="form-label fw-bold">Motivo de la Visita</label>
+                  <textarea
+                    v-model="visitForm.visit_purpose"
+                    class="form-control"
+                    rows="2"
+                    placeholder="Opcional"
+                  ></textarea>
+                </div>
+
+                <div class="mb-4">
+                  <label class="form-label fw-bold">Observaciones de Entrada</label>
+                  <textarea
+                    v-model="visitForm.entry_notes"
+                    class="form-control"
+                    rows="2"
+                    placeholder="Alguna nota especial sobre el ingreso"
+                  ></textarea>
+                </div>
+
+                <button
+                  class="btn btn-success w-100"
+                  @click="registerEntry"
+                  :disabled="!visitForm.visit_type_id || loading"
+                >
+                  <i class="fas fa-sign-in-alt me-2"></i>
+                  Registrar Entrada
+                </button>
+              </div>
+            </div>
+
+            <div v-else-if="!loading && visitorSearched" class="alert alert-info">
+              <i class="fas fa-info-circle me-2"></i>
+              Busque un visitante por DPI para comenzar
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Active Visits Panel -->
+      <div :class="canRegister ? 'col-xl-7' : 'col-xl-12'">
+        <div class="card">
+          <div class="card-header">
+            <h3 class="card-title">
+              <i class="fas fa-users me-2"></i>
+              Visitas en Curso
+              <span class="badge badge-light-primary ms-2">{{ activeVisits.length }}</span>
+            </h3>
+            <div class="card-toolbar">
+              <span v-if="overdueVisitsCount > 0" class="badge badge-light-danger">
+                <i class="fas fa-exclamation-triangle me-1"></i>
+                {{ overdueVisitsCount }} fuera de tiempo
+              </span>
+            </div>
+          </div>
+          <div class="card-body p-0">
+            <div v-if="activeVisits.length > 0" class="table-responsive">
+              <table class="table table-row-bordered table-row-gray-100 align-middle gs-0 gy-3">
+                <thead>
+                  <tr class="fw-bold text-muted">
+                    <th class="ps-4">Visitante</th>
+                    <th>PPL</th>
+                    <th>Tipo</th>
+                    <th>Hora Entrada</th>
+                    <th>Tiempo Transcurrido</th>
+                    <th class="text-end pe-4">Acciones</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr
+                    v-for="visit in activeVisits"
+                    :key="visit.id"
+                    :class="{ 'bg-light-danger': visit.is_overdue }"
+                  >
+                    <td class="ps-4">
+                      <div class="d-flex align-items-center">
+                        <div class="symbol symbol-45px me-3">
+                          <img
+                            :src="getVisitorPhotoUrl(visit.visitor)"
+                            alt="Visitante"
+                            class="rounded"
+                          />
+                        </div>
+                        <div>
+                          <div class="fw-bold text-gray-900">
+                            {{ visit.visitor?.full_name || 'N/A' }}
+                          </div>
+                          <div class="text-muted fs-7">
+                            DPI: {{ visit.visitor?.document_number || 'N/A' }}
+                          </div>
+                        </div>
+                      </div>
+                    </td>
+                    <td>
+                      <div class="fw-bold">
+                        {{ visit.inmate?.first_name }} {{ visit.inmate?.last_name }}
+                      </div>
+                      <div class="text-muted fs-7">
+                        {{ visit.inmate?.document_number }}
+                      </div>
+                    </td>
+                    <td>
+                      <span class="badge badge-light-info">
+                        {{ visit.visit_type?.name || 'N/A' }}
+                      </span>
+                    </td>
+                    <td>
+                      <div class="fw-bold">
+                        {{ formatTime(visit.actual_entry_datetime) }}
+                      </div>
+                      <div class="text-muted fs-7">
+                        {{ formatDate(visit.actual_entry_datetime) }}
+                      </div>
+                    </td>
+                    <td>
+                      <div
+                        class="fw-bold"
+                        :class="visit.is_overdue ? 'text-danger' : 'text-success'"
+                      >
+                        <i class="fas fa-clock me-1"></i>
+                        {{ visit.elapsed_time_formatted || calculateElapsedTime(visit.actual_entry_datetime) }}
+                      </div>
+                      <div v-if="visit.is_overdue" class="text-danger fs-7">
+                        <i class="fas fa-exclamation-triangle me-1"></i>
+                        Excedido
+                      </div>
+                    </td>
+                    <td class="text-end pe-4">
+                      <button
+                        v-if="canRegister"
+                        class="btn btn-sm btn-danger"
+                        @click="showExitModal(visit)"
+                      >
+                        <i class="fas fa-sign-out-alt me-1"></i>
+                        Finalizar Visita
+                      </button>
+                      <span v-else class="badge badge-light-secondary">
+                        Vista solo lectura
+                      </span>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <div v-else class="text-center py-10">
+              <i class="fas fa-users fs-3x text-muted mb-3"></i>
+              <p class="text-muted fw-bold mb-0">No hay visitas activas en este momento</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Statistics Cards -->
+        <div class="row g-5 mt-1">
+          <div class="col-md-4">
+            <div class="card bg-light-primary">
+              <div class="card-body p-5">
+                <div class="d-flex align-items-center">
+                  <div class="symbol symbol-50px me-3">
+                    <span class="symbol-label bg-primary">
+                      <i class="fas fa-users text-white fs-2x"></i>
+                    </span>
+                  </div>
+                  <div>
+                    <div class="fs-2x fw-bold text-primary">{{ activeVisits.length }}</div>
+                    <div class="text-muted fw-bold">Visitas Activas</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="card bg-light-success">
+              <div class="card-body p-5">
+                <div class="d-flex align-items-center">
+                  <div class="symbol symbol-50px me-3">
+                    <span class="symbol-label bg-success">
+                      <i class="fas fa-check-circle text-white fs-2x"></i>
+                    </span>
+                  </div>
+                  <div>
+                    <div class="fs-2x fw-bold text-success">{{ statistics.completed_today || 0 }}</div>
+                    <div class="text-muted fw-bold">Completadas Hoy</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="card bg-light-warning">
+              <div class="card-body p-5">
+                <div class="d-flex align-items-center">
+                  <div class="symbol symbol-50px me-3">
+                    <span class="symbol-label bg-warning">
+                      <i class="fas fa-clock text-white fs-2x"></i>
+                    </span>
+                  </div>
+                  <div>
+                    <div class="fs-2x fw-bold text-warning">{{ formatDuration(statistics.average_duration_minutes) }}</div>
+                    <div class="text-muted fw-bold">Duración Promedio</div>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
       </div>
     </div>
-    <!-- end::monitoring grid -->
+    <!-- end::visit control -->
 
-    <!-- begin::recording status -->
-    <div class="card mt-5">
-      <div class="card-body">
-        <div class="d-flex align-items-center justify-content-between">
-          <div class="d-flex align-items-center">
-            <span class="bullet bullet-dot bg-danger animation-blink me-3"></span>
-            <span class="text-gray-900 fw-bold">{{ $t('visits.visitMonitoring.recording') }}</span>
-            <span class="text-muted ms-2">{{ recordingDuration }}</span>
+    <!-- Exit Visit Modal -->
+    <div
+      class="modal fade"
+      id="exitVisitModal"
+      tabindex="-1"
+      aria-hidden="true"
+      ref="exitModalRef"
+    >
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Finalizar Visita</h5>
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+              aria-label="Close"
+            ></button>
           </div>
-          <div>
-            <span class="text-muted me-3">{{ $t('visits.visitMonitoring.storageUsed') }}: </span>
-            <span class="text-gray-900 fw-bold">{{ storageUsed }}</span>
-            <span class="text-muted"> / {{ totalStorage }}</span>
+          <div v-if="visitToExit" class="modal-body">
+            <div class="mb-4">
+              <div class="d-flex align-items-center mb-3">
+                <div class="symbol symbol-50px me-3">
+                  <img
+                    :src="getVisitorPhotoUrl(visitToExit.visitor)"
+                    alt="Visitante"
+                    class="rounded"
+                  />
+                </div>
+                <div>
+                  <div class="fw-bold">{{ visitToExit.visitor?.full_name }}</div>
+                  <div class="text-muted fs-7">
+                    Visitando a: {{ visitToExit.inmate?.first_name }} {{ visitToExit.inmate?.last_name }}
+                  </div>
+                </div>
+              </div>
+              <div class="separator my-3"></div>
+              <div class="row">
+                <div class="col-6">
+                  <div class="text-muted">Hora Entrada:</div>
+                  <div class="fw-bold">{{ formatTime(visitToExit.actual_entry_datetime) }}</div>
+                </div>
+                <div class="col-6">
+                  <div class="text-muted">Tiempo Transcurrido:</div>
+                  <div class="fw-bold text-primary">
+                    {{ calculateElapsedTime(visitToExit.actual_entry_datetime) }}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="mb-4">
+              <label class="form-label fw-bold">Observaciones de Salida</label>
+              <textarea
+                v-model="exitForm.exit_notes"
+                class="form-control"
+                rows="3"
+                placeholder="Alguna observación sobre la salida"
+              ></textarea>
+            </div>
+
+            <div class="mb-4">
+              <label class="form-label fw-bold">Calificación de la Visita (Opcional)</label>
+              <div class="rating">
+                <div class="rating-label me-2 fs-5">
+                  <i
+                    v-for="star in 5"
+                    :key="star"
+                    class="fas fa-star"
+                    :class="star <= (exitForm.visit_rating || 0) ? 'text-warning' : 'text-muted'"
+                    @click="exitForm.visit_rating = star"
+                    style="cursor: pointer;"
+                  ></i>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button
+              type="button"
+              class="btn btn-light"
+              data-bs-dismiss="modal"
+            >
+              Cancelar
+            </button>
+            <button
+              type="button"
+              class="btn btn-danger"
+              @click="registerExit"
+              :disabled="loading"
+            >
+              <i class="fas fa-sign-out-alt me-2"></i>
+              Finalizar Visita
+            </button>
           </div>
         </div>
       </div>
     </div>
-    <!-- end::recording status -->
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted } from 'vue'
-import { useRoute } from 'vue-router'
-import { useI18n } from 'vue-i18n'
+import ApiService from '@/core/services/ApiService'
 import Swal from 'sweetalert2'
+import { useAuthStore } from '@/stores/auth'
 
-// Composables
-const route = useRoute()
-const { t } = useI18n()
+// Auth Store
+const authStore = useAuthStore()
 
-// Types
-interface Camera {
-  id: number
-  name: string
-  location: string
-  status: 'active' | 'inactive'
-  currentVisit?: {
-    visitorName: string
-    inmateName: string
-    startTime: string
-    elapsed: string
-  }
-}
+// Permissions
+const canView = computed(() => authStore.isSuperAdmin || authStore.hasPermission('visits.control_view'))
+const canRegister = computed(() => authStore.isSuperAdmin || authStore.hasPermission('visits.control_register'))
 
-interface ActiveVisit {
-  id: number
-  room: string
-  visitorName: string
-  visitorPhoto: string | null
-  inmateName: string
-  elapsed: string
-  alerts: number
-}
-
-interface Alert {
-  id: number
-  type: 'warning' | 'danger' | 'info'
-  message: string
-  location: string
-  time: string
-}
+// API URL
+const apiUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'
 
 // Refs
-const gridLayout = ref('2x2')
-const selectedVisit = ref<ActiveVisit | null>(null)
-const recordingDuration = ref('02:34:15')
-const storageUsed = ref('125 GB')
-const totalStorage = ref('500 GB')
+const loading = ref(false)
+const visitorDpi = ref('')
+const visitorSearched = ref(false)
+const selectedVisitor = ref<any>(null)
+const approvedRelationships = ref<any[]>([])
+const selectedRelationship = ref<any>(null)
+const visitTypes = ref<any[]>([])
+const activeVisits = ref<any[]>([])
+const visitToExit = ref<any>(null)
+const exitModalRef = ref<HTMLElement | null>(null)
+const statistics = ref<any>({})
 
-const cameras = ref<Camera[]>([
-  {
-    id: 1,
-    name: 'Cámara 1',
-    location: 'Sala de Visitas 1',
-    status: 'active',
-    currentVisit: {
-      visitorName: 'María García',
-      inmateName: 'Juan García',
-      startTime: '14:00',
-      elapsed: '25 min'
-    }
-  },
-  {
-    id: 2,
-    name: 'Cámara 2',
-    location: 'Sala de Visitas 1',
-    status: 'active',
-    currentVisit: {
-      visitorName: 'Ana Martinez',
-      inmateName: 'Luis Hernandez',
-      startTime: '13:45',
-      elapsed: '40 min'
-    }
-  },
-  {
-    id: 3,
-    name: 'Cámara 3',
-    location: 'Sala de Visitas 2',
-    status: 'active'
-  },
-  {
-    id: 4,
-    name: 'Cámara 4',
-    location: 'Sala de Visitas 2',
-    status: 'inactive'
-  },
-  {
-    id: 5,
-    name: 'Cámara 5',
-    location: 'Sala Especial',
-    status: 'active',
-    currentVisit: {
-      visitorName: 'Lic. Roberto Silva',
-      inmateName: 'Miguel Cruz',
-      startTime: '13:00',
-      elapsed: '85 min'
-    }
-  },
-  {
-    id: 6,
-    name: 'Cámara 6',
-    location: 'Sala Especial',
-    status: 'active'
-  }
-])
+// Search refs
+const searchResults = ref<any[]>([])
+const showSearchResults = ref(false)
+const searchLoading = ref(false)
+let searchTimeout: number | null = null
 
-const activeVisits = ref<ActiveVisit[]>([
-  {
-    id: 1,
-    room: 'Sala 1 - Cam 1',
-    visitorName: 'María García',
-    visitorPhoto: null,
-    inmateName: 'Juan García',
-    elapsed: '25 min',
-    alerts: 0
-  },
-  {
-    id: 2,
-    room: 'Sala 1 - Cam 2',
-    visitorName: 'Ana Martinez',
-    visitorPhoto: null,
-    inmateName: 'Luis Hernandez',
-    elapsed: '40 min',
-    alerts: 0
-  },
-  {
-    id: 3,
-    room: 'Sala Especial',
-    visitorName: 'Lic. Roberto Silva',
-    visitorPhoto: null,
-    inmateName: 'Miguel Cruz',
-    elapsed: '85 min',
-    alerts: 2
-  }
-])
-
-const alerts = ref<Alert[]>([
-  {
-    id: 1,
-    type: 'warning',
-    message: 'Tiempo de visita excedido',
-    location: 'Sala Especial',
-    time: '14:25'
-  },
-  {
-    id: 2,
-    type: 'danger',
-    message: 'Movimiento sospechoso detectado',
-    location: 'Sala Especial',
-    time: '14:20'
-  }
-])
-
-let updateInterval: number | null = null
-
-// Computed
-const visibleCameras = computed(() => {
-  const layoutMap: Record<string, number> = {
-    '1x1': 1,
-    '2x2': 4,
-    '3x3': 9
-  }
-  return cameras.value.slice(0, layoutMap[gridLayout.value] || 4)
+const visitForm = ref({
+  visitor_id: null as number | null,
+  inmate_id: null as number | null,
+  relationship_id: null as number | null,
+  visit_type_id: null as number | null,
+  visit_purpose: '',
+  entry_notes: ''
 })
 
-const getCameraGridClass = () => {
-  const classMap: Record<string, string> = {
-    '1x1': 'col-12',
-    '2x2': 'col-6',
-    '3x3': 'col-4'
-  }
-  return classMap[gridLayout.value] || 'col-6'
-}
+const exitForm = ref({
+  exit_notes: '',
+  visit_rating: null as number | null
+})
+
+let updateInterval: number | null = null
+let exitModal: any = null
+
+// Computed
+const overdueVisitsCount = computed(() => {
+  return activeVisits.value.filter(v => v.is_overdue).length
+})
 
 // Methods
-const getAlertIcon = (type: string) => {
-  const icons: Record<string, string> = {
-    warning: 'fa-exclamation-triangle',
-    danger: 'fa-times-circle',
-    info: 'fa-info-circle'
+const handleVisitorSearch = async () => {
+  const searchTerm = visitorDpi.value.trim()
+
+  if (searchTimeout) {
+    clearTimeout(searchTimeout)
   }
-  return icons[type] || 'fa-circle'
-}
 
-const selectVisit = (visit: ActiveVisit) => {
-  selectedVisit.value = visit
-  // Focus camera on selected visit
-  console.log('Selected visit:', visit)
-}
-
-const dismissAlert = (alertId: number) => {
-  const index = alerts.value.findIndex(a => a.id === alertId)
-  if (index > -1) {
-    alerts.value.splice(index, 1)
+  if (searchTerm.length < 4) {
+    searchResults.value = []
+    showSearchResults.value = false
+    return
   }
+
+  searchTimeout = window.setTimeout(async () => {
+    try {
+      searchLoading.value = true
+      showSearchResults.value = true
+
+      const response = await ApiService.get('/visitors', {
+        params: {
+          search: searchTerm,
+          per_page: 10
+        }
+      })
+
+      const visitorData = response.data.visitors || response.data.data || response.data
+      searchResults.value = Array.isArray(visitorData)
+        ? visitorData.data || visitorData
+        : (visitorData.data || [])
+    } catch (error) {
+      console.error('Error searching visitors:', error)
+      searchResults.value = []
+    } finally {
+      searchLoading.value = false
+    }
+  }, 500)
 }
 
-const handleFullScreen = () => {
-  const elem = document.documentElement
-  if (elem.requestFullscreen) {
-    elem.requestFullscreen()
-  }
+const handleSearchBlur = () => {
+  setTimeout(() => {
+    showSearchResults.value = false
+  }, 200)
 }
 
-const handleEndAllVisits = async () => {
-  const result = await Swal.fire({
-    title: t('visits.visitMonitoring.endAllVisitsTitle'),
-    text: t('visits.visitMonitoring.endAllVisitsText'),
-    icon: 'warning',
-    showCancelButton: true,
-    confirmButtonText: t('common.confirm'),
-    cancelButtonText: t('common.cancel'),
-    confirmButtonColor: '#d33'
-  })
-
-  if (result.isConfirmed) {
-    Swal.fire({
-      title: t('common.success'),
-      text: t('visits.visitMonitoring.endAllVisitsSuccess'),
-      icon: 'success'
-    })
-  }
+const selectVisitor = async (visitor: any) => {
+  visitorDpi.value = visitor.document_number
+  searchResults.value = []
+  showSearchResults.value = false
+  await loadVisitorRelationships(visitor)
 }
 
-const handleZoomIn = (cameraId: number) => {
-  console.log('Zoom in camera:', cameraId)
-}
+const loadVisitorRelationships = async (visitor: any) => {
+  try {
+    loading.value = true
+    visitorSearched.value = true
 
-const handleZoomOut = (cameraId: number) => {
-  console.log('Zoom out camera:', cameraId)
-}
+    const response = await ApiService.get(`/visit-logs/search-visitor?dpi=${visitor.document_number}`)
 
-const handleSnapshot = (cameraId: number) => {
-  console.log('Take snapshot from camera:', cameraId)
-  Swal.fire({
-    title: t('visits.visitMonitoring.snapshotSaved'),
-    icon: 'success',
-    timer: 1500,
-    showConfirmButton: false
-  })
-}
+    if (response.data.success) {
+      selectedVisitor.value = response.data.data.visitor
+      approvedRelationships.value = response.data.data.can_visit_today || []
 
-const handleRecord = (cameraId: number) => {
-  console.log('Toggle recording for camera:', cameraId)
-}
+      console.log('Approved relationships:', approvedRelationships.value)
+      console.log('First relationship inmate:', approvedRelationships.value[0]?.inmate)
 
-const handleSendMessage = () => {
-  if (!selectedVisit.value) return
-  
-  Swal.fire({
-    title: t('visits.visitMonitoring.sendMessageTitle'),
-    input: 'textarea',
-    inputLabel: t('visits.visitMonitoring.messageLabel'),
-    inputPlaceholder: t('visits.visitMonitoring.messagePlaceholder'),
-    showCancelButton: true,
-    confirmButtonText: t('common.send'),
-    cancelButtonText: t('common.cancel')
-  }).then((result) => {
-    if (result.isConfirmed) {
+      if (approvedRelationships.value.length === 0) {
+        Swal.fire({
+          title: 'Información',
+          text: 'Este visitante no tiene internos autorizados para visitar hoy.',
+          icon: 'info'
+        })
+      }
+    }
+  } catch (error: any) {
+    console.error('Error loading visitor relationships:', error)
+    selectedVisitor.value = null
+    approvedRelationships.value = []
+
+    if (error.response?.status === 404) {
       Swal.fire({
-        title: t('common.success'),
-        text: t('visits.visitMonitoring.messageSent'),
-        icon: 'success'
+        title: 'Visitante No Encontrado',
+        text: 'No se encontró un visitante con este DPI en el sistema. Por favor, registre al visitante primero.',
+        icon: 'warning'
+      })
+    } else if (error.response?.status === 403) {
+      Swal.fire({
+        title: 'Acceso Denegado',
+        text: error.response.data.message || 'Este visitante no puede ingresar.',
+        icon: 'error'
+      })
+    } else {
+      Swal.fire({
+        title: 'Error',
+        text: 'Error al buscar el visitante. Por favor, intente de nuevo.',
+        icon: 'error'
       })
     }
-  })
-}
-
-const handleCallGuard = () => {
-  console.log('Call guard')
-  Swal.fire({
-    title: t('visits.visitMonitoring.callingGuard'),
-    text: t('visits.visitMonitoring.callingGuardText'),
-    icon: 'info'
-  })
-}
-
-const handleEmergency = async () => {
-  const result = await Swal.fire({
-    title: t('visits.visitMonitoring.emergencyTitle'),
-    text: t('visits.visitMonitoring.emergencyText'),
-    icon: 'warning',
-    showCancelButton: true,
-    confirmButtonText: t('common.confirm'),
-    cancelButtonText: t('common.cancel'),
-    confirmButtonColor: '#d33'
-  })
-
-  if (result.isConfirmed) {
-    alerts.value.unshift({
-      id: alerts.value.length + 1,
-      type: 'danger',
-      message: 'Emergencia activada por operador',
-      location: 'Centro de Monitoreo',
-      time: new Date().toLocaleTimeString('es-GT', { hour: '2-digit', minute: '2-digit' })
-    })
-    
-    Swal.fire({
-      title: t('visits.visitMonitoring.emergencyActivated'),
-      text: t('visits.visitMonitoring.emergencyActivatedText'),
-      icon: 'info'
-    })
+  } finally {
+    loading.value = false
   }
 }
 
-// Update elapsed times
+const clearVisitor = () => {
+  selectedVisitor.value = null
+  approvedRelationships.value = []
+  selectedRelationship.value = null
+  visitorDpi.value = ''
+  searchResults.value = []
+  showSearchResults.value = false
+  visitorSearched.value = false
+  resetVisitForm()
+}
+
+const onRelationshipChange = () => {
+  console.log('Relationship changed:', selectedRelationship.value)
+  if (selectedRelationship.value) {
+    visitForm.value.visitor_id = selectedVisitor.value.id
+    visitForm.value.inmate_id = selectedRelationship.value.inmate_id
+    visitForm.value.relationship_id = selectedRelationship.value.id
+    console.log('Visit form updated:', visitForm.value)
+  }
+}
+
+const resetVisitForm = () => {
+  visitForm.value = {
+    visitor_id: null,
+    inmate_id: null,
+    relationship_id: null,
+    visit_type_id: null,
+    visit_purpose: '',
+    entry_notes: ''
+  }
+}
+
+const registerEntry = async () => {
+  try {
+    loading.value = true
+    const response = await ApiService.post('/visit-logs/register-entry', visitForm.value)
+
+    if (response.data.success) {
+      Swal.fire({
+        title: '¡Entrada Registrada!',
+        text: 'La visita ha sido registrada exitosamente.',
+        icon: 'success',
+        timer: 2000,
+        showConfirmButton: false
+      })
+
+      // Refresh active visits
+      await refreshActiveVisits()
+
+      // Clear form
+      clearVisitor()
+    }
+  } catch (error: any) {
+    console.error('Error registering entry:', error)
+    Swal.fire({
+      title: 'Error',
+      text: error.response?.data?.message || 'Error al registrar la entrada.',
+      icon: 'error'
+    })
+  } finally {
+    loading.value = false
+  }
+}
+
+const refreshActiveVisits = async () => {
+  try {
+    const response = await ApiService.get('/visit-logs/active')
+
+    if (response.data.success) {
+      activeVisits.value = response.data.data.active_visits || []
+    }
+  } catch (error) {
+    console.error('Error fetching active visits:', error)
+  }
+}
+
+const showExitModal = (visit: any) => {
+  visitToExit.value = visit
+  exitForm.value = {
+    exit_notes: '',
+    visit_rating: null
+  }
+
+  if (exitModal) {
+    exitModal.show()
+  }
+}
+
+const registerExit = async () => {
+  if (!visitToExit.value) return
+
+  try {
+    loading.value = true
+    const response = await ApiService.post(
+      `/visit-logs/${visitToExit.value.id}/register-exit`,
+      exitForm.value
+    )
+
+    if (response.data.success) {
+      if (exitModal) {
+        exitModal.hide()
+      }
+
+      Swal.fire({
+        title: '¡Salida Registrada!',
+        text: 'La visita ha finalizado exitosamente.',
+        icon: 'success',
+        timer: 2000,
+        showConfirmButton: false
+      })
+
+      // Refresh active visits
+      await refreshActiveVisits()
+      await fetchStatistics()
+
+      visitToExit.value = null
+    }
+  } catch (error: any) {
+    console.error('Error registering exit:', error)
+    Swal.fire({
+      title: 'Error',
+      text: error.response?.data?.message || 'Error al registrar la salida.',
+      icon: 'error'
+    })
+  } finally {
+    loading.value = false
+  }
+}
+
+const fetchVisitTypes = async () => {
+  try {
+    const response = await ApiService.get('/catalogs/visit-types', {
+      params: { simple: true } // Get simple list without pagination
+    })
+
+    console.log('Visit types raw response:', response.data)
+
+    const data = response.data.data || []
+    visitTypes.value = Array.isArray(data) ? data.filter(t => t && t.id) : []
+    console.log('Visit types loaded:', visitTypes.value)
+  } catch (error) {
+    console.error('Error fetching visit types:', error)
+    visitTypes.value = []
+  }
+}
+
+const fetchStatistics = async () => {
+  try {
+    const response = await ApiService.get('/visit-logs/statistics')
+    if (response.data.success) {
+      statistics.value = response.data.data
+    }
+  } catch (error) {
+    console.error('Error fetching statistics:', error)
+  }
+}
+
+const getVisitorPhotoUrl = (visitor: any) => {
+  if (visitor?.front_photo_path) {
+    return `${apiUrl}/storage/${visitor.front_photo_path}`
+  }
+  return '/media/avatars/blank.png'
+}
+
+const formatTime = (datetime: string) => {
+  if (!datetime) return 'N/A'
+  const date = new Date(datetime)
+  return date.toLocaleTimeString('es-GT', { hour: '2-digit', minute: '2-digit' })
+}
+
+const formatDate = (datetime: string) => {
+  if (!datetime) return 'N/A'
+  const date = new Date(datetime)
+  return date.toLocaleDateString('es-GT')
+}
+
+const calculateElapsedTime = (entryTime: string) => {
+  if (!entryTime) return '0 min'
+
+  const entry = new Date(entryTime)
+  const now = new Date()
+  const diffMs = now.getTime() - entry.getTime()
+  const diffMins = Math.floor(diffMs / 60000)
+
+  const hours = Math.floor(diffMins / 60)
+  const mins = diffMins % 60
+
+  if (hours > 0) {
+    return `${hours}h ${mins}min`
+  }
+  return `${mins}min`
+}
+
+const formatDuration = (minutes: number | null | undefined) => {
+  if (!minutes) return '0 min'
+
+  const hours = Math.floor(minutes / 60)
+  const mins = Math.floor(minutes % 60)
+
+  if (hours > 0) {
+    return `${hours}h ${mins}min`
+  }
+  return `${mins}min`
+}
+
 const updateElapsedTimes = () => {
-  // Simulate time updates
-  activeVisits.value.forEach(visit => {
-    const minutes = parseInt(visit.elapsed)
-    visit.elapsed = `${minutes + 1} min`
-  })
+  // Force re-render by updating a reactive property
+  activeVisits.value = [...activeVisits.value]
 }
 
 // Lifecycle
-onMounted(() => {
-  // Start auto-update
-  updateInterval = window.setInterval(updateElapsedTimes, 60000) // Update every minute
-  
-  // Check if specific visit ID in route
-  if (route.params.id) {
-    const visitId = parseInt(route.params.id as string)
-    const visit = activeVisits.value.find(v => v.id === visitId)
-    if (visit) {
-      selectVisit(visit)
-    }
+onMounted(async () => {
+  // Initialize Bootstrap modal
+  const { Modal } = await import('bootstrap')
+  if (exitModalRef.value) {
+    exitModal = new Modal(exitModalRef.value)
   }
+
+  // Fetch initial data
+  await Promise.all([
+    fetchVisitTypes(),
+    refreshActiveVisits(),
+    fetchStatistics()
+  ])
+
+  // Start auto-update
+  updateInterval = window.setInterval(() => {
+    updateElapsedTimes()
+    refreshActiveVisits()
+  }, 30000) // Update every 30 seconds
 })
 
 onUnmounted(() => {
   if (updateInterval) {
     clearInterval(updateInterval)
+  }
+  if (exitModal) {
+    exitModal.dispose()
   }
 })
 </script>
@@ -615,30 +876,13 @@ onUnmounted(() => {
   cursor: pointer;
 }
 
-.bg-gradient-dark {
-  background: linear-gradient(to bottom, rgba(0,0,0,0.7), transparent);
+.hover-bg-light-primary:hover {
+  background-color: #f1faff;
+  transition: background-color 0.2s;
 }
 
-.animation-blink {
-  animation: blink 1s infinite;
-}
-
-@keyframes blink {
-  0%, 50%, 100% {
-    opacity: 1;
-  }
-  25%, 75% {
-    opacity: 0;
-  }
-}
-
-.symbol-30px {
-  width: 30px;
-  height: 30px;
-}
-
-.symbol-30px .symbol-label {
-  width: 30px;
-  height: 30px;
+.rating .fa-star {
+  font-size: 1.5rem;
+  margin: 0 0.2rem;
 }
 </style>

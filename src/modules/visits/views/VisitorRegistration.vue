@@ -18,7 +18,7 @@
                 <i class="fas fa-download me-2"></i>
                 Exportar
               </button>
-              <button 
+              <button
                 @click="openNewVisitorModal"
                 class="btn btn-primary"
                 v-if="hasPermission('visits.visitors_create')"
@@ -73,13 +73,13 @@
           <div class="card-body">
             <div class="row align-items-center">
               <div class="col-auto">
-                <span class="bg-warning text-white avatar">
-                  <i class="fas fa-clock"></i>
+                <span class="bg-danger text-white avatar">
+                  <i class="fas fa-ban"></i>
                 </span>
               </div>
               <div class="col">
-                <div class="font-weight-medium">{{ statistics.pending || 0 }}</div>
-                <div class="text-muted">Pendientes</div>
+                <div class="font-weight-medium">{{ statistics.blacklisted || 0 }}</div>
+                <div class="text-muted">Lista Negra</div>
               </div>
             </div>
           </div>
@@ -133,34 +133,29 @@
             >
           </div>
           <div class="col-md-2">
-            <label class="form-label">Estado Acreditación</label>
-            <select v-model="filters.accreditation_status" class="form-select" @change="loadVisitors">
+            <label class="form-label">Estado</label>
+            <select v-model="filters.status" class="form-select" @change="loadVisitors">
               <option value="">Todos</option>
-              <option value="pending_documentation">Pendiente Documentación</option>
-              <option value="documentation_review">Revisión Documentos</option>
-              <option value="background_check">Verificación Antecedentes</option>
-              <option value="biometric_enrollment">Registro Biométrico</option>
-              <option value="approved">Aprobado</option>
-              <option value="rejected">Rechazado</option>
+              <option value="active">Activo</option>
+              <option value="inactive">Inactivo</option>
               <option value="suspended">Suspendido</option>
-              <option value="revoked">Revocado</option>
-              <option value="expired">Vencido</option>
+              <option value="blacklisted">Lista Negra</option>
             </select>
           </div>
           <div class="col-md-2">
             <label class="form-label">Biometría</label>
-            <select v-model="filters.biometric_enrolled" class="form-select" @change="loadVisitors">
+            <select v-model="filters.has_biometric_data" class="form-select" @change="loadVisitors">
               <option value="">Todos</option>
               <option value="true">Con Biometría</option>
               <option value="false">Sin Biometría</option>
             </select>
           </div>
           <div class="col-md-2">
-            <label class="form-label">Restricciones</label>
-            <select v-model="filters.has_restrictions" class="form-select" @change="loadVisitors">
+            <label class="form-label">Lista Negra</label>
+            <select v-model="filters.is_blacklisted" class="form-select" @change="loadVisitors">
               <option value="">Todos</option>
-              <option value="true">Con Restricciones</option>
-              <option value="false">Sin Restricciones</option>
+              <option value="true">Sí</option>
+              <option value="false">No</option>
             </select>
           </div>
           <div class="col-md-2">
@@ -211,9 +206,9 @@
               <tr v-else v-for="visitor in visitors" :key="visitor.id">
                 <td>
                   <div class="avatar avatar-sm">
-                    <img 
-                      v-if="visitor.front_photo_path" 
-                      :src="getPhotoUrl(visitor.front_photo_path)"
+                    <img
+                      v-if="visitor.photo_path"
+                      :src="getPhotoUrl(visitor.photo_path)"
                       :alt="visitor.full_name"
                     >
                     <span v-else class="avatar-content">
@@ -221,30 +216,31 @@
                     </span>
                   </div>
                 </td>
-                <td>{{ visitor.identification_number }}</td>
+                <td>{{ visitor.document_number || 'N/A' }}</td>
                 <td>
                   <div>
-                    <strong>{{ visitor.full_name }}</strong>
-                    <div class="small text-muted">{{ visitor.email }}</div>
+                    <strong>{{ visitor.full_name || 'N/A' }}</strong>
+                    <div class="small text-muted">{{ visitor.email || '' }}</div>
                   </div>
                 </td>
                 <td>
-                  <div v-if="visitor.mobile_phone">
+                  <div v-if="visitor.phone_number">
                     <i class="fas fa-mobile-alt me-1"></i>
-                    {{ visitor.mobile_phone }}
+                    {{ visitor.phone_number }}
                   </div>
-                  <div v-if="visitor.phone" class="small text-muted">
+                  <div v-else-if="visitor.phone" class="small text-muted">
                     <i class="fas fa-phone me-1"></i>
                     {{ visitor.phone }}
                   </div>
+                  <span v-else class="text-muted">-</span>
                 </td>
                 <td>
-                  <span :class="getStatusBadgeClass(visitor.accreditation_status)">
-                    {{ getStatusLabel(visitor.accreditation_status) }}
+                  <span :class="getStatusBadgeClass(visitor.status)">
+                    {{ getStatusLabel(visitor.status) }}
                   </span>
                 </td>
                 <td>
-                  <span v-if="visitor.biometric_enrolled" class="badge bg-success">
+                  <span v-if="visitor.has_biometric_data" class="badge bg-success">
                     <i class="fas fa-fingerprint me-1"></i>
                     Registrado
                   </span>
@@ -270,7 +266,7 @@
                     >
                       <i class="fas fa-eye"></i>
                     </button>
-                    <button 
+                    <button
                       @click="editVisitor(visitor)"
                       class="btn btn-primary"
                       v-if="hasPermission('visits.visitors_edit')"
@@ -368,42 +364,11 @@
       </div>
     </div>
 
-    <!-- New/Edit Visitor Modal -->
-    <!-- TODO: Implementar modal de formulario de visitante -->
-    <!-- <VisitorFormModal
-      v-if="showVisitorModal"
-      :visitor="selectedVisitor"
-      :formData="formData"
-      @save="saveVisitor"
-      @close="closeVisitorModal"
-    /> -->
-
-    <!-- Biometric Enrollment Modal -->
-    <!-- TODO: Implementar modal de registro biométrico -->
-    <!-- <BiometricEnrollmentModal
-      v-if="showBiometricModal"
-      :visitor="selectedVisitor"
-      @enrolled="onBiometricEnrolled"
-      @close="showBiometricModal = false"
-    /> -->
-
-    <!-- Status Update Modal -->
-    <!-- TODO: Implementar modal de actualización de estado -->
-    <!-- <StatusUpdateModal
-      v-if="showStatusModal"
-      :visitor="selectedVisitor"
-      @updated="onStatusUpdated"
-      @close="showStatusModal = false"
-    /> -->
-
-    <!-- Background Check Modal -->
-    <!-- TODO: Implementar modal de verificación de antecedentes -->
-    <!-- <BackgroundCheckModal
-      v-if="showBackgroundCheckModal"
-      :visitor="selectedVisitor"
-      @completed="onBackgroundCheckCompleted"
-      @close="showBackgroundCheckModal = false"
-    /> -->
+    <!-- Visitor Quick Register Modal -->
+    <VisitorQuickRegisterModal
+      ref="quickRegisterModalRef"
+      @saved="onVisitorSaved"
+    />
   </div>
 </template>
 
@@ -411,40 +376,61 @@
 import { ref, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { useAuthStore } from '@/stores/auth';
-import { visitorsApi } from '@/services/api/visits';
+import ApiService from '@/core/services/ApiService';
 import Swal from 'sweetalert2';
 import { formatDate } from '@/utils/helpers';
-
-// Import child components (to be created)
-// import VisitorFormModal from '../components/VisitorFormModal.vue';
-// import BiometricEnrollmentModal from '../components/BiometricEnrollmentModal.vue';
-// import StatusUpdateModal from '../components/StatusUpdateModal.vue';
-// import BackgroundCheckModal from '../components/BackgroundCheckModal.vue';
+import VisitorQuickRegisterModal from '../components/VisitorQuickRegisterModal.vue';
 
 // Types
 interface Visitor {
   id: number;
-  identification_number: string;
+  visitor_code: string;
   first_name: string;
-  last_name: string;
-  email: string;
-  phone: string;
-  address: string;
-  biometric_enrolled: boolean;
-  accreditation_status: string;
-  accreditation_expiry_date: string | null;
-  background_check_status: string;
-  background_check_date: string | null;
+  second_name?: string;
+  third_name?: string;
+  first_surname: string;
+  second_surname?: string;
+  married_surname?: string;
+  full_name: string;
+  document_type: string;
+  document_number: string;
+  document_expiry?: string;
+  birth_date?: string;
+  age?: number;
+  gender: string;
+  nationality_id?: number;
+  phone_number?: string;
+  alternative_phone?: string;
+  email?: string;
+  address?: string;
+  municipality_id?: number;
+  relationship_type_id?: number;
+  is_blacklisted: boolean;
+  blacklist_date?: string;
+  blacklist_reason?: string;
+  requires_special_authorization: boolean;
+  special_authorization_details?: string;
+  has_biometric_data: boolean;
+  biometric_enrollment_date?: string;
+  photo_path?: string;
   status: string;
+  last_visit_date?: string;
+  total_visits: number;
   created_at: string;
   updated_at: string;
+  created_by?: number;
+  updated_by?: number;
 }
 
 interface Statistics {
   total: number;
   active: number;
-  with_biometric: number;
-  pending_approval: number;
+  inactive: number;
+  suspended: number;
+  blacklisted: number;
+  with_biometrics: number;
+  without_biometrics: number;
+  by_status?: Record<string, number>;
 }
 
 interface Pagination {
@@ -454,9 +440,15 @@ interface Pagination {
   last_page: number;
 }
 
+// API URL
+const apiUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+
 // Store
 const authStore = useAuthStore();
 const router = useRouter();
+
+// Refs
+const quickRegisterModalRef = ref<any>(null);
 
 // State
 const loading = ref(false);
@@ -465,8 +457,11 @@ const selectedVisitor = ref<Visitor | null>(null);
 const statistics = ref<Statistics>({
   total: 0,
   active: 0,
-  with_biometric: 0,
-  pending_approval: 0
+  inactive: 0,
+  suspended: 0,
+  blacklisted: 0,
+  with_biometrics: 0,
+  without_biometrics: 0
 });
 const formData = ref({
   document_types: [],
@@ -476,18 +471,12 @@ const formData = ref({
 });
 const searchTimeout = ref<number | null>(null);
 
-// Modals
-const showVisitorModal = ref(false);
-const showBiometricModal = ref(false);
-const showStatusModal = ref(false);
-const showBackgroundCheckModal = ref(false);
-
 // Filters
 const filters = ref({
   search: '',
-  accreditation_status: '',
-  biometric_enrolled: '',
-  has_restrictions: '',
+  status: '',
+  has_biometric_data: '',
+  is_blacklisted: '',
   department_id: ''
 });
 
@@ -528,17 +517,29 @@ const loadVisitors = async () => {
       ...filters.value
     };
 
-    const response = await visitorsApi.getList(params);
-    visitors.value = response.data.visitors.data || [];
-    pagination.value = {
-      current_page: response.data.visitors.current_page,
-      per_page: response.data.visitors.per_page,
-      total: response.data.visitors.total,
-      last_page: response.data.visitors.last_page
-    };
+    const response = await ApiService.get('/visitors', { params });
+
+    // Handle different response structures
+    if (response.data.visitors) {
+      // Structure with 'visitors' key
+      const visitorData = response.data.visitors;
+      visitors.value = visitorData.data || [];
+      pagination.value = {
+        current_page: visitorData.current_page || 1,
+        per_page: visitorData.per_page || 15,
+        total: visitorData.total || 0,
+        last_page: visitorData.last_page || 1
+      };
+    } else if (response.data.data) {
+      // Direct data response
+      visitors.value = response.data.data || [];
+    } else {
+      visitors.value = [];
+    }
   } catch (error) {
     console.error('Error loading visitors:', error);
     Swal.fire('Error', 'No se pudieron cargar los visitantes', 'error');
+    visitors.value = [];
   } finally {
     loading.value = false;
   }
@@ -546,8 +547,19 @@ const loadVisitors = async () => {
 
 const loadStatistics = async () => {
   try {
-    const response = await visitorsApi.getStatistics();
-    statistics.value = response.data;
+    const response = await ApiService.get('/visitors/statistics');
+    if (response.data) {
+      statistics.value = {
+        total: response.data.total || 0,
+        active: response.data.active || 0,
+        inactive: response.data.inactive || 0,
+        suspended: response.data.suspended || 0,
+        blacklisted: response.data.blacklisted || 0,
+        with_biometrics: response.data.with_biometrics || 0,
+        without_biometrics: response.data.without_biometrics || 0,
+        by_status: response.data.by_status || {}
+      };
+    }
   } catch (error) {
     console.error('Error loading statistics:', error);
   }
@@ -580,9 +592,9 @@ const debounceSearch = () => {
 const clearFilters = () => {
   filters.value = {
     search: '',
-    accreditation_status: '',
-    biometric_enrolled: '',
-    has_restrictions: '',
+    status: '',
+    has_biometric_data: '',
+    is_blacklisted: '',
     department_id: ''
   };
   loadVisitors();
@@ -601,45 +613,27 @@ const refreshData = () => {
 };
 
 const openNewVisitorModal = () => {
-  // Por ahora mostramos mensaje informativo
-  Swal.fire('Información', 'El formulario de registro estará disponible próximamente', 'info');
+  if (quickRegisterModalRef.value) {
+    quickRegisterModalRef.value.show();
+  }
+};
+
+const onVisitorSaved = (visitor: any) => {
+  refreshData();
 };
 
 const editVisitor = (visitor: Visitor) => {
-  // Por ahora mostramos mensaje informativo
-  Swal.fire('Información', 'La edición de visitantes estará disponible próximamente', 'info');
+  router.push(`/visits/visitors/${visitor.id}/edit`);
 };
 
 const viewVisitor = (visitor: Visitor) => {
   router.push(`/visits/visitors/${visitor.id}`);
 };
 
-const closeVisitorModal = () => {
-  showVisitorModal.value = false;
-  selectedVisitor.value = null;
-};
-
-const saveVisitor = async (visitorData: any) => {
-  try {
-    if (selectedVisitor.value) {
-      await visitorsApi.update(selectedVisitor.value.id, visitorData);
-      Swal.fire('Éxito', 'Visitante actualizado correctamente', 'success');
-    } else {
-      await visitorsApi.create(visitorData);
-      Swal.fire('Éxito', 'Visitante registrado correctamente', 'success');
-    }
-    closeVisitorModal();
-    refreshData();
-  } catch (error) {
-    console.error('Error saving visitor:', error);
-    Swal.fire('Error', 'No se pudo guardar el visitante', 'error');
-  }
-};
-
 const deleteVisitor = async (visitor: Visitor) => {
   const result = await Swal.fire({
     title: '¿Está seguro?',
-    text: `¿Desea eliminar el registro de ${visitor.first_name} ${visitor.last_name}?`,
+    text: `¿Desea eliminar el registro de ${visitor.full_name || visitor.first_name}?`,
     icon: 'warning',
     showCancelButton: true,
     confirmButtonColor: '#d33',
@@ -650,7 +644,7 @@ const deleteVisitor = async (visitor: Visitor) => {
 
   if (result.isConfirmed) {
     try {
-      await visitorsApi.delete(visitor.id);
+      await ApiService.delete(`/visitors/${visitor.id}`);
       Swal.fire('Eliminado', 'El visitante ha sido eliminado', 'success');
       refreshData();
     } catch (error) {
@@ -664,8 +658,63 @@ const enrollBiometrics = (visitor: Visitor) => {
   Swal.fire('Información', 'El registro biométrico estará disponible próximamente', 'info');
 };
 
-const updateStatus = (visitor: Visitor) => {
-  Swal.fire('Información', 'La actualización de estado estará disponible próximamente', 'info');
+const updateStatus = async (visitor: Visitor) => {
+  const result = await Swal.fire({
+    title: 'Actualizar Estado',
+    text: 'Seleccione el nuevo estado del visitante',
+    input: 'select',
+    inputOptions: {
+      'active': 'Activo',
+      'inactive': 'Inactivo',
+      'suspended': 'Suspendido',
+      'blacklisted': 'Lista Negra'
+    },
+    inputPlaceholder: 'Seleccione un estado',
+    showCancelButton: true,
+    confirmButtonText: 'Actualizar',
+    cancelButtonText: 'Cancelar',
+    inputValidator: (value) => {
+      if (!value) {
+        return 'Debe seleccionar un estado'
+      }
+    }
+  });
+
+  if (result.isConfirmed) {
+    // If status is suspended or blacklisted, ask for reason
+    let reason = null;
+    if (result.value === 'suspended' || result.value === 'blacklisted') {
+      const reasonResult = await Swal.fire({
+        title: 'Motivo',
+        input: 'textarea',
+        inputLabel: 'Ingrese el motivo',
+        inputPlaceholder: 'Describa el motivo...',
+        showCancelButton: true,
+        inputValidator: (value) => {
+          if (!value) {
+            return 'Debe proporcionar un motivo'
+          }
+        }
+      });
+
+      if (!reasonResult.isConfirmed) {
+        return;
+      }
+      reason = reasonResult.value;
+    }
+
+    try {
+      await ApiService.post(`/visitors/${visitor.id}/accreditation-status`, {
+        status: result.value,
+        reason: reason
+      });
+      Swal.fire('Actualizado', 'Estado actualizado exitosamente', 'success');
+      refreshData();
+    } catch (error) {
+      console.error('Error updating status:', error);
+      Swal.fire('Error', 'No se pudo actualizar el estado', 'error');
+    }
+  }
 };
 
 const performBackgroundCheck = (visitor: Visitor) => {
@@ -673,31 +722,16 @@ const performBackgroundCheck = (visitor: Visitor) => {
 };
 
 const viewRelationships = (visitor: Visitor) => {
-  router.push(`/visits/relationships?visitor_id=${visitor.id}`);
+  router.push(`/visits/relationships?visitor_id=${visitor.id}&visitor_name=${encodeURIComponent(visitor.full_name)}`);
 };
 
 const viewVisitHistory = (visitor: Visitor) => {
-  router.push(`/visits/history?visitor_id=${visitor.id}`);
-};
-
-const onBiometricEnrolled = () => {
-  showBiometricModal.value = false;
-  refreshData();
-};
-
-const onStatusUpdated = () => {
-  showStatusModal.value = false;
-  refreshData();
-};
-
-const onBackgroundCheckCompleted = () => {
-  showBackgroundCheckModal.value = false;
-  refreshData();
+  router.push(`/visits/logs?visitor_id=${visitor.id}&visitor_name=${encodeURIComponent(visitor.full_name)}`);
 };
 
 const exportData = async () => {
   try {
-    // Por ahora mostramos mensaje informativo
+    // TODO: Implement export functionality
     Swal.fire('Información', 'La exportación estará disponible próximamente', 'info');
   } catch (error) {
     console.error('Error exporting data:', error);
@@ -707,7 +741,8 @@ const exportData = async () => {
 
 // Helper functions
 const getPhotoUrl = (path: string) => {
-  return `/storage/${path}`;
+  if (!path) return '/media/avatars/blank.png';
+  return `${apiUrl}/storage/${path}`;
 };
 
 const getInitials = (visitor: any) => {
@@ -718,30 +753,20 @@ const getInitials = (visitor: any) => {
 
 const getStatusBadgeClass = (status: string) => {
   const classes = {
-    'pending_documentation': 'badge bg-secondary',
-    'documentation_review': 'badge bg-info',
-    'background_check': 'badge bg-warning',
-    'biometric_enrollment': 'badge bg-primary',
-    'approved': 'badge bg-success',
-    'rejected': 'badge bg-danger',
-    'suspended': 'badge bg-dark',
-    'revoked': 'badge bg-danger',
-    'expired': 'badge bg-secondary'
+    'active': 'badge bg-success',
+    'inactive': 'badge bg-secondary',
+    'suspended': 'badge bg-warning',
+    'blacklisted': 'badge bg-danger'
   };
   return classes[status] || 'badge bg-secondary';
 };
 
 const getStatusLabel = (status: string) => {
   const labels = {
-    'pending_documentation': 'Pendiente Doc.',
-    'documentation_review': 'Revisión Doc.',
-    'background_check': 'Verificación',
-    'biometric_enrollment': 'Reg. Biométrico',
-    'approved': 'Aprobado',
-    'rejected': 'Rechazado',
+    'active': 'Activo',
+    'inactive': 'Inactivo',
     'suspended': 'Suspendido',
-    'revoked': 'Revocado',
-    'expired': 'Vencido'
+    'blacklisted': 'Lista Negra'
   };
   return labels[status] || status;
 };
@@ -754,18 +779,18 @@ const isExpiringSoon = (date: string) => {
 };
 
 const canEnrollBiometrics = (visitor: any) => {
-  return !visitor.biometric_enrolled &&
-         ['background_check', 'biometric_enrollment', 'approved'].includes(visitor.accreditation_status) &&
-         hasPermission('visits.visitors_biometrics');
+  return !visitor.has_biometric_data &&
+         visitor.status === 'active' &&
+         hasPermission('visits.biometric_view');
 };
 
 const canUpdateStatus = (visitor: any) => {
-  return hasPermission('visits.visitors_status');
+  return hasPermission('visits.visitors_edit');
 };
 
 const canPerformBackgroundCheck = (visitor: any) => {
-  return !visitor.background_check_completed &&
-         hasPermission('visits.visitors_background_check');
+  return visitor.status === 'active' &&
+         hasPermission('visits.visitors_edit');
 };
 
 // Lifecycle

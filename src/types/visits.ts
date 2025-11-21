@@ -46,8 +46,18 @@ export interface VisitorRelationship {
   rejection_reason?: string
   suspension_reason?: string
   suspension_end_date?: string
+
+  // Visit restrictions (database fields)
+  max_visits_per_month?: number
+  max_visit_duration_minutes?: number
+  allowed_visit_days?: string[]
+  allowed_visit_hours_start?: string
+  allowed_visit_hours_end?: string
+
+  // Computed fields for compatibility
   visit_frequency_limit?: number
   visit_duration_limit?: number
+
   last_visit_date?: string
   last_visit_days_ago?: number
   visit_success_rate?: number
@@ -57,7 +67,7 @@ export interface VisitorRelationship {
   notes?: string
   created_at: string
   updated_at: string
-  
+
   // Relations
   visitor?: Visitor
   inmate?: any // Import from inmates.ts when needed
@@ -155,6 +165,9 @@ export interface AuthorizationFormData {
   authorization_expiry_date: string
   visit_frequency_limit?: number | null
   visit_duration_limit?: number | null
+  allowed_visit_days?: string[]
+  allowed_visit_hours_start?: string
+  allowed_visit_hours_end?: string
   rejection_reason?: string
   suspension_reason?: string
   suspension_end_date?: string

@@ -416,8 +416,8 @@
             </router-link>
           </div>
           <div class="col-md-4">
-            <router-link 
-              :to="`/inmates/${inmate.id}/visits/monitoring`"
+            <router-link
+              :to="`/inmates/${inmate.id}/visits/control`"
               class="btn btn-flex btn-light w-100 py-3"
             >
               <i class="ki-duotone ki-security-check fs-2 me-2">

@@ -11,6 +11,7 @@ import { reportsTranslations } from "./modules/reports";
 import { helpTranslations } from "./modules/help";
 import { legalTranslations } from "./modules/legal";
 import { admissionsTranslations } from "./modules/admissions";
+import { visitsTranslations } from "./modules/visits";
 import operationsEs from "./es/operations";
 import operationsEn from "./en/operations";
 import visitsEs from "./es/visits";
@@ -50,7 +51,9 @@ const enTranslations = deepMerge(
                     deepMerge(helpTranslations.en,
                       deepMerge(legalTranslations.en,
                         deepMerge(admissionsTranslations.en,
-                          deepMerge(operationsEn, visitsEn)
+                          deepMerge(visitsTranslations.en,
+                            deepMerge(operationsEn, visitsEn)
+                          )
                         )
                       )
                     )
@@ -80,7 +83,9 @@ const esTranslations = deepMerge(
                     deepMerge(helpTranslations.es,
                       deepMerge(legalTranslations.es,
                         deepMerge(admissionsTranslations.es,
-                          deepMerge(operationsEs, visitsEs)
+                          deepMerge(visitsTranslations.es,
+                            deepMerge(operationsEs, visitsEs)
+                          )
                         )
                       )
                     )

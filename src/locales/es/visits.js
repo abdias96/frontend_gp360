@@ -60,6 +60,17 @@ export default {
       optional: 'Opcional'
     },
 
+    // Status values
+    status: {
+      active: 'Activo',
+      inactive: 'Inactivo',
+      pending: 'Pendiente',
+      suspended: 'Suspendido',
+      blacklisted: 'Lista Negra',
+      approved: 'Aprobado',
+      rejected: 'Rechazado'
+    },
+
     // Visitor Registry
     visitor_registry: {
       title: 'Registro de Visitantes',
@@ -506,6 +517,40 @@ export default {
       totalScans: 'Total de Escaneos',
       restart: 'Reiniciar',
       connect: 'Conectar'
+    },
+
+    // Visitor Detail
+    visitorDetail: {
+      title: 'Detalle del Visitante',
+      personalInfo: 'Información Personal',
+      securityInfo: 'Información de Seguridad',
+      relatedInmates: 'PPLs Relacionados',
+      visitHistory: 'Historial de Visitas',
+      fullName: 'Nombre Completo',
+      documentType: 'Tipo de Documento',
+      documentNumber: 'Número de Documento',
+      birthDate: 'Fecha de Nacimiento',
+      age: 'Edad',
+      phone: 'Teléfono',
+      email: 'Correo Electrónico',
+      address: 'Dirección',
+      status: 'Estado',
+      biometricStatus: 'Estado Biométrico',
+      biometricRegistered: 'Biometría Registrada',
+      biometricPending: 'Biometría Pendiente',
+      registrationDate: 'Fecha de Registro',
+      lastVisit: 'Última Visita',
+      totalVisits: 'Total de Visitas',
+      inmateCode: 'Código PPL',
+      inmateName: 'Nombre del PPL',
+      relationship: 'Relación',
+      visitPermission: 'Permiso de Visita',
+      lastInmateVisit: 'Última Visita a este PPL',
+      visitDate: 'Fecha de Visita',
+      visitTime: 'Hora de Visita',
+      visitType: 'Tipo de Visita',
+      duration: 'Duración',
+      observations: 'Observaciones'
     }
   }
 }

@@ -19,7 +19,12 @@
         </div>
 
         <div class="modal-body py-10 px-lg-17">
-          <div v-if="relationship" class="row g-7">
+          <div v-if="loading" class="text-center py-10">
+            <div class="spinner-border text-primary" role="status">
+              <span class="visually-hidden">Cargando...</span>
+            </div>
+          </div>
+          <div v-else-if="relationship" class="row g-7">
             <!-- Header Info -->
             <div class="col-12">
               <div class="card border border-dashed border-primary">
@@ -241,12 +246,12 @@
             </div>
 
             <!-- Recent Activity -->
-            <div class="col-12">
+            <div class="col-12" v-if="recentActivities.length > 0">
               <div class="card">
                 <div class="card-header">
                   <h3 class="card-title">{{ $t('visits.relationships.recent_activity') }}</h3>
                   <div class="card-toolbar">
-                    <button 
+                    <button
                       @click="viewFullHistory"
                       class="btn btn-sm btn-light-primary"
                     >
@@ -319,6 +324,7 @@ import { ref, watch, onMounted, nextTick, computed } from 'vue'
 import { Modal } from 'bootstrap'
 import { useI18n } from 'vue-i18n'
 import { useAuthStore } from '@/stores/auth'
+import { useToast } from '@/composables/useToast'
 import { visitorRelationshipsApi } from '@/services/api/visits'
 import type { VisitorRelationship } from '@/types/visits'
 
@@ -332,6 +338,7 @@ const props = defineProps<Props>()
 // Emits
 const emit = defineEmits<{
   close: []
+  edit: [relationship: VisitorRelationship]
   updated: [relationship: VisitorRelationship]
 }>()
 
@@ -339,15 +346,22 @@ const emit = defineEmits<{
 const { t } = useI18n()
 const authStore = useAuthStore()
 const { user } = authStore
+const { showToast } = useToast()
 
 // State
 const modalRef = ref<HTMLElement>()
 const modal = ref<Modal>()
 const recentActivities = ref([])
+const relationshipData = ref<VisitorRelationship | null>(null)
+const loading = ref(false)
 
 // Computed
 const canEdit = computed(() => {
   return user.permissions?.includes('visits.relationships.edit')
+})
+
+const relationship = computed(() => {
+  return relationshipData.value || props.relationship
 })
 
 // Methods
@@ -359,14 +373,35 @@ const initializeModal = async () => {
   }
 }
 
+const loadRelationshipDetails = async () => {
+  if (!props.relationship?.id) return
+
+  try {
+    loading.value = true
+    const response = await visitorRelationshipsApi.getById(props.relationship.id)
+    const data = response.data.data || response.data
+
+    relationshipData.value = data
+  } catch (error) {
+    console.error('Error loading relationship details:', error)
+    showToast('Error al cargar detalles de la relación', 'error')
+  } finally {
+    loading.value = false
+  }
+}
+
 const loadRecentActivities = async () => {
   if (!props.relationship) return
-  
+
   try {
     const response = await visitorRelationshipsApi.getActivities(props.relationship.id, { limit: 5 })
-    recentActivities.value = response.data
+    recentActivities.value = response.data.data || response.data || []
   } catch (error) {
-    console.error('Error loading activities:', error)
+    // Endpoint not implemented yet, silently fail
+    if (error.response?.status !== 404) {
+      console.error('Error loading activities:', error)
+    }
+    recentActivities.value = []
   }
 }
 
@@ -376,7 +411,7 @@ const close = () => {
 }
 
 const editRelationship = () => {
-  emit('updated', props.relationship!)
+  emit('edit', relationshipData.value || props.relationship!)
   close()
 }
 
@@ -459,9 +494,10 @@ const getActivityIcon = (type: string) => {
 }
 
 // Watch for relationship changes
-watch(() => props.relationship, () => {
+watch(() => props.relationship, async () => {
   if (props.relationship) {
-    loadRecentActivities()
+    await loadRelationshipDetails()
+    await loadRecentActivities()
   }
 }, { immediate: true })
 

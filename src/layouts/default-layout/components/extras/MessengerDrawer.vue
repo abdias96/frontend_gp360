@@ -147,13 +147,24 @@
 
         <!--begin::Toolbar-->
         <div class="d-flex flex-stack">
-          <!--begin::Info-->
+          <!--begin::Attachments-->
           <div class="d-flex align-items-center me-2">
-            <span class="text-muted fs-7">
-              {{ isConnected ? "Conectado" : "Desconectado" }}
-            </span>
+            <label
+              for="file-upload-general"
+              class="btn btn-sm btn-icon btn-active-light-primary me-1"
+              title="Adjuntar archivo"
+            >
+              <i class="ki-duotone ki-paper-clip fs-3"></i>
+            </label>
+            <input
+              id="file-upload-general"
+              type="file"
+              class="d-none"
+              @change="handleFileSelect"
+              accept="image/*,.pdf,.doc,.docx,.xls,.xlsx"
+            />
           </div>
-          <!--end::Info-->
+          <!--end::Attachments-->
 
           <!--begin::Actions-->
           <div class="d-flex align-items-center">
@@ -162,7 +173,7 @@
               type="button"
               data-kt-element="send"
               @click="handleSendMessage"
-              :disabled="!isConnected || isLoading || !newMessageText.trim()"
+              :disabled="!isConnected || isLoading || (!newMessageText.trim() && !selectedFile)"
             >
               Enviar
             </button>
@@ -170,6 +181,25 @@
           <!--end::Actions-->
         </div>
         <!--end::Toolbar-->
+
+        <!-- File preview -->
+        <div v-if="selectedFile" class="mt-2">
+          <div class="alert alert-dismissible bg-light-primary d-flex align-items-center p-3">
+            <i class="ki-duotone ki-file fs-2x text-primary me-3">
+              <span class="path1"></span>
+              <span class="path2"></span>
+            </i>
+            <div class="d-flex flex-column">
+              <span class="fs-7 fw-bold">{{ selectedFile.name }}</span>
+              <span class="fs-8 text-muted">{{ formatFileSize(selectedFile.size) }}</span>
+            </div>
+            <button
+              type="button"
+              class="btn-close ms-auto"
+              @click="clearFile"
+            ></button>
+          </div>
+        </div>
       </div>
       <!--end::Card footer-->
     </div>
@@ -179,7 +209,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, computed, watch, nextTick } from "vue";
+import { defineComponent, ref, computed, watch, nextTick, onMounted } from "vue";
 import { useAuthStore } from "@/stores/auth";
 import FileStorageService from "@/core/services/FileStorageService";
 import { getAssetPath } from "@/core/helpers/assets";
@@ -187,6 +217,7 @@ import MessageIn from "@/components/messenger-parts/MessageIn.vue";
 import MessageOut from "@/components/messenger-parts/MessageOut.vue";
 import KTIcon from "@/core/helpers/kt-icon/KTIcon.vue";
 import { useChat } from "@/composables/useChat";
+import Swal from "sweetalert2";
 
 export default defineComponent({
   name: "messenger-drawer",
@@ -201,6 +232,7 @@ export default defineComponent({
     const messagesOutRef = ref<HTMLElement | null>(null);
     const authStore = useAuthStore();
     const newMessageText = ref("");
+    const selectedFile = ref<File | null>(null);
 
     // Use the WebSocket-based chat composable
     const {
@@ -209,8 +241,10 @@ export default defineComponent({
       isLoading,
       isConnected,
       sendMessage,
+      uploadAttachment,
       loadMessages,
       connectToChat,
+      setChatOpen,
     } = useChat();
 
     const currentUser = computed(() => authStore.user);
@@ -224,11 +258,14 @@ export default defineComponent({
         image: msg.user_photo
           ? FileStorageService.getFileUrl(msg.user_photo)
           : getAssetPath("media/avatars/300-25.jpg"),
-        time: new Date(msg.created_at).toLocaleTimeString('es-CO', { 
-          hour: '2-digit', 
-          minute: '2-digit' 
-        }),
+        time: msg.timestamp
+          ? new Date(msg.timestamp).toLocaleTimeString('es-CO', {
+              hour: '2-digit',
+              minute: '2-digit'
+            })
+          : msg.created_at, // Fallback to created_at if timestamp not available
         text: msg.message,
+        attachment: msg.attachment,
       }));
     });
 
@@ -248,14 +285,45 @@ export default defineComponent({
     // Handle sending a message
     const handleSendMessage = async () => {
       const text = newMessageText.value.trim();
-      if (!text || !isConnected.value || isLoading.value) return;
+      if ((!text && !selectedFile.value) || !isConnected.value || isLoading.value) return;
 
       try {
-        await sendMessage(text);
+        let attachment = null;
+
+        // Upload file if selected
+        if (selectedFile.value) {
+          console.log('Uploading file:', selectedFile.value.name);
+          try {
+            const uploadResult = await uploadAttachment(selectedFile.value);
+            console.log('File uploaded successfully:', uploadResult);
+            attachment = uploadResult;
+          } catch (uploadError) {
+            console.error('Error uploading file:', uploadError);
+            await Swal.fire({
+              icon: 'error',
+              title: 'Error al subir archivo',
+              text: 'No se pudo subir el archivo. Intenta de nuevo.',
+              timer: 3000,
+              showConfirmButton: false,
+            });
+            return;
+          }
+        }
+
+        console.log('Sending message with attachment:', attachment);
+        await sendMessage(text, attachment);
         newMessageText.value = "";
+        selectedFile.value = null;
         scrollToBottom();
       } catch (error) {
         console.error("Error sending message:", error);
+        await Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: 'No se pudo enviar el mensaje',
+          timer: 2000,
+          showConfirmButton: false,
+        });
       }
     };
 
@@ -267,28 +335,74 @@ export default defineComponent({
       }
     };
 
+    // Handle file selection
+    const handleFileSelect = (event: Event) => {
+      const target = event.target as HTMLInputElement;
+      if (target.files && target.files[0]) {
+        selectedFile.value = target.files[0];
+      }
+    };
+
+    // Clear selected file
+    const clearFile = () => {
+      selectedFile.value = null;
+      const fileInput = document.getElementById('file-upload-general') as HTMLInputElement;
+      if (fileInput) {
+        fileInput.value = '';
+      }
+    };
+
+    // Format file size
+    const formatFileSize = (bytes: number) => {
+      if (bytes === 0) return '0 Bytes';
+      const k = 1024;
+      const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+      const i = Math.floor(Math.log(bytes) / Math.log(k));
+      return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
+    };
+
     // Initialize connection when drawer opens
     const initializeChat = () => {
       if (!isConnected.value) {
         connectToChat();
       }
+      setChatOpen(true); // Mark chat as open and clear unread count
       scrollToBottom();
     };
 
-    // Watch for drawer visibility
-    if (typeof window !== 'undefined') {
-      const drawerElement = document.getElementById('kt_drawer_chat');
-      if (drawerElement) {
-        // Listen for drawer shown event
-        drawerElement.addEventListener('shown.bs.offcanvas', initializeChat);
+    // Handle drawer closing
+    const handleDrawerClose = () => {
+      setChatOpen(false);
+    };
+
+    // Watch for drawer visibility using KTDrawer events
+    onMounted(() => {
+      if (typeof window !== 'undefined') {
+        const toggleButton = document.getElementById('kt_drawer_chat_toggle');
+        const closeButton = document.getElementById('kt_drawer_chat_close');
+
+        if (toggleButton) {
+          toggleButton.addEventListener('click', () => {
+            setTimeout(() => {
+              initializeChat();
+            }, 100);
+          });
+        }
+
+        if (closeButton) {
+          closeButton.addEventListener('click', () => {
+            handleDrawerClose();
+          });
+        }
       }
-    }
+    });
 
     return {
       messagesRef,
       messagesInRef,
       messagesOutRef,
       newMessageText,
+      selectedFile,
       formattedMessages,
       onlineUsersCount,
       isLoading,
@@ -296,6 +410,9 @@ export default defineComponent({
       loadMessages,
       handleSendMessage,
       handleEnterKey,
+      handleFileSelect,
+      clearFile,
+      formatFileSize,
       getAssetPath,
     };
   },

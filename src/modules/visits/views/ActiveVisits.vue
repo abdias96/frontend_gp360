@@ -471,7 +471,7 @@ const handleEmergency = async () => {
 }
 
 const handleViewMonitoring = (visitId: number) => {
-  router.push(`/visits/monitoring/${visitId}`)
+  router.push(`/visits/control/${visitId}`)
 }
 
 const handleExtendTime = async (visitId: number) => {

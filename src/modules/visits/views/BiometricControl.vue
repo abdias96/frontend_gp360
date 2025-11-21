@@ -10,7 +10,7 @@
           <div class="d-flex gap-2">
             <button class="btn btn-light-primary" @click="handleDeviceStatus">
               <i class="fas fa-fingerprint"></i>
-              {{ $t('visits.biometricControl.deviceStatus') }}
+              {{ $t('visits.biometricControl.deviceStatusLabel') }}
             </button>
             <button class="btn btn-primary" @click="handleNewRegistration">
               <i class="fas fa-user-plus"></i>
@@ -95,8 +95,82 @@
           <div class="card-header">
             <h3 class="card-title">{{ $t('visits.biometricControl.scanner') }}</h3>
           </div>
-          <div class="card-body text-center">
-            <div class="mb-5">
+          <div class="card-body">
+            <!-- Manual Search Section -->
+            <div class="mb-7">
+              <label class="form-label">{{ $t('visits.biometricControl.manualSearch') }}</label>
+              <div class="position-relative">
+                <input
+                  type="text"
+                  v-model="visitorSearch"
+                  class="form-control"
+                  :placeholder="$t('visits.biometricControl.searchPlaceholder')"
+                  @input="handleVisitorSearch"
+                  @focus="showSearchResults = true"
+                  @blur="handleSearchBlur"
+                  autocomplete="off"
+                />
+
+                <!-- Search Results Dropdown -->
+                <div
+                  v-if="showSearchResults && searchResults.length > 0"
+                  class="position-absolute w-100 mt-1 bg-white border rounded shadow-sm"
+                  style="max-height: 300px; overflow-y: auto; z-index: 1050;"
+                >
+                  <div
+                    v-for="visitor in searchResults"
+                    :key="visitor.id"
+                    class="dropdown-item cursor-pointer"
+                    @mousedown.prevent="selectVisitor(visitor)"
+                  >
+                    <div class="d-flex align-items-center">
+                      <div class="symbol symbol-40px me-3">
+                        <img :src="visitor.photo || '/media/avatars/blank.png'" alt="" />
+                      </div>
+                      <div class="flex-grow-1">
+                        <div class="fw-bold">{{ visitor.full_name }}</div>
+                        <div class="text-muted fs-7">{{ visitor.document_number }}</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- No Results Message -->
+                <div
+                  v-if="showSearchResults && visitorSearch.length >= 4 && searchResults.length === 0 && !searchLoading"
+                  class="position-absolute w-100 mt-1 bg-white border rounded shadow-sm p-3"
+                  style="z-index: 1050;"
+                >
+                  <div class="text-center text-muted">
+                    <i class="fas fa-search fs-2 mb-2"></i>
+                    <div>{{ $t('visits.biometricControl.noResults') }}</div>
+                  </div>
+                </div>
+
+                <!-- Loading indicator -->
+                <div
+                  v-if="searchLoading"
+                  class="position-absolute w-100 mt-1 bg-white border rounded shadow-sm p-3"
+                  style="z-index: 1050;"
+                >
+                  <div class="text-center">
+                    <span class="spinner-border spinner-border-sm me-2"></span>
+                    {{ $t('common.searching') }}
+                  </div>
+                </div>
+              </div>
+              <div class="form-text">
+                {{ $t('visits.biometricControl.searchHelp') }}
+              </div>
+            </div>
+
+            <!-- OR Divider -->
+            <div class="separator separator-content my-7">
+              <span class="w-50px text-gray-500 fw-semibold fs-7">O</span>
+            </div>
+
+            <!-- Scanner Section -->
+            <div class="mb-5 text-center">
               <div class="symbol symbol-150px mx-auto mb-5">
                 <div class="symbol-label bg-light-primary">
                   <i class="fas fa-fingerprint fs-1 text-primary"></i>
@@ -348,12 +422,20 @@ import { ref, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import Swal from 'sweetalert2'
+import ApiService from '@/core/services/ApiService'
 
 // Composables
 const router = useRouter()
 const { t } = useI18n()
 
 // Types
+interface Visitor {
+  id: number
+  full_name: string
+  document_number: string
+  photo_url?: string | null
+}
+
 interface ScanResult {
   id: number
   name: string
@@ -409,6 +491,13 @@ const scannerStatus = ref({
 })
 
 const currentScan = ref<ScanResult | null>(null)
+
+// Manual search refs
+const visitorSearch = ref('')
+const searchResults = ref<Visitor[]>([])
+const showSearchResults = ref(false)
+const searchLoading = ref(false)
+let searchTimeout: number | null = null
 
 const accessLogs = ref<AccessLog[]>([
   {
@@ -682,6 +771,83 @@ const handleConnectDevice = (deviceId: number) => {
   }
 }
 
+// Manual visitor search methods
+const handleVisitorSearch = async () => {
+  const searchTerm = visitorSearch.value.trim()
+
+  // Clear timeout if exists
+  if (searchTimeout) {
+    clearTimeout(searchTimeout)
+  }
+
+  // Minimum 4 characters to search
+  if (searchTerm.length < 4) {
+    searchResults.value = []
+    showSearchResults.value = false
+    return
+  }
+
+  // Debounce search
+  searchTimeout = window.setTimeout(async () => {
+    try {
+      searchLoading.value = true
+      showSearchResults.value = true
+
+      const response = await ApiService.get('/visitors', {
+        params: {
+          search: searchTerm,
+          per_page: 10
+        }
+      })
+
+      // Handle different response structures
+      const visitorData = response.data.visitors || response.data.data || response.data
+      searchResults.value = Array.isArray(visitorData)
+        ? visitorData
+        : (visitorData.data || [])
+
+      console.log('Search results:', searchResults.value)
+    } catch (error) {
+      console.error('Error searching visitors:', error)
+      searchResults.value = []
+    } finally {
+      searchLoading.value = false
+    }
+  }, 500) // 500ms debounce
+}
+
+const selectVisitor = (visitor: Visitor) => {
+  console.log('Selected visitor:', visitor)
+
+  // Set as current scan
+  currentScan.value = {
+    id: visitor.id,
+    name: visitor.full_name,
+    document: visitor.document_number,
+    photo: visitor.photo_url || null,
+    authorized: true // Check authorization status in real implementation
+  }
+
+  // Clear search
+  visitorSearch.value = ''
+  searchResults.value = []
+  showSearchResults.value = false
+
+  Swal.fire({
+    title: t('visits.biometricControl.visitorFound'),
+    text: `${visitor.full_name} - ${visitor.document_number}`,
+    icon: 'success',
+    timer: 2000,
+    showConfirmButton: false
+  })
+}
+
+const handleSearchBlur = () => {
+  setTimeout(() => {
+    showSearchResults.value = false
+  }, 200)
+}
+
 // Lifecycle
 onMounted(() => {
   // Simulate periodic scans
@@ -696,3 +862,22 @@ onUnmounted(() => {
   }
 })
 </script>
+
+<style scoped>
+.cursor-pointer {
+  cursor: pointer;
+}
+
+.dropdown-item {
+  padding: 0.75rem 1rem;
+  transition: background-color 0.15s ease-in-out;
+}
+
+.dropdown-item:hover {
+  background-color: #f5f8fa;
+}
+
+.dropdown-item:active {
+  background-color: #e4e6ef;
+}
+</style>

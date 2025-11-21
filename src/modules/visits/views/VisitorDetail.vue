@@ -22,8 +22,15 @@
     </div>
     <!-- end::page-header -->
 
+    <!-- Loading State -->
+    <div v-if="loading" class="d-flex justify-content-center align-items-center" style="min-height: 400px;">
+      <div class="spinner-border text-primary" role="status">
+        <span class="visually-hidden">Cargando...</span>
+      </div>
+    </div>
+
     <!-- begin::content -->
-    <div class="row gy-5 g-xl-10">
+    <div v-else-if="visitor" class="row gy-5 g-xl-10">
       <!-- Visitor Information Card -->
       <div class="col-xl-6">
         <div class="card h-100">
@@ -210,9 +217,10 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
+import ApiService from '@/core/services/ApiService'
 import Swal from 'sweetalert2'
 
 // Composables
@@ -221,70 +229,105 @@ const router = useRouter()
 const { t } = useI18n()
 
 // Refs
-const visitor = ref({
-  id: 1,
-  fullName: 'María García López',
-  documentType: 'DPI',
-  documentNumber: '2547896321234',
-  birthDate: '1985-06-15',
-  phone: '+502 5555-1234',
-  email: 'maria.garcia@email.com',
-  address: 'Zona 10, Ciudad de Guatemala',
-  photo: null,
-  status: 'active',
-  biometricRegistered: true,
-  registrationDate: '2024-01-15',
-  lastVisit: '2024-03-10',
-  totalVisits: 12
+const loading = ref(true)
+const visitorData = ref<any>(null)
+
+// Computed properties para mapear los datos correctamente
+const visitor = computed(() => {
+  if (!visitorData.value) return null
+
+  const v = visitorData.value
+  const fullName = [
+    v.first_name,
+    v.second_name,
+    v.third_name,
+    v.first_surname,
+    v.second_surname,
+    v.married_surname
+  ].filter(Boolean).join(' ')
+
+  return {
+    id: v.id,
+    fullName: fullName,
+    documentType: v.document_type || 'N/A',
+    documentNumber: v.document_number || 'N/A',
+    birthDate: v.birth_date,
+    phone: v.phone_number || v.phone || 'N/A',
+    email: v.email,
+    address: v.address || 'N/A',
+    photo: v.front_photo_path ? `/storage/${v.front_photo_path}` : null,
+    status: v.status || 'active',
+    biometricRegistered: v.has_biometric_data || false,
+    registrationDate: v.created_at,
+    lastVisit: v.last_visit_date,
+    totalVisits: v.total_visits || 0
+  }
 })
 
-const relatedInmates = ref([
-  {
-    id: 1,
-    inmateName: 'Juan García López',
-    inmateCode: 'REC-2024-001',
-    relationship: 'Hermano',
-    hasPermission: true,
-    lastVisit: '2024-03-10'
-  },
-  {
-    id: 2,
-    inmateName: 'Pedro García López',
-    inmateCode: 'REC-2024-025',
-    relationship: 'Hijo',
-    hasPermission: true,
-    lastVisit: '2024-02-28'
-  }
-])
+const relatedInmates = computed(() => {
+  if (!visitorData.value?.relationships) return []
 
-const visitHistory = ref([
-  {
-    id: 1,
-    date: '2024-03-10',
-    time: '14:30',
-    inmateName: 'Juan García López',
-    type: 'Familiar',
-    duration: 45,
-    observations: 'Visita sin novedades'
-  },
-  {
-    id: 2,
-    date: '2024-02-28',
-    time: '10:00',
-    inmateName: 'Pedro García López',
-    type: 'Familiar',
-    duration: 60,
-    observations: null
-  }
-])
+  return visitorData.value.relationships.map((rel: any) => ({
+    id: rel.id,
+    inmateName: rel.inmate ?
+      [rel.inmate.first_name, rel.inmate.first_surname].filter(Boolean).join(' ') :
+      'N/A',
+    inmateCode: rel.inmate?.inmate_code || 'N/A',
+    relationship: rel.relationshipType?.name || rel.relationship_type?.name || 'N/A',
+    hasPermission: rel.status === 'active',
+    lastVisit: rel.last_visit_date
+  }))
+})
+
+const visitHistory = computed(() => {
+  if (!visitorData.value?.visitRequests) return []
+
+  return visitorData.value.visitRequests.map((visit: any) => {
+    const visitDate = visit.requested_visit_date || visit.created_at
+    const date = new Date(visitDate)
+
+    return {
+      id: visit.id,
+      date: visitDate.split(' ')[0], // Solo la fecha
+      time: visitDate.split(' ')[1]?.substring(0, 5) || date.toLocaleTimeString('es-GT', { hour: '2-digit', minute: '2-digit' }),
+      inmateName: visit.inmate ?
+        [visit.inmate.first_name, visit.inmate.first_surname].filter(Boolean).join(' ') :
+        'N/A',
+      type: visit.visitType?.name || visit.visit_type?.name || 'N/A',
+      duration: visit.requested_duration_minutes || visit.duration_minutes || 0,
+      observations: visit.visit_purpose || visit.decision_notes
+    }
+  })
+})
 
 // Methods
+const loadVisitorData = async () => {
+  try {
+    loading.value = true
+    const response = await ApiService.get(`/visitors/${route.params.id}`)
+    visitorData.value = response.data
+  } catch (error: any) {
+    console.error('Error loading visitor data:', error)
+    Swal.fire({
+      title: 'Error',
+      text: error.response?.data?.message || 'No se pudo cargar la información del visitante',
+      icon: 'error',
+      confirmButtonText: 'OK'
+    }).then(() => {
+      router.push('/visits/visitor-management')
+    })
+  } finally {
+    loading.value = false
+  }
+}
+
 const formatDate = (dateString: string | null) => {
   if (!dateString) return null
   return new Date(dateString).toLocaleDateString('es-GT')
 }
 
 const calculateAge = (birthDate: string) => {
+  if (!birthDate) return 0
   const today = new Date()
   const birth = new Date(birthDate)
   let age = today.getFullYear() - birth.getFullYear()
@@ -299,7 +342,15 @@ const getStatusBadgeClass = (status: string) => {
   const classes: Record<string, string> = {
     active: 'badge badge-success',
     inactive: 'badge badge-danger',
-    suspended: 'badge badge-warning'
+    suspended: 'badge badge-warning',
+    pending_documentation: 'badge badge-warning',
+    documentation_review: 'badge badge-info',
+    background_check: 'badge badge-info',
+    biometric_enrollment: 'badge badge-primary',
+    approved: 'badge badge-success',
+    rejected: 'badge badge-danger',
+    revoked: 'badge badge-dark',
+    expired: 'badge badge-secondary'
   }
   return classes[status] || 'badge badge-secondary'
 }
@@ -310,7 +361,6 @@ const handleEdit = () => {
 
 // Lifecycle
 onMounted(() => {
-  // Load visitor data based on route.params.id
-  console.log('Loading visitor:', route.params.id)
+  loadVisitorData()
 })
 </script>

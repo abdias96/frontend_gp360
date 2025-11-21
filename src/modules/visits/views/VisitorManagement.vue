@@ -400,15 +400,19 @@
 
 <script setup>
 import { ref, reactive, computed, onMounted, watch } from 'vue'
+import { useRouter } from 'vue-router'
 import { useToast } from '@/composables/useToast'
 import { useAuthStore } from '@/stores/auth'
 import { visitorsApi } from '@/services/api/visits'
 import { formatDate as formatDateHelper } from '@/core/helpers/formatters'
+import ApiService from '@/core/services/ApiService'
+import Swal from 'sweetalert2'
 // import VisitorModal from '../components/VisitorModal.vue'
 // import VisitorDetailModal from '../components/VisitorDetailModal.vue'
 // import BiometricCaptureModal from '../components/BiometricCaptureModal.vue'
 // import VisitorRelationshipsModal from '../components/VisitorRelationshipsModal.vue'
 
+const router = useRouter()
 const { showToast, showConfirm } = useToast()
 const authStore = useAuthStore()
 const { user } = authStore
@@ -533,13 +537,13 @@ const clearFilters = () => {
 }
 
 const viewVisitor = (visitor) => {
-  selectedVisitor.value = visitor
-  showDetailModal.value = true
+  // Navigate to visitor detail page
+  router.push(`/visits/visitors/${visitor.id}`)
 }
 
 const editVisitor = (visitor) => {
-  selectedVisitor.value = visitor
-  showEditModal.value = true
+  // Navigate to visitor edit page
+  router.push(`/visits/visitors/${visitor.id}/edit`)
 }
 
 const captureBiometrics = (visitor) => {
@@ -548,42 +552,95 @@ const captureBiometrics = (visitor) => {
 }
 
 const manageRelationships = (visitor) => {
-  selectedVisitor.value = visitor
-  showRelationshipsModal.value = true
+  // Navigate to visitor relationships page filtered by this visitor
+  router.push(`/visits/relationships?visitor_id=${visitor.id}&visitor_name=${encodeURIComponent(visitor.full_name)}`)
 }
 
 const suspendVisitor = async (visitor) => {
-  if (await showConfirm('¿Está seguro de suspender a este visitante?')) {
+  const result = await Swal.fire({
+    title: '¿Suspender Visitante?',
+    text: 'El visitante no podrá realizar visitas mientras esté suspendido',
+    input: 'textarea',
+    inputLabel: 'Motivo de la suspensión',
+    inputPlaceholder: 'Ingrese el motivo...',
+    inputAttributes: {
+      'aria-label': 'Ingrese el motivo de la suspensión'
+    },
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonText: 'Sí, suspender',
+    cancelButtonText: 'Cancelar',
+    inputValidator: (value) => {
+      if (!value) {
+        return 'Debe proporcionar un motivo'
+      }
+    }
+  })
+
+  if (result.isConfirmed) {
     try {
-      await visitorsApi.suspend(visitor.id)
-      showToast('Visitante suspendido exitosamente', 'success')
+      await ApiService.post(`/visitors/${visitor.id}/accreditation-status`, {
+        status: 'suspended',
+        reason: result.value
+      })
+      Swal.fire('Suspendido', 'El visitante ha sido suspendido exitosamente', 'success')
       loadVisitors(visitors.value.current_page)
     } catch (error) {
-      showToast('Error al suspender visitante', 'error')
+      console.error('Error suspending visitor:', error)
+      Swal.fire('Error', 'No se pudo suspender al visitante', 'error')
     }
   }
 }
 
 const activateVisitor = async (visitor) => {
-  if (await showConfirm('¿Está seguro de activar a este visitante?')) {
+  const result = await Swal.fire({
+    title: '¿Activar Visitante?',
+    text: 'El visitante podrá realizar visitas nuevamente',
+    icon: 'question',
+    showCancelButton: true,
+    confirmButtonText: 'Sí, activar',
+    cancelButtonText: 'Cancelar'
+  })
+
+  if (result.isConfirmed) {
     try {
-      await visitorsApi.activate(visitor.id)
-      showToast('Visitante activado exitosamente', 'success')
+      await ApiService.post(`/visitors/${visitor.id}/accreditation-status`, {
+        status: 'active'
+      })
+      Swal.fire('Activado', 'El visitante ha sido activado exitosamente', 'success')
       loadVisitors(visitors.value.current_page)
     } catch (error) {
-      showToast('Error al activar visitante', 'error')
+      console.error('Error activating visitor:', error)
+      Swal.fire('Error', 'No se pudo activar al visitante', 'error')
     }
   }
 }
 
 const viewVisitHistory = (visitor) => {
-  // Implementation for visit history modal
-  console.log('View visit history for:', visitor)
+  // Navigate to visit logs filtered by this visitor
+  router.push(`/visits/logs?visitor_id=${visitor.id}&visitor_name=${encodeURIComponent(visitor.full_name)}`)
 }
 
-const exportVisitorData = (visitor) => {
-  // Implementation for data export
-  console.log('Export data for:', visitor)
+const exportVisitorData = async (visitor) => {
+  try {
+    const response = await ApiService.get(`/visitors/${visitor.id}`)
+    const visitorData = response.data.data || response.data
+
+    // Create downloadable JSON file
+    const dataStr = JSON.stringify(visitorData, null, 2)
+    const dataBlob = new Blob([dataStr], { type: 'application/json' })
+    const url = URL.createObjectURL(dataBlob)
+    const link = document.createElement('a')
+    link.href = url
+    link.download = `visitante-${visitor.document_number}-${new Date().toISOString().split('T')[0]}.json`
+    link.click()
+    URL.revokeObjectURL(url)
+
+    Swal.fire('Exportado', 'Datos del visitante exportados exitosamente', 'success')
+  } catch (error) {
+    console.error('Error exporting visitor data:', error)
+    Swal.fire('Error', 'No se pudieron exportar los datos del visitante', 'error')
+  }
 }
 
 const handleVisitorSaved = () => {

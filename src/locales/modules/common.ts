@@ -1,6 +1,12 @@
 export const commonTranslations = {
   en: {
     common: {
+      back: "Back",
+      years: "years",
+      minutes: "minutes",
+      edit: "Edit",
+      yes: "Yes",
+      no: "No",
       actions: {
         title: "Actions",
         save: "Save",
@@ -304,10 +310,28 @@ export const commonTranslations = {
       success: "Success",
       export: "Export",
       more: "more",
+      cancel: "Cancel",
+      update: "Update",
+      create: "Create",
+      select_option: "Select an option",
+      close: "Close",
+      warning: "Warning",
+      attention: "Attention",
     },
   },
   es: {
     common: {
+      back: "Atrás",
+      years: "años",
+      minutes: "minutos",
+      edit: "Editar",
+      yes: "Sí",
+      no: "No",
+      cancel: "Cancelar",
+      update: "Actualizar",
+      create: "Crear",
+      select_option: "Seleccione una opción",
+      close: "Cerrar",
       actions: {
         title: "Acciones",
         save: "Guardar",
@@ -616,6 +640,8 @@ export const commonTranslations = {
       success: "Éxito",
       export: "Exportar",
       more: "más",
+      warning: "Advertencia",
+      attention: "Atención",
     },
   },
 };

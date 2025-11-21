@@ -566,6 +566,16 @@ const routes: Array<RouteRecordRaw> = [
         },
       },
       {
+        path: "/visits/visitors/:id/edit",
+        name: "visits-visitors-edit",
+        component: () => import("@/modules/visits/views/VisitorEdit.vue"),
+        meta: {
+          pageTitle: "Editar Visitante",
+          breadcrumbs: ["Visitas", "Visitantes", "Editar"],
+          permissions: "visits.visitors_edit",
+        },
+      },
+      {
         path: "/visits/relationships",
         name: "visits-relationships",
         component: () => import("@/modules/visits/views/VisitorRelationships.vue"),
@@ -636,13 +646,13 @@ const routes: Array<RouteRecordRaw> = [
         },
       },
       {
-        path: "/visits/monitoring",
-        name: "visits-monitoring",
+        path: "/visits/control",
+        name: "visits-control",
         component: () => import("@/modules/visits/views/VisitMonitoring.vue"),
         meta: {
-          pageTitle: "Monitoreo de Visitas",
-          breadcrumbs: ["Visitas", "Monitoreo"],
-          permissions: "visits.monitoring.view",
+          pageTitle: "Control de Entradas/Salidas",
+          breadcrumbs: ["Visitas", "Control"],
+          permissions: "visits.control_view",
         },
       },
       {

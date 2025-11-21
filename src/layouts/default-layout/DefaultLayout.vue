@@ -33,6 +33,7 @@
   <!-- end:: Body -->
   <KTScrollTop />
   <KTMessengerDrawer />
+  <PrivateChatDrawer />
   <KTActivityDrawer />
   <KTCreateApp />
   <KTInviteFriendsModal />
@@ -56,6 +57,7 @@ import KTUpgradePlanModal from "@/components/modals/general/UpgradePlanModal.vue
 import KTToolbarButtons from "@/layouts/default-layout/components/extras/ToolbarButtons.vue";
 import KTHelpDrawer from "@/layouts/default-layout/components/extras/HelpDrawer.vue";
 import KTMessengerDrawer from "@/layouts/default-layout/components/extras/MessengerDrawer.vue";
+import PrivateChatDrawer from "@/components/chat/PrivateChatDrawer.vue";
 import { reinitializeComponents } from "@/core/plugins/keenthemes";
 import {
   asideEnabled,

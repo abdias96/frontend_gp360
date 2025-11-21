@@ -1151,13 +1151,13 @@
                     </div>
                     <div
                       class="menu-item"
-                      v-if="isSuperAdmin || hasPermission('visits.monitoring.view')"
+                      v-if="isSuperAdmin || hasPermission('visits.control_view')"
                     >
-                      <router-link to="/visits/monitoring" class="menu-link">
+                      <router-link to="/visits/control" class="menu-link">
                         <span class="menu-bullet"
                           ><span class="bullet bullet-dot"></span
                         ></span>
-                        <span class="menu-title">{{ $t("menu.visitMonitoring") }}</span>
+                        <span class="menu-title">{{ $t("menu.visitControl") }}</span>
                       </router-link>
                     </div>
                   </div>
@@ -2625,6 +2625,7 @@ export default defineComponent({
       settingsMenuOpen,
       operationsMenuOpen,
       visitsMenuOpen,
+      grievancesMenuOpen,
       toggleUsersMenu,
       toggleRolesMenu,
       toggleInmatesMenu,
@@ -2639,6 +2640,7 @@ export default defineComponent({
       toggleSettingsMenu,
       toggleOperationsMenu,
       toggleVisitsMenu,
+      toggleGrievancesMenu,
       // New menu states
       legalModuleMenuOpen,
       medicalMenuOpen,

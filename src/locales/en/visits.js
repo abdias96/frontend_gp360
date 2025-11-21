@@ -60,6 +60,17 @@ export default {
       optional: 'Optional'
     },
 
+    // Status values
+    status: {
+      active: 'Active',
+      inactive: 'Inactive',
+      pending: 'Pending',
+      suspended: 'Suspended',
+      blacklisted: 'Blacklisted',
+      approved: 'Approved',
+      rejected: 'Rejected'
+    },
+
     // Visitor Registry
     visitor_registry: {
       title: 'Visitor Registry',
@@ -506,6 +517,40 @@ export default {
       totalScans: 'Total Scans',
       restart: 'Restart',
       connect: 'Connect'
+    },
+
+    // Visitor Detail
+    visitorDetail: {
+      title: 'Visitor Detail',
+      personalInfo: 'Personal Information',
+      securityInfo: 'Security Information',
+      relatedInmates: 'Related Inmates',
+      visitHistory: 'Visit History',
+      fullName: 'Full Name',
+      documentType: 'Document Type',
+      documentNumber: 'Document Number',
+      birthDate: 'Date of Birth',
+      age: 'Age',
+      phone: 'Phone',
+      email: 'Email',
+      address: 'Address',
+      status: 'Status',
+      biometricStatus: 'Biometric Status',
+      biometricRegistered: 'Biometrics Registered',
+      biometricPending: 'Biometrics Pending',
+      registrationDate: 'Registration Date',
+      lastVisit: 'Last Visit',
+      totalVisits: 'Total Visits',
+      inmateCode: 'Inmate Code',
+      inmateName: 'Inmate Name',
+      relationship: 'Relationship',
+      visitPermission: 'Visit Permission',
+      lastInmateVisit: 'Last Visit to this Inmate',
+      visitDate: 'Visit Date',
+      visitTime: 'Visit Time',
+      visitType: 'Visit Type',
+      duration: 'Duration',
+      observations: 'Observations'
     }
   }
 }

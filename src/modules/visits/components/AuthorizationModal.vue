@@ -20,7 +20,7 @@
           </div>
         </div>
 
-        <Form ref="formRef" @submit="handleSubmit" v-slot="{ errors }">
+        <Form ref="formRef" @submit="handleSubmit" :validation-schema="validationSchema" v-slot="{ errors }">
           <div class="modal-body py-10 px-lg-17">
             <!-- Relationship Summary -->
             <div class="alert alert-light-primary d-flex align-items-center p-5 mb-7">
@@ -55,7 +55,6 @@
                     type="date"
                     class="form-control"
                     :class="{ 'is-invalid': errors.authorization_date }"
-                    rules="required"
                   />
                   <ErrorMessage name="authorization_date" class="invalid-feedback" />
                 </div>
@@ -71,7 +70,6 @@
                     type="date"
                     class="form-control"
                     :class="{ 'is-invalid': errors.authorization_expiry_date }"
-                    rules="required"
                   />
                   <ErrorMessage name="authorization_expiry_date" class="invalid-feedback" />
                 </div>
@@ -121,6 +119,68 @@
                 </div>
               </div>
 
+              <!-- Allowed Visit Days -->
+              <div class="col-12" v-if="action === 'authorize'">
+                <div class="fv-row">
+                  <label class="form-label">{{ $t('visits.relationships.allowed_visit_days') }}</label>
+                  <div class="row g-3 mt-1">
+                    <div class="col-md-3" v-for="day in daysOfWeek" :key="day">
+                      <div class="form-check form-check-custom form-check-solid">
+                        <Field
+                          type="checkbox"
+                          :name="`allowed_visit_days.${day}`"
+                          :value="day"
+                          class="form-check-input"
+                          v-model="form.allowed_visit_days"
+                        />
+                        <label class="form-check-label">
+                          {{ $t(`visits.relationships.days_of_week.${day}`) }}
+                        </label>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="form-text">
+                    {{ $t('visits.relationships.allowed_visit_days_help') }}
+                  </div>
+                </div>
+              </div>
+
+              <!-- Allowed Visit Hours -->
+              <div class="col-12" v-if="action === 'authorize'">
+                <h5 class="mb-4 mt-4">{{ $t('visits.relationships.allowed_visit_hours') }}</h5>
+              </div>
+
+              <div class="col-md-6" v-if="action === 'authorize'">
+                <div class="fv-row">
+                  <label class="form-label">{{ $t('visits.relationships.visit_hours_start') }}</label>
+                  <Field
+                    v-model="form.allowed_visit_hours_start"
+                    name="allowed_visit_hours_start"
+                    type="time"
+                    class="form-control"
+                    :class="{ 'is-invalid': errors.allowed_visit_hours_start }"
+                  />
+                  <ErrorMessage name="allowed_visit_hours_start" class="invalid-feedback" />
+                </div>
+              </div>
+
+              <div class="col-md-6" v-if="action === 'authorize'">
+                <div class="fv-row">
+                  <label class="form-label">{{ $t('visits.relationships.visit_hours_end') }}</label>
+                  <Field
+                    v-model="form.allowed_visit_hours_end"
+                    name="allowed_visit_hours_end"
+                    type="time"
+                    class="form-control"
+                    :class="{ 'is-invalid': errors.allowed_visit_hours_end }"
+                  />
+                  <ErrorMessage name="allowed_visit_hours_end" class="invalid-feedback" />
+                  <div class="form-text">
+                    {{ $t('visits.relationships.allowed_visit_hours_help') }}
+                  </div>
+                </div>
+              </div>
+
               <!-- Rejection Reason (for reject) -->
               <div class="col-12" v-if="action === 'reject'">
                 <div class="fv-row">
@@ -131,7 +191,6 @@
                     as="select"
                     class="form-select"
                     :class="{ 'is-invalid': errors.rejection_reason }"
-                    rules="required"
                   >
                     <option value="">{{ $t('common.select_option') }}</option>
                     <option value="security_risk">{{ $t('visits.relationships.rejection_reasons.security_risk') }}</option>
@@ -154,7 +213,6 @@
                     as="select"
                     class="form-select"
                     :class="{ 'is-invalid': errors.suspension_reason }"
-                    rules="required"
                   >
                     <option value="">{{ $t('common.select_option') }}</option>
                     <option value="policy_violation">{{ $t('visits.relationships.suspension_reasons.policy_violation') }}</option>
@@ -199,7 +257,6 @@
                     :class="{ 'is-invalid': errors.notes }"
                     rows="4"
                     :placeholder="getNotesPlaceholder()"
-                    :rules="isNotesRequired ? 'required' : ''"
                   />
                   <ErrorMessage name="notes" class="invalid-feedback" />
                 </div>
@@ -281,6 +338,7 @@
 import { ref, reactive, computed, onMounted, nextTick } from 'vue'
 import { Modal } from 'bootstrap'
 import { Form, Field, ErrorMessage } from 'vee-validate'
+import * as yup from 'yup'
 import { useI18n } from 'vue-i18n'
 import { visitorRelationshipsApi } from '@/services/api/visits'
 import { useToast } from '@/composables/useToast'
@@ -315,6 +373,9 @@ const form = reactive({
   authorization_expiry_date: '',
   visit_frequency_limit: null,
   visit_duration_limit: null,
+  allowed_visit_days: [] as string[],
+  allowed_visit_hours_start: '09:00',
+  allowed_visit_hours_end: '17:00',
   rejection_reason: '',
   suspension_reason: '',
   suspension_end_date: '',
@@ -323,11 +384,38 @@ const form = reactive({
   notify_parties: true
 })
 
+// Days of week
+const daysOfWeek = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday']
+
 // Computed
 const isNotesRequired = computed(() => {
-  return props.action === 'reject' || 
+  return props.action === 'reject' ||
          (props.action === 'suspend' && form.suspension_reason === 'other') ||
          (props.action === 'reject' && form.rejection_reason === 'other')
+})
+
+// Validation Schema
+const validationSchema = computed(() => {
+  const baseSchema: any = {}
+
+  if (props.action === 'authorize' || props.action === 'renew') {
+    baseSchema.authorization_date = yup.string().required('La fecha de autorización es requerida')
+    baseSchema.authorization_expiry_date = yup.string().required('La fecha de vencimiento es requerida')
+  }
+
+  if (props.action === 'reject') {
+    baseSchema.rejection_reason = yup.string().required('El motivo de rechazo es requerido')
+  }
+
+  if (props.action === 'suspend') {
+    baseSchema.suspension_reason = yup.string().required('El motivo de suspensión es requerido')
+  }
+
+  if (isNotesRequired.value) {
+    baseSchema.notes = yup.string().required('Las notas son requeridas')
+  }
+
+  return yup.object(baseSchema)
 })
 
 // Methods
@@ -437,6 +525,9 @@ const getActionSpecificPayload = () => {
         authorization_expiry_date: form.authorization_expiry_date,
         visit_frequency_limit: form.visit_frequency_limit,
         visit_duration_limit: form.visit_duration_limit,
+        allowed_visit_days: form.allowed_visit_days.length > 0 ? form.allowed_visit_days : null,
+        allowed_visit_hours_start: form.allowed_visit_hours_start,
+        allowed_visit_hours_end: form.allowed_visit_hours_end,
         notify_visitor: form.notify_visitor
       }
     case 'reject':
@@ -471,11 +562,65 @@ const setDefaultExpiryDate = () => {
   }
 }
 
+// Load existing relationship data into form
+const loadRelationshipData = () => {
+  if (!props.relationship) return
+
+  // Load visit restrictions from existing relationship
+  if (props.relationship.max_visits_per_month) {
+    form.visit_frequency_limit = props.relationship.max_visits_per_month
+  }
+
+  if (props.relationship.max_visit_duration_minutes) {
+    form.visit_duration_limit = props.relationship.max_visit_duration_minutes
+  }
+
+  if (props.relationship.allowed_visit_days && Array.isArray(props.relationship.allowed_visit_days)) {
+    form.allowed_visit_days = props.relationship.allowed_visit_days
+  }
+
+  if (props.relationship.allowed_visit_hours_start) {
+    form.allowed_visit_hours_start = props.relationship.allowed_visit_hours_start
+  }
+
+  if (props.relationship.allowed_visit_hours_end) {
+    form.allowed_visit_hours_end = props.relationship.allowed_visit_hours_end
+  }
+
+  // Load authorization dates if they exist (convert to YYYY-MM-DD format)
+  if (props.relationship.authorization_date) {
+    // Handle both date string formats
+    const authDate = new Date(props.relationship.authorization_date)
+    form.authorization_date = authDate.toISOString().split('T')[0]
+  }
+
+  if (props.relationship.authorization_expiry_date) {
+    // Handle both date string formats
+    const expiryDate = new Date(props.relationship.authorization_expiry_date)
+    form.authorization_expiry_date = expiryDate.toISOString().split('T')[0]
+  }
+
+  console.log('Loaded relationship data:', {
+    authorization_date: form.authorization_date,
+    authorization_expiry_date: form.authorization_expiry_date,
+    visit_frequency_limit: form.visit_frequency_limit,
+    visit_duration_limit: form.visit_duration_limit,
+    allowed_visit_days: form.allowed_visit_days,
+    allowed_visit_hours_start: form.allowed_visit_hours_start,
+    allowed_visit_hours_end: form.allowed_visit_hours_end
+  })
+}
+
 // Lifecycle
 onMounted(async () => {
   await initializeModal()
-  setDefaultExpiryDate()
-  
+  loadRelationshipData() // Load existing data first
+
+  // Only set default expiry if not already set
+  if (!form.authorization_expiry_date) {
+    setDefaultExpiryDate()
+  }
+
   modalRef.value?.addEventListener('hidden.bs.modal', () => {
     emit('close')
   })
