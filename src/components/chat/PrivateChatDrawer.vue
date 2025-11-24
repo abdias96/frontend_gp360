@@ -126,50 +126,56 @@
         </div>
 
         <!-- Chat Messages (when user selected) -->
-        <div
-          v-else
-          class="scroll-y me-n5 pe-5 h-300px h-lg-auto"
-          ref="messagesContainer"
-          data-kt-element="messages"
-          data-kt-scroll="true"
-          data-kt-scroll-activate="{default: false, lg: true}"
-          data-kt-scroll-max-height="auto"
-          data-kt-scroll-dependencies="#kt_private_chat_messenger_header, #kt_private_chat_messenger_footer"
-          data-kt-scroll-wrappers="#kt_private_chat_messenger_body"
-          data-kt-scroll-offset="0px"
-        >
-          <div class="mb-3">
+        <template v-else>
+          <!-- Back to list button - Fixed at top -->
+          <div class="mb-3 sticky-top bg-body pt-2 pb-3 border-bottom border-gray-200" style="z-index: 10; top: -8px; margin-left: -20px; margin-right: -20px; padding-left: 20px; padding-right: 20px;">
             <button
               @click="clearSelectedUser"
               class="btn btn-sm btn-light-primary"
             >
-              <i class="ki-duotone ki-arrow-left fs-3"></i>
+              <i class="ki-duotone ki-arrow-left fs-3">
+                <span class="path1"></span>
+                <span class="path2"></span>
+              </i>
               Volver a lista
             </button>
           </div>
 
-          <div v-if="messages.length === 0" class="text-center py-10 text-muted">
-            No hay mensajes. Inicia la conversación!
-          </div>
+          <!-- Messages area -->
+          <div
+            class="scroll-y me-n5 pe-5 h-300px h-lg-auto"
+            ref="messagesContainer"
+            data-kt-element="messages"
+            data-kt-scroll="true"
+            data-kt-scroll-activate="{default: false, lg: true}"
+            data-kt-scroll-max-height="auto"
+            data-kt-scroll-dependencies="#kt_private_chat_messenger_header, #kt_private_chat_messenger_footer"
+            data-kt-scroll-wrappers="#kt_private_chat_messenger_body"
+            data-kt-scroll-offset="0px"
+          >
+            <div v-if="messages.length === 0" class="text-center py-10 text-muted">
+              No hay mensajes. Inicia la conversación!
+            </div>
 
-          <div v-for="msg in messages" :key="msg.id">
-            <MessageIn
-              v-if="msg.sender_id !== currentUserId"
-              :name="msg.sender_name"
-              :text="msg.message"
-              :time="msg.created_at"
-              :image="getUserPhotoUrl(msg.sender_photo)"
-              :attachment="msg.attachment"
-            />
-            <MessageOut
-              v-else
-              :text="msg.message"
-              :time="msg.created_at"
-              :image="getUserPhotoUrl(msg.sender_photo)"
-              :attachment="msg.attachment"
-            />
+            <div v-for="msg in messages" :key="msg.id">
+              <MessageIn
+                v-if="msg.sender_id !== currentUserId"
+                :name="msg.sender_name"
+                :text="msg.message"
+                :time="formatMessageTime(msg.created_at)"
+                :image="getUserPhotoUrl(msg.sender_photo)"
+                :attachment="msg.attachment"
+              />
+              <MessageOut
+                v-else
+                :text="msg.message"
+                :time="formatMessageTime(msg.created_at)"
+                :image="getUserPhotoUrl(msg.sender_photo)"
+                :attachment="msg.attachment"
+              />
+            </div>
           </div>
-        </div>
+        </template>
       </div>
 
       <!-- Footer -->
@@ -293,6 +299,12 @@ onMounted(async () => {
       toggleButton.addEventListener('click', () => {
         setTimeout(() => {
           setChatOpen(true); // Mark chat as open and clear unread count
+          // Scroll to bottom if a user is selected
+          if (selectedUser.value && messages.value.length > 0) {
+            setTimeout(() => {
+              scrollToBottom();
+            }, 200);
+          }
         }, 100);
       });
     }
@@ -316,14 +328,22 @@ watch(
 
 const scrollToBottom = () => {
   if (messagesContainer.value) {
-    messagesContainer.value.scrollTop = messagesContainer.value.scrollHeight;
+    // Use setTimeout to ensure DOM is fully rendered
+    setTimeout(() => {
+      if (messagesContainer.value) {
+        messagesContainer.value.scrollTop = messagesContainer.value.scrollHeight;
+      }
+    }, 100);
   }
 };
 
 const selectUser = async (user: any) => {
   await selectUserAction(user);
   await nextTick();
-  scrollToBottom();
+  // Scroll to bottom after messages are loaded
+  setTimeout(() => {
+    scrollToBottom();
+  }, 150);
 };
 
 const clearSelectedUser = () => {
@@ -424,6 +444,27 @@ const formatFileSize = (bytes: number) => {
 const getUserPhotoUrl = (photoPath: string | null | undefined): string | null => {
   if (!photoPath) return null;
   return FileStorageService.getFileUrl(photoPath);
+};
+
+// Format message timestamp to show only time
+const formatMessageTime = (createdAt: string | null | undefined): string => {
+  if (!createdAt) return '';
+
+  // If it's already in HH:MM format (from backend), use it directly
+  if (/^\d{2}:\d{2}$/.test(createdAt)) {
+    return createdAt;
+  }
+
+  // Otherwise, try to parse and format
+  try {
+    return new Date(createdAt).toLocaleTimeString('es-CO', {
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  } catch (error) {
+    console.error('Error formatting time:', error);
+    return createdAt || '';
+  }
 };
 </script>
 

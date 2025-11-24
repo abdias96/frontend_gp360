@@ -271,9 +271,12 @@ export default defineComponent({
     // Scroll to bottom when messages change
     const scrollToBottom = async () => {
       await nextTick();
-      if (messagesRef.value) {
-        messagesRef.value.scrollTop = messagesRef.value.scrollHeight;
-      }
+      // Use setTimeout to ensure DOM is fully rendered
+      setTimeout(() => {
+        if (messagesRef.value) {
+          messagesRef.value.scrollTop = messagesRef.value.scrollHeight;
+        }
+      }, 100);
     };
 
     // Watch messages array for changes
@@ -366,7 +369,11 @@ export default defineComponent({
         connectToChat();
       }
       setChatOpen(true); // Mark chat as open and clear unread count
-      scrollToBottom();
+
+      // Scroll to bottom after messages are loaded
+      setTimeout(() => {
+        scrollToBottom();
+      }, 200);
     };
 
     // Handle drawer closing

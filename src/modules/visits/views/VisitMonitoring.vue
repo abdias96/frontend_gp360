@@ -4,11 +4,28 @@
     <div class="row gy-5 g-xl-10 mb-5 mb-xl-10">
       <div class="col-md-12">
         <div class="d-flex flex-column flex-md-row align-items-center justify-content-between">
-          <h1 class="fs-2x fw-bold text-gray-900 mb-4 mb-md-0">
-            Control de Entradas y Salidas
-          </h1>
+          <div>
+            <h1 class="fs-2x fw-bold text-gray-900 mb-2">
+              {{ isVisitorHistoryMode ? 'Historial de Visitas' : 'Control de Entradas y Salidas' }}
+            </h1>
+            <p v-if="isVisitorHistoryMode && visitorNameFromQuery" class="text-muted fs-5 mb-0">
+              Visitante: {{ visitorNameFromQuery }}
+            </p>
+          </div>
           <div class="d-flex gap-2">
-            <button class="btn btn-light-success" @click="refreshActiveVisits">
+            <router-link
+              v-if="isVisitorHistoryMode"
+              to="/visits/visitor-management"
+              class="btn btn-light-secondary"
+            >
+              <i class="fas fa-arrow-left"></i>
+              Volver
+            </router-link>
+            <button
+              v-else
+              class="btn btn-light-success"
+              @click="refreshActiveVisits"
+            >
               <i class="fas fa-sync"></i>
               Actualizar
             </button>
@@ -18,8 +35,79 @@
     </div>
     <!-- end::page-header -->
 
+    <!-- begin::visitor history -->
+    <div v-if="isVisitorHistoryMode" class="row g-5">
+      <div class="col-12">
+        <div class="card">
+          <div class="card-header">
+            <h3 class="card-title">
+              <i class="fas fa-history me-2"></i>
+              Registros de Visitas
+            </h3>
+          </div>
+          <div class="card-body">
+            <div v-if="loading" class="text-center py-10">
+              <span class="spinner-border spinner-border-lg"></span>
+              <p class="mt-3">Cargando historial...</p>
+            </div>
+            <div v-else-if="visitorHistory.length === 0" class="text-center py-10">
+              <i class="fas fa-inbox fs-3x text-muted mb-4"></i>
+              <p class="text-muted">No hay registros de visitas para este visitante</p>
+            </div>
+            <div v-else class="table-responsive">
+              <table class="table table-row-bordered table-hover align-middle gs-7">
+                <thead>
+                  <tr class="fw-bold fs-6 text-gray-800">
+                    <th>Fecha</th>
+                    <th>Interno Visitado</th>
+                    <th>Tipo de Visita</th>
+                    <th>Hora Entrada</th>
+                    <th>Hora Salida</th>
+                    <th>Duración</th>
+                    <th>Estado</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr v-for="visit in visitorHistory" :key="visit.id">
+                    <td>{{ formatDate(visit.requested_visit_date) }}</td>
+                    <td>
+                      <div class="d-flex flex-column">
+                        <span class="fw-bold">{{ visit.inmate?.first_name }} {{ visit.inmate?.last_name }}</span>
+                        <span class="text-muted fs-7">{{ visit.inmate?.document_number }}</span>
+                      </div>
+                    </td>
+                    <td>
+                      <span class="badge badge-light-primary">{{ visit.visitType?.name || 'N/A' }}</span>
+                    </td>
+                    <td>{{ visit.actual_entry_datetime ? formatTime(visit.actual_entry_datetime) : '-' }}</td>
+                    <td>{{ visit.actual_exit_datetime ? formatTime(visit.actual_exit_datetime) : '-' }}</td>
+                    <td>{{ visit.duration_formatted || '-' }}</td>
+                    <td>
+                      <span
+                        class="badge"
+                        :class="{
+                          'badge-light-success': visit.status === 'completed',
+                          'badge-light-primary': visit.status === 'in_progress',
+                          'badge-light-warning': visit.status === 'approved',
+                          'badge-light-danger': visit.status === 'rejected',
+                          'badge-light-secondary': visit.status === 'cancelled'
+                        }"
+                      >
+                        {{ getStatusLabel(visit.status) }}
+                      </span>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- end::visitor history -->
+
     <!-- begin::visit control -->
-    <div class="row g-5">
+    <div v-else class="row g-5">
       <!-- Visit Registration Form -->
       <div class="col-xl-5" v-if="canRegister">
         <div class="card">
@@ -471,9 +559,13 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { useRoute } from 'vue-router'
 import ApiService from '@/core/services/ApiService'
 import Swal from 'sweetalert2'
 import { useAuthStore } from '@/stores/auth'
+
+// Route
+const route = useRoute()
 
 // Auth Store
 const authStore = useAuthStore()
@@ -481,6 +573,11 @@ const authStore = useAuthStore()
 // Permissions
 const canView = computed(() => authStore.isSuperAdmin || authStore.hasPermission('visits.control_view'))
 const canRegister = computed(() => authStore.isSuperAdmin || authStore.hasPermission('visits.control_register'))
+
+// Check if viewing specific visitor history
+const isVisitorHistoryMode = computed(() => !!route.query.visitor_id)
+const visitorIdFromQuery = computed(() => route.query.visitor_id ? Number(route.query.visitor_id) : null)
+const visitorNameFromQuery = computed(() => route.query.visitor_name as string || '')
 
 // API URL
 const apiUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'
@@ -497,6 +594,7 @@ const activeVisits = ref<any[]>([])
 const visitToExit = ref<any>(null)
 const exitModalRef = ref<HTMLElement | null>(null)
 const statistics = ref<any>({})
+const visitorHistory = ref<any[]>([])
 
 // Search refs
 const searchResults = ref<any[]>([])
@@ -554,8 +652,8 @@ const handleVisitorSearch = async () => {
 
       const visitorData = response.data.visitors || response.data.data || response.data
       searchResults.value = Array.isArray(visitorData)
-        ? visitorData.data || visitorData
-        : (visitorData.data || [])
+        ? visitorData
+        : (Array.isArray(visitorData?.data) ? visitorData.data : [])
     } catch (error) {
       console.error('Error searching visitors:', error)
       searchResults.value = []
@@ -786,11 +884,46 @@ const fetchStatistics = async () => {
   }
 }
 
+const fetchVisitorHistory = async (visitorId: number) => {
+  try {
+    loading.value = true
+    const response = await ApiService.get('/visit-logs', {
+      params: {
+        visitor_id: visitorId,
+        per_page: 50
+      }
+    })
+
+    if (response.data.success) {
+      visitorHistory.value = response.data.data.data || []
+    }
+  } catch (error: any) {
+    console.error('Error fetching visitor history:', error)
+    Swal.fire({
+      title: 'Error',
+      text: error.response?.data?.message || 'Error al cargar el historial de visitas.',
+      icon: 'error'
+    })
+  } finally {
+    loading.value = false
+  }
+}
+
 const getVisitorPhotoUrl = (visitor: any) => {
   if (visitor?.front_photo_path) {
     return `${apiUrl}/storage/${visitor.front_photo_path}`
   }
   return '/media/avatars/blank.png'
+}
+
+const formatDate = (date: string) => {
+  if (!date) return 'N/A'
+  const d = new Date(date)
+  return d.toLocaleDateString('es-GT', {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit'
+  })
 }
 
 const formatTime = (datetime: string) => {
@@ -799,10 +932,17 @@ const formatTime = (datetime: string) => {
   return date.toLocaleTimeString('es-GT', { hour: '2-digit', minute: '2-digit' })
 }
 
-const formatDate = (datetime: string) => {
-  if (!datetime) return 'N/A'
-  const date = new Date(datetime)
-  return date.toLocaleDateString('es-GT')
+const getStatusLabel = (status: string) => {
+  const labels: Record<string, string> = {
+    'pending': 'Pendiente',
+    'approved': 'Aprobada',
+    'rejected': 'Rechazada',
+    'in_progress': 'En Curso',
+    'completed': 'Completada',
+    'cancelled': 'Cancelada',
+    'no_show': 'No Asistió'
+  }
+  return labels[status] || status
 }
 
 const calculateElapsedTime = (entryTime: string) => {
@@ -847,18 +987,27 @@ onMounted(async () => {
     exitModal = new Modal(exitModalRef.value)
   }
 
-  // Fetch initial data
-  await Promise.all([
-    fetchVisitTypes(),
-    refreshActiveVisits(),
-    fetchStatistics()
-  ])
+  // Check if we're viewing a specific visitor's history
+  if (isVisitorHistoryMode.value && visitorIdFromQuery.value) {
+    // Load visitor history mode
+    await Promise.all([
+      fetchVisitTypes(),
+      fetchVisitorHistory(visitorIdFromQuery.value)
+    ])
+  } else {
+    // Load normal visit control mode
+    await Promise.all([
+      fetchVisitTypes(),
+      refreshActiveVisits(),
+      fetchStatistics()
+    ])
 
-  // Start auto-update
-  updateInterval = window.setInterval(() => {
-    updateElapsedTimes()
-    refreshActiveVisits()
-  }, 30000) // Update every 30 seconds
+    // Start auto-update for active visits
+    updateInterval = window.setInterval(() => {
+      updateElapsedTimes()
+      refreshActiveVisits()
+    }, 30000) // Update every 30 seconds
+  }
 })
 
 onUnmounted(() => {

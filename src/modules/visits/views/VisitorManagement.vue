@@ -617,8 +617,8 @@ const activateVisitor = async (visitor) => {
 }
 
 const viewVisitHistory = (visitor) => {
-  // Navigate to visit logs filtered by this visitor
-  router.push(`/visits/logs?visitor_id=${visitor.id}&visitor_name=${encodeURIComponent(visitor.full_name)}`)
+  // Navigate to visit control/monitoring page filtered by this visitor
+  router.push(`/visits/control?visitor_id=${visitor.id}&visitor_name=${encodeURIComponent(visitor.full_name)}`)
 }
 
 const exportVisitorData = async (visitor) => {

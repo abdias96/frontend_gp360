@@ -13,11 +13,11 @@
               {{ $t('common.back') }}
             </router-link>
             <template v-if="relationship">
-              <button class="btn btn-warning" @click="handleSuspend" v-if="relationship.status === 'active'">
+              <button class="btn btn-warning" @click="handleSuspend" v-if="relationship.status === 'approved'">
                 <i class="fas fa-pause"></i>
                 {{ $t('visits.relationships.suspend') }}
               </button>
-              <button class="btn btn-success" @click="handleActivate" v-else>
+              <button class="btn btn-success" @click="handleActivate" v-if="relationship.status === 'suspended'">
                 <i class="fas fa-play"></i>
                 {{ $t('visits.relationships.reactivate') }}
               </button>
@@ -134,16 +134,28 @@
           </div>
           <div class="card-body">
             <div class="row mb-5">
-              <div class="col-6">
+              <div class="col-md-6 mb-3">
                 <div class="border border-gray-300 border-dashed rounded p-4 text-center">
                   <h2 class="text-primary fw-bold mb-0">{{ statistics.totalVisits }}</h2>
-                  <p class="text-muted mb-0">{{ $t('visits.relationshipDetail.totalVisits') }}</p>
+                  <p class="text-muted mb-0">{{ $t('visits.relationships.total_visits') }}</p>
                 </div>
               </div>
-              <div class="col-6">
+              <div class="col-md-6 mb-3">
                 <div class="border border-gray-300 border-dashed rounded p-4 text-center">
-                  <h2 class="text-success fw-bold mb-0">{{ statistics.averageDuration }}</h2>
-                  <p class="text-muted mb-0">{{ $t('visits.relationshipDetail.avgDuration') }}</p>
+                  <h2 class="text-success fw-bold mb-0">{{ statistics.completedVisits }}</h2>
+                  <p class="text-muted mb-0">{{ $t('visits.relationships.completed_visits') }}</p>
+                </div>
+              </div>
+              <div class="col-md-6 mb-3">
+                <div class="border border-gray-300 border-dashed rounded p-4 text-center">
+                  <h2 class="text-danger fw-bold mb-0">{{ statistics.cancelledVisits }}</h2>
+                  <p class="text-muted mb-0">{{ $t('visits.relationships.cancelled_visits') }}</p>
+                </div>
+              </div>
+              <div class="col-md-6 mb-3">
+                <div class="border border-gray-300 border-dashed rounded p-4 text-center">
+                  <h2 class="text-info fw-bold mb-0">{{ statistics.successRate }}%</h2>
+                  <p class="text-muted mb-0">{{ $t('visits.relationships.success_rate') }}</p>
                 </div>
               </div>
             </div>
@@ -194,6 +206,11 @@
                   </tr>
                 </thead>
                 <tbody>
+                  <tr v-if="recentVisits.length === 0">
+                    <td colspan="7" class="text-center text-muted py-10">
+                      {{ $t('visits.relationshipDetail.noVisits') }}
+                    </td>
+                  </tr>
                   <tr v-for="visit in recentVisits" :key="visit.id">
                     <td>{{ formatDate(visit.date) }}</td>
                     <td>{{ visit.time }}</td>
@@ -208,7 +225,11 @@
                     </td>
                     <td>{{ visit.observations || '-' }}</td>
                     <td class="text-end">
-                      <button class="btn btn-icon btn-bg-light btn-active-color-primary btn-sm">
+                      <button
+                        class="btn btn-icon btn-bg-light btn-active-color-primary btn-sm"
+                        @click="handleViewVisit(visit.id)"
+                        :title="$t('common.actions.viewDetails')"
+                      >
                         <i class="fas fa-eye"></i>
                       </button>
                     </td>
@@ -327,13 +348,31 @@ const statistics = computed(() => {
   if (!relationshipData.value) return null
 
   const stats = relationshipData.value.visit_statistics
+  if (!stats) {
+    return {
+      totalVisits: 0,
+      completedVisits: 0,
+      cancelledVisits: 0,
+      successRate: 0,
+      averageDuration: '-',
+      lastVisit: null,
+      visitFrequency: '-',
+      preferredDay: '-',
+      preferredTime: '-'
+    }
+  }
+
   return {
-    totalVisits: stats?.total_visits || 0,
-    averageDuration: '-',
+    totalVisits: stats.total_visits || 0,
+    completedVisits: stats.completed_visits || 0,
+    cancelledVisits: stats.cancelled_visits || 0,
+    noShowVisits: stats.no_show_visits || 0,
+    successRate: stats.success_rate || 0,
+    averageDuration: '-', // TODO: Calculate from visit logs
     lastVisit: relationshipData.value.last_visit_date || null,
-    visitFrequency: '-',
-    preferredDay: '-',
-    preferredTime: `-`
+    visitFrequency: stats.visit_frequency || '-',
+    preferredDay: stats.preferred_day || '-',
+    preferredTime: stats.preferred_time || '-'
   }
 })
 
@@ -438,29 +477,43 @@ const getVisitStatusBadgeClass = (status: string) => {
 
 const handleSuspend = async () => {
   const result = await Swal.fire({
-    title: t('visits.relationshipDetail.suspendTitle'),
-    text: t('visits.relationshipDetail.suspendText'),
+    title: 'Suspender Relación',
+    html: `
+      <div class="text-start">
+        <p class="mb-3">¿Está seguro que desea suspender esta relación de visitante?</p>
+        <label class="form-label fw-bold">Motivo de la suspensión *</label>
+        <textarea id="suspend-reason" class="form-control" rows="3" placeholder="Ingrese el motivo de la suspensión"></textarea>
+      </div>
+    `,
     icon: 'warning',
     showCancelButton: true,
-    confirmButtonText: t('common.confirm'),
-    cancelButtonText: t('common.cancel')
+    confirmButtonText: 'Suspender',
+    cancelButtonText: 'Cancelar',
+    preConfirm: () => {
+      const reason = (document.getElementById('suspend-reason') as HTMLTextAreaElement).value
+      if (!reason || reason.trim() === '') {
+        Swal.showValidationMessage('Por favor ingrese el motivo de la suspensión')
+        return false
+      }
+      return reason
+    }
   })
 
-  if (result.isConfirmed) {
+  if (result.isConfirmed && result.value) {
     try {
       await visitorRelationshipsApi.suspend(relationship.value.id, {
-        reason: 'Suspendido por el usuario'
+        reason: result.value
       })
       await loadRelationshipData()
       Swal.fire({
-        title: t('common.success'),
-        text: t('visits.relationshipDetail.suspendSuccess'),
+        title: '¡Éxito!',
+        text: 'Relación de visitante suspendida exitosamente',
         icon: 'success'
       })
-    } catch (error) {
+    } catch (error: any) {
       Swal.fire({
         title: 'Error',
-        text: 'No se pudo suspender la relación',
+        text: error.response?.data?.message || 'No se pudo suspender la relación',
         icon: 'error'
       })
     }
@@ -468,26 +521,129 @@ const handleSuspend = async () => {
 }
 
 const handleActivate = async () => {
-  try {
-    await visitorRelationshipsApi.reactivate(relationship.value.id)
-    await loadRelationshipData()
-    Swal.fire({
-      title: t('common.success'),
-      text: t('visits.relationshipDetail.activateSuccess'),
-      icon: 'success'
-    })
-  } catch (error) {
-    Swal.fire({
-      title: 'Error',
-      text: 'No se pudo reactivar la relación',
-      icon: 'error'
-    })
+  const result = await Swal.fire({
+    title: 'Reactivar Relación',
+    text: '¿Está seguro que desea reactivar esta relación de visitante?',
+    icon: 'question',
+    showCancelButton: true,
+    confirmButtonText: 'Reactivar',
+    cancelButtonText: 'Cancelar'
+  })
+
+  if (result.isConfirmed) {
+    try {
+      await visitorRelationshipsApi.reactivate(relationship.value.id)
+      await loadRelationshipData()
+      Swal.fire({
+        title: '¡Éxito!',
+        text: 'Relación de visitante reactivada exitosamente',
+        icon: 'success'
+      })
+    } catch (error: any) {
+      Swal.fire({
+        title: 'Error',
+        text: error.response?.data?.message || 'No se pudo reactivar la relación',
+        icon: 'error'
+      })
+    }
   }
 }
 
+const handleViewVisit = (visitId: number) => {
+  const visit = recentVisits.value.find(v => v.id === visitId)
+  if (!visit) return
+
+  Swal.fire({
+    title: 'Detalles de la Visita',
+    html: `
+      <div class="text-start">
+        <div class="mb-3">
+          <label class="form-label fw-bold">Fecha:</label>
+          <p class="mb-0">${formatDate(visit.date) || '-'}</p>
+        </div>
+        <div class="mb-3">
+          <label class="form-label fw-bold">Hora:</label>
+          <p class="mb-0">${visit.time || '-'}</p>
+        </div>
+        <div class="mb-3">
+          <label class="form-label fw-bold">Tipo de Visita:</label>
+          <p class="mb-0">${visit.type}</p>
+        </div>
+        <div class="mb-3">
+          <label class="form-label fw-bold">Duración:</label>
+          <p class="mb-0">${visit.duration} minutos</p>
+        </div>
+        <div class="mb-3">
+          <label class="form-label fw-bold">Estado:</label>
+          <p class="mb-0"><span class="${getVisitStatusBadgeClass(visit.status)}">${t(`visits.visitStatus.${visit.status}`)}</span></p>
+        </div>
+        <div class="mb-3">
+          <label class="form-label fw-bold">Observaciones:</label>
+          <p class="mb-0">${visit.observations || '-'}</p>
+        </div>
+      </div>
+    `,
+    icon: 'info',
+    confirmButtonText: 'Cerrar',
+    width: '600px'
+  })
+}
+
 const handleAddRestriction = () => {
-  // Open modal to add restriction
-  console.log('Add restriction')
+  Swal.fire({
+    title: 'Agregar Restricción',
+    html: `
+      <div class="text-start">
+        <div class="mb-3">
+          <label class="form-label">Tipo de Restricción</label>
+          <select id="restrictionType" class="form-select">
+            <option value="visit_frequency">Frecuencia de Visitas</option>
+            <option value="visit_duration">Duración de Visita</option>
+            <option value="contact_type">Tipo de Contacto</option>
+            <option value="prohibited_items">Artículos Prohibidos</option>
+          </select>
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Motivo</label>
+          <textarea id="restrictionReason" class="form-control" rows="3"></textarea>
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Fecha de Inicio</label>
+          <input type="date" id="restrictionStartDate" class="form-control">
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Fecha de Fin (opcional)</label>
+          <input type="date" id="restrictionEndDate" class="form-control">
+        </div>
+      </div>
+    `,
+    showCancelButton: true,
+    confirmButtonText: 'Agregar',
+    cancelButtonText: 'Cancelar',
+    preConfirm: () => {
+      const type = (document.getElementById('restrictionType') as HTMLSelectElement).value
+      const reason = (document.getElementById('restrictionReason') as HTMLTextAreaElement).value
+      const startDate = (document.getElementById('restrictionStartDate') as HTMLInputElement).value
+      const endDate = (document.getElementById('restrictionEndDate') as HTMLInputElement).value
+
+      if (!reason || !startDate) {
+        Swal.showValidationMessage('Por favor complete todos los campos requeridos')
+        return false
+      }
+
+      return { type, reason, startDate, endDate }
+    }
+  }).then(async (result) => {
+    if (result.isConfirmed && result.value) {
+      // TODO: Call API to add restriction when endpoint is ready
+      console.log('Add restriction:', result.value)
+      Swal.fire({
+        title: 'Pendiente',
+        text: 'La funcionalidad de agregar restricciones estará disponible próximamente',
+        icon: 'info'
+      })
+    }
+  })
 }
 
 const handleRemoveRestriction = async (id: number) => {
