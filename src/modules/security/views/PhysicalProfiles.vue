@@ -458,7 +458,7 @@ const loadInmates = async () => {
 
         return {
           id: inmate.id,
-          full_name: `${inmate.first_name || ''} ${inmate.last_name || ''}`.trim() || 'Sin nombre',
+          full_name: inmate.full_name || 'Sin nombre',
           identification_number: inmate.document_number || 'Sin DPI',
           center_name: inmate.current_center?.name || 'Sin asignar',
           sector_name: inmate.current_sector?.name || 'Sin asignar',
