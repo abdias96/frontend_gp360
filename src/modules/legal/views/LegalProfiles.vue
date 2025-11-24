@@ -112,7 +112,7 @@
                             class="text-gray-900 fw-bold text-hover-primary fs-6"
                             @click.prevent="profile.inmate?.id && viewInmateDetail(profile.inmate.id)"
                           >
-                            {{ profile.inmate?.name || profile.inmate?.full_name || 'Sin nombre' }}
+                            {{ profile.inmate?.full_name || 'Sin nombre' }}
                           </a>
                           <span class="text-muted fw-semibold text-muted d-block fs-7">
                             {{ profile.case_number || '-' }}
@@ -633,7 +633,7 @@ const exportToCSV = (data: any[]) => {
   ];
   
   const rows = data.map(profile => [
-    profile.inmate?.name || profile.inmate?.full_name || 'Sin nombre',
+    profile.inmate?.full_name || 'Sin nombre',
     profile.case_number || '',
     profile.judicial_file_number || '',
     profile.procedural_status?.name || '',
@@ -670,7 +670,7 @@ const exportToExcel = (data: any[]) => {
       'Fecha de Liberación'
     ],
     ...data.map(profile => [
-      profile.inmate?.name || profile.inmate?.full_name || 'Sin nombre',
+      profile.inmate?.full_name || 'Sin nombre',
       profile.case_number || '',
       profile.judicial_file_number || '',
       profile.procedural_status?.name || '',
@@ -698,7 +698,7 @@ const exportToPDF = (data: any[]) => {
   
   const headers = [['PPL', 'Caso', 'Expediente', 'Estado', 'Etapa', 'Juzgado', 'Ingreso', 'Sentencia']];
   const rows = data.map(profile => [
-    profile.inmate?.name || 'Sin nombre',
+    profile.inmate?.full_name || 'Sin nombre',
     profile.case_number || '',
     profile.judicial_file_number || '',
     profile.procedural_status?.name || '',

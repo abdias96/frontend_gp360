@@ -15,6 +15,7 @@
             v-model="searchTerm"
             class="form-control form-control-solid w-250px ps-13"
             placeholder="Buscar usuarios..."
+            @input="handleSearchInput"
           />
         </div>
         <!--end::Search-->
@@ -71,13 +72,13 @@
               </td>
             </tr>
             <!-- Empty state -->
-            <tr v-else-if="filteredUsers.length === 0">
+            <tr v-else-if="users.length === 0">
               <td colspan="5" class="text-center py-10">
                 <p class="text-muted">No se encontraron usuarios</p>
               </td>
             </tr>
             <!-- Users list -->
-            <tr v-else v-for="user in filteredUsers" :key="user.id">
+            <tr v-else v-for="user in users" :key="user.id">
               <!--begin::User=-->
               <td class="d-flex align-items-center">
                 <!--begin::Avatar-->
@@ -151,6 +152,89 @@
         </table>
       </div>
       <!--end::Table-->
+
+      <!-- Pagination Controls -->
+      <div v-if="!loading && users.length > 0" class="card-footer d-flex justify-content-between align-items-center">
+        <div class="d-flex align-items-center gap-3">
+          <div class="text-muted">
+            Mostrando {{ pagination.from }} a {{ pagination.to }} de {{ pagination.total }} registros
+          </div>
+          <div class="d-flex align-items-center gap-2">
+            <label class="form-label mb-0 me-2">Por página:</label>
+            <select
+              v-model.number="pagination.perPage"
+              class="form-select form-select-sm"
+              style="width: 80px;"
+              @change="changePerPage(pagination.perPage)"
+            >
+              <option :value="10">10</option>
+              <option :value="15">15</option>
+              <option :value="25">25</option>
+              <option :value="50">50</option>
+              <option :value="100">100</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="d-flex align-items-center gap-2">
+          <!-- Previous Button -->
+          <button
+            type="button"
+            class="btn btn-sm btn-light"
+            :disabled="pagination.currentPage === 1"
+            @click="prevPage"
+          >
+            <i class="fas fa-chevron-left"></i>
+          </button>
+
+          <!-- Page Numbers -->
+          <div class="d-flex gap-1">
+            <!-- First Page -->
+            <button
+              v-if="pagination.currentPage > 3"
+              type="button"
+              class="btn btn-sm btn-light"
+              @click="changePage(1)"
+            >
+              1
+            </button>
+            <span v-if="pagination.currentPage > 4" class="align-self-center">...</span>
+
+            <!-- Pages around current -->
+            <button
+              v-for="page in visiblePages"
+              :key="page"
+              type="button"
+              class="btn btn-sm"
+              :class="page === pagination.currentPage ? 'btn-primary' : 'btn-light'"
+              @click="changePage(page)"
+            >
+              {{ page }}
+            </button>
+
+            <!-- Last Page -->
+            <span v-if="pagination.currentPage < pagination.lastPage - 3" class="align-self-center">...</span>
+            <button
+              v-if="pagination.currentPage < pagination.lastPage - 2"
+              type="button"
+              class="btn btn-sm btn-light"
+              @click="changePage(pagination.lastPage)"
+            >
+              {{ pagination.lastPage }}
+            </button>
+          </div>
+
+          <!-- Next Button -->
+          <button
+            type="button"
+            class="btn btn-sm btn-light"
+            :disabled="pagination.currentPage === pagination.lastPage"
+            @click="nextPage"
+          >
+            <i class="fas fa-chevron-right"></i>
+          </button>
+        </div>
+      </div>
     </div>
     <!--end::Card body-->
   </div>
@@ -420,6 +504,16 @@ const creatingUser = ref(false);
 const checkingUsername = ref(false);
 const formErrors = ref<any>({});
 
+// Pagination state
+const pagination = ref({
+  currentPage: 1,
+  perPage: 15,
+  total: 0,
+  lastPage: 1,
+  from: 0,
+  to: 0
+});
+
 const newUserForm = ref({
   dpi: "",
   first_name: "",
@@ -438,10 +532,32 @@ const newUserForm = ref({
 const loadUsers = async () => {
   loading.value = true;
   try {
-    const response = await ApiService.get("/users");
+    const params = new URLSearchParams({
+      page: pagination.value.currentPage.toString(),
+      per_page: pagination.value.perPage.toString()
+    });
+
+    if (searchTerm.value) {
+      params.append('search', searchTerm.value);
+    }
+
+    const response = await ApiService.get(`/users?${params.toString()}`);
 
     if (response.data.success) {
-      const usersData = response.data.data.data || response.data.data;
+      const paginatedData = response.data.data;
+      const usersData = Array.isArray(paginatedData)
+        ? paginatedData
+        : (paginatedData.data || []);
+
+      // Update pagination metadata
+      if (!Array.isArray(paginatedData)) {
+        pagination.value.currentPage = paginatedData.current_page || 1;
+        pagination.value.total = paginatedData.total || 0;
+        pagination.value.lastPage = paginatedData.last_page || 1;
+        pagination.value.from = paginatedData.from || 0;
+        pagination.value.to = paginatedData.to || 0;
+        pagination.value.perPage = paginatedData.per_page || 15;
+      }
 
       users.value = usersData.map((user: any) => {
         const fullName = `${user.first_name || ''} ${user.middle_name || ''} ${user.last_name || ''} ${user.second_last_name || ''}`.trim();
@@ -489,14 +605,66 @@ const formatDate = (dateString: string) => {
   }
 };
 
-const filteredUsers = computed(() => {
-  if (!searchTerm.value) return users.value;
-  return users.value.filter(
-    (user) =>
-      user.name.toLowerCase().includes(searchTerm.value.toLowerCase()) ||
-      user.email.toLowerCase().includes(searchTerm.value.toLowerCase()),
-  );
+// Computed for visible pages in pagination
+const visiblePages = computed(() => {
+  const pages: number[] = [];
+  const current = pagination.value.currentPage;
+  const last = pagination.value.lastPage;
+
+  let start = Math.max(1, current - 2);
+  let end = Math.min(last, current + 2);
+
+  if (current <= 3) {
+    end = Math.min(5, last);
+  }
+  if (current >= last - 2) {
+    start = Math.max(1, last - 4);
+  }
+
+  for (let i = start; i <= end; i++) {
+    pages.push(i);
+  }
+
+  return pages;
 });
+
+// Debounced search handler
+let searchTimeout: any = null;
+const handleSearchInput = () => {
+  if (searchTimeout) {
+    clearTimeout(searchTimeout);
+  }
+  searchTimeout = setTimeout(() => {
+    pagination.value.currentPage = 1;
+    loadUsers();
+  }, 500);
+};
+
+// Pagination functions
+const changePage = (page: number) => {
+  if (page >= 1 && page <= pagination.value.lastPage) {
+    pagination.value.currentPage = page;
+    loadUsers();
+  }
+};
+
+const changePerPage = (perPage: number) => {
+  pagination.value.perPage = perPage;
+  pagination.value.currentPage = 1;
+  loadUsers();
+};
+
+const nextPage = () => {
+  if (pagination.value.currentPage < pagination.value.lastPage) {
+    changePage(pagination.value.currentPage + 1);
+  }
+};
+
+const prevPage = () => {
+  if (pagination.value.currentPage > 1) {
+    changePage(pagination.value.currentPage - 1);
+  }
+};
 
 const getStatusClass = (status: string) => {
   switch (status.toLowerCase()) {

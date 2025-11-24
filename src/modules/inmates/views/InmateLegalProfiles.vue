@@ -85,7 +85,7 @@
                       :to="`/inmates/${profile.inmate?.id}`"
                       class="text-gray-800 text-hover-primary mb-1"
                     >
-                      {{ profile.inmate?.first_name }} {{ profile.inmate?.last_name }}
+                      {{ profile.inmate?.full_name || 'Sin nombre' }}
                     </router-link>
                     <span class="text-muted">{{ profile.inmate?.document_number }}</span>
                   </div>
