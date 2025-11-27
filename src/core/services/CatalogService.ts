@@ -342,6 +342,182 @@ class CatalogService {
       return {};
     }
   }
+
+  // ==========================================
+  // SOFT DELETE OPERATIONS
+  // ==========================================
+
+  /**
+   * Get trashed (soft deleted) items from a catalog
+   * @param catalogName - The catalog endpoint name
+   * @param params - Query parameters for the request
+   * @returns Promise with trashed catalog items
+   */
+  static async getTrashed(
+    catalogName: string,
+    params: any = {},
+  ): Promise<CatalogItem[]> {
+    try {
+      const response = await ApiService.query(
+        `/catalogs/${catalogName}/trashed`,
+        params,
+      );
+
+      if (response.data.success && response.data.data) {
+        if (Array.isArray(response.data.data)) {
+          return response.data.data;
+        }
+        if (response.data.data.data && Array.isArray(response.data.data.data)) {
+          return response.data.data.data;
+        }
+      }
+
+      return [];
+    } catch (error) {
+      console.error(`Error fetching trashed ${catalogName}:`, error);
+      return [];
+    }
+  }
+
+  /**
+   * Get count of trashed items in a catalog
+   * @param catalogName - The catalog endpoint name
+   * @returns Promise with count of trashed items
+   */
+  static async getTrashedCount(catalogName: string): Promise<number> {
+    try {
+      const response = await ApiService.get(
+        `/catalogs/${catalogName}/trashed-count`,
+      );
+
+      if (response.data.success && response.data.data) {
+        return response.data.data.count || 0;
+      }
+
+      return 0;
+    } catch (error) {
+      console.error(`Error fetching trashed count for ${catalogName}:`, error);
+      return 0;
+    }
+  }
+
+  /**
+   * Restore a soft deleted catalog item
+   * @param catalogName - The catalog endpoint name
+   * @param id - The ID of the item to restore
+   * @returns Promise with restore result
+   */
+  static async restore(
+    catalogName: string,
+    id: number,
+  ): Promise<{ success: boolean; message?: string; data?: CatalogItem }> {
+    try {
+      const response = await ApiService.post(
+        `/catalogs/${catalogName}/${id}/restore`,
+        {},
+      );
+
+      return {
+        success: response.data.success,
+        message: response.data.message,
+        data: response.data.data,
+      };
+    } catch (error: any) {
+      console.error(`Error restoring ${catalogName} item:`, error);
+      return {
+        success: false,
+        message: error.response?.data?.message || "Error al restaurar registro",
+      };
+    }
+  }
+
+  /**
+   * Permanently delete a catalog item (force delete)
+   * @param catalogName - The catalog endpoint name
+   * @param id - The ID of the item to permanently delete
+   * @returns Promise with delete result
+   */
+  static async forceDelete(
+    catalogName: string,
+    id: number,
+  ): Promise<{ success: boolean; message?: string }> {
+    try {
+      const response = await ApiService.delete(
+        `/catalogs/${catalogName}/${id}/force-delete`,
+      );
+
+      return {
+        success: response.data.success,
+        message: response.data.message,
+      };
+    } catch (error: any) {
+      console.error(`Error force deleting ${catalogName} item:`, error);
+      return {
+        success: false,
+        message:
+          error.response?.data?.message ||
+          "Error al eliminar registro permanentemente",
+      };
+    }
+  }
+
+  /**
+   * Restore multiple soft deleted items
+   * @param catalogName - The catalog endpoint name
+   * @param ids - Array of IDs to restore
+   * @returns Promise with restore result
+   */
+  static async restoreMultiple(
+    catalogName: string,
+    ids: number[],
+  ): Promise<{ success: boolean; message?: string; restored_count?: number }> {
+    try {
+      const response = await ApiService.post(
+        `/catalogs/${catalogName}/restore-multiple`,
+        { ids },
+      );
+
+      return {
+        success: response.data.success,
+        message: response.data.message,
+        restored_count: response.data.restored_count,
+      };
+    } catch (error: any) {
+      console.error(`Error restoring multiple ${catalogName} items:`, error);
+      return {
+        success: false,
+        message:
+          error.response?.data?.message || "Error al restaurar registros",
+      };
+    }
+  }
+
+  /**
+   * Empty trash - permanently delete all soft deleted items
+   * @param catalogName - The catalog endpoint name
+   * @returns Promise with result
+   */
+  static async emptyTrash(
+    catalogName: string,
+  ): Promise<{ success: boolean; message?: string; deleted_count?: number }> {
+    try {
+      const response = await ApiService.delete(
+        `/catalogs/${catalogName}/empty-trash`,
+      );
+
+      return {
+        success: response.data.success,
+        message: response.data.message,
+        deleted_count: response.data.deleted_count,
+      };
+    } catch (error: any) {
+      console.error(`Error emptying trash for ${catalogName}:`, error);
+      return {
+        success: false,
+        message: error.response?.data?.message || "Error al vaciar papelera",
+      };
+    }
+  }
 }
 
 export default CatalogService;

@@ -293,36 +293,67 @@ const visitHistory = computed(() => {
   if (!visitorData.value?.visit_logs) return []
 
   return visitorData.value.visit_logs.map((visit: any) => {
-    // Use actual_entry_datetime for completed visits
-    const visitDate = visit.actual_entry_datetime || visit.requested_visit_date || visit.created_at
-    const date = new Date(visitDate)
-
-    // Extract date and time from different formats
+    // Determinar la fecha de la visita
+    // Prioridad: actual_entry_datetime > requested_visit_date > created_at
     let dateOnly = ''
     let timeOnly = ''
 
-    if (visitDate) {
-      if (visitDate.includes('T')) {
-        // ISO format: 2024-01-15T14:30:00.000Z
-        const parts = visitDate.split('T')
+    if (visit.actual_entry_datetime) {
+      // Visita con entrada registrada - usar fecha y hora de entrada
+      const entryDate = visit.actual_entry_datetime
+      if (entryDate.includes('T')) {
+        const parts = entryDate.split('T')
         dateOnly = parts[0]
         timeOnly = parts[1]?.substring(0, 5) || ''
-      } else if (visitDate.includes(' ')) {
-        // SQL format: 2024-01-15 14:30:00
-        const parts = visitDate.split(' ')
+      } else if (entryDate.includes(' ')) {
+        const parts = entryDate.split(' ')
         dateOnly = parts[0]
         timeOnly = parts[1]?.substring(0, 5) || ''
-      } else {
-        // Just date: 2024-01-15
-        dateOnly = visitDate.substring(0, 10)
-        timeOnly = date.toLocaleTimeString('es-GT', { hour: '2-digit', minute: '2-digit' })
       }
+    } else {
+      // Visita programada - usar requested_visit_date para fecha y requested_start_time para hora
+      if (visit.requested_visit_date) {
+        const reqDate = visit.requested_visit_date
+        if (reqDate.includes('T')) {
+          dateOnly = reqDate.split('T')[0]
+        } else if (reqDate.includes(' ')) {
+          dateOnly = reqDate.split(' ')[0]
+        } else {
+          dateOnly = reqDate.substring(0, 10)
+        }
+      } else if (visit.created_at) {
+        const createdDate = visit.created_at
+        if (createdDate.includes('T')) {
+          dateOnly = createdDate.split('T')[0]
+        } else if (createdDate.includes(' ')) {
+          dateOnly = createdDate.split(' ')[0]
+        }
+      }
+
+      // Obtener hora de requested_start_time
+      if (visit.requested_start_time) {
+        const startTime = visit.requested_start_time
+        if (startTime.includes('T')) {
+          timeOnly = startTime.split('T')[1]?.substring(0, 5) || ''
+        } else if (startTime.includes(' ')) {
+          timeOnly = startTime.split(' ')[1]?.substring(0, 5) || ''
+        } else if (startTime.includes(':')) {
+          // Solo hora: "09:00:00" o "09:00"
+          timeOnly = startTime.substring(0, 5)
+        }
+      }
+    }
+
+    // Fallback si no hay hora
+    if (!timeOnly && visit.created_at) {
+      const created = new Date(visit.created_at)
+      timeOnly = created.toLocaleTimeString('es-GT', { hour: '2-digit', minute: '2-digit' })
     }
 
     return {
       id: visit.id,
       date: dateOnly,
-      time: timeOnly || date.toLocaleTimeString('es-GT', { hour: '2-digit', minute: '2-digit' }),
+      time: timeOnly || '-',
       inmateName: visit.inmate ?
         [visit.inmate.first_name, visit.inmate.last_name].filter(Boolean).join(' ') :
         'N/A',
