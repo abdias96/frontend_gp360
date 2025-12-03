@@ -54,10 +54,34 @@
 
                     <!-- Dropdown de resultados -->
                     <div
-                      v-if="showVisitorDropdown && filteredVisitors.length > 0"
+                      v-if="showVisitorDropdown && !selectedVisitor"
                       class="position-absolute w-100 mt-1 bg-white border rounded shadow-sm"
                       style="max-height: 250px; overflow-y: auto; z-index: 1050;"
                     >
+                      <!-- Loading indicator -->
+                      <div v-if="loadingVisitors" class="dropdown-item text-center py-3">
+                        <span class="spinner-border spinner-border-sm me-2"></span>
+                        {{ $t('common.searching') || 'Buscando...' }}
+                      </div>
+                      <!-- Minimum characters message -->
+                      <div v-else-if="visitorSearch.length > 0 && visitorSearch.length < MIN_SEARCH_CHARS" class="dropdown-item text-muted py-3">
+                        <i class="ki-duotone ki-information-2 fs-4 me-2">
+                          <span class="path1"></span>
+                          <span class="path2"></span>
+                          <span class="path3"></span>
+                        </i>
+                        Escribe al menos {{ MIN_SEARCH_CHARS }} caracteres para buscar
+                      </div>
+                      <!-- No results message -->
+                      <div v-else-if="visitorSearch.length >= MIN_SEARCH_CHARS && filteredVisitors.length === 0" class="dropdown-item text-muted py-3">
+                        <i class="ki-duotone ki-search-list fs-4 me-2">
+                          <span class="path1"></span>
+                          <span class="path2"></span>
+                          <span class="path3"></span>
+                        </i>
+                        No se encontraron visitantes
+                      </div>
+                      <!-- Results -->
                       <div
                         v-for="visitor in filteredVisitors"
                         :key="visitor.id"
@@ -140,10 +164,34 @@
 
                     <!-- Dropdown de resultados -->
                     <div
-                      v-if="showInmateDropdown && filteredInmates.length > 0"
+                      v-if="showInmateDropdown && !selectedInmate"
                       class="position-absolute w-100 mt-1 bg-white border rounded shadow-sm"
                       style="max-height: 250px; overflow-y: auto; z-index: 1050;"
                     >
+                      <!-- Loading indicator -->
+                      <div v-if="loadingInmates" class="dropdown-item text-center py-3">
+                        <span class="spinner-border spinner-border-sm me-2"></span>
+                        {{ $t('common.searching') || 'Buscando...' }}
+                      </div>
+                      <!-- Minimum characters message -->
+                      <div v-else-if="inmateSearch.length > 0 && inmateSearch.length < MIN_SEARCH_CHARS" class="dropdown-item text-muted py-3">
+                        <i class="ki-duotone ki-information-2 fs-4 me-2">
+                          <span class="path1"></span>
+                          <span class="path2"></span>
+                          <span class="path3"></span>
+                        </i>
+                        Escribe al menos {{ MIN_SEARCH_CHARS }} caracteres para buscar
+                      </div>
+                      <!-- No results message -->
+                      <div v-else-if="inmateSearch.length >= MIN_SEARCH_CHARS && filteredInmates.length === 0" class="dropdown-item text-muted py-3">
+                        <i class="ki-duotone ki-search-list fs-4 me-2">
+                          <span class="path1"></span>
+                          <span class="path2"></span>
+                          <span class="path3"></span>
+                        </i>
+                        No se encontraron PPL
+                      </div>
+                      <!-- Results -->
                       <div
                         v-for="inmate in filteredInmates"
                         :key="inmate.id"
@@ -415,6 +463,15 @@ import ApiService from '@/core/services/ApiService'
 import { useToast } from '@/composables/useToast'
 import type { VisitorRelationship } from '@/types/visits'
 
+// Debounce utility
+function debounce<T extends (...args: any[]) => any>(fn: T, delay: number): (...args: Parameters<T>) => void {
+  let timeoutId: ReturnType<typeof setTimeout> | null = null
+  return (...args: Parameters<T>) => {
+    if (timeoutId) clearTimeout(timeoutId)
+    timeoutId = setTimeout(() => fn(...args), delay)
+  }
+}
+
 // Props
 interface Props {
   relationship?: VisitorRelationship | null
@@ -455,8 +512,8 @@ const modal = ref<Modal>()
 const formRef = ref()
 const loading = ref(false)
 
-const visitors = ref([])
-const inmates = ref([])
+const visitors = ref<any[]>([])
+const inmates = ref<any[]>([])
 const relationshipTypes = ref([])
 
 // Search states
@@ -464,33 +521,85 @@ const visitorSearch = ref('')
 const inmateSearch = ref('')
 const showVisitorDropdown = ref(false)
 const showInmateDropdown = ref(false)
-const selectedVisitor = ref(null)
-const selectedInmate = ref(null)
+const selectedVisitor = ref<any>(null)
+const selectedInmate = ref<any>(null)
 
-// Filtered lists
-const filteredVisitors = computed(() => {
-  if (!visitorSearch.value) return visitors.value
-  const search = visitorSearch.value.toLowerCase()
-  return visitors.value.filter(v =>
-    v.full_name?.toLowerCase().includes(search) ||
-    v.document_number?.toLowerCase().includes(search)
-  )
-})
+// Loading states for dynamic search
+const loadingVisitors = ref(false)
+const loadingInmates = ref(false)
 
-const filteredInmates = computed(() => {
-  if (!inmateSearch.value) return inmates.value
-  const search = inmateSearch.value.toLowerCase()
-  return inmates.value.filter(i =>
-    i.full_name?.toLowerCase().includes(search) ||
-    i.document_number?.toLowerCase().includes(search)
-  )
-})
+// Minimum characters required to trigger search
+const MIN_SEARCH_CHARS = 2
 
-// Watch for search input changes to clear selection if user is typing after selecting
+// Dynamic search for visitors
+const searchVisitors = async (searchTerm: string) => {
+  if (searchTerm.length < MIN_SEARCH_CHARS) {
+    visitors.value = []
+    return
+  }
+
+  loadingVisitors.value = true
+  try {
+    const response = await ApiService.get('/visitors', {
+      params: {
+        simple: true,
+        search: searchTerm,
+        status: 'active',
+        per_page: 50
+      }
+    })
+    const visitorData = response.data.visitors
+    visitors.value = Array.isArray(visitorData) ? visitorData : (visitorData?.data || [])
+  } catch (error) {
+    console.error('Error searching visitors:', error)
+    visitors.value = []
+  } finally {
+    loadingVisitors.value = false
+  }
+}
+
+// Dynamic search for inmates
+const searchInmates = async (searchTerm: string) => {
+  if (searchTerm.length < MIN_SEARCH_CHARS) {
+    inmates.value = []
+    return
+  }
+
+  loadingInmates.value = true
+  try {
+    const response = await ApiService.get('/inmates', {
+      params: {
+        simple: true,
+        search: searchTerm,
+        per_page: 50
+      }
+    })
+    inmates.value = response.data?.data || response.data || []
+  } catch (error) {
+    console.error('Error searching inmates:', error)
+    inmates.value = []
+  } finally {
+    loadingInmates.value = false
+  }
+}
+
+// Debounced search functions (300ms delay)
+const debouncedSearchVisitors = debounce(searchVisitors, 300)
+const debouncedSearchInmates = debounce(searchInmates, 300)
+
+// Computed for filtered results (now just returns the API results)
+const filteredVisitors = computed(() => visitors.value)
+const filteredInmates = computed(() => inmates.value)
+
+// Watch for search input changes to trigger dynamic search
 watch(visitorSearch, (newValue) => {
   if (selectedVisitor.value && newValue !== selectedVisitor.value.full_name) {
     selectedVisitor.value = null
     form.visitor_id = ''
+  }
+  // Trigger dynamic search if not selecting
+  if (!selectedVisitor.value) {
+    debouncedSearchVisitors(newValue)
   }
 })
 
@@ -498,6 +607,10 @@ watch(inmateSearch, (newValue) => {
   if (selectedInmate.value && newValue !== selectedInmate.value.full_name) {
     selectedInmate.value = null
     form.inmate_id = ''
+  }
+  // Trigger dynamic search if not selecting
+  if (!selectedInmate.value) {
+    debouncedSearchInmates(newValue)
   }
 })
 
@@ -526,44 +639,11 @@ const initializeModal = async () => {
 }
 
 const loadCatalogs = async () => {
-  // Load each catalog independently to prevent one failure from blocking others
-
-  // Load visitors from visitor registry
-  try {
-    const visitorsRes = await ApiService.get('/visitors', {
-      params: {
-        simple: true,
-        status: 'active',
-        per_page: 1000
-      }
-    })
-    // Simple API returns { success: true, visitors: [...] }
-    // Full API returns { visitors: { data: [...], ...pagination } }
-    const visitorData = visitorsRes.data.visitors
-    visitors.value = Array.isArray(visitorData) ? visitorData : (visitorData?.data || [])
-  } catch (error) {
-    console.error('Error loading visitors:', error)
-  }
-
-  // Load active inmates
-  try {
-    const inmatesRes = await ApiService.get('/inmates', {
-      params: {
-        simple: true,
-        status: 'active',
-        per_page: 1000
-      }
-    })
-    inmates.value = inmatesRes.data?.data || inmatesRes.data || []
-  } catch (error) {
-    console.error('Error loading inmates:', error)
-  }
-
-  // Load relationship types catalog
+  // Only load relationship types catalog (small dataset)
+  // Visitors and inmates use dynamic search due to large datasets (100k+)
   try {
     const typesRes = await ApiService.get('/catalogs/relationship-types?simple=true')
     relationshipTypes.value = typesRes.data?.data || typesRes.data || []
-    console.log('Relationship types loaded:', relationshipTypes.value)
   } catch (error) {
     console.error('Error loading relationship types:', error)
     showToast('Error al cargar tipos de relación', 'error')
