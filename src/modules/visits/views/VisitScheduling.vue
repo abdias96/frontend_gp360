@@ -12,7 +12,7 @@
               <i class="fas fa-calendar"></i>
               {{ $t('visits.visitScheduling.viewCalendar') }}
             </button>
-            <button class="btn btn-primary" @click="handleNewSchedule">
+            <button v-if="canCreate" class="btn btn-primary" @click="handleNewSchedule">
               <i class="fas fa-plus"></i>
               {{ $t('visits.visitScheduling.newSchedule') }}
             </button>
@@ -190,7 +190,8 @@
                     </div>
                   </div>
                   <div v-else class="text-center p-3">
-                    <button 
+                    <button
+                      v-if="canCreate"
                       class="btn btn-sm btn-light-primary"
                       @click="handleAddVisit(slot.time, room.id)"
                     >
@@ -301,10 +302,16 @@ import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { Modal } from 'bootstrap'
 import Swal from 'sweetalert2'
+import { useAuthStore } from '@/stores/auth'
 
 // Composables
 const router = useRouter()
 const { t } = useI18n()
+const authStore = useAuthStore()
+
+// Permission checks
+const canCreate = computed(() => authStore.isSuperAdmin || authStore.hasPermission('visits.scheduling_create'))
+const canEdit = computed(() => authStore.isSuperAdmin || authStore.hasPermission('visits.scheduling_edit'))
 
 // Types
 interface Visit {

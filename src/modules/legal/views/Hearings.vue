@@ -45,6 +45,7 @@
               
               <!-- Actions -->
               <button
+                v-if="canCreate"
                 type="button"
                 class="btn btn-primary"
                 @click="showCreateModal"
@@ -165,24 +166,29 @@
                     <td>
                       <div class="d-flex justify-content-end flex-shrink-0">
                         <a
+                          v-if="canView"
                           href="#"
                           class="btn btn-icon btn-bg-light btn-active-color-primary btn-sm me-1"
                           @click.prevent="viewHearing(hearing)"
+                          title="Ver audiencia"
                         >
                           <KTIcon icon-name="eye" icon-class="fs-3" />
                         </a>
                         <a
+                          v-if="canEdit"
                           href="#"
                           class="btn btn-icon btn-bg-light btn-active-color-primary btn-sm me-1"
                           @click.prevent="editHearing(hearing)"
+                          title="Editar audiencia"
                         >
                           <KTIcon icon-name="pencil" icon-class="fs-3" />
                         </a>
                         <a
-                          v-if="!hearing.attendance_status || hearing.attendance_status === 'postponed'"
+                          v-if="canEdit && (!hearing.attendance_status || hearing.attendance_status === 'postponed')"
                           href="#"
                           class="btn btn-icon btn-bg-light btn-active-color-success btn-sm"
                           @click.prevent="markAsHeld(hearing)"
+                          title="Marcar como realizada"
                         >
                           <KTIcon icon-name="check" icon-class="fs-3" />
                         </a>
@@ -412,6 +418,7 @@ import { useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import { getAssetPath } from '@/core/helpers/assets';
 import { useCatalogs } from '@/composables/useCatalogs';
+import { useAuthStore } from '@/stores/auth';
 import ApiService from '@/core/services/ApiService';
 import Swal from 'sweetalert2';
 import { Modal } from 'bootstrap';
@@ -427,7 +434,13 @@ import { formatDateForInput } from '@/core/helpers/date-formatters';
 // Composables
 const { t } = useI18n();
 const router = useRouter();
+const authStore = useAuthStore();
 const { courtsOptions, loadLegalCatalogs } = useCatalogs();
+
+// Permission checks
+const canCreate = computed(() => authStore.isSuperAdmin || authStore.hasPermission('legal.hearings.create'));
+const canEdit = computed(() => authStore.isSuperAdmin || authStore.hasPermission('legal.hearings.edit'));
+const canView = computed(() => authStore.isSuperAdmin || authStore.hasPermission('legal.hearings'));
 
 // State
 const loading = ref(false);

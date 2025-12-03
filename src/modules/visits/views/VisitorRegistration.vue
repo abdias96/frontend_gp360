@@ -785,12 +785,12 @@ const canEnrollBiometrics = (visitor: any) => {
 };
 
 const canUpdateStatus = (visitor: any) => {
-  return hasPermission('visits.visitors_edit');
+  return hasPermission('visits.visitors_status');
 };
 
 const canPerformBackgroundCheck = (visitor: any) => {
   return visitor.status === 'active' &&
-         hasPermission('visits.visitors_edit');
+         hasPermission('visits.visitors_background_check');
 };
 
 // Lifecycle

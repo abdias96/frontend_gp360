@@ -63,6 +63,7 @@
               
               <!-- Actions -->
               <button
+                v-if="canExport"
                 type="button"
                 class="btn btn-primary"
                 @click="handleExport"
@@ -184,23 +185,29 @@
                     <td>
                       <div class="d-flex justify-content-end flex-shrink-0">
                         <a
+                          v-if="canView"
                           href="#"
                           class="btn btn-icon btn-bg-light btn-active-color-primary btn-sm me-1"
                           @click.prevent="viewProfile(profile.id)"
+                          title="Ver perfil"
                         >
                           <KTIcon icon-name="eye" icon-class="fs-3" />
                         </a>
                         <a
+                          v-if="canEdit"
                           href="#"
                           class="btn btn-icon btn-bg-light btn-active-color-primary btn-sm me-1"
                           @click.prevent="editProfile(profile.id)"
+                          title="Editar perfil"
                         >
                           <KTIcon icon-name="pencil" icon-class="fs-3" />
                         </a>
                         <a
+                          v-if="canView"
                           href="#"
                           class="btn btn-icon btn-bg-light btn-active-color-primary btn-sm"
                           @click.prevent="viewTimeline(profile.id)"
+                          title="Ver línea de tiempo"
                         >
                           <KTIcon icon-name="time" icon-class="fs-3" />
                         </a>
@@ -371,6 +378,7 @@ import { useI18n } from 'vue-i18n';
 import { getAssetPath } from '@/core/helpers/assets';
 import { useCatalogs } from '@/composables/useCatalogs';
 import { useCatalogsStore } from '@/stores/catalogs';
+import { useAuthStore } from '@/stores/auth';
 import ApiService from '@/core/services/ApiService';
 import Swal from 'sweetalert2';
 import * as XLSX from 'xlsx';
@@ -380,7 +388,13 @@ import jsPDF from 'jspdf';
 const { t } = useI18n();
 const router = useRouter();
 const catalogsStore = useCatalogsStore();
+const authStore = useAuthStore();
 const { centersOptions, proceduralStatusesOptions, getCatalogById } = useCatalogs();
+
+// Permission checks
+const canEdit = computed(() => authStore.isSuperAdmin || authStore.hasPermission('legal.profiles.edit'));
+const canView = computed(() => authStore.isSuperAdmin || authStore.hasPermission('legal.profiles'));
+const canExport = computed(() => authStore.isSuperAdmin || authStore.hasPermission('legal.reports'));
 
 // State
 const loading = ref(false);

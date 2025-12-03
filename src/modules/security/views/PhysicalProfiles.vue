@@ -221,6 +221,7 @@
                 <td class="text-end">
                   <div class="d-flex gap-2 justify-content-end">
                     <button
+                      v-if="canView"
                       type="button"
                       class="btn btn-icon btn-sm btn-light-primary"
                       data-bs-toggle="tooltip"
@@ -230,6 +231,7 @@
                       <KTIcon icon-name="eye" icon-class="fs-3" />
                     </button>
                     <button
+                      v-if="canEdit"
                       type="button"
                       class="btn btn-icon btn-sm btn-light-warning"
                       data-bs-toggle="tooltip"
@@ -239,6 +241,7 @@
                       <KTIcon icon-name="pencil" icon-class="fs-3" />
                     </button>
                     <button
+                      v-if="canBiometric"
                       type="button"
                       class="btn btn-icon btn-sm btn-light-info"
                       data-bs-toggle="tooltip"
@@ -248,6 +251,7 @@
                       <i class="fas fa-fingerprint"></i>
                     </button>
                     <button
+                      v-if="canPhoto"
                       type="button"
                       class="btn btn-icon btn-sm btn-light-success"
                       data-bs-toggle="tooltip"
@@ -353,6 +357,7 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue';
 import { useRouter } from 'vue-router';
+import { useAuthStore } from '@/stores/auth';
 import ApiService from '@/core/services/ApiService';
 import { formatDate } from '@/core/helpers/formatters';
 import { debounce } from 'lodash';
@@ -360,6 +365,13 @@ import KTIcon from '@/core/helpers/kt-icon/KTIcon.vue';
 import Swal from 'sweetalert2';
 
 const router = useRouter();
+const authStore = useAuthStore();
+
+// Permission checks
+const canView = computed(() => authStore.isSuperAdmin || authStore.hasPermission('security.physical_profiles'));
+const canEdit = computed(() => authStore.isSuperAdmin || authStore.hasPermission('security.physical_profiles.edit'));
+const canBiometric = computed(() => authStore.isSuperAdmin || authStore.hasPermission('security.biometric'));
+const canPhoto = computed(() => authStore.isSuperAdmin || authStore.hasPermission('security.photos'));
 
 // State
 const arrInmates = ref<any[]>([]);

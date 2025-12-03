@@ -12,7 +12,7 @@
               <i class="fas fa-fingerprint"></i>
               {{ $t('visits.biometricControl.deviceStatusLabel') }}
             </button>
-            <button class="btn btn-primary" @click="handleNewRegistration">
+            <button v-if="canEnroll" class="btn btn-primary" @click="handleNewRegistration">
               <i class="fas fa-user-plus"></i>
               {{ $t('visits.biometricControl.newRegistration') }}
             </button>
@@ -205,8 +205,9 @@
               </div>
             </div>
 
-            <button 
-              class="btn btn-primary w-100" 
+            <button
+              v-if="canVerify"
+              class="btn btn-primary w-100"
               @click="handleStartScan"
               :disabled="scannerStatus.status !== 'ready'"
             >
@@ -327,7 +328,8 @@
                           </span>
                         </td>
                         <td class="text-end">
-                          <button 
+                          <button
+                            v-if="canEnroll"
                             @click="handleRegisterBiometric(pending.id)"
                             class="btn btn-sm btn-primary"
                           >
@@ -418,15 +420,21 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import Swal from 'sweetalert2'
 import ApiService from '@/core/services/ApiService'
+import { useAuthStore } from '@/stores/auth'
 
 // Composables
 const router = useRouter()
 const { t } = useI18n()
+const authStore = useAuthStore()
+
+// Permission checks
+const canEnroll = computed(() => authStore.isSuperAdmin || authStore.hasPermission('visits.biometric_enroll'))
+const canVerify = computed(() => authStore.isSuperAdmin || authStore.hasPermission('visits.biometric_verify'))
 
 // Types
 interface Visitor {

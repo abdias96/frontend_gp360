@@ -357,7 +357,7 @@ const loading = ref(false)
 
 // Computed
 const canEdit = computed(() => {
-  return user.permissions?.includes('visits.relationships.edit')
+  return user.permissions?.includes('visits.relationships_edit')
 })
 
 const relationship = computed(() => {

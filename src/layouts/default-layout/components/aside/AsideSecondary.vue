@@ -1096,7 +1096,7 @@
                   >
                     <div
                       class="menu-item"
-                      v-if="isSuperAdmin || hasPermission('visits.visitors.view')"
+                      v-if="isSuperAdmin || hasPermission('visits.visitors_view')"
                     >
                       <router-link to="/visits/visitor-management" class="menu-link">
                         <span class="menu-bullet"
@@ -1107,7 +1107,7 @@
                     </div>
                     <div
                       class="menu-item"
-                      v-if="isSuperAdmin || hasPermission('visits.relationships.view')"
+                      v-if="isSuperAdmin || hasPermission('visits.relationships_view')"
                     >
                       <router-link to="/visits/relationships" class="menu-link">
                         <span class="menu-bullet"
@@ -1129,7 +1129,7 @@
                     </div>
                     <div
                       class="menu-item"
-                      v-if="isSuperAdmin || hasPermission('visits.scheduling.view')"
+                      v-if="isSuperAdmin || hasPermission('visits.scheduling_view')"
                     >
                       <router-link to="/visits/scheduling" class="menu-link">
                         <span class="menu-bullet"
@@ -1140,7 +1140,7 @@
                     </div>
                     <div
                       class="menu-item"
-                      v-if="isSuperAdmin || hasPermission('visits.biometric.view')"
+                      v-if="isSuperAdmin || hasPermission('visits.biometric_view')"
                     >
                       <router-link to="/visits/biometric-control" class="menu-link">
                         <span class="menu-bullet"

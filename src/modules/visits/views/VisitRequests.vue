@@ -7,7 +7,7 @@
           <h1 class="fs-2x fw-bold text-gray-900 mb-4 mb-md-0">
             {{ $t('visits.visitRequests.title') }}
           </h1>
-          <button class="btn btn-primary" @click="handleNewRequest">
+          <button v-if="canCreate" class="btn btn-primary" @click="handleNewRequest">
             <i class="fas fa-plus"></i>
             {{ $t('visits.visitRequests.newRequest') }}
           </button>
@@ -218,16 +218,16 @@
                   >
                     <i class="fas fa-eye"></i>
                   </router-link>
-                  <button 
-                    v-if="request.status === 'pending'"
+                  <button
+                    v-if="request.status === 'pending' && canApprove"
                     @click="handleApprove(request.id)"
                     class="btn btn-icon btn-bg-light btn-active-color-success btn-sm me-1"
                     :title="$t('visits.visitRequests.approve')"
                   >
                     <i class="fas fa-check"></i>
                   </button>
-                  <button 
-                    v-if="request.status === 'pending'"
+                  <button
+                    v-if="request.status === 'pending' && canApprove"
                     @click="handleReject(request.id)"
                     class="btn btn-icon btn-bg-light btn-active-color-danger btn-sm"
                     :title="$t('visits.visitRequests.reject')"
@@ -281,10 +281,18 @@ import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import Swal from 'sweetalert2'
+import { useAuthStore } from '@/stores/auth'
 
 // Composables
 const router = useRouter()
 const { t } = useI18n()
+const authStore = useAuthStore()
+
+// Permission checks
+const canCreate = computed(() => authStore.isSuperAdmin || authStore.hasPermission('visits.requests_create'))
+const canEdit = computed(() => authStore.isSuperAdmin || authStore.hasPermission('visits.requests_edit'))
+const canDelete = computed(() => authStore.isSuperAdmin || authStore.hasPermission('visits.requests_delete'))
+const canApprove = computed(() => authStore.isSuperAdmin || authStore.hasPermission('visits.requests_approve'))
 
 // Refs
 const filters = ref({

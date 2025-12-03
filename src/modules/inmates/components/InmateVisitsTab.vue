@@ -787,7 +787,7 @@ const canManageVisits = computed(() =>
   authStore.hasPermission("visits.manage"),
 );
 const canManageBiometrics = computed(() =>
-  authStore.hasPermission("visits.biometrics"),
+  authStore.hasPermission("visits.visitors_biometrics"),
 );
 
 // Methods

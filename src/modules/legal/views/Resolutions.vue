@@ -61,6 +61,7 @@
 
               <!-- Add Button -->
               <button
+                v-if="canCreate"
                 type="button"
                 class="btn btn-primary"
                 @click="showCreateModal"
@@ -415,9 +416,17 @@
 import { ref, computed, onMounted } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { Modal } from 'bootstrap';
+import { useAuthStore } from '@/stores/auth';
 import ApiService from '@/core/services/ApiService';
 import Swal from 'sweetalert2';
 import ResolutionModal from '@/components/legal/ResolutionModal.vue';
+
+// Auth store for permission checks
+const authStore = useAuthStore();
+
+// Permission checks
+const canCreate = computed(() => authStore.isSuperAdmin || authStore.hasPermission('legal.resolutions.create'));
+const canView = computed(() => authStore.isSuperAdmin || authStore.hasPermission('legal.resolutions'));
 
 interface Resolution {
   id: number;

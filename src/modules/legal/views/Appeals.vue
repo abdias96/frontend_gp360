@@ -17,6 +17,7 @@
             </nav>
           </div>
           <button
+            v-if="canCreate"
             class="btn btn-primary"
             @click="openNewAppeal"
           >
@@ -107,11 +108,18 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import { RouterLink } from 'vue-router';
+import { useAuthStore } from '@/stores/auth';
 import AppealsList from '@/components/legal/AppealsList.vue';
 import AppealsModal from '@/components/legal/AppealsModal.vue';
 import ApiService from '@/core/services/ApiService';
+
+// Auth store for permission checks
+const authStore = useAuthStore();
+
+// Permission checks
+const canCreate = computed(() => authStore.isSuperAdmin || authStore.hasPermission('legal.appeals.create'));
 
 const appealsListRef = ref<InstanceType<typeof AppealsList>>();
 const appealsModalRef = ref<InstanceType<typeof AppealsModal>>();

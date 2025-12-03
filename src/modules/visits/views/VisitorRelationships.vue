@@ -331,7 +331,7 @@
                           Historial de Visitas
                         </a>
                       </li>
-                      <li>
+                      <li v-if="canDelete">
                         <a class="dropdown-item text-danger" @click="deleteRelationship(relationship)">
                           <i class="fas fa-trash text-danger me-2"></i>
                           Eliminar Relación
@@ -471,6 +471,10 @@ const canEdit = computed(() => {
 
 const canAuthorize = computed(() => {
   return authStore.isSuperAdmin || authStore.hasPermission('visits.relationships_authorize')
+})
+
+const canDelete = computed(() => {
+  return authStore.isSuperAdmin || authStore.hasPermission('visits.relationships_delete')
 })
 
 const visiblePages = computed(() => {

@@ -552,7 +552,7 @@ const routes: Array<RouteRecordRaw> = [
         meta: {
           pageTitle: "Registro de Visitantes",
           breadcrumbs: ["Visitas", "Visitantes"],
-          permissions: "visits.visitors.view",
+          permissions: "visits.visitors_view",
         },
       },
       {
@@ -562,7 +562,7 @@ const routes: Array<RouteRecordRaw> = [
         meta: {
           pageTitle: "Detalle de Visitante",
           breadcrumbs: ["Visitas", "Visitantes", "Detalle"],
-          permissions: "visits.visitors.view",
+          permissions: "visits.visitors_view",
         },
       },
       {
@@ -582,7 +582,7 @@ const routes: Array<RouteRecordRaw> = [
         meta: {
           pageTitle: "Relaciones de Visita",
           breadcrumbs: ["Visitas", "Relaciones"],
-          permissions: "visits.relationships.view",
+          permissions: "visits.relationships_view",
         },
       },
       {
@@ -592,7 +592,7 @@ const routes: Array<RouteRecordRaw> = [
         meta: {
           pageTitle: "Detalle de Relación",
           breadcrumbs: ["Visitas", "Relaciones", "Detalle"],
-          permissions: "visits.relationships.view",
+          permissions: "visits.relationships_view",
         },
       },
       {
@@ -602,7 +602,7 @@ const routes: Array<RouteRecordRaw> = [
         meta: {
           pageTitle: "Solicitudes de Visita",
           breadcrumbs: ["Visitas", "Solicitudes"],
-          permissions: "visits.requests.view",
+          permissions: "visits.requests_view",
         },
       },
       {
@@ -612,7 +612,7 @@ const routes: Array<RouteRecordRaw> = [
         meta: {
           pageTitle: "Detalle de Solicitud",
           breadcrumbs: ["Visitas", "Solicitudes", "Detalle"],
-          permissions: "visits.requests.view",
+          permissions: "visits.requests_view",
         },
       },
       {
@@ -622,7 +622,7 @@ const routes: Array<RouteRecordRaw> = [
         meta: {
           pageTitle: "Programación de Visitas",
           breadcrumbs: ["Visitas", "Programación"],
-          permissions: "visits.scheduling.view",
+          permissions: "visits.scheduling_view",
         },
       },
       {
@@ -632,7 +632,7 @@ const routes: Array<RouteRecordRaw> = [
         meta: {
           pageTitle: "Visitas Activas",
           breadcrumbs: ["Visitas", "Visitas Activas"],
-          permissions: "visits.monitoring.view",
+          permissions: "visits.monitoring_view",
         },
       },
       {
@@ -642,7 +642,7 @@ const routes: Array<RouteRecordRaw> = [
         meta: {
           pageTitle: "Control Biométrico",
           breadcrumbs: ["Visitas", "Control Biométrico"],
-          permissions: "visits.biometric.view",
+          permissions: "visits.biometric_view",
         },
       },
       {
@@ -662,7 +662,7 @@ const routes: Array<RouteRecordRaw> = [
         meta: {
           pageTitle: "Reportes de Visitas",
           breadcrumbs: ["Visitas", "Reportes"],
-          permissions: "visits.reports.view",
+          permissions: "visits.reports_view",
         },
       },
       {
@@ -672,7 +672,7 @@ const routes: Array<RouteRecordRaw> = [
         meta: {
           pageTitle: "Estadísticas de Visitas",
           breadcrumbs: ["Visitas", "Estadísticas"],
-          permissions: "visits.statistics.view",
+          permissions: "visits.statistics_view",
         },
       },
       {
@@ -682,7 +682,7 @@ const routes: Array<RouteRecordRaw> = [
         meta: {
           pageTitle: "Configuración de Visitas",
           breadcrumbs: ["Visitas", "Configuración"],
-          permissions: "visits.settings.manage",
+          permissions: "visits.settings_manage",
         },
       },
       // Catalog routes

@@ -455,11 +455,11 @@ const filters = reactive({
 
 // Computed
 const canCreate = computed(() => {
-  return user.permissions?.includes('visits.visitors.create')
+  return user.permissions?.includes('visits.visitors_create')
 })
 
 const canEdit = computed(() => {
-  return user.permissions?.includes('visits.visitors.edit')
+  return user.permissions?.includes('visits.visitors_edit')
 })
 
 const visiblePages = computed(() => {

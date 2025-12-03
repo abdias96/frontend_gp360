@@ -188,7 +188,8 @@
                   >
                     <i class="fas fa-clock"></i>
                   </button>
-                  <button 
+                  <button
+                    v-if="canEndVisit"
                     @click="handleEndVisit(visit.id)"
                     class="btn btn-icon btn-bg-light btn-active-color-danger btn-sm"
                     :title="$t('visits.activeVisits.endVisit')"
@@ -271,10 +272,15 @@ import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import Swal from 'sweetalert2'
+import { useAuthStore } from '@/stores/auth'
 
 // Composables
 const router = useRouter()
 const { t } = useI18n()
+const authStore = useAuthStore()
+
+// Permission checks
+const canEndVisit = computed(() => authStore.isSuperAdmin || authStore.hasPermission('visits.monitoring_end'))
 
 // Types
 interface ActiveVisit {
