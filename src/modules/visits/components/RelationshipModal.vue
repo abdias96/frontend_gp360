@@ -526,19 +526,27 @@ const initializeModal = async () => {
 }
 
 const loadCatalogs = async () => {
+  // Load each catalog independently to prevent one failure from blocking others
+
+  // Load visitors from visitor registry
   try {
-    // Load visitors from visitor registry
     const visitorsRes = await ApiService.get('/visitors', {
       params: {
+        simple: true,
         status: 'active',
         per_page: 1000
       }
     })
-    // API returns { visitors: { data: [...], ...pagination } }
+    // Simple API returns { success: true, visitors: [...] }
+    // Full API returns { visitors: { data: [...], ...pagination } }
     const visitorData = visitorsRes.data.visitors
-    visitors.value = visitorData.data || visitorData || []
+    visitors.value = Array.isArray(visitorData) ? visitorData : (visitorData?.data || [])
+  } catch (error) {
+    console.error('Error loading visitors:', error)
+  }
 
-    // Load active inmates
+  // Load active inmates
+  try {
     const inmatesRes = await ApiService.get('/inmates', {
       params: {
         simple: true,
@@ -546,14 +554,19 @@ const loadCatalogs = async () => {
         per_page: 1000
       }
     })
-    inmates.value = inmatesRes.data.data || inmatesRes.data || []
-
-    // Load relationship types catalog
-    const typesRes = await ApiService.get('/catalogs/relationship-types?simple=true')
-    relationshipTypes.value = typesRes.data.data || typesRes.data || []
+    inmates.value = inmatesRes.data?.data || inmatesRes.data || []
   } catch (error) {
-    showToast('Error al cargar catálogos', 'error')
-    console.error('Error loading catalogs:', error)
+    console.error('Error loading inmates:', error)
+  }
+
+  // Load relationship types catalog
+  try {
+    const typesRes = await ApiService.get('/catalogs/relationship-types?simple=true')
+    relationshipTypes.value = typesRes.data?.data || typesRes.data || []
+    console.log('Relationship types loaded:', relationshipTypes.value)
+  } catch (error) {
+    console.error('Error loading relationship types:', error)
+    showToast('Error al cargar tipos de relación', 'error')
   }
 }
 

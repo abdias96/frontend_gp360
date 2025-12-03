@@ -342,7 +342,7 @@
                   >
                     <div class="symbol-label">
                       <img
-                        :src="inmate?.photo_path || '/media/avatars/blank.png'"
+                        :src="getInmatePhoto(inmate)"
                         :alt="getInmateFullName(inmate)"
                         class="w-100"
                       />
@@ -705,6 +705,22 @@ const getInmateFullName = (inmate: any) => {
   ].filter(Boolean);
 
   return parts.length > 0 ? parts.join(" ") : "Sin nombre";
+};
+
+const getInmatePhoto = (inmate: any): string => {
+  // Primero intentar photo_path directo
+  if (inmate?.photo_path) {
+    return inmate.photo_path;
+  }
+
+  // Luego buscar en el array de fotos
+  if (inmate?.photos && inmate.photos.length > 0) {
+    const currentPhoto = inmate.photos.find((photo: any) => photo.is_current);
+    const photoToUse = currentPhoto || inmate.photos[0];
+    return photoToUse.photo_data || photoToUse.photo_url || photoToUse.photo_path || '/media/avatars/blank.png';
+  }
+
+  return '/media/avatars/blank.png';
 };
 
 const getStatusLabel = (status: string) => {

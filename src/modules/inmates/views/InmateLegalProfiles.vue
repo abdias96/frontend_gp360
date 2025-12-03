@@ -1,85 +1,303 @@
 <template>
-  <div class="d-flex flex-column gap-7 gap-lg-10">
-    <div class="d-flex flex-wrap flex-stack gap-5 gap-lg-10">
-      <div class="d-flex flex-column">
-        <h1 class="fw-bold text-gray-900 mb-1">Perfiles Legales</h1>
-        <div class="text-gray-600 fw-semibold fs-6">
-          Gestión de información legal de internos
-        </div>
-      </div>
-      <div class="d-flex gap-3">
-        <button
-          v-if="canCreate"
-          type="button"
-          class="btn btn-sm btn-primary"
-          @click="createProfile"
-        >
-          <i class="ki-duotone ki-plus fs-2">
+  <div class="card">
+    <!--begin::Card header-->
+    <div class="card-header border-0 pt-6">
+      <!--begin::Card title-->
+      <div class="card-title">
+        <!--begin::Search-->
+        <div class="d-flex align-items-center position-relative my-1">
+          <i class="ki-duotone ki-magnifier fs-3 position-absolute ms-5">
             <span class="path1"></span>
             <span class="path2"></span>
           </i>
-          Crear Perfil Legal
-        </button>
+          <input
+            type="text"
+            v-model="searchTerm"
+            @input="handleSearch"
+            class="form-control form-control-solid w-300px ps-13"
+            placeholder="Buscar por nombre, caso o expediente..."
+          />
+        </div>
+        <!--end::Search-->
       </div>
-    </div>
+      <!--begin::Card title-->
 
-    <div class="card">
-      <div class="card-header border-0 pt-6">
-        <div class="card-title">
-          <div class="d-flex align-items-center position-relative my-1">
-            <i class="ki-duotone ki-magnifier fs-1 position-absolute ms-6">
+      <!--begin::Card toolbar-->
+      <div class="card-toolbar">
+        <!--begin::Toolbar-->
+        <div class="d-flex justify-content-end gap-3">
+          <!--begin::Filter-->
+          <button
+            type="button"
+            class="btn btn-light-primary"
+            @click="showFilters = !showFilters"
+          >
+            <i class="ki-duotone ki-filter fs-2">
               <span class="path1"></span>
               <span class="path2"></span>
             </i>
-            <input
-              v-model="searchTerm"
-              type="text"
-              class="form-control form-control-solid w-250px ps-15"
-              placeholder="Buscar perfiles legales..."
-              @input="handleSearch"
-            />
+            Filtros
+          </button>
+          <!--end::Filter-->
+
+          <!--begin::Add-->
+          <button
+            v-if="canCreate"
+            type="button"
+            class="btn btn-primary"
+            @click="createProfile"
+          >
+            <i class="ki-duotone ki-plus fs-2"></i>
+            Crear Perfil Legal
+          </button>
+          <!--end::Add-->
+        </div>
+        <!--end::Toolbar-->
+      </div>
+      <!--end::Card toolbar-->
+    </div>
+    <!--end::Card header-->
+
+    <!--begin::Filters-->
+    <div v-if="showFilters" class="card-header border-top pt-6">
+      <div class="card-title w-100">
+        <div class="row w-100 g-3">
+          <div class="col-md-3">
+            <label class="form-label fs-7 fw-bold">Centro</label>
+            <select
+              v-model="filters.center_id"
+              class="form-select form-select-solid"
+              @change="handleFilterChange"
+            >
+              <option value="">Todos los centros</option>
+              <option
+                v-for="option in centersOptions"
+                :key="option.value"
+                :value="option.value"
+              >
+                {{ option.label }}
+              </option>
+            </select>
+          </div>
+          <div class="col-md-3">
+            <label class="form-label fs-7 fw-bold">Estado Procesal</label>
+            <select
+              v-model="filters.procedural_status_id"
+              class="form-select form-select-solid"
+              @change="handleFilterChange"
+            >
+              <option value="">Todos</option>
+              <option
+                v-for="status in proceduralStatuses"
+                :key="status.id"
+                :value="status.id"
+              >
+                {{ status.name }}
+              </option>
+            </select>
+          </div>
+          <div class="col-md-3">
+            <label class="form-label fs-7 fw-bold">Tipo</label>
+            <select
+              v-model="filters.profile_type"
+              class="form-select form-select-solid"
+              @change="handleFilterChange"
+            >
+              <option value="">Todos</option>
+              <option value="preventive">Prisión Preventiva</option>
+              <option value="sentenced">Condenados</option>
+            </select>
+          </div>
+          <div class="col-md-3 d-flex align-items-end">
+            <button
+              type="button"
+              class="btn btn-light-secondary w-100"
+              @click="clearFilters"
+              v-if="hasActiveFilters"
+            >
+              Limpiar Filtros
+            </button>
           </div>
         </div>
       </div>
+    </div>
+    <!--end::Filters-->
 
-      <div class="card-body py-4">
-        <div v-if="loading" class="text-center py-10">
-          <div class="spinner-border text-primary" role="status">
-            <span class="visually-hidden">Cargando...</span>
+    <!--begin::Card body-->
+    <div class="card-body py-4">
+      <!--begin::Loading-->
+      <div v-if="loading" class="d-flex justify-content-center py-10">
+        <div class="spinner-border text-primary" role="status">
+          <span class="visually-hidden">Cargando...</span>
+        </div>
+      </div>
+      <!--end::Loading-->
+
+      <!--begin::Error-->
+      <div v-else-if="error" class="alert alert-danger">
+        <i class="ki-duotone ki-cross-circle fs-2 me-2">
+          <span class="path1"></span>
+          <span class="path2"></span>
+        </i>
+        {{ error }}
+        <button
+          type="button"
+          class="btn btn-sm btn-light-danger ms-3"
+          @click="loadProfiles"
+        >
+          Reintentar
+        </button>
+      </div>
+      <!--end::Error-->
+
+      <!--begin::Content-->
+      <div v-else>
+        <!--begin::Statistics-->
+        <div class="row g-4 mb-6">
+          <!-- Total Perfiles -->
+          <div class="col-md-6 col-lg-3">
+            <div class="card bg-light-primary border-0 h-100">
+              <div class="card-body d-flex flex-column justify-content-between p-6">
+                <div class="d-flex align-items-center mb-3">
+                  <div class="symbol symbol-40px me-3">
+                    <div class="symbol-label bg-primary">
+                      <i class="ki-duotone ki-briefcase fs-2 text-white">
+                        <span class="path1"></span>
+                        <span class="path2"></span>
+                      </i>
+                    </div>
+                  </div>
+                  <div class="flex-grow-1">
+                    <div class="text-muted fw-semibold fs-7">Total</div>
+                    <div class="fw-bold fs-3 text-gray-800">
+                      {{ statistics.total }}
+                    </div>
+                  </div>
+                </div>
+                <div class="text-muted fw-semibold fs-6">Perfiles Legales</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Prisión Preventiva -->
+          <div class="col-md-6 col-lg-3">
+            <div class="card bg-light-warning border-0 h-100">
+              <div class="card-body d-flex flex-column justify-content-between p-6">
+                <div class="d-flex align-items-center mb-3">
+                  <div class="symbol symbol-40px me-3">
+                    <div class="symbol-label bg-warning">
+                      <i class="ki-duotone ki-time fs-2 text-white">
+                        <span class="path1"></span>
+                        <span class="path2"></span>
+                      </i>
+                    </div>
+                  </div>
+                  <div class="flex-grow-1">
+                    <div class="text-muted fw-semibold fs-7">Preventiva</div>
+                    <div class="fw-bold fs-3 text-gray-800">
+                      {{ statistics.preventive }}
+                    </div>
+                  </div>
+                </div>
+                <div class="text-muted fw-semibold fs-6">Prisión Preventiva</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Condenados -->
+          <div class="col-md-6 col-lg-3">
+            <div class="card bg-light-success border-0 h-100">
+              <div class="card-body d-flex flex-column justify-content-between p-6">
+                <div class="d-flex align-items-center mb-3">
+                  <div class="symbol symbol-40px me-3">
+                    <div class="symbol-label bg-success">
+                      <i class="ki-duotone ki-document fs-2 text-white">
+                        <span class="path1"></span>
+                        <span class="path2"></span>
+                      </i>
+                    </div>
+                  </div>
+                  <div class="flex-grow-1">
+                    <div class="text-muted fw-semibold fs-7">Condenados</div>
+                    <div class="fw-bold fs-3 text-gray-800">
+                      {{ statistics.sentenced }}
+                    </div>
+                  </div>
+                </div>
+                <div class="text-muted fw-semibold fs-6">Con Sentencia</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Audiencias Pendientes -->
+          <div class="col-md-6 col-lg-3">
+            <div class="card bg-light-info border-0 h-100">
+              <div class="card-body d-flex flex-column justify-content-between p-6">
+                <div class="d-flex align-items-center mb-3">
+                  <div class="symbol symbol-40px me-3">
+                    <div class="symbol-label bg-info">
+                      <i class="ki-duotone ki-calendar fs-2 text-white">
+                        <span class="path1"></span>
+                        <span class="path2"></span>
+                      </i>
+                    </div>
+                  </div>
+                  <div class="flex-grow-1">
+                    <div class="text-muted fw-semibold fs-7">Audiencias</div>
+                    <div class="fw-bold fs-3 text-gray-800">
+                      {{ statistics.pendingHearings }}
+                    </div>
+                  </div>
+                </div>
+                <div class="text-muted fw-semibold fs-6">Pendientes</div>
+              </div>
+            </div>
           </div>
         </div>
+        <!--end::Statistics-->
 
-        <div v-else-if="error" class="alert alert-danger">
-          <i class="ki-duotone ki-information fs-2 me-2">
-            <span class="path1"></span>
-            <span class="path2"></span>
-            <span class="path3"></span>
-          </i>
-          {{ error }}
-        </div>
-
-        <div v-else class="table-responsive">
+        <!--begin::Table-->
+        <div v-if="profiles.length > 0" class="table-responsive">
           <table class="table align-middle table-row-dashed fs-6 gy-5">
+            <!--begin::Table head-->
             <thead>
               <tr class="text-start text-muted fw-bold fs-7 text-uppercase gs-0">
-                <th class="min-w-125px">Interno</th>
+                <th class="min-w-200px">Interno</th>
                 <th class="min-w-125px">Caso</th>
                 <th class="min-w-125px">Tribunal</th>
                 <th class="min-w-100px">Estado</th>
                 <th class="min-w-100px">Audiencias</th>
                 <th class="min-w-100px">Delitos</th>
-                <th class="min-w-100px">Última Actualización</th>
+                <th class="min-w-100px">Actualización</th>
                 <th class="text-end min-w-100px">Acciones</th>
               </tr>
             </thead>
+            <!--end::Table head-->
+
+            <!--begin::Table body-->
             <tbody class="text-gray-600 fw-semibold">
-              <tr v-for="profile in profiles.data" :key="profile.id">
+              <tr v-for="profile in profiles" :key="profile.id">
+                <!--begin::Interno-->
                 <td class="d-flex align-items-center">
+                  <!--begin::Avatar-->
                   <div class="symbol symbol-circle symbol-50px overflow-hidden me-3">
-                    <div class="symbol-label bg-light-primary text-primary">
-                      {{ getInitials(profile.inmate?.first_name, profile.inmate?.last_name) }}
+                    <div class="symbol-label">
+                      <img
+                        v-if="getInmatePhoto(profile.inmate)"
+                        :src="getInmatePhoto(profile.inmate)"
+                        :alt="profile.inmate?.full_name || 'Interno'"
+                        class="w-100"
+                      />
+                      <span
+                        v-else
+                        class="bg-light-primary text-primary d-flex align-items-center justify-content-center w-100 h-100 fs-4 fw-bold"
+                      >
+                        {{ getInitials(profile.inmate?.first_name, profile.inmate?.last_name) }}
+                      </span>
                     </div>
                   </div>
+                  <!--end::Avatar-->
+                  <!--begin::User details-->
                   <div class="d-flex flex-column">
                     <router-link
                       :to="`/inmates/${profile.inmate?.id}`"
@@ -87,51 +305,179 @@
                     >
                       {{ profile.inmate?.full_name || 'Sin nombre' }}
                     </router-link>
-                    <span class="text-muted">{{ profile.inmate?.document_number }}</span>
+                    <span class="text-muted">{{ profile.inmate?.document_number || 'N/A' }}</span>
                   </div>
+                  <!--end::User details-->
                 </td>
+                <!--end::Interno-->
+
+                <!--begin::Caso-->
                 <td>
                   <div class="d-flex flex-column">
-                    <span class="text-gray-800 mb-1">{{ profile.case_number }}</span>
-                    <span class="text-muted fs-7">{{ profile.judicial_file_number || 'N/A' }}</span>
+                    <span class="text-gray-800 mb-1">{{ profile.case_number || 'N/A' }}</span>
+                    <span class="text-muted fs-7">{{ profile.judicial_file_number || 'Sin expediente' }}</span>
                   </div>
                 </td>
+                <!--end::Caso-->
+
+                <!--begin::Tribunal-->
                 <td>
                   <span class="text-gray-800">{{ profile.court?.name || 'N/A' }}</span>
                 </td>
+                <!--end::Tribunal-->
+
+                <!--begin::Estado-->
                 <td>
-                  <div class="d-flex flex-column">
-                    <span class="badge" :class="getStatusBadgeClass(profile)">
-                      {{ getStatusLabel(profile) }}
-                    </span>
-                  </div>
+                  <span class="badge" :class="getStatusBadgeClass(profile)">
+                    {{ getStatusLabel(profile) }}
+                  </span>
                 </td>
+                <!--end::Estado-->
+
+                <!--begin::Audiencias-->
                 <td>
                   <span class="text-gray-800 fw-bold">{{ profile.hearings_count || 0 }}</span>
                 </td>
+                <!--end::Audiencias-->
+
+                <!--begin::Delitos-->
                 <td>
                   <span class="text-gray-800 fw-bold">{{ profile.crimes_count || 0 }}</span>
                 </td>
+                <!--end::Delitos-->
+
+                <!--begin::Actualización-->
                 <td>
-                  <div class="d-flex flex-column">
-                    <span class="text-gray-800">{{ formatDate(profile.updated_at) }}</span>
-                    <span class="text-muted fs-7">por {{ profile.updated_by?.first_name }}</span>
+                  {{ formatDate(profile.updated_at) }}
+                </td>
+                <!--end::Actualización-->
+
+                <!--begin::Actions-->
+                <td class="text-end">
+                  <div class="btn-group" role="group">
+                    <button
+                      type="button"
+                      class="btn btn-sm btn-light btn-active-light-primary dropdown-toggle"
+                      data-bs-toggle="dropdown"
+                    >
+                      Acciones
+                    </button>
+                    <ul class="dropdown-menu">
+                      <li>
+                        <router-link
+                          :to="`/inmates/${profile.inmate?.id}`"
+                          class="dropdown-item"
+                        >
+                          <i class="ki-duotone ki-eye fs-6 me-2"></i>
+                          Ver Interno
+                        </router-link>
+                      </li>
+                      <li v-if="canEdit">
+                        <a
+                          href="#"
+                          class="dropdown-item"
+                          @click.prevent="editProfile(profile)"
+                        >
+                          <i class="ki-duotone ki-pencil fs-6 me-2"></i>
+                          Editar Perfil
+                        </a>
+                      </li>
+                    </ul>
                   </div>
                 </td>
-                <td class="text-end">
-                  <router-link
-                    :to="`/inmates/${profile.inmate?.id}`"
-                    class="btn btn-light btn-active-light-primary btn-sm"
-                  >
-                    Ver Detalle
-                  </router-link>
-                </td>
+                <!--end::Actions-->
               </tr>
             </tbody>
+            <!--end::Table body-->
           </table>
         </div>
+        <!--end::Table-->
+
+        <!--begin::Empty state-->
+        <div v-else class="text-center py-10">
+          <div class="mx-auto mb-4">
+            <i class="ki-duotone ki-briefcase fs-5x text-gray-400">
+              <span class="path1"></span>
+              <span class="path2"></span>
+            </i>
+          </div>
+          <div class="fs-6 text-gray-600 mb-4">
+            No se encontraron perfiles legales con los criterios especificados.
+          </div>
+          <button
+            v-if="hasActiveFilters"
+            type="button"
+            class="btn btn-light-primary"
+            @click="clearFilters"
+          >
+            Limpiar Filtros
+          </button>
+        </div>
+        <!--end::Empty state-->
+
+        <!--begin::Pagination-->
+        <div
+          v-if="pagination.last_page > 1"
+          class="d-flex flex-stack flex-wrap pt-10"
+        >
+          <div class="fs-6 fw-semibold text-gray-700">
+            Mostrando
+            {{ (pagination.current_page - 1) * pagination.per_page + 1 }} a
+            {{ Math.min(pagination.current_page * pagination.per_page, pagination.total) }}
+            de {{ pagination.total }} registros
+          </div>
+
+          <nav aria-label="Paginación">
+            <ul class="pagination">
+              <li
+                class="page-item"
+                :class="{ disabled: pagination.current_page === 1 }"
+              >
+                <button
+                  class="page-link"
+                  @click="changePage(pagination.current_page - 1)"
+                  :disabled="pagination.current_page === 1"
+                >
+                  Anterior
+                </button>
+              </li>
+
+              <li
+                v-for="page in paginationPages"
+                :key="page"
+                class="page-item"
+                :class="{ active: page === pagination.current_page }"
+              >
+                <button
+                  v-if="page !== '...'"
+                  class="page-link"
+                  @click="changePage(page as number)"
+                >
+                  {{ page }}
+                </button>
+                <span v-else class="page-link">...</span>
+              </li>
+
+              <li
+                class="page-item"
+                :class="{ disabled: pagination.current_page === pagination.last_page }"
+              >
+                <button
+                  class="page-link"
+                  @click="changePage(pagination.current_page + 1)"
+                  :disabled="pagination.current_page === pagination.last_page"
+                >
+                  Siguiente
+                </button>
+              </li>
+            </ul>
+          </nav>
+        </div>
+        <!--end::Pagination-->
       </div>
+      <!--end::Content-->
     </div>
+    <!--end::Card body-->
   </div>
 </template>
 
@@ -139,49 +485,186 @@
 import { ref, onMounted, computed } from 'vue';
 import { useRouter } from 'vue-router';
 import { useAuthStore } from '@/stores/auth';
+import { useCatalogs } from '@/composables/useCatalogs';
 import ApiService from '@/core/services/ApiService';
 import Swal from 'sweetalert2';
 
 const router = useRouter();
 const authStore = useAuthStore();
+const { centersOptions, loadCatalogs: loadCatalogData } = useCatalogs();
 
+// State
 const loading = ref(false);
 const error = ref<string | null>(null);
 const searchTerm = ref('');
-const profiles = ref<any>({});
+const showFilters = ref(false);
+const profiles = ref<any[]>([]);
+const proceduralStatuses = ref<any[]>([]);
 
+const filters = ref({
+  center_id: '' as string | number,
+  procedural_status_id: '' as string | number,
+  profile_type: '' as string,
+});
+
+const pagination = ref({
+  current_page: 1,
+  last_page: 1,
+  per_page: 15,
+  total: 0,
+});
+
+const statistics = ref({
+  total: 0,
+  preventive: 0,
+  sentenced: 0,
+  pendingHearings: 0,
+});
+
+// Computed
 const canCreate = computed(() => authStore.hasPermission('inmates.legal_edit'));
+const canEdit = computed(() => authStore.hasPermission('inmates.legal_edit'));
 
+const hasActiveFilters = computed(() => {
+  return !!(
+    searchTerm.value ||
+    filters.value.center_id ||
+    filters.value.procedural_status_id ||
+    filters.value.profile_type
+  );
+});
+
+const paginationPages = computed(() => {
+  const pages: (number | string)[] = [];
+  const current = pagination.value.current_page;
+  const total = pagination.value.last_page;
+
+  if (total <= 7) {
+    for (let i = 1; i <= total; i++) {
+      pages.push(i);
+    }
+  } else {
+    if (current <= 4) {
+      for (let i = 1; i <= 5; i++) {
+        pages.push(i);
+      }
+      pages.push('...');
+      pages.push(total);
+    } else if (current >= total - 3) {
+      pages.push(1);
+      pages.push('...');
+      for (let i = total - 4; i <= total; i++) {
+        pages.push(i);
+      }
+    } else {
+      pages.push(1);
+      pages.push('...');
+      for (let i = current - 1; i <= current + 1; i++) {
+        pages.push(i);
+      }
+      pages.push('...');
+      pages.push(total);
+    }
+  }
+
+  return pages;
+});
+
+// Methods
 const loadProfiles = async () => {
   try {
     loading.value = true;
     error.value = null;
 
-    console.log('Loading profiles with search term:', searchTerm.value);
-    
-    console.log('Making API call to: /inmate-legal-profiles');
-    
-    // Temporarily call without any parameters to test
-    const response = await ApiService.get('/inmate-legal-profiles');
-    console.log('API response:', response.data);
-    
-    profiles.value = response.data.data;
+    const params = new URLSearchParams();
+    params.append('page', pagination.value.current_page.toString());
+    params.append('per_page', pagination.value.per_page.toString());
 
+    if (searchTerm.value) {
+      params.append('search', searchTerm.value);
+    }
+    if (filters.value.center_id) {
+      params.append('center_id', filters.value.center_id.toString());
+    }
+    if (filters.value.procedural_status_id) {
+      params.append('procedural_status_id', filters.value.procedural_status_id.toString());
+    }
+
+    const response = await ApiService.get(`/inmate-legal-profiles?${params.toString()}`);
+
+    if (response.data?.data) {
+      const paginatedData = response.data.data;
+      profiles.value = paginatedData.data || [];
+
+      pagination.value = {
+        current_page: paginatedData.current_page || 1,
+        last_page: paginatedData.last_page || 1,
+        per_page: paginatedData.per_page || 15,
+        total: paginatedData.total || 0,
+      };
+
+      // Calculate statistics from current page
+      updateStatistics();
+    }
   } catch (err: any) {
-    console.error('Full error object:', err);
-    console.error('Error response:', err.response);
+    console.error('Error loading profiles:', err);
     error.value = err.response?.data?.message || 'Error al cargar perfiles legales';
   } finally {
     loading.value = false;
   }
 };
 
-const handleSearch = debounce(() => {
+const updateStatistics = () => {
+  statistics.value.total = pagination.value.total;
+  statistics.value.preventive = profiles.value.filter(p => p.in_preventive_detention).length;
+  statistics.value.sentenced = profiles.value.filter(p => p.sentence_start_date).length;
+  statistics.value.pendingHearings = profiles.value.reduce((sum, p) => sum + (p.hearings_count || 0), 0);
+};
+
+const loadProceduralStatuses = async () => {
+  try {
+    const response = await ApiService.get('/catalogs/procedural-statuses');
+    if (response.data?.data) {
+      proceduralStatuses.value = response.data.data;
+    }
+  } catch (err) {
+    console.error('Error loading procedural statuses:', err);
+  }
+};
+
+let searchTimeout: any = null;
+const handleSearch = () => {
+  clearTimeout(searchTimeout);
+  searchTimeout = setTimeout(() => {
+    pagination.value.current_page = 1;
+    loadProfiles();
+  }, 300);
+};
+
+const handleFilterChange = () => {
+  pagination.value.current_page = 1;
   loadProfiles();
-}, 300);
+};
+
+const clearFilters = () => {
+  searchTerm.value = '';
+  filters.value = {
+    center_id: '',
+    procedural_status_id: '',
+    profile_type: '',
+  };
+  pagination.value.current_page = 1;
+  loadProfiles();
+};
+
+const changePage = (page: number) => {
+  if (page >= 1 && page <= pagination.value.last_page) {
+    pagination.value.current_page = page;
+    loadProfiles();
+  }
+};
 
 const createProfile = async () => {
-  // Show selector to choose an inmate first
   const result = await Swal.fire({
     title: 'Crear Perfil Legal',
     html: `
@@ -206,22 +689,55 @@ const createProfile = async () => {
   }
 };
 
-const getInitials = (firstName: string, lastName: string) => {
+const editProfile = (profile: any) => {
+  router.push(`/inmates/${profile.inmate?.id}?tab=legal`);
+};
+
+// Helper functions
+const getInitials = (firstName?: string, lastName?: string) => {
   return `${firstName?.[0] || ''}${lastName?.[0] || ''}`.toUpperCase();
 };
 
+const getInmatePhoto = (inmate: any): string | null => {
+  // Primero verificar photo_url (del backend transformado)
+  if (inmate?.photo_url) {
+    return inmate.photo_url;
+  }
+  // Luego verificar photo_path directo
+  if (inmate?.photo_path) {
+    return inmate.photo_path;
+  }
+  // Finalmente buscar en el array de fotos
+  if (inmate?.photos && inmate.photos.length > 0) {
+    const currentPhoto = inmate.photos.find((photo: any) => photo.is_current);
+    const photoToUse = currentPhoto || inmate.photos[0];
+    return photoToUse.photo_path || null;
+  }
+  return null;
+};
+
 const getStatusBadgeClass = (profile: any) => {
-  if (profile.sentence_date) {
-    return profile.sentence_final ? 'badge-light-success' : 'badge-light-warning';
+  if (profile.sentence_start_date) {
+    return 'badge-light-success';
+  }
+  if (profile.in_preventive_detention) {
+    return 'badge-light-warning';
   }
   return 'badge-light-info';
 };
 
 const getStatusLabel = (profile: any) => {
-  return 'Proceso Abierto';
+  if (profile.sentence_start_date) {
+    return 'Condenado';
+  }
+  if (profile.in_preventive_detention) {
+    return 'Prisión Preventiva';
+  }
+  return 'En Proceso';
 };
 
 const formatDate = (date: string) => {
+  if (!date) return 'N/A';
   return new Date(date).toLocaleDateString('es-GT', {
     year: 'numeric',
     month: 'short',
@@ -229,19 +745,22 @@ const formatDate = (date: string) => {
   });
 };
 
-function debounce(func: Function, wait: number) {
-  let timeout: NodeJS.Timeout;
-  return function executedFunction(...args: any[]) {
-    const later = () => {
-      clearTimeout(timeout);
-      func(...args);
-    };
-    clearTimeout(timeout);
-    timeout = setTimeout(later, wait);
-  };
-}
-
-onMounted(() => {
-  loadProfiles();
+// Lifecycle
+onMounted(async () => {
+  await Promise.all([
+    loadProfiles(),
+    loadProceduralStatuses(),
+    loadCatalogData()
+  ]);
 });
 </script>
+
+<style scoped>
+.page-link {
+  cursor: pointer;
+}
+
+.page-item.disabled .page-link {
+  cursor: not-allowed;
+}
+</style>
