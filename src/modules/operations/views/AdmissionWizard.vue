@@ -2058,14 +2058,9 @@ const filteredSectors = computed(() => {
   if (!finalAssignment.value.center_id) {
     return [];
   }
-  // Filter sectors by center_id if they have that field
-  // Otherwise return all sectors (for backward compatibility)
+  // Filter sectors by center_id - use == for type coercion (string vs number)
   return sectors.value.filter(sector => {
-    if (sector.center_id) {
-      return sector.center_id === finalAssignment.value.center_id;
-    }
-    // If sectors don't have center_id, show all
-    return true;
+    return sector.center_id == finalAssignment.value.center_id;
   });
 });
 
@@ -3471,18 +3466,25 @@ const saveBelongings = async () => {
 const saveMedicalEvaluation = async () => {
   if (!inmateId.value) return false;
 
+  // Helper function to convert string to array (split by commas or newlines)
+  const stringToArray = (value: string | null | undefined): string[] | null => {
+    if (!value || typeof value !== 'string') return null;
+    const items = value.split(/[,\n]/).map(item => item.trim()).filter(item => item.length > 0);
+    return items.length > 0 ? items : null;
+  };
+
   try {
     // Map medical evaluation data to the format expected by the admission controller
     const medicalData = {
       initial_medical_notes: medicalEvaluation.value.medical_notes || null,
       has_chronic_diseases: medicalEvaluation.value.has_chronic_diseases,
-      chronic_diseases: medicalEvaluation.value.chronic_diseases || null,
+      chronic_diseases: stringToArray(medicalEvaluation.value.chronic_diseases),
       requires_medication: medicalEvaluation.value.has_medications,
-      current_medications: medicalEvaluation.value.current_medications || null,
+      current_medications: stringToArray(medicalEvaluation.value.current_medications),
       has_disabilities: medicalEvaluation.value.has_disabilities,
-      disabilities: medicalEvaluation.value.disabilities || null,
+      disabilities: stringToArray(medicalEvaluation.value.disabilities),
       has_allergies: medicalEvaluation.value.has_allergies,
-      allergies: medicalEvaluation.value.allergies || null,
+      allergies: stringToArray(medicalEvaluation.value.allergies),
       requires_special_diet: false, // Not in current form
       special_diet_details: null,
       mental_health_status: medicalEvaluation.value.mental_health_status || 'stable',
