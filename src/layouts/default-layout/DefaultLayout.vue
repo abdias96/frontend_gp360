@@ -1,4 +1,7 @@
 <template>
+  <!-- Environment Banner for test/staging servers -->
+  <EnvironmentBanner />
+
   <!-- begin:: Body -->
   <div class="page d-flex flex-row flex-column-fluid">
     <!-- begin:: Aside Left -->
@@ -46,6 +49,7 @@
 <script setup lang="ts">
 import { nextTick, onBeforeMount, onMounted, watch } from "vue";
 import { useRoute } from "vue-router";
+import EnvironmentBanner from "@/components/EnvironmentBanner.vue";
 import KTAside from "@/layouts/default-layout/components/aside/Aside.vue";
 import KTHeader from "@/layouts/default-layout/components/header/Header.vue";
 import KTFooter from "@/layouts/default-layout/components/footer/Footer.vue";

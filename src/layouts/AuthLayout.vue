@@ -1,4 +1,7 @@
 <template>
+  <!-- Environment Banner for test/staging servers -->
+  <EnvironmentBanner />
+
   <!--begin::Authentication Layout -->
   <div class="d-flex flex-column flex-lg-row flex-column-fluid">
     <!--begin::Body-->
@@ -58,6 +61,7 @@ Gestión Penitenciaria 360
 
 <script setup lang="ts">
 import { onMounted } from "vue";
+import EnvironmentBanner from "@/components/EnvironmentBanner.vue";
 import LayoutService from "@/core/services/LayoutService";
 import { useBodyStore } from "@/stores/body";
 
