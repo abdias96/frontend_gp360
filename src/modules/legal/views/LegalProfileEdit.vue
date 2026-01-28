@@ -23,9 +23,90 @@
       <!-- Edit Form -->
       <form @submit.prevent="handleSubmit">
         <div class="row g-5 g-xl-10">
+          <!-- Admission Information Card -->
+          <div class="col-xl-6">
+            <div class="card mb-5">
+              <div class="card-header">
+                <h3 class="card-title">{{ t('legal.profiles.edit.admissionInfo') }}</h3>
+              </div>
+              <div class="card-body">
+                <div class="row">
+                  <!-- Admission Number -->
+                  <div class="col-md-6 mb-5">
+                    <label class="form-label">{{ t('legal.profiles.edit.admissionNumber') }}</label>
+                    <input
+                      type="text"
+                      class="form-control"
+                      v-model="formData.admission_number"
+                    />
+                  </div>
+                  <!-- Profile Status -->
+                  <div class="col-md-6 mb-5">
+                    <label class="form-label required">{{ t('legal.profiles.edit.profileStatus') }}</label>
+                    <select
+                      class="form-select"
+                      v-model="formData.profile_status"
+                      required
+                    >
+                      <option value="active">{{ t('legal.profiles.edit.statusActive') }}</option>
+                      <option value="completed">{{ t('legal.profiles.edit.statusCompleted') }}</option>
+                      <option value="transferred">{{ t('legal.profiles.edit.statusTransferred') }}</option>
+                      <option value="deceased">{{ t('legal.profiles.edit.statusDeceased') }}</option>
+                    </select>
+                  </div>
+                </div>
+                <div class="row">
+                  <!-- Admission Date -->
+                  <div class="col-md-6 mb-5">
+                    <label class="form-label">{{ t('legal.profiles.edit.admissionDate') }}</label>
+                    <input
+                      type="date"
+                      class="form-control"
+                      v-model="formData.admission_date"
+                    />
+                  </div>
+                  <!-- Release Date -->
+                  <div class="col-md-6 mb-5">
+                    <label class="form-label">{{ t('legal.profiles.edit.releaseDate') }}</label>
+                    <input
+                      type="date"
+                      class="form-control"
+                      v-model="formData.release_date"
+                    />
+                  </div>
+                </div>
+                <div class="row">
+                  <!-- Is Reentry -->
+                  <div class="col-md-6 mb-5">
+                    <div class="form-check form-switch mt-8">
+                      <input
+                        class="form-check-input"
+                        type="checkbox"
+                        v-model="formData.is_reentry"
+                        id="isReentry"
+                      />
+                      <label class="form-check-label" for="isReentry">
+                        {{ t('legal.profiles.edit.isReentry') }}
+                      </label>
+                    </div>
+                  </div>
+                  <!-- Previous Case Number -->
+                  <div class="col-md-6 mb-5" v-if="formData.is_reentry">
+                    <label class="form-label">{{ t('legal.profiles.edit.previousCaseNumber') }}</label>
+                    <input
+                      type="text"
+                      class="form-control"
+                      v-model="formData.previous_case_number"
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
           <!-- Basic Information Card -->
           <div class="col-xl-6">
-            <div class="card">
+            <div class="card mb-5">
               <div class="card-header">
                 <h3 class="card-title">{{ t('legal.profiles.edit.basicInfo') }}</h3>
               </div>
@@ -93,11 +174,12 @@
                     <option value="">{{ t('common.select') }}</option>
                     <option value="investigation">{{ t('legal.profiles.proceduralStages.investigation') }}</option>
                     <option value="intermediate_phase">{{ t('legal.profiles.proceduralStages.intermediate') }}</option>
-                    <option value="trial">{{ t('legal.profiles.proceduralStages.trial') }}</option>
+                    <option value="oral_trial">{{ t('legal.profiles.proceduralStages.oralTrial') }}</option>
                     <option value="sentence_execution">{{ t('legal.profiles.proceduralStages.sentenceExecution') }}</option>
                     <option value="appeal_process">{{ t('legal.profiles.proceduralStages.appeal') }}</option>
                     <option value="cassation">{{ t('legal.profiles.proceduralStages.cassation') }}</option>
-                    <option value="amparo_process">{{ t('legal.profiles.proceduralStages.amparo') }}</option>
+                    <option value="constitutional_appeal">{{ t('legal.profiles.proceduralStages.constitutionalAppeal') }}</option>
+                    <option value="review_process">{{ t('legal.profiles.proceduralStages.reviewProcess') }}</option>
                   </select>
                 </div>
 
@@ -310,6 +392,26 @@
                     </label>
                   </div>
                 </div>
+
+                <!-- Parole Eligibility Date -->
+                <div class="mb-5">
+                  <label class="form-label">{{ t('legal.profiles.edit.paroleEligibilityDate') }}</label>
+                  <input
+                    type="date"
+                    class="form-control"
+                    v-model="formData.parole_eligibility_date"
+                  />
+                </div>
+
+                <!-- Conditional Release Date -->
+                <div class="mb-5">
+                  <label class="form-label">{{ t('legal.profiles.edit.conditionalReleaseDate') }}</label>
+                  <input
+                    type="date"
+                    class="form-control"
+                    v-model="formData.conditional_release_eligibility"
+                  />
+                </div>
               </div>
             </div>
           </div>
@@ -395,6 +497,72 @@
                       {{ t('legal.profiles.edit.preventiveDetentionExpired') }}
                     </div>
                   </div>
+
+                  <!-- Extension Reason -->
+                  <div class="mb-5">
+                    <label class="form-label">{{ t('legal.profiles.edit.extensionReason') }}</label>
+                    <textarea
+                      class="form-control"
+                      v-model="formData.preventive_detention_extension_reason"
+                      rows="3"
+                      :placeholder="t('legal.profiles.edit.extensionReasonPlaceholder')"
+                    ></textarea>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Sentence Reduction -->
+        <div class="row g-5 g-xl-10 mt-1">
+          <div class="col-12">
+            <div class="card">
+              <div class="card-header">
+                <h3 class="card-title">{{ t('legal.profiles.edit.sentenceReduction') }}</h3>
+              </div>
+              <div class="card-body">
+                <div class="row">
+                  <!-- Good Conduct Days -->
+                  <div class="col-md-3 mb-5">
+                    <label class="form-label">{{ t('legal.profiles.edit.goodConductDays') }}</label>
+                    <input
+                      type="number"
+                      class="form-control"
+                      v-model.number="formData.good_conduct_days"
+                      min="0"
+                    />
+                  </div>
+                  <!-- Work Days -->
+                  <div class="col-md-3 mb-5">
+                    <label class="form-label">{{ t('legal.profiles.edit.workDays') }}</label>
+                    <input
+                      type="number"
+                      class="form-control"
+                      v-model.number="formData.work_days"
+                      min="0"
+                    />
+                  </div>
+                  <!-- Study Days -->
+                  <div class="col-md-3 mb-5">
+                    <label class="form-label">{{ t('legal.profiles.edit.studyDays') }}</label>
+                    <input
+                      type="number"
+                      class="form-control"
+                      v-model.number="formData.study_days"
+                      min="0"
+                    />
+                  </div>
+                  <!-- Total Reduction -->
+                  <div class="col-md-3 mb-5">
+                    <label class="form-label">{{ t('legal.profiles.edit.totalReductionDays') }}</label>
+                    <input
+                      type="text"
+                      class="form-control"
+                      :value="totalReductionDays + ' ' + t('legal.profiles.edit.days')"
+                      readonly
+                    />
+                  </div>
                 </div>
               </div>
             </div>
@@ -477,16 +645,26 @@ const loading = ref(false);
 const submitting = ref(false);
 const profile = ref<any>(null);
 const formData = ref<any>({
+  // Admission info
+  admission_number: '',
+  admission_date: '',
+  release_date: '',
+  profile_status: 'active',
+  is_reentry: false,
+  previous_case_number: '',
+  // Case info
   case_number: '',
   judicial_file_number: '',
   procedural_status_id: '',
   procedural_stage: '',
   court_id: '',
+  // Legal representatives
   prosecutor_name: '',
   prosecutor_office: '',
   defense_type: 'public',
   defense_attorney_name: '',
   defense_attorney_phone: '',
+  // Sentence info
   sentence_type_id: '',
   sentence_years: 0,
   sentence_months: 0,
@@ -496,9 +674,18 @@ const formData = ref<any>({
   sentence_details: '',
   eligible_for_benefits: false,
   sentence_final: false,
+  parole_eligibility_date: '',
+  conditional_release_eligibility: '',
+  // Preventive detention
   in_preventive_detention: false,
   preventive_detention_start: '',
   preventive_detention_max_end: '',
+  preventive_detention_extension_reason: '',
+  // Sentence reduction
+  good_conduct_days: 0,
+  work_days: 0,
+  study_days: 0,
+  // Notes
   legal_notes: ''
 });
 const errors = ref<any>({});
@@ -520,6 +707,12 @@ const preventiveDetentionExpired = computed(() => {
   return preventiveDetentionDaysElapsed.value > 164;
 });
 
+const totalReductionDays = computed(() => {
+  return (formData.value.good_conduct_days || 0) +
+         (formData.value.work_days || 0) +
+         (formData.value.study_days || 0);
+});
+
 // Watchers
 watch(() => formData.value.preventive_detention_start, (newVal) => {
   if (newVal && formData.value.in_preventive_detention) {
@@ -539,16 +732,26 @@ const loadProfile = async () => {
     
     // Populate form data
     formData.value = {
+      // Admission info
+      admission_number: profile.value.admission_number || '',
+      admission_date: formatDateForInput(profile.value.admission_date),
+      release_date: formatDateForInput(profile.value.release_date),
+      profile_status: profile.value.profile_status || 'active',
+      is_reentry: profile.value.is_reentry || false,
+      previous_case_number: profile.value.previous_case_number || '',
+      // Case info
       case_number: profile.value.case_number || '',
       judicial_file_number: profile.value.judicial_file_number || '',
       procedural_status_id: profile.value.procedural_status_id || '',
       procedural_stage: profile.value.procedural_stage || '',
       court_id: profile.value.court_id || '',
+      // Legal representatives
       prosecutor_name: profile.value.prosecutor_name || '',
       prosecutor_office: profile.value.prosecutor_office || '',
       defense_type: profile.value.defense_type || 'public',
       defense_attorney_name: profile.value.defense_attorney_name || '',
       defense_attorney_phone: profile.value.defense_attorney_phone || '',
+      // Sentence info
       sentence_type_id: profile.value.sentence_type_id || '',
       sentence_years: profile.value.sentence_years || 0,
       sentence_months: profile.value.sentence_months || 0,
@@ -558,9 +761,18 @@ const loadProfile = async () => {
       sentence_details: profile.value.sentence_details || '',
       eligible_for_benefits: profile.value.eligible_for_benefits || false,
       sentence_final: profile.value.sentence_final || false,
+      parole_eligibility_date: formatDateForInput(profile.value.parole_eligibility_date),
+      conditional_release_eligibility: formatDateForInput(profile.value.conditional_release_eligibility),
+      // Preventive detention
       in_preventive_detention: profile.value.in_preventive_detention || false,
       preventive_detention_start: formatDateForInput(profile.value.preventive_detention_start),
       preventive_detention_max_end: formatDateForInput(profile.value.preventive_detention_max_end),
+      preventive_detention_extension_reason: profile.value.preventive_detention_extension_reason || '',
+      // Sentence reduction
+      good_conduct_days: profile.value.good_conduct_days || 0,
+      work_days: profile.value.work_days || 0,
+      study_days: profile.value.study_days || 0,
+      // Notes
       legal_notes: profile.value.legal_notes || ''
     };
   } catch (error) {

@@ -10,7 +10,7 @@
       <div class="modal-content">
         <div class="modal-header">
           <h2 class="fw-bold">
-            {{ isEditing ? 'Editar Solicitud de Traslado' : 'Nueva Solicitud de Traslado' }}
+            {{ isEditing ? $t('inmates.transferForm.titleEdit') : $t('inmates.transferForm.titleNew') }}
           </h2>
           <div class="btn btn-icon btn-sm btn-active-icon-primary" @click="close">
             <i class="ki-duotone ki-cross fs-1">
@@ -24,7 +24,7 @@
           <!-- Loading -->
           <div v-if="loading" class="text-center py-10">
             <div class="spinner-border spinner-border-lg text-primary" role="status">
-              <span class="visually-hidden">Cargando...</span>
+              <span class="visually-hidden">{{ $t('inmates.transferForm.loading') }}</span>
             </div>
           </div>
 
@@ -33,7 +33,7 @@
             <!-- Inmate Selection -->
             <div class="row mb-7">
               <div class="col-12">
-                <label class="required fs-6 fw-semibold mb-2">Interno a Trasladar</label>
+                <label class="required fs-6 fw-semibold mb-2">{{ $t('inmates.transferForm.inmateToTransfer') }}</label>
 
                 <!-- Show as read-only card when inmateId is provided -->
                 <div v-if="inmateId && selectedInmate" class="card border border-primary">
@@ -68,7 +68,7 @@
                   :disabled="isEditing"
                   @change="onInmateChange"
                 >
-                  <option value="">Seleccionar interno...</option>
+                  <option value="">{{ $t('inmates.transferForm.selectInmate') }}</option>
                   <option v-for="inmate in inmates" :key="inmate?.id" :value="inmate?.id">
                     {{ inmate?.full_name }} - {{ inmate?.inmate_number }}
                   </option>
@@ -81,20 +81,20 @@
             <!-- Current Location (Read-only) -->
             <div v-if="selectedInmate" class="row mb-7">
               <div class="col-12">
-                <label class="fs-6 fw-semibold mb-2">Ubicación Actual</label>
+                <label class="fs-6 fw-semibold mb-2">{{ $t('inmates.transferForm.currentLocation') }}</label>
                 <div class="card border border-dashed border-primary">
                   <div class="card-body p-4">
                     <div class="row">
                       <div class="col-md-4">
-                        <strong>Centro:</strong><br>
+                        <strong>{{ $t('inmates.transferForm.center') }}:</strong><br>
                         <span class="text-muted">{{ selectedInmate.current_center?.name || 'N/A' }}</span>
                       </div>
                       <div class="col-md-4">
-                        <strong>Sector:</strong><br>
+                        <strong>{{ $t('inmates.transferForm.sector') }}:</strong><br>
                         <span class="text-muted">{{ selectedInmate.current_sector?.name || 'N/A' }}</span>
                       </div>
                       <div class="col-md-4">
-                        <strong>Celda:</strong><br>
+                        <strong>{{ $t('inmates.transferForm.cell') }}:</strong><br>
                         <span class="text-muted">{{ selectedInmate.current_cell_number || 'N/A' }}</span>
                       </div>
                     </div>
@@ -106,14 +106,14 @@
             <!-- Destination -->
             <div class="row mb-7">
               <div class="col-md-6">
-                <label class="required fs-6 fw-semibold mb-2">Centro de Destino</label>
+                <label class="required fs-6 fw-semibold mb-2">{{ $t('inmates.transferForm.destinationCenter') }}</label>
                 <select
                   v-model="form.destination_center_id"
                   class="form-select"
                   :class="{ 'is-invalid': errors.destination_center_id }"
                   @change="onDestinationCenterChange"
                 >
-                  <option value="">Seleccionar centro...</option>
+                  <option value="">{{ $t('inmates.transferForm.selectCenter') }}</option>
                   <option v-for="center in centers" :key="center?.id" :value="center?.id">
                     {{ center?.name }}
                   </option>
@@ -121,18 +121,19 @@
                 <div v-if="errors.destination_center_id" class="invalid-feedback">{{ errors.destination_center_id }}</div>
               </div>
               <div class="col-md-6">
-                <label class="required fs-6 fw-semibold mb-2">Sector de Destino</label>
+                <label class="fs-6 fw-semibold mb-2">{{ $t('inmates.transferForm.destinationSector') }}</label>
                 <select
                   v-model="form.destination_sector_id"
                   class="form-select"
                   :class="{ 'is-invalid': errors.destination_sector_id }"
                   :disabled="!form.destination_center_id"
                 >
-                  <option value="">Seleccionar sector...</option>
+                  <option value="">{{ $t('inmates.transferForm.sectorAssignedOnArrival') }}</option>
                   <option v-for="sector in destinationSectors" :key="sector?.id" :value="sector?.id">
                     {{ sector?.name }}
                   </option>
                 </select>
+                <div class="form-text text-muted">{{ $t('inmates.transferForm.sectorHint') }}</div>
                 <div v-if="errors.destination_sector_id" class="invalid-feedback">{{ errors.destination_sector_id }}</div>
               </div>
             </div>
@@ -140,13 +141,13 @@
             <!-- Transfer Details -->
             <div class="row mb-7">
               <div class="col-md-6">
-                <label class="required fs-6 fw-semibold mb-2">Motivo del Traslado</label>
+                <label class="required fs-6 fw-semibold mb-2">{{ $t('inmates.transferForm.transferReason') }}</label>
                 <select
                   v-model="form.transfer_reason_id"
                   class="form-select"
                   :class="{ 'is-invalid': errors.transfer_reason_id }"
                 >
-                  <option value="">Seleccionar motivo...</option>
+                  <option value="">{{ $t('inmates.transferForm.selectReason') }}</option>
                   <option v-for="reason in transferReasons" :key="reason?.id" :value="reason?.id">
                     {{ reason?.name }}
                   </option>
@@ -154,7 +155,7 @@
                 <div v-if="errors.transfer_reason_id" class="invalid-feedback">{{ errors.transfer_reason_id }}</div>
               </div>
               <div class="col-md-6">
-                <label class="required fs-6 fw-semibold mb-2">Fecha y Hora Programada</label>
+                <label class="required fs-6 fw-semibold mb-2">{{ $t('inmates.transferForm.scheduledDatetime') }}</label>
                 <input
                   v-model="form.scheduled_departure_datetime"
                   type="datetime-local"
@@ -169,32 +170,32 @@
             <!-- Priority and Urgency -->
             <div class="row mb-7">
               <div class="col-md-6">
-                <label class="required fs-6 fw-semibold mb-2">Nivel de Prioridad</label>
+                <label class="required fs-6 fw-semibold mb-2">{{ $t('inmates.transferForm.priorityLevel') }}</label>
                 <select
                   v-model="form.priority_level"
                   class="form-select"
                   :class="{ 'is-invalid': errors.priority_level }"
                 >
-                  <option value="">Seleccionar prioridad...</option>
-                  <option value="low">Baja</option>
-                  <option value="normal">Normal</option>
-                  <option value="high">Alta</option>
-                  <option value="urgent">Urgente</option>
+                  <option value="">{{ $t('inmates.transferForm.selectPriority') }}</option>
+                  <option value="low">{{ $t('inmates.transferForm.priorities.low') }}</option>
+                  <option value="normal">{{ $t('inmates.transferForm.priorities.normal') }}</option>
+                  <option value="high">{{ $t('inmates.transferForm.priorities.high') }}</option>
+                  <option value="urgent">{{ $t('inmates.transferForm.priorities.urgent') }}</option>
                 </select>
                 <div v-if="errors.priority_level" class="invalid-feedback">{{ errors.priority_level }}</div>
               </div>
               <div class="col-md-6">
-                <label class="fs-6 fw-semibold mb-2">Nivel de Urgencia</label>
+                <label class="fs-6 fw-semibold mb-2">{{ $t('inmates.transferForm.urgencyLevel') }}</label>
                 <select
                   v-model="form.urgency_level"
                   class="form-select"
                   :class="{ 'is-invalid': errors.urgency_level }"
                 >
-                  <option value="">Seleccionar urgencia...</option>
-                  <option value="low">Baja</option>
-                  <option value="medium">Media</option>
-                  <option value="high">Alta</option>
-                  <option value="critical">Crítica</option>
+                  <option value="">{{ $t('inmates.transferForm.selectUrgency') }}</option>
+                  <option value="low">{{ $t('inmates.transferForm.urgencies.low') }}</option>
+                  <option value="medium">{{ $t('inmates.transferForm.urgencies.medium') }}</option>
+                  <option value="high">{{ $t('inmates.transferForm.urgencies.high') }}</option>
+                  <option value="critical">{{ $t('inmates.transferForm.urgencies.critical') }}</option>
                 </select>
                 <div v-if="errors.urgency_level" class="invalid-feedback">{{ errors.urgency_level }}</div>
               </div>
@@ -203,13 +204,13 @@
             <!-- Justification -->
             <div class="row mb-7">
               <div class="col-12">
-                <label class="required fs-6 fw-semibold mb-2">Justificación del Traslado</label>
+                <label class="required fs-6 fw-semibold mb-2">{{ $t('inmates.transferForm.justification') }}</label>
                 <textarea
                   v-model="form.justification"
                   class="form-control"
                   :class="{ 'is-invalid': errors.justification }"
                   rows="4"
-                  placeholder="Describa detalladamente el motivo y justificación del traslado..."
+                  :placeholder="$t('inmates.transferForm.justificationPlaceholder')"
                 ></textarea>
                 <div v-if="errors.justification" class="invalid-feedback">{{ errors.justification }}</div>
               </div>
@@ -218,13 +219,13 @@
             <!-- Detailed Reason -->
             <div class="row mb-7">
               <div class="col-12">
-                <label class="fs-6 fw-semibold mb-2">Razón Detallada</label>
+                <label class="fs-6 fw-semibold mb-2">{{ $t('inmates.transferForm.detailedReason') }}</label>
                 <textarea
                   v-model="form.detailed_reason"
                   class="form-control"
                   :class="{ 'is-invalid': errors.detailed_reason }"
                   rows="3"
-                  placeholder="Información adicional sobre el traslado..."
+                  :placeholder="$t('inmates.transferForm.detailedReasonPlaceholder')"
                 ></textarea>
                 <div v-if="errors.detailed_reason" class="invalid-feedback">{{ errors.detailed_reason }}</div>
               </div>
@@ -233,7 +234,7 @@
             <!-- Special Requirements -->
             <div class="row mb-7">
               <div class="col-12">
-                <label class="fs-6 fw-semibold mb-4">Requisitos Especiales</label>
+                <label class="fs-6 fw-semibold mb-4">{{ $t('inmates.transferForm.specialRequirements') }}</label>
                 <div class="row">
                   <div class="col-md-4">
                     <div class="form-check form-check-custom form-check-solid">
@@ -244,7 +245,7 @@
                         id="medical_clearance"
                       />
                       <label class="form-check-label" for="medical_clearance">
-                        Requiere Autorización Médica
+                        {{ $t('inmates.transferForm.requiresMedicalClearance') }}
                       </label>
                     </div>
                   </div>
@@ -257,7 +258,7 @@
                         id="security_clearance"
                       />
                       <label class="form-check-label" for="security_clearance">
-                        Requiere Autorización de Seguridad
+                        {{ $t('inmates.transferForm.requiresSecurityClearance') }}
                       </label>
                     </div>
                   </div>
@@ -270,7 +271,7 @@
                         id="court_authorization"
                       />
                       <label class="form-check-label" for="court_authorization">
-                        Requiere Autorización Judicial
+                        {{ $t('inmates.transferForm.requiresCourtAuthorization') }}
                       </label>
                     </div>
                   </div>
@@ -289,7 +290,7 @@
                     id="medical_escort"
                   />
                   <label class="form-check-label" for="medical_escort">
-                    Requiere Escolta Médica
+                    {{ $t('inmates.transferForm.requiresMedicalEscort') }}
                   </label>
                 </div>
               </div>
@@ -302,7 +303,7 @@
                     id="security_escort"
                   />
                   <label class="form-check-label" for="security_escort">
-                    Requiere Escolta de Seguridad
+                    {{ $t('inmates.transferForm.requiresSecurityEscort') }}
                   </label>
                 </div>
               </div>
@@ -311,7 +312,7 @@
             <!-- Security Personnel -->
             <div v-if="form.requires_security_escort" class="row mb-7">
               <div class="col-md-6">
-                <label class="fs-6 fw-semibold mb-2">Mínimo Personal de Seguridad</label>
+                <label class="fs-6 fw-semibold mb-2">{{ $t('inmates.transferForm.minSecurityPersonnel') }}</label>
                 <input
                   v-model.number="form.min_security_personnel"
                   type="number"
@@ -327,21 +328,21 @@
             <!-- Considerations -->
             <div class="row mb-7">
               <div class="col-md-6">
-                <label class="fs-6 fw-semibold mb-2">Consideraciones de Seguridad</label>
+                <label class="fs-6 fw-semibold mb-2">{{ $t('inmates.transferForm.securityConsiderations') }}</label>
                 <textarea
                   v-model="form.security_considerations"
                   class="form-control"
                   rows="3"
-                  placeholder="Observaciones especiales de seguridad..."
+                  :placeholder="$t('inmates.transferForm.securityConsiderationsPlaceholder')"
                 ></textarea>
               </div>
               <div class="col-md-6">
-                <label class="fs-6 fw-semibold mb-2">Consideraciones Médicas</label>
+                <label class="fs-6 fw-semibold mb-2">{{ $t('inmates.transferForm.medicalConsiderations') }}</label>
                 <textarea
                   v-model="form.medical_considerations"
                   class="form-control"
                   rows="3"
-                  placeholder="Observaciones especiales médicas..."
+                  :placeholder="$t('inmates.transferForm.medicalConsiderationsPlaceholder')"
                 ></textarea>
               </div>
             </div>
@@ -349,12 +350,12 @@
             <!-- Observations -->
             <div class="row mb-7">
               <div class="col-12">
-                <label class="fs-6 fw-semibold mb-2">Observaciones Generales</label>
+                <label class="fs-6 fw-semibold mb-2">{{ $t('inmates.transferForm.generalObservations') }}</label>
                 <textarea
                   v-model="form.observations"
                   class="form-control"
                   rows="3"
-                  placeholder="Observaciones adicionales sobre el traslado..."
+                  :placeholder="$t('inmates.transferForm.generalObservationsPlaceholder')"
                 ></textarea>
               </div>
             </div>
@@ -363,16 +364,16 @@
 
         <div class="modal-footer">
           <button type="button" class="btn btn-light" @click="close">
-            Cancelar
+            {{ $t('inmates.transferForm.cancel') }}
           </button>
-          <button 
-            type="button" 
-            class="btn btn-primary" 
+          <button
+            type="button"
+            class="btn btn-primary"
             @click="submitForm"
             :disabled="saving"
           >
             <span v-if="saving" class="spinner-border spinner-border-sm me-2" role="status"></span>
-            {{ isEditing ? 'Actualizar Solicitud' : 'Crear Solicitud' }}
+            {{ isEditing ? $t('inmates.transferForm.updateRequest') : $t('inmates.transferForm.createRequest') }}
           </button>
         </div>
       </div>
@@ -382,10 +383,13 @@
 
 <script setup lang="ts">
 import { ref, computed, watch, onMounted, nextTick } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { Modal } from 'bootstrap';
 import ApiService from '@/core/services/ApiService';
 import Swal from 'sweetalert2';
 import { formatDateForInput } from '@/core/helpers/date-formatters';
+
+const { t } = useI18n();
 
 // Props
 interface Props {
@@ -517,8 +521,8 @@ const loadInitialData = async () => {
   } catch (error) {
     console.error('Error loading initial data:', error);
     await Swal.fire({
-      title: 'Error',
-      text: 'Error al cargar los datos iniciales',
+      title: t('inmates.transferForm.swal.error'),
+      text: t('inmates.transferForm.swal.loadError'),
       icon: 'error'
     });
   } finally {
@@ -612,23 +616,21 @@ const validateForm = () => {
   errors.value = {};
 
   if (!form.value.inmate_id) {
-    errors.value.inmate_id = 'El interno es requerido';
+    errors.value.inmate_id = t('inmates.transferForm.validation.inmateRequired');
   }
 
   if (!form.value.destination_center_id) {
-    errors.value.destination_center_id = 'El centro de destino es requerido';
+    errors.value.destination_center_id = t('inmates.transferForm.validation.destinationRequired');
   }
 
-  if (!form.value.destination_sector_id) {
-    errors.value.destination_sector_id = 'El sector de destino es requerido';
-  }
+  // Nota: destination_sector_id es opcional - se asigna al completar el traslado
 
   if (!form.value.transfer_reason_id) {
-    errors.value.transfer_reason_id = 'El motivo del traslado es requerido';
+    errors.value.transfer_reason_id = t('inmates.transferForm.validation.reasonRequired');
   }
 
   if (!form.value.scheduled_departure_datetime) {
-    errors.value.scheduled_departure_datetime = 'La fecha y hora de traslado es requerida';
+    errors.value.scheduled_departure_datetime = t('inmates.transferForm.validation.datetimeRequired');
   }
 
   return Object.keys(errors.value).length === 0;
@@ -652,14 +654,18 @@ const submitForm = async () => {
     }
 
     // Prepare data matching backend expectations
-    const transferData = {
+    const transferData: Record<string, any> = {
       inmate_id: form.value.inmate_id,
       destination_center_id: form.value.destination_center_id,
-      destination_sector_id: form.value.destination_sector_id,
       transfer_reason_id: form.value.transfer_reason_id,
       scheduled_departure_datetime: form.value.scheduled_departure_datetime,
       transfer_description: transferDescription || undefined
     };
+
+    // Sector es opcional - solo se envía si está seleccionado
+    if (form.value.destination_sector_id) {
+      transferData.destination_sector_id = form.value.destination_sector_id;
+    }
 
     const url = isEditing.value ? `/transfers/${props.transfer.id}` : '/transfers';
     const method = isEditing.value ? 'put' : 'post';
@@ -668,10 +674,10 @@ const submitForm = async () => {
 
     if (response.data.success) {
       await Swal.fire({
-        title: '¡Éxito!',
+        title: t('inmates.transferForm.swal.successTitle'),
         text: isEditing.value
-          ? 'La solicitud de traslado ha sido actualizada correctamente'
-          : 'La solicitud de traslado ha sido creada correctamente',
+          ? t('inmates.transferForm.swal.updatedMessage')
+          : t('inmates.transferForm.swal.createdMessage'),
         icon: 'success',
         timer: 2000
       });
@@ -688,8 +694,8 @@ const submitForm = async () => {
     }
 
     await Swal.fire({
-      title: 'Error',
-      text: error.response?.data?.message || 'Error al guardar la solicitud de traslado',
+      title: t('inmates.transferForm.swal.error'),
+      text: error.response?.data?.message || t('inmates.transferForm.swal.saveError'),
       icon: 'error'
     });
   } finally {

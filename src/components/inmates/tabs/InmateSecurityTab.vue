@@ -548,10 +548,6 @@ const getIncidentSeverityColor = (severity: string) => {
 const fetchSecurityData = async () => {
   loadingProfile.value = true;
   try {
-    console.log('Inmate data in security tab:', props.inmate);
-    console.log('Security classification (snake_case):', props.inmate.current_security_classification);
-    console.log('Gang affiliation (snake_case):', props.inmate.current_gang_affiliation);
-    console.log('Security incidents (snake_case):', props.inmate.security_incidents);
 
     // Use data already loaded from InmateController show() method
     // Backend returns snake_case keys

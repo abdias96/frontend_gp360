@@ -660,33 +660,132 @@ const getNextCountTime = () => {
 const fetchOperationsData = async () => {
   loadingProfile.value = true;
   try {
-    // TODO: Uncomment when API endpoints are ready
-    // const statsResponse = await ApiService.get(`/inmates/${props.inmate.id}/operations-stats`);
-    // operationsStats.value = statsResponse.data.data || {};
-    
-    // TODO: Fetch different operations data when endpoints are ready
-    // const [transfersRes, countsRes, workRes, operationsRes] = await Promise.all([
-    //   ApiService.get(`/inmates/${props.inmate.id}/transfers?recent=true&limit=5`),
-    //   ApiService.get(`/inmates/${props.inmate.id}/daily-counts?today=true`),
-    //   ApiService.get(`/inmates/${props.inmate.id}/work-assignments?active=true&limit=3`),
-    //   ApiService.get(`/inmates/${props.inmate.id}/special-operations?recent=true&limit=5`)
-    // ]);
-    
-    // Temporary mock data
+    // Load transfers from inmate props
+    const transfersData = props.inmate.transfers || props.inmate.transferHistory || [];
+
+    // Map transfers to a consistent format
+    transferHistory.value = Array.isArray(transfersData)
+      ? transfersData.map((transfer: any) => ({
+          id: transfer.id,
+          type: transfer.transfer_reason?.code || transfer.transfer_type || 'routine',
+          destination_center: transfer.to_center_name || transfer.to_center?.name || 'N/A',
+          origin_center: transfer.from_center_name || transfer.from_center?.name || 'N/A',
+          reason: transfer.transfer_reason_name || transfer.transfer_reason?.name || transfer.justification,
+          transfer_date: transfer.transfer_date || transfer.request_date,
+          status: transfer.status || 'pending',
+          approved_by: transfer.approver_name,
+          executed_by: transfer.executor_name,
+          transport_details: transfer.transport_details
+        })).sort((a: any, b: any) =>
+          new Date(b.transfer_date).getTime() - new Date(a.transfer_date).getTime()
+        )
+      : [];
+
+    // Load daily counts from inmate props (if available)
+    const countsData = props.inmate.daily_counts ||
+                       props.inmate.dailyCounts ||
+                       props.inmate.count_records || [];
+
+    // Get today's counts
+    const today = new Date().toISOString().split('T')[0];
+    dailyCounts.value = Array.isArray(countsData)
+      ? countsData
+          .filter((count: any) => {
+            const countDate = (count.count_date || count.created_at || '').split('T')[0];
+            return countDate === today;
+          })
+          .map((count: any) => ({
+            id: count.id,
+            time_slot: count.time_slot || count.count_time || 'N/A',
+            location: count.location || count.sector_name || props.inmate.sector_name || 'N/A',
+            status: count.status || (count.is_present ? 'present' : 'absent'),
+            recorded_by: count.recorded_by_name || count.officer_name
+          }))
+      : [];
+
+    // Load work assignments from inmate props (if available)
+    const workData = props.inmate.work_assignments ||
+                     props.inmate.workAssignments ||
+                     props.inmate.job_assignments || [];
+
+    workAssignments.value = Array.isArray(workData)
+      ? workData.map((assignment: any) => ({
+          id: assignment.id,
+          job_title: assignment.job_title || assignment.position || assignment.work_type?.name || 'N/A',
+          department: assignment.department || assignment.area || 'N/A',
+          schedule: assignment.schedule || assignment.work_schedule || 'Sin horario definido',
+          status: assignment.status || 'active',
+          attendance_rate: assignment.attendance_rate || assignment.attendance_percentage || 0,
+          start_date: assignment.start_date,
+          end_date: assignment.end_date
+        }))
+      : [];
+
+    // Load special operations (if available)
+    const operationsData = props.inmate.special_operations ||
+                           props.inmate.specialOperations || [];
+
+    specialOperations.value = Array.isArray(operationsData)
+      ? operationsData.map((op: any) => ({
+          id: op.id,
+          type: op.operation_type || op.type || 'transport',
+          title: op.title || op.operation_name || 'Operación',
+          description: op.description || op.notes || '',
+          scheduled_date: op.scheduled_date || op.operation_date || op.created_at,
+          status: op.status || 'scheduled'
+        })).sort((a: any, b: any) =>
+          new Date(b.scheduled_date).getTime() - new Date(a.scheduled_date).getTime()
+        )
+      : [];
+
+    // Calculate days in current location
+    const admissionDate = new Date(props.inmate.admission_date || props.inmate.created_at);
+    const lastTransfer = transferHistory.value.find((t: any) => t.status === 'completed');
+    const locationStartDate = lastTransfer
+      ? new Date(lastTransfer.transfer_date)
+      : admissionDate;
+    const daysInLocation = Math.floor(
+      (new Date().getTime() - locationStartDate.getTime()) / (1000 * 60 * 60 * 24)
+    );
+
+    // Determine daily count status
+    const requiredCountTimes = ['06:00', '12:00', '18:00', '21:00'];
+    const currentHour = new Date().getHours();
+    const expectedCounts = requiredCountTimes.filter(time => {
+      const hour = parseInt(time.split(':')[0]);
+      return hour <= currentHour;
+    }).length;
+    const actualCounts = dailyCounts.value.filter((c: any) => c.status === 'present').length;
+
+    let countStatus = 'pending';
+    if (actualCounts >= expectedCounts && expectedCounts > 0) {
+      countStatus = 'complete';
+    } else if (actualCounts > 0 && actualCounts < expectedCounts) {
+      countStatus = 'partial';
+    } else if (expectedCounts > 0 && actualCounts === 0) {
+      countStatus = 'missing';
+    }
+
+    // Calculate pending transfers
+    const pendingTransfers = transferHistory.value.filter((t: any) =>
+      t.status === 'requested' || t.status === 'approved' || t.status === 'in_transit'
+    );
+
+    // Check work attendance
+    const activeWork = workAssignments.value.filter((w: any) => w.status === 'active');
+    const lowAttendance = activeWork.some((w: any) => (w.attendance_rate || 0) < 70);
+
+    // Set operations stats
     operationsStats.value = {
-      total_transfers: 0,
-      days_in_location: 0,
-      daily_count_status: 'presente',
-      work_assignment: null,
-      pending_transfers: 0,
-      special_ops_active: 0
+      total_transfers: transferHistory.value.length,
+      days_in_current_location: daysInLocation,
+      daily_count_status: countStatus,
+      has_work_assignment: activeWork.length > 0,
+      pending_transfer: pendingTransfers.length > 0,
+      missing_daily_count: countStatus === 'missing' || countStatus === 'partial',
+      work_attendance_low: lowAttendance
     };
-    
-    transferHistory.value = [];
-    dailyCounts.value = [];
-    workAssignments.value = [];
-    specialOperations.value = [];
-    
+
   } catch (error) {
     console.error('Error fetching operations data:', error);
     // Set default values in case of error
@@ -699,6 +798,10 @@ const fetchOperationsData = async () => {
       missing_daily_count: false,
       work_attendance_low: false
     };
+    transferHistory.value = [];
+    dailyCounts.value = [];
+    workAssignments.value = [];
+    specialOperations.value = [];
   } finally {
     loadingProfile.value = false;
   }

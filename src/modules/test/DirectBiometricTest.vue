@@ -46,7 +46,6 @@ const launchBiometricService = async () => {
 };
 
 const onFingerprintCaptured = (data: any) => {
-  console.log('Fingerprint captured:', data);
   capturedData.value = data;
   
   Swal.fire({

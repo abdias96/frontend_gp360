@@ -27,36 +27,72 @@
           <div class="card">
             <div class="card-header">
               <h3 class="card-title">{{ t('legal.profiles.detail.inmateInfo') }}</h3>
+              <div class="card-toolbar">
+                <span
+                  class="badge badge-lg"
+                  :class="getProfileStatusBadgeClass(profile.profile_status)"
+                >
+                  {{ getProfileStatusLabel(profile.profile_status) }}
+                </span>
+              </div>
             </div>
             <div class="card-body">
               <div class="d-flex flex-center flex-column py-5">
-                <div class="symbol symbol-100px symbol-circle mb-7">
-                  <img 
-                    :src="profile.inmate?.photo_url || getAssetPath('media/avatars/blank.png')" 
-                    :alt="inmateName"
-                  />
+                <div class="symbol symbol-100px symbol-circle mb-7 overflow-hidden">
+                  <div class="symbol-label">
+                    <img
+                      :src="getInmatePhoto(profile.inmate)"
+                      :alt="inmateName"
+                      class="w-100"
+                    />
+                  </div>
                 </div>
                 <h3 class="fs-3 text-gray-800 fw-bold mb-3">{{ inmateName }}</h3>
-                <div class="fs-5 fw-semibold text-muted mb-6">
+                <div class="fs-5 fw-semibold text-muted mb-2">
                   {{ profile.inmate?.inmate_number }}
                 </div>
+                <span v-if="profile.is_reentry" class="badge badge-light-warning">
+                  <i class="bi bi-arrow-repeat me-1"></i> Reingreso
+                </span>
               </div>
 
-              <div class="d-flex flex-stack fs-4 py-3">
-                <div class="fw-bold">{{ t('legal.profiles.detail.documentNumber') }}</div>
-                <div class="text-gray-700">{{ profile.inmate?.document_number || '-' }}</div>
+              <div class="d-flex flex-stack fs-6 py-3">
+                <div class="fw-bold text-muted">{{ t('legal.profiles.detail.documentNumber') }}</div>
+                <div class="text-gray-800">{{ profile.inmate?.document_number || '-' }}</div>
               </div>
 
-              <div class="separator my-3"></div>
+              <div class="separator my-2"></div>
 
-              <div class="d-flex flex-stack fs-4 py-3">
-                <div class="fw-bold">{{ t('legal.profiles.detail.caseNumber') }}</div>
-                <div class="text-gray-700">{{ profile.case_number }}</div>
+              <div class="d-flex flex-stack fs-6 py-3">
+                <div class="fw-bold text-muted">{{ t('legal.profiles.detail.admissionNumber') }}</div>
+                <div class="text-gray-800">{{ profile.admission_number || '-' }}</div>
               </div>
 
-              <div class="d-flex flex-stack fs-4 py-3">
-                <div class="fw-bold">{{ t('legal.profiles.detail.fileNumber') }}</div>
-                <div class="text-gray-700">{{ profile.judicial_file_number }}</div>
+              <div class="d-flex flex-stack fs-6 py-3">
+                <div class="fw-bold text-muted">{{ t('legal.profiles.detail.admissionDate') }}</div>
+                <div class="text-gray-800">{{ formatDate(profile.admission_date) }}</div>
+              </div>
+
+              <div class="d-flex flex-stack fs-6 py-3" v-if="profile.release_date">
+                <div class="fw-bold text-muted">{{ t('legal.profiles.detail.releaseDate') }}</div>
+                <div class="text-gray-800">{{ formatDate(profile.release_date) }}</div>
+              </div>
+
+              <div class="separator my-2"></div>
+
+              <div class="d-flex flex-stack fs-6 py-3">
+                <div class="fw-bold text-muted">{{ t('legal.profiles.detail.caseNumber') }}</div>
+                <div class="text-gray-800">{{ profile.case_number || '-' }}</div>
+              </div>
+
+              <div class="d-flex flex-stack fs-6 py-3">
+                <div class="fw-bold text-muted">{{ t('legal.profiles.detail.fileNumber') }}</div>
+                <div class="text-gray-800">{{ profile.judicial_file_number || '-' }}</div>
+              </div>
+
+              <div class="d-flex flex-stack fs-6 py-3" v-if="profile.previous_case_number">
+                <div class="fw-bold text-muted">{{ t('legal.profiles.detail.previousCaseNumber') }}</div>
+                <div class="text-gray-800">{{ profile.previous_case_number }}</div>
               </div>
             </div>
           </div>
@@ -185,12 +221,15 @@
               <h3 class="card-title">{{ t('legal.profiles.detail.sentenceInfo') }}</h3>
             </div>
             <div class="card-body">
-              <div v-if="profile.sentence_type_id">
+              <div v-if="profile.sentence_type_id || profile.sentence_start_date">
                 <div class="d-flex align-items-center mb-5">
                   <div class="flex-grow-1">
                     <span class="text-gray-800 fs-5 fw-bold">
                       {{ t('legal.profiles.detail.totalSentence') }}
                     </span>
+                    <div class="text-muted fs-7" v-if="profile.sentence_type?.name">
+                      {{ profile.sentence_type.name }}
+                    </div>
                   </div>
                   <div>
                     <span class="badge badge-lg badge-light-primary">
@@ -222,25 +261,25 @@
                   </div>
                 </div>
 
-                <div class="row mb-5">
+                <div class="row mb-5" v-if="profile.sentence_details">
                   <div class="col-12">
                     <div class="text-gray-600 fs-7 fw-semibold mb-2">
                       <i class="bi bi-file-text fs-6 me-1"></i>
                       {{ t('legal.profiles.detail.sentenceDetails') }}
                     </div>
                     <div class="text-gray-800 bg-light rounded p-3">
-                      {{ profile.sentence_details || '-' }}
+                      {{ profile.sentence_details }}
                     </div>
                   </div>
                 </div>
 
-                <div class="row">
+                <div class="row mb-5">
                   <div class="col-6">
                     <div class="text-gray-600 fs-7 fw-semibold mb-2">
                       <i class="bi bi-gift fs-6 me-1"></i>
                       {{ t('legal.profiles.detail.eligibleForBenefits') }}
                     </div>
-                    <span 
+                    <span
                       class="badge badge-lg"
                       :class="profile.eligible_for_benefits ? 'badge-light-success' : 'badge-light-danger'"
                     >
@@ -253,13 +292,36 @@
                       <i class="bi bi-shield-check fs-6 me-1"></i>
                       {{ t('legal.profiles.detail.sentenceFinal') }}
                     </div>
-                    <span 
+                    <span
                       class="badge badge-lg"
                       :class="profile.sentence_final ? 'badge-light-success' : 'badge-light-warning'"
                     >
                       <i class="bi" :class="profile.sentence_final ? 'bi-check-circle' : 'bi-clock'" ></i>
                       {{ profile.sentence_final ? 'Firme' : 'En proceso' }}
                     </span>
+                  </div>
+                </div>
+
+                <!-- Fechas de elegibilidad -->
+                <div class="separator my-4" v-if="profile.parole_eligibility_date || profile.conditional_release_eligibility"></div>
+                <div class="row" v-if="profile.parole_eligibility_date || profile.conditional_release_eligibility">
+                  <div class="col-6" v-if="profile.parole_eligibility_date">
+                    <div class="text-gray-600 fs-7 fw-semibold mb-2">
+                      <i class="bi bi-door-open fs-6 me-1"></i>
+                      {{ t('legal.profiles.detail.paroleEligibilityDate') }}
+                    </div>
+                    <div class="text-gray-800 fw-bold fs-6">
+                      {{ formatDate(profile.parole_eligibility_date) }}
+                    </div>
+                  </div>
+                  <div class="col-6" v-if="profile.conditional_release_eligibility">
+                    <div class="text-gray-600 fs-7 fw-semibold mb-2">
+                      <i class="bi bi-unlock fs-6 me-1"></i>
+                      {{ t('legal.profiles.detail.conditionalReleaseDate') }}
+                    </div>
+                    <div class="text-gray-800 fw-bold fs-6">
+                      {{ formatDate(profile.conditional_release_eligibility) }}
+                    </div>
                   </div>
                 </div>
               </div>
@@ -346,6 +408,17 @@
                     <span>{{ t('legal.profiles.detail.preventiveDetentionExpired') }}</span>
                   </div>
                 </div>
+
+                <!-- Razón de extensión -->
+                <div v-if="profile.preventive_detention_extension_reason" class="mt-5">
+                  <div class="text-gray-600 fs-7 fw-semibold mb-2">
+                    <i class="bi bi-journal-text fs-6 me-1"></i>
+                    {{ t('legal.profiles.detail.extensionReason') }}
+                  </div>
+                  <div class="text-gray-800 bg-light rounded p-3">
+                    {{ profile.preventive_detention_extension_reason }}
+                  </div>
+                </div>
               </div>
               <div v-else class="text-center py-10">
                 <span class="text-muted">{{ t('legal.profiles.detail.notInPreventiveDetention') }}</span>
@@ -396,6 +469,79 @@
         </div>
       </div>
 
+      <!-- Hearings and Sentence Reduction -->
+      <div class="row g-5 g-xl-10 mt-1">
+        <!-- Hearings Card -->
+        <div class="col-xl-6">
+          <div class="card">
+            <div class="card-header">
+              <h3 class="card-title">{{ t('legal.profiles.detail.hearings') }}</h3>
+            </div>
+            <div class="card-body">
+              <div class="row">
+                <div class="col-6">
+                  <div class="text-gray-600 fs-7 fw-semibold mb-2">
+                    <i class="bi bi-calendar-event fs-6 me-1"></i>
+                    {{ t('legal.profiles.detail.lastHearingDate') }}
+                  </div>
+                  <div class="text-gray-800 fw-bold fs-6">
+                    {{ formatDate(profile.last_hearing_date) }}
+                  </div>
+                </div>
+                <div class="col-6">
+                  <div class="text-gray-600 fs-7 fw-semibold mb-2">
+                    <i class="bi bi-calendar-plus fs-6 me-1"></i>
+                    {{ t('legal.profiles.detail.nextHearingDate') }}
+                  </div>
+                  <div class="fw-bold fs-6" :class="isUpcomingHearing ? 'text-warning' : 'text-gray-800'">
+                    {{ formatDate(profile.next_hearing_date) }}
+                    <i v-if="isUpcomingHearing" class="bi bi-exclamation-triangle ms-1"></i>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Sentence Reduction Card -->
+        <div class="col-xl-6">
+          <div class="card">
+            <div class="card-header">
+              <h3 class="card-title">{{ t('legal.profiles.detail.sentenceReduction') }}</h3>
+            </div>
+            <div class="card-body">
+              <div class="row">
+                <div class="col-4 text-center">
+                  <div class="border border-gray-300 border-dashed rounded py-3 px-4">
+                    <div class="fs-2 fw-bold text-success">{{ profile.good_conduct_days || 0 }}</div>
+                    <div class="fw-semibold text-muted fs-7">{{ t('legal.profiles.detail.goodConductDays') }}</div>
+                  </div>
+                </div>
+                <div class="col-4 text-center">
+                  <div class="border border-gray-300 border-dashed rounded py-3 px-4">
+                    <div class="fs-2 fw-bold text-primary">{{ profile.work_days || 0 }}</div>
+                    <div class="fw-semibold text-muted fs-7">{{ t('legal.profiles.detail.workDays') }}</div>
+                  </div>
+                </div>
+                <div class="col-4 text-center">
+                  <div class="border border-gray-300 border-dashed rounded py-3 px-4">
+                    <div class="fs-2 fw-bold text-info">{{ profile.study_days || 0 }}</div>
+                    <div class="fw-semibold text-muted fs-7">{{ t('legal.profiles.detail.studyDays') }}</div>
+                  </div>
+                </div>
+              </div>
+              <div class="separator my-5"></div>
+              <div class="d-flex justify-content-between align-items-center">
+                <span class="text-gray-600 fw-semibold">{{ t('legal.profiles.detail.totalReductionDays') }}</span>
+                <span class="badge badge-lg badge-light-success">
+                  <span class="fs-4 fw-bold">{{ totalReductionDays }}</span> {{ t('legal.profiles.detail.days') }}
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <!-- Legal Notes -->
       <div class="row g-5 g-xl-10 mt-1">
         <div class="col-12">
@@ -404,7 +550,7 @@
               <h3 class="card-title">{{ t('legal.profiles.detail.legalNotes') }}</h3>
             </div>
             <div class="card-body">
-              <div v-if="profile.legal_notes" class="text-gray-800">
+              <div v-if="profile.legal_notes" class="text-gray-800 white-space-pre-wrap">
                 {{ profile.legal_notes }}
               </div>
               <div v-else class="text-center py-5">
@@ -442,12 +588,69 @@ const profile = ref<any>(null);
 // Computed
 const inmateName = computed(() => {
   if (!profile.value?.inmate) return 'Sin nombre';
-  return profile.value.inmate.name || 
+  return profile.value.inmate.full_name ||
+         profile.value.inmate.name ||
          `${profile.value.inmate.first_name} ${profile.value.inmate.last_name}`.trim() ||
          'Sin nombre';
 });
 
+const totalReductionDays = computed(() => {
+  if (!profile.value) return 0;
+  return (profile.value.good_conduct_days || 0) +
+         (profile.value.work_days || 0) +
+         (profile.value.study_days || 0);
+});
+
+const isUpcomingHearing = computed(() => {
+  if (!profile.value?.next_hearing_date) return false;
+  const nextHearing = new Date(profile.value.next_hearing_date);
+  const today = new Date();
+  const diffDays = Math.ceil((nextHearing.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+  return diffDays >= 0 && diffDays <= 7;
+});
+
 // Methods
+const getInmatePhoto = (inmate: any): string => {
+  if (!inmate) return getAssetPath('media/avatars/blank.png');
+
+  if (inmate.photo_url) {
+    return inmate.photo_url;
+  }
+
+  if (inmate.photo_path) {
+    return inmate.photo_path;
+  }
+
+  if (inmate.photos && inmate.photos.length > 0) {
+    const currentPhoto = inmate.photos.find((photo: any) => photo.is_current);
+    const photoToUse = currentPhoto || inmate.photos[0];
+    return photoToUse.photo_data || photoToUse.photo_url || photoToUse.photo_path || getAssetPath('media/avatars/blank.png');
+  }
+
+  return getAssetPath('media/avatars/blank.png');
+};
+
+const getProfileStatusBadgeClass = (status: string) => {
+  const badgeClasses: Record<string, string> = {
+    'active': 'badge-light-success',
+    'completed': 'badge-light-primary',
+    'transferred': 'badge-light-warning',
+    'deceased': 'badge-light-danger',
+  };
+  return badgeClasses[status] || 'badge-light-secondary';
+};
+
+const getProfileStatusLabel = (status: string) => {
+  const labels: Record<string, string> = {
+    'active': 'Activo',
+    'completed': 'Completado',
+    'transferred': 'Trasladado',
+    'deceased': 'Fallecido',
+  };
+  return labels[status] || status || '-';
+};
+
+// API Methods
 const loadProfile = async () => {
   loading.value = true;
   try {
@@ -494,17 +697,20 @@ const getStatusBadgeClass = (statusCode: string) => {
 
 const getProceduralStageLabel = (stage: string) => {
   if (!stage) return '-';
-  
+
   const stageMap: Record<string, string> = {
     'investigation': t('legal.profiles.proceduralStages.investigation'),
     'intermediate_phase': t('legal.profiles.proceduralStages.intermediate'),
     'trial': t('legal.profiles.proceduralStages.trial'),
+    'oral_trial': t('legal.profiles.proceduralStages.oralTrial'),
     'sentence_execution': t('legal.profiles.proceduralStages.sentenceExecution'),
     'appeal_process': t('legal.profiles.proceduralStages.appeal'),
     'cassation': t('legal.profiles.proceduralStages.cassation'),
-    'amparo_process': t('legal.profiles.proceduralStages.amparo')
+    'amparo_process': t('legal.profiles.proceduralStages.amparo'),
+    'constitutional_appeal': t('legal.profiles.proceduralStages.constitutionalAppeal'),
+    'review_process': t('legal.profiles.proceduralStages.reviewProcess'),
   };
-  
+
   return stageMap[stage] || stage;
 };
 
@@ -513,12 +719,15 @@ const getProceduralStageBadgeClass = (stage: string) => {
     'investigation': 'badge-light-warning',
     'intermediate_phase': 'badge-light-info',
     'trial': 'badge-light-primary',
+    'oral_trial': 'badge-light-primary',
     'sentence_execution': 'badge-light-success',
     'appeal_process': 'badge-light-danger',
     'cassation': 'badge-light-dark',
-    'amparo_process': 'badge-light-secondary'
+    'amparo_process': 'badge-light-secondary',
+    'constitutional_appeal': 'badge-light-secondary',
+    'review_process': 'badge-light-info',
   };
-  
+
   return badgeClasses[stage] || 'badge-light-secondary';
 };
 

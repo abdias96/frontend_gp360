@@ -679,7 +679,6 @@ const deleteRelationship = async (relationship) => {
 
 const viewVisitHistory = (relationship) => {
   // Implementation for visit history modal
-  console.log('View visit history for relationship:', relationship)
 }
 
 const handleRelationshipSaved = () => {

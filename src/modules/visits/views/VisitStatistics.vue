@@ -526,7 +526,6 @@ const handleDateRangeChange = () => {
 }
 
 const loadStatistics = () => {
-  console.log('Loading statistics for:', dateRange.value)
   // Load statistics data
   
   // Update charts
@@ -551,11 +550,8 @@ const handleExportData = () => {
     denyButtonText: 'PDF'
   }).then((result) => {
     if (result.isConfirmed) {
-      console.log('Export as Excel')
     } else if (result.isDenied) {
-      console.log('Export as PDF')
     } else if (result.dismiss === Swal.DismissReason.cancel) {
-      console.log('Export as CSV')
     }
   })
 }

@@ -88,13 +88,13 @@ export const authTranslations = {
   es: {
     auth: {
       login: {
-        title: "Iniciar Sesión",
+        title: "Iniciar sesión",
         subtitle: "¿Nuevo usuario?",
         createAccount: "Crear una cuenta",
         username: "Usuario",
         password: "Contraseña",
         forgotPassword: "¿Olvidaste tu contraseña?",
-        signInButton: "Iniciar Sesión",
+        signInButton: "Iniciar sesión",
         signingIn: "Iniciando sesión...",
         successMessage: "¡Has iniciado sesión exitosamente!",
         errorMessage:
@@ -110,18 +110,18 @@ export const authTranslations = {
         },
       },
       register: {
-        title: "Crear una Cuenta",
+        title: "Crear una cuenta",
         subtitle: "¿Ya tienes una cuenta?",
         signInHere: "Inicia sesión aquí",
         firstName: "Nombres",
         lastName: "Apellidos",
-        email: "Correo Electrónico",
+        email: "Correo electrónico",
         username: "Usuario",
         password: "Contraseña",
-        confirmPassword: "Confirmar Contraseña",
+        confirmPassword: "Confirmar contraseña",
         termsAndConditions: "Acepto los",
-        termsLink: "Términos y Condiciones",
-        createAccountButton: "Crear Cuenta",
+        termsLink: "Términos y condiciones",
+        createAccountButton: "Crear cuenta",
         creatingAccount: "Creando cuenta...",
         successMessage: "¡Tu cuenta ha sido creada exitosamente!",
         errorMessage:
@@ -154,7 +154,7 @@ export const authTranslations = {
         title: "¿Olvidaste tu contraseña?",
         subtitle:
           "Ingresa tu correo electrónico para restablecer tu contraseña.",
-        email: "Correo Electrónico",
+        email: "Correo electrónico",
         sendButton: "Enviar",
         sending: "Enviando...",
         cancelButton: "Cancelar",
@@ -171,7 +171,7 @@ export const authTranslations = {
         },
       },
       logout: {
-        signOut: "Cerrar Sesión",
+        signOut: "Cerrar sesión",
         signingOut: "Cerrando sesión...",
       },
     },

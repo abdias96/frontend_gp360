@@ -371,10 +371,8 @@ const handleSendMessage = async () => {
 
     // Upload file if selected
     if (selectedFile.value) {
-      console.log('Uploading file:', selectedFile.value.name);
       try {
         const uploadResult = await uploadAttachment(selectedFile.value, selectedUser.value.id);
-        console.log('File uploaded successfully:', uploadResult);
         attachment = uploadResult;
       } catch (uploadError) {
         console.error('Error uploading file:', uploadError);
@@ -389,7 +387,6 @@ const handleSendMessage = async () => {
       }
     }
 
-    console.log('Sending private message with attachment:', attachment);
     await sendPrivateMessage(selectedUser.value.id, messageText.value, attachment);
     messageText.value = '';
     selectedFile.value = null;

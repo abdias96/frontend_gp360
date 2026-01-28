@@ -5,25 +5,25 @@
       <h1
         class="page-heading d-flex text-dark fw-bold fs-3 flex-column justify-content-center my-0"
       >
-        Editar Usuario
+        {{ $t('users.form.title.edit') }}
       </h1>
     </div>
 
     <!-- Loading state -->
     <div v-if="loadingUser" class="d-flex justify-content-center my-5">
       <div class="spinner-border" role="status">
-        <span class="visually-hidden">Cargando...</span>
+        <span class="visually-hidden">{{ $t('users.list.loading') }}</span>
       </div>
     </div>
 
     <!-- Formulario -->
     <div v-else-if="user" class="card mt-5">
       <div class="card-header">
-        <h3 class="card-title">Información del Usuario</h3>
+        <h3 class="card-title">{{ $t('users.form.sections.personalInfo') }}</h3>
         <div class="card-toolbar">
           <router-link to="/users" class="btn btn-secondary me-2">
             <i class="bi bi-arrow-left me-1"></i>
-            Volver
+            {{ $t('users.form.buttons.back') }}
           </router-link>
         </div>
       </div>
@@ -32,115 +32,115 @@
         <form @submit.prevent="handleSubmit" class="row g-3">
           <!-- Información Personal -->
           <div class="col-12">
-            <h5 class="fw-bold text-primary">Información Personal</h5>
+            <h5 class="fw-bold text-primary">{{ $t('users.form.sections.personalInfo') }}</h5>
             <hr />
           </div>
 
           <div class="col-md-6">
             <label for="dpi" class="form-label"
-              >DPI <span class="text-danger">*</span></label
+              >{{ $t('users.form.fields.dpi') }} <span class="text-danger">*</span></label
             >
             <input
               v-model="form.dpi"
               type="text"
               class="form-control"
               id="dpi"
-              placeholder="Ingrese el DPI"
+              :placeholder="$t('users.form.placeholders.dpi')"
               disabled
-              title="El DPI no puede ser modificado"
+              :title="$t('users.form.hints.dpiNotEditable')"
             />
           </div>
 
           <div class="col-md-6">
             <label for="email" class="form-label"
-              >Email <span class="text-danger">*</span></label
+              >{{ $t('users.form.fields.email') }} <span class="text-danger">*</span></label
             >
             <input
               v-model="form.email"
               type="email"
               class="form-control"
               id="email"
-              placeholder="Ingrese el email"
+              :placeholder="$t('users.form.placeholders.email')"
               required
             />
           </div>
 
           <div class="col-md-6">
             <label for="first_name" class="form-label"
-              >Primer Nombre <span class="text-danger">*</span></label
+              >{{ $t('users.form.fields.firstName') }} <span class="text-danger">*</span></label
             >
             <input
               v-model="form.first_name"
               type="text"
               class="form-control"
               id="first_name"
-              placeholder="Primer nombre"
+              :placeholder="$t('users.form.placeholders.firstName')"
               required
             />
           </div>
 
           <div class="col-md-6">
-            <label for="middle_name" class="form-label">Segundo Nombre</label>
+            <label for="middle_name" class="form-label">{{ $t('users.form.fields.middleName') }}</label>
             <input
               v-model="form.middle_name"
               type="text"
               class="form-control"
               id="middle_name"
-              placeholder="Segundo nombre (opcional)"
+              :placeholder="$t('users.form.placeholders.middleName')"
             />
           </div>
 
           <div class="col-md-6">
             <label for="last_name" class="form-label"
-              >Primer Apellido <span class="text-danger">*</span></label
+              >{{ $t('users.form.fields.lastName') }} <span class="text-danger">*</span></label
             >
             <input
               v-model="form.last_name"
               type="text"
               class="form-control"
               id="last_name"
-              placeholder="Primer apellido"
+              :placeholder="$t('users.form.placeholders.lastName')"
               required
             />
           </div>
 
           <div class="col-md-6">
             <label for="second_last_name" class="form-label"
-              >Segundo Apellido</label
+              >{{ $t('users.form.fields.secondLastName') }}</label
             >
             <input
               v-model="form.second_last_name"
               type="text"
               class="form-control"
               id="second_last_name"
-              placeholder="Segundo apellido (opcional)"
+              :placeholder="$t('users.form.placeholders.secondLastName')"
             />
           </div>
 
           <!-- Información de Cuenta -->
           <div class="col-12 mt-5">
-            <h5 class="fw-bold text-primary">Información de Cuenta</h5>
+            <h5 class="fw-bold text-primary">{{ $t('users.form.sections.accountInfo') }}</h5>
             <hr />
           </div>
 
           <div class="col-md-6">
             <label for="username" class="form-label"
-              >Usuario <span class="text-danger">*</span></label
+              >{{ $t('users.form.fields.username') }} <span class="text-danger">*</span></label
             >
             <input
               v-model="form.username"
               type="text"
               class="form-control"
               id="username"
-              placeholder="Nombre de usuario"
+              :placeholder="$t('users.form.placeholders.username')"
               disabled
-              title="El nombre de usuario no puede ser modificado"
+              :title="$t('users.form.hints.usernameNotEditable')"
             />
           </div>
 
           <div class="col-md-6" v-permission="'users.change_role'">
             <label for="role_id" class="form-label"
-              >Rol <span class="text-danger">*</span></label
+              >{{ $t('users.form.fields.role') }} <span class="text-danger">*</span></label
             >
             <select
               v-model="form.role_id"
@@ -148,7 +148,7 @@
               id="role_id"
               required
             >
-              <option value="">Seleccione un rol</option>
+              <option value="">{{ $t('users.form.placeholders.selectRole') }}</option>
               <option v-for="role in roles" :key="role.id" :value="role.id">
                 {{ role.name }}
               </option>
@@ -157,7 +157,7 @@
 
           <!-- Cambio de Contraseña -->
           <div class="col-12 mt-5">
-            <h5 class="fw-bold text-primary">Cambiar Contraseña</h5>
+            <h5 class="fw-bold text-primary">{{ $t('users.form.sections.changePassword') }}</h5>
             <hr />
           </div>
 
@@ -172,46 +172,46 @@
                 @change="onChangePasswordToggle"
               />
               <label class="form-check-label fw-semibold" for="change_password">
-                {{ changePassword ? 'Cancelar cambio de contraseña' : 'Cambiar contraseña del usuario' }}
+                {{ changePassword ? $t('users.form.togglePassword.disable') : $t('users.form.togglePassword.enable') }}
               </label>
             </div>
             <small v-if="!changePassword" class="form-text text-muted">
-              Active esta opción si desea cambiar la contraseña del usuario
+              {{ $t('users.form.hints.changePasswordHint') }}
             </small>
           </div>
 
           <div v-show="changePassword" class="col-md-6">
             <label for="password" class="form-label"
-              >Nueva Contraseña <span class="text-danger">*</span></label
+              >{{ $t('users.form.fields.newPassword') }} <span class="text-danger">*</span></label
             >
             <input
               v-model="form.password"
               type="password"
               class="form-control"
               id="password"
-              placeholder="Nueva contraseña"
+              :placeholder="$t('users.form.placeholders.newPassword')"
               :required="changePassword"
             />
-            <small class="form-text text-muted"> Mínimo 8 caracteres </small>
+            <small class="form-text text-muted">{{ $t('users.form.hints.minPassword') }}</small>
           </div>
 
           <div v-show="changePassword" class="col-md-6">
             <label for="password_confirmation" class="form-label"
-              >Confirmar Contraseña <span class="text-danger">*</span></label
+              >{{ $t('users.form.fields.confirmPassword') }} <span class="text-danger">*</span></label
             >
             <input
               v-model="form.password_confirmation"
               type="password"
               class="form-control"
               id="password_confirmation"
-              placeholder="Confirme la nueva contraseña"
+              :placeholder="$t('users.form.placeholders.confirmPassword')"
               :required="changePassword"
             />
           </div>
 
           <!-- Estado -->
           <div class="col-12 mt-5" v-permission="'users.toggle_status'">
-            <h5 class="fw-bold text-primary">Estado</h5>
+            <h5 class="fw-bold text-primary">{{ $t('users.form.sections.status') }}</h5>
             <hr />
           </div>
 
@@ -224,7 +224,7 @@
                 id="active"
               />
               <label class="form-check-label" for="active">
-                Usuario Activo
+                {{ $t('users.form.fields.active') }}
               </label>
             </div>
           </div>
@@ -233,7 +233,7 @@
           <div class="col-12 mt-5">
             <div class="d-flex justify-content-end gap-2">
               <router-link to="/users" class="btn btn-secondary">
-                Cancelar
+                {{ $t('users.form.buttons.cancel') }}
               </router-link>
               <button type="submit" class="btn btn-primary" :disabled="loading">
                 <div
@@ -241,10 +241,10 @@
                   class="spinner-border spinner-border-sm me-2"
                   role="status"
                 >
-                  <span class="visually-hidden">Loading...</span>
+                  <span class="visually-hidden">{{ $t('users.list.loading') }}</span>
                 </div>
                 <i v-else class="bi bi-save me-1"></i>
-                {{ loading ? "Guardando..." : "Guardar Cambios" }}
+                {{ loading ? $t('users.form.buttons.saving') : $t('users.form.buttons.save') }}
               </button>
             </div>
           </div>
@@ -254,10 +254,10 @@
 
     <!-- Error state -->
     <div v-else class="alert alert-danger mt-5">
-      <h4>Error</h4>
-      <p>No se pudo cargar la información del usuario.</p>
+      <h4>{{ $t('common.swal.titles.error') }}</h4>
+      <p>{{ $t('users.errors.loadFailed') }}</p>
       <router-link to="/users" class="btn btn-secondary">
-        Volver a la lista
+        {{ $t('users.errors.backToList') }}
       </router-link>
     </div>
   </div>
@@ -266,9 +266,12 @@
 <script setup lang="ts">
 import { ref, onMounted } from "vue";
 import { useRouter, useRoute } from "vue-router";
+import { useI18n } from "vue-i18n";
 import { usePermissions } from "@/composables/usePermissions";
 import ApiService from "@/core/services/ApiService";
 import Swal from "sweetalert2";
+
+const { t } = useI18n();
 
 // Composables
 const router = useRouter();
@@ -303,7 +306,6 @@ const onChangePasswordToggle = () => {
     form.value.password = "";
     form.value.password_confirmation = "";
   }
-  console.log("Change password toggled:", changePassword.value);
 };
 
 const loadUser = async () => {
@@ -355,13 +357,12 @@ const loadRoles = async () => {
       roles.value = response.data.data || response.data || [];
     }
 
-    console.log("Roles loaded:", roles.value);
   } catch (error) {
     console.error("Error loading roles:", error);
     Swal.fire({
       icon: 'error',
-      title: 'Error',
-      text: 'No se pudieron cargar los roles'
+      title: t('common.swal.titles.error'),
+      text: t('users.swal.rolesLoadError')
     });
   }
 };
@@ -370,8 +371,8 @@ const handleSubmit = async () => {
   if (!canEdit("users")) {
     Swal.fire({
       icon: 'error',
-      title: 'Error',
-      text: 'No tienes permisos para editar usuarios'
+      title: t('common.swal.titles.error'),
+      text: t('users.swal.noPermissionEdit')
     });
     return;
   }
@@ -382,8 +383,8 @@ const handleSubmit = async () => {
   ) {
     Swal.fire({
       icon: 'error',
-      title: 'Error',
-      text: 'Las contraseñas no coinciden'
+      title: t('common.swal.titles.error'),
+      text: t('users.swal.passwordMismatch')
     });
     return;
   }
@@ -402,24 +403,22 @@ const handleSubmit = async () => {
 
     await ApiService.put(`users/${userId}`, updateData);
 
-    // Mostrar mensaje de éxito
     await Swal.fire({
       icon: 'success',
-      title: '¡Éxito!',
-      text: 'Usuario actualizado exitosamente',
+      title: t('common.swal.titles.success'),
+      text: t('users.swal.updateSuccess'),
       timer: 2000,
       showConfirmButton: false
     });
 
-    // Redirigir a la lista de usuarios
     router.push("/users");
   } catch (error: any) {
     console.error("Error updating user:", error);
 
     Swal.fire({
       icon: 'error',
-      title: 'Error',
-      text: error.response?.data?.message || 'Error al actualizar el usuario. Por favor intente nuevamente.'
+      title: t('common.swal.titles.error'),
+      text: error.response?.data?.message || t('users.swal.updateError')
     });
   } finally {
     loading.value = false;

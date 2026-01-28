@@ -4,13 +4,13 @@
     <div class="col-12 mb-5" v-if="showBiometricInfo">
       <div class="card card-flush">
         <div class="card-header">
-          <h3 class="card-title">Información de Captura Biométrica</h3>
+          <h3 class="card-title">{{ $t('inmates.tabs.physical.biometricCapture.title') }}</h3>
           <div class="card-toolbar">
             <button
               @click="showBiometricInfo = false"
               class="btn btn-sm btn-light"
             >
-              <i class="bi bi-x"></i> Cerrar
+              <i class="bi bi-x"></i> {{ $t('inmates.tabs.physical.biometricCapture.close') }}
             </button>
           </div>
         </div>
@@ -19,9 +19,9 @@
             <div class="d-flex align-items-center">
               <i class="bi bi-info-circle fs-2 me-3"></i>
               <div>
-                <h5 class="mb-1">Aplicación de Captura Biométrica</h5>
-                <p class="mb-0">La captura de huellas dactilares se realiza mediante una aplicación de escritorio dedicada.</p>
-                <p class="mb-0 mt-2">Esta aplicación capturará las 10 huellas digitales del PPL y las almacenará de forma segura.</p>
+                <h5 class="mb-1">{{ $t('inmates.tabs.physical.biometricCapture.appTitle') }}</h5>
+                <p class="mb-0">{{ $t('inmates.tabs.physical.biometricCapture.appDesc') }}</p>
+                <p class="mb-0 mt-2">{{ $t('inmates.tabs.physical.biometricCapture.appInstructions') }}</p>
               </div>
             </div>
           </div>
@@ -35,10 +35,10 @@
         <div class="card-header pt-7">
           <h3 class="card-title align-items-start flex-column">
             <span class="card-label fw-bold text-gray-800"
-              >Características Físicas</span
+              >{{ $t('inmates.tabs.physical.title') }}</span
             >
             <span class="text-gray-600 mt-1 fw-semibold fs-6"
-              >Descripción física general</span
+              >{{ $t('inmates.tabs.physical.subtitle') }}</span
             >
           </h3>
           <div class="card-toolbar">
@@ -48,36 +48,36 @@
               class="btn btn-sm btn-light-primary"
             >
               <KTIcon icon-name="pencil" icon-class="fs-2" />
-              Actualizar
+              {{ $t('inmates.tabs.physical.update') }}
             </button>
           </div>
         </div>
         <div class="card-body pt-0">
           <div v-if="loading.physical" class="text-center py-5">
             <div class="spinner-border text-primary" role="status">
-              <span class="visually-hidden">Cargando...</span>
+              <span class="visually-hidden">{{ $t('inmates.tabs.physical.loading') }}</span>
             </div>
           </div>
           <div v-else>
             <!-- Height and Weight -->
             <div class="row mb-4">
               <div class="col-6">
-                <span class="fw-bold text-gray-600 d-block mb-2">Estatura</span>
+                <span class="fw-bold text-gray-600 d-block mb-2">{{ $t('inmates.tabs.physical.fields.height') }}</span>
                 <span class="text-gray-800">
                   {{
-                    physicalProfile?.height_cm
-                      ? `${physicalProfile.height_cm} cm`
-                      : "No registrado"
+                    physicalProfile?.height
+                      ? `${physicalProfile.height} cm`
+                      : $t('inmates.tabs.physical.notRegistered')
                   }}
                 </span>
               </div>
               <div class="col-6">
-                <span class="fw-bold text-gray-600 d-block mb-2">Peso</span>
+                <span class="fw-bold text-gray-600 d-block mb-2">{{ $t('inmates.tabs.physical.fields.weight') }}</span>
                 <span class="text-gray-800">
                   {{
-                    physicalProfile?.weight_kg
-                      ? `${physicalProfile.weight_kg} kg`
-                      : "No registrado"
+                    physicalProfile?.weight
+                      ? `${physicalProfile.weight} kg`
+                      : $t('inmates.tabs.physical.notRegistered')
                   }}
                 </span>
               </div>
@@ -86,7 +86,7 @@
             <!-- BMI Calculation -->
             <div v-if="bmiValue" class="mb-4">
               <span class="fw-bold text-gray-600 d-block mb-2"
-                >Índice de Masa Corporal</span
+                >{{ $t('inmates.tabs.physical.fields.bmi') }}</span
               >
               <div class="d-flex align-items-center">
                 <span class="text-gray-800 me-2">{{ bmiValue }}</span>
@@ -97,27 +97,27 @@
             </div>
 
             <!-- Build Type -->
-            <div v-if="physicalProfile?.build" class="mb-4">
-              <span class="fw-bold text-gray-600 d-block mb-2">Complexión</span>
-              <span class="text-gray-800">{{ physicalProfile.build }}</span>
+            <div v-if="physicalProfile?.build_type" class="mb-4">
+              <span class="fw-bold text-gray-600 d-block mb-2">{{ $t('inmates.tabs.physical.fields.build') }}</span>
+              <span class="text-gray-800">{{ physicalProfile.build_type }}</span>
             </div>
 
             <!-- Physical Features -->
             <div class="row mb-4">
               <div class="col-6">
                 <span class="fw-bold text-gray-600 d-block mb-2"
-                  >Color de Ojos</span
+                  >{{ $t('inmates.tabs.physical.fields.eyeColor') }}</span
                 >
                 <span class="text-gray-800">
-                  {{ physicalProfile?.eye_color || "No especificado" }}
+                  {{ physicalProfile?.eye_color || $t('inmates.tabs.physical.notSpecified') }}
                 </span>
               </div>
               <div class="col-6">
                 <span class="fw-bold text-gray-600 d-block mb-2"
-                  >Color de Cabello</span
+                  >{{ $t('inmates.tabs.physical.fields.hairColor') }}</span
                 >
                 <span class="text-gray-800">
-                  {{ physicalProfile?.hair_color || "No especificado" }}
+                  {{ physicalProfile?.hair_color || $t('inmates.tabs.physical.notSpecified') }}
                 </span>
               </div>
             </div>
@@ -125,18 +125,18 @@
             <div class="row mb-4">
               <div class="col-6">
                 <span class="fw-bold text-gray-600 d-block mb-2"
-                  >Tipo de Cabello</span
+                  >{{ $t('inmates.tabs.physical.fields.hairType') }}</span
                 >
                 <span class="text-gray-800">
-                  {{ physicalProfile?.hair_type || "No especificado" }}
+                  {{ physicalProfile?.hair_type || $t('inmates.tabs.physical.notSpecified') }}
                 </span>
               </div>
               <div class="col-6">
                 <span class="fw-bold text-gray-600 d-block mb-2"
-                  >Color de Piel</span
+                  >{{ $t('inmates.tabs.physical.fields.skinColor') }}</span
                 >
                 <span class="text-gray-800">
-                  {{ physicalProfile?.skin_color || "No especificado" }}
+                  {{ physicalProfile?.skin_tone || $t('inmates.tabs.physical.notSpecified') }}
                 </span>
               </div>
             </div>
@@ -144,7 +144,7 @@
             <!-- Face Shape -->
             <div v-if="physicalProfile?.face_shape" class="mb-4">
               <span class="fw-bold text-gray-600 d-block mb-2"
-                >Forma del Rostro</span
+                >{{ $t('inmates.tabs.physical.fields.faceShape') }}</span
               >
               <span class="text-gray-800">{{
                 physicalProfile.face_shape
@@ -154,7 +154,7 @@
             <!-- Last Update -->
             <div class="text-gray-600 fs-8">
               <KTIcon icon-name="calendar" icon-class="fs-7 me-1" />
-              Última actualización:
+              {{ $t('inmates.tabs.physical.fields.lastUpdate') }}:
               {{ formatDate(physicalProfile?.updated_at || "") }}
             </div>
           </div>
@@ -168,10 +168,10 @@
         <div class="card-header pt-7">
           <h3 class="card-title align-items-start flex-column">
             <span class="card-label fw-bold text-gray-800"
-              >Marcas Distintivas</span
+              >{{ $t('inmates.tabs.physical.distinctiveMarks.title') }}</span
             >
             <span class="text-gray-600 mt-1 fw-semibold fs-6"
-              >Tatuajes, cicatrices y marcas</span
+              >{{ $t('inmates.tabs.physical.distinctiveMarks.subtitle') }}</span
             >
           </h3>
           <div class="card-toolbar">
@@ -181,14 +181,14 @@
               class="btn btn-sm btn-light-warning"
             >
               <KTIcon icon-name="picture" icon-class="fs-2" />
-              Gestionar
+              {{ $t('inmates.tabs.physical.distinctiveMarks.manage') }}
             </button>
           </div>
         </div>
         <div class="card-body pt-0">
           <div v-if="loading.marks" class="text-center py-5">
             <div class="spinner-border text-primary" role="status">
-              <span class="visually-hidden">Cargando...</span>
+              <span class="visually-hidden">{{ $t('inmates.tabs.physical.loading') }}</span>
             </div>
           </div>
           <div v-else>
@@ -199,7 +199,7 @@
                   icon-name="picture"
                   icon-class="fs-3 text-primary me-2"
                 />
-                <span class="fw-bold text-gray-600">Tatuajes</span>
+                <span class="fw-bold text-gray-600">{{ $t('inmates.tabs.physical.distinctiveMarks.tattoos') }}</span>
               </div>
               <div
                 v-if="physicalProfile?.tattoos_description"
@@ -210,7 +210,7 @@
                 }}</span>
               </div>
               <div v-else class="text-gray-500 fs-7">
-                No se han registrado tatuajes
+                {{ $t('inmates.tabs.physical.distinctiveMarks.noTattoos') }}
               </div>
             </div>
 
@@ -221,7 +221,7 @@
                   icon-name="information"
                   icon-class="fs-3 text-warning me-2"
                 />
-                <span class="fw-bold text-gray-600">Cicatrices</span>
+                <span class="fw-bold text-gray-600">{{ $t('inmates.tabs.physical.distinctiveMarks.scars') }}</span>
               </div>
               <div
                 v-if="physicalProfile?.scars_description"
@@ -232,7 +232,7 @@
                 }}</span>
               </div>
               <div v-else class="text-gray-500 fs-7">
-                No se han registrado cicatrices
+                {{ $t('inmates.tabs.physical.distinctiveMarks.noScars') }}
               </div>
             </div>
 
@@ -243,7 +243,7 @@
                   icon-name="notepad-edit"
                   icon-class="fs-3 text-info me-2"
                 />
-                <span class="fw-bold text-gray-600">Otras Características</span>
+                <span class="fw-bold text-gray-600">{{ $t('inmates.tabs.physical.distinctiveMarks.otherCharacteristics') }}</span>
               </div>
               <div
                 v-if="physicalProfile?.other_characteristics"
@@ -254,14 +254,14 @@
                 }}</span>
               </div>
               <div v-else class="text-gray-500 fs-7">
-                No se han registrado otras características
+                {{ $t('inmates.tabs.physical.distinctiveMarks.noOtherCharacteristics') }}
               </div>
             </div>
 
             <!-- Distinctive Marks Summary -->
             <div v-if="physicalProfile?.distinctive_marks" class="mb-4">
               <span class="fw-bold text-gray-600 d-block mb-2"
-                >Resumen de Marcas</span
+                >{{ $t('inmates.tabs.physical.distinctiveMarks.marksSummary') }}</span
               >
               <div class="scroll-y" style="max-height: 150px">
                 <div
@@ -272,7 +272,7 @@
                   <div class="fw-bold text-gray-800 fs-7">{{ mark.type }}</div>
                   <div class="text-gray-600 fs-8">{{ mark.description }}</div>
                   <div v-if="mark.location" class="text-gray-500 fs-8">
-                    Ubicación: {{ mark.location }}
+                    {{ $t('inmates.tabs.physical.distinctiveMarks.location') }}: {{ mark.location }}
                   </div>
                 </div>
               </div>
@@ -288,10 +288,10 @@
         <div class="card-header pt-7">
           <h3 class="card-title align-items-start flex-column">
             <span class="card-label fw-bold text-gray-800"
-              >Datos Biométricos</span
+              >{{ $t('inmates.tabs.physical.biometricData.title') }}</span
             >
             <span class="text-gray-600 mt-1 fw-semibold fs-6"
-              >Huellas y fotografías</span
+              >{{ $t('inmates.tabs.physical.biometricData.subtitle') }}</span
             >
           </h3>
           <div class="card-toolbar">
@@ -300,24 +300,24 @@
               @click="launchJavaBiometricService"
               class="btn btn-sm btn-primary"
               :disabled="loading.biometrics || isServiceRunning"
-              title="Captura completa de 10 huellas dactilares"
+              :title="$t('inmates.tabs.physical.biometricData.captureFingerprints')"
             >
               <KTIcon icon-name="fingerprint-scanning" icon-class="fs-2 me-1" />
-              {{ isServiceRunning ? 'Capturando...' : 'Capturar Huellas' }}
+              {{ isServiceRunning ? $t('inmates.tabs.physical.biometricData.capturing') : $t('inmates.tabs.physical.biometricData.captureFingerprints') }}
             </button>
           </div>
         </div>
         <div class="card-body pt-0">
           <div v-if="loading.biometrics" class="text-center py-5">
             <div class="spinner-border text-primary" role="status">
-              <span class="visually-hidden">Cargando...</span>
+              <span class="visually-hidden">{{ $t('inmates.tabs.physical.loading') }}</span>
             </div>
           </div>
           <div v-else>
             <!-- Biometric Status Overview -->
             <div class="mb-4">
               <span class="fw-bold text-gray-600 d-block mb-2"
-                >Estado General</span
+                >{{ $t('inmates.tabs.physical.biometricData.generalStatus') }}</span
               >
               <span
                 class="badge badge-lg"
@@ -335,8 +335,8 @@
                 />
                 {{
                   hasBiometricData
-                    ? "Datos Completos"
-                    : "Datos Pendientes"
+                    ? $t('inmates.tabs.physical.biometricData.dataComplete')
+                    : $t('inmates.tabs.physical.biometricData.dataPending')
                 }}
               </span>
             </div>
@@ -363,20 +363,20 @@
                 </div>
                 <div class="flex-grow-1">
                   <div class="fw-bold text-gray-800 fs-6">
-                    Huellas Dactilares
+                    {{ $t('inmates.tabs.physical.biometricData.fingerprints') }}
                   </div>
                   <div class="text-gray-600 fs-7">
                     {{
                       biometricData?.fingerprint_template
-                        ? `${biometricData.fingerprint_count} huella(s) registrada(s)`
-                        : "Pendientes de captura"
+                        ? $t('inmates.tabs.physical.biometricData.fingerprintsRegistered', { count: biometricData.fingerprint_count })
+                        : $t('inmates.tabs.physical.biometricData.pendingCapture')
                     }}
                   </div>
                   <div
                     v-if="biometricData?.average_quality"
                     class="text-gray-600 fs-8"
                   >
-                    Calidad promedio: {{ Math.round(biometricData.average_quality) }}%
+                    {{ $t('inmates.tabs.physical.biometricData.averageQuality') }}: {{ Math.round(biometricData.average_quality) }}%
                   </div>
                 </div>
                 <span
@@ -389,8 +389,8 @@
                 >
                   {{
                     biometricData?.fingerprint_template
-                      ? "Completo"
-                      : "Pendiente"
+                      ? $t('inmates.tabs.physical.biometricData.complete')
+                      : $t('inmates.tabs.physical.biometricData.pending')
                   }}
                 </span>
               </div>
@@ -418,13 +418,13 @@
                 </div>
                 <div class="flex-grow-1">
                   <div class="fw-bold text-gray-800 fs-6">
-                    Reconocimiento Facial
+                    {{ $t('inmates.tabs.physical.biometricData.facialRecognition') }}
                   </div>
                   <div class="text-gray-600 fs-7">
                     {{
                       biometricData?.facial_template
-                        ? "Registrado"
-                        : "Pendiente de captura"
+                        ? $t('inmates.tabs.physical.biometricData.registered')
+                        : $t('inmates.tabs.physical.biometricData.pendingCapture')
                     }}
                   </div>
                 </div>
@@ -437,7 +437,7 @@
                   "
                 >
                   {{
-                    biometricData?.facial_template ? "Completo" : "Pendiente"
+                    biometricData?.facial_template ? $t('inmates.tabs.physical.biometricData.complete') : $t('inmates.tabs.physical.biometricData.pending')
                   }}
                 </span>
               </div>
@@ -446,7 +446,7 @@
             <!-- Current Photos -->
             <div class="mb-4">
               <span class="fw-bold text-gray-600 d-block mb-3"
-                >Fotografías Actuales</span
+                >{{ $t('inmates.tabs.physical.biometricData.currentPhotos') }}</span
               >
               <div v-if="currentPhotos.length > 0" class="row g-2">
                 <div
@@ -458,7 +458,7 @@
                     <div class="card-body p-2">
                       <img
                         :src="photo.photo_data || photo.photo_url"
-                        :alt="photo.description || 'Foto del interno'"
+                        :alt="photo.description || $t('inmates.tabs.physical.biometricData.currentPhotos')"
                         class="w-100 rounded"
                         style="height: 120px; object-fit: cover; cursor: pointer;"
                         @click="viewPhotoDetail(photo)"
@@ -480,14 +480,14 @@
                   icon-name="camera"
                   icon-class="fs-5x text-gray-400 mb-2"
                 />
-                <div class="text-gray-600">No hay fotografías registradas</div>
+                <div class="text-gray-600">{{ $t('inmates.tabs.physical.biometricData.noPhotos') }}</div>
               </div>
             </div>
 
             <!-- Biometric Quality Score -->
             <div v-if="biometricData?.biometric_quality_score" class="mb-4">
               <span class="fw-bold text-gray-600 d-block mb-2"
-                >Puntuación de Calidad</span
+                >{{ $t('inmates.tabs.physical.biometricData.qualityScore') }}</span
               >
               <div class="progress progress-sm">
                 <div
@@ -514,10 +514,10 @@
         <div class="card-header pt-7">
           <h3 class="card-title align-items-start flex-column">
             <span class="card-label fw-bold text-gray-800"
-              >Historial de Cambios Físicos</span
+              >{{ $t('inmates.tabs.physical.history.title') }}</span
             >
             <span class="text-gray-600 mt-1 fw-semibold fs-6"
-              >Registro de modificaciones en el perfil físico</span
+              >{{ $t('inmates.tabs.physical.history.subtitle') }}</span
             >
           </h3>
           <div class="card-toolbar">
@@ -526,14 +526,14 @@
               class="btn btn-sm btn-light"
             >
               <KTIcon icon-name="arrows-circle" icon-class="fs-2" />
-              Actualizar
+              {{ $t('inmates.tabs.physical.history.refresh') }}
             </button>
           </div>
         </div>
         <div class="card-body pt-0">
           <div v-if="loading.history" class="text-center py-5">
             <div class="spinner-border text-primary" role="status">
-              <span class="visually-hidden">Cargando...</span>
+              <span class="visually-hidden">{{ $t('inmates.tabs.physical.loading') }}</span>
             </div>
           </div>
           <div
@@ -542,7 +542,7 @@
           >
             <KTIcon icon-name="time" icon-class="fs-5x text-gray-400 mb-4" />
             <div class="text-gray-600">
-              No hay cambios registrados en el perfil físico
+              {{ $t('inmates.tabs.physical.history.noChanges') }}
             </div>
           </div>
           <div v-else>
@@ -574,13 +574,13 @@
                       class="text-gray-500 fs-7"
                     >
                       <span v-if="change.old_value"
-                        >Anterior: {{ change.old_value }}</span
+                        >{{ $t('inmates.tabs.physical.history.previous') }}: {{ change.old_value }}</span
                       >
                       <span v-if="change.old_value && change.new_value">
                         →
                       </span>
                       <span v-if="change.new_value"
-                        >Nuevo: {{ change.new_value }}</span
+                        >{{ $t('inmates.tabs.physical.history.new') }}: {{ change.new_value }}</span
                       >
                     </div>
                   </div>
@@ -605,6 +605,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted, computed, onUnmounted } from "vue";
+import { useI18n } from "vue-i18n";
 import { useAuthStore } from "@/stores/auth";
 import ApiService from "@/core/services/ApiService";
 import type {
@@ -615,6 +616,8 @@ import type {
 } from "@/types/inmates";
 import Swal from "sweetalert2";
 import KTIcon from "@/core/helpers/kt-icon/KTIcon.vue";
+
+const { t } = useI18n();
 
 interface Props {
   inmate: InmateDetail;
@@ -665,10 +668,10 @@ const canManageBiometrics = computed(() =>
 );
 
 const bmiValue = computed(() => {
-  if (!physicalProfile.value?.height_cm || !physicalProfile.value?.weight_kg)
+  if (!physicalProfile.value?.height || !physicalProfile.value?.weight)
     return null;
-  const heightM = physicalProfile.value.height_cm / 100;
-  const bmi = physicalProfile.value.weight_kg / (heightM * heightM);
+  const heightM = physicalProfile.value.height / 100;
+  const bmi = physicalProfile.value.weight / (heightM * heightM);
   return bmi.toFixed(1);
 });
 
@@ -687,8 +690,6 @@ const loadPhysicalData = async () => {
   try {
     loading.value.physical = true;
 
-    console.log('Inmate data in physical tab:', props.inmate);
-    console.log('Physical profile from inmate (snake_case):', props.inmate.physical_profile);
 
     // Use data already loaded from InmateController show() method
     // Backend returns snake_case keys
@@ -710,14 +711,10 @@ const loadBiometricData = async () => {
   try {
     loading.value.biometrics = true;
 
-    console.log('=== BIOMETRIC DATA DEBUG ===');
-    console.log('Inmate has_biometric_data flag:', props.inmate.has_biometric_data);
-    console.log('Photos from inmate:', props.inmate.photos);
 
     // Use photos already loaded from InmateController show() method
     if (props.inmate.photos) {
       currentPhotos.value = props.inmate.photos.filter((p) => p.is_current);
-      console.log('Current photos count:', currentPhotos.value.length);
     } else {
       currentPhotos.value = [];
     }
@@ -725,14 +722,11 @@ const loadBiometricData = async () => {
     // For biometric data, we still need to make API call as it's not loaded by default
     // This is because biometric templates are BLOB data and shouldn't be loaded unless needed
     try {
-      console.log('Fetching biometric data from API...');
       const biometricResponse = await ApiService.get(`/inmates/${props.inmate.id}/biometric-data`);
-      console.log('Biometric API response:', biometricResponse.data);
 
       if (biometricResponse.data.data && Array.isArray(biometricResponse.data.data)) {
         // Backend returns an array of biometric records (one per finger)
         const biometricRecords = biometricResponse.data.data;
-        console.log('Biometric records count:', biometricRecords.length);
 
         if (biometricRecords.length > 0) {
           // Convert array to a summary object for easier consumption
@@ -744,25 +738,17 @@ const loadBiometricData = async () => {
             last_capture_date: biometricRecords[0]?.capture_date,
             capture_device: biometricRecords[0]?.capture_device
           };
-          console.log('Biometric data summary:', {
-            fingerprint_template: biometricData.value.fingerprint_template,
-            fingerprint_count: biometricData.value.fingerprint_count,
-            average_quality: biometricData.value.average_quality
-          });
         } else {
           biometricData.value = null;
-          console.log('No biometric records found');
         }
       } else {
         biometricData.value = null;
-        console.log('No biometric data available');
       }
     } catch (bioError: any) {
       console.error("Error loading biometric data:", bioError);
       console.error("Error response:", bioError.response?.data);
       biometricData.value = null;
     }
-    console.log('=== END BIOMETRIC DEBUG ===');
   } catch (error) {
     console.error("Error processing biometric data:", error);
     currentPhotos.value = [];
@@ -776,7 +762,6 @@ const loadPhysicalHistory = async () => {
   try {
     loading.value.history = true;
 
-    console.log('Weight history from inmate (snake_case):', props.inmate.weight_history);
 
     // Use weight history already loaded from InmateController show() method
     // Backend returns snake_case keys
@@ -991,7 +976,6 @@ const viewBiometricHistory = () => {
 };
 
 const viewPhotoDetail = (photo: InmatePhoto) => {
-  console.log("Viewing photo detail:", photo.id);
 };
 
 const refreshPhysicalHistory = async () => {
@@ -1009,10 +993,10 @@ const getBMIClass = (bmi: string): string => {
 
 const getBMICategory = (bmi: string): string => {
   const bmiNum = parseFloat(bmi);
-  if (bmiNum < 18.5) return "Bajo peso";
-  if (bmiNum < 25) return "Normal";
-  if (bmiNum < 30) return "Sobrepeso";
-  return "Obesidad";
+  if (bmiNum < 18.5) return t('inmates.tabs.physical.bmiCategories.underweight');
+  if (bmiNum < 25) return t('inmates.tabs.physical.bmiCategories.normal');
+  if (bmiNum < 30) return t('inmates.tabs.physical.bmiCategories.overweight');
+  return t('inmates.tabs.physical.bmiCategories.obese');
 };
 
 const getDistinctiveMarks = (): Array<{
@@ -1031,22 +1015,11 @@ const getDistinctiveMarks = (): Array<{
 };
 
 const getPhotoTypeText = (type: string): string => {
-  const types: Record<string, string> = {
-    frontal_mugshot: "Foto Frontal",
-    profile_left: "Perfil Izquierdo",
-    profile_right: "Perfil Derecho",
-    full_body: "Cuerpo Completo",
-    identifying_marks: "Marcas Identificativas",
-    tattoos: "Tatuajes",
-    scars: "Cicatrices",
-    updated_appearance: "Apariencia Actualizada",
-    // Legacy values for backwards compatibility
-    mugshot: "Ficha",
-    profile: "Perfil",
-    identification: "Identificación",
-    other: "Otra",
-  };
-  return types[type] || type;
+  if (!type) return type;
+
+  const typeKey = `inmates.tabs.physical.photoTypes.${type}`;
+  const translated = t(typeKey);
+  return translated !== typeKey ? translated : type;
 };
 
 const getQualityClass = (score: number): string => {
@@ -1056,10 +1029,10 @@ const getQualityClass = (score: number): string => {
 };
 
 const getQualityText = (score: number): string => {
-  if (score >= 90) return "Excelente";
-  if (score >= 70) return "Buena";
-  if (score >= 50) return "Regular";
-  return "Baja";
+  if (score >= 90) return t('inmates.tabs.physical.quality.excellent');
+  if (score >= 70) return t('inmates.tabs.physical.quality.good');
+  if (score >= 50) return t('inmates.tabs.physical.quality.fair');
+  return t('inmates.tabs.physical.quality.low');
 };
 
 const getChangeIcon = (changeType: string): string => {
@@ -1074,23 +1047,20 @@ const getChangeIcon = (changeType: string): string => {
 };
 
 const getChangeTitle = (changeType: string): string => {
-  const titles: Record<string, string> = {
-    measurement: "Actualización de Medidas",
-    appearance: "Cambio de Apariencia",
-    mark_added: "Marca Distintiva Agregada",
-    mark_removed: "Marca Distintiva Eliminada",
-    photo_added: "Fotografía Agregada",
-  };
-  return titles[changeType] || changeType;
+  if (!changeType) return changeType;
+
+  const titleKey = `inmates.tabs.physical.changeTitles.${changeType}`;
+  const translated = t(titleKey);
+  return translated !== titleKey ? translated : changeType;
 };
 
 const formatDate = (date: string): string => {
-  if (!date) return "N/A";
+  if (!date) return t('inmates.common.na');
   return new Date(date).toLocaleDateString("es-GT");
 };
 
 const formatDateTime = (datetime: string): string => {
-  if (!datetime) return "N/A";
+  if (!datetime) return t('inmates.common.na');
   return new Date(datetime).toLocaleString("es-GT");
 };
 

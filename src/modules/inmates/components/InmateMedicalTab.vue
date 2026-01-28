@@ -6,10 +6,10 @@
         <div class="card-header pt-7">
           <h3 class="card-title align-items-start flex-column">
             <span class="card-label fw-bold text-gray-800"
-              >Perfil Médico General</span
+              >{{ $t('inmates.tabs.medical.profile.title') }}</span
             >
             <span class="text-gray-600 mt-1 fw-semibold fs-6"
-              >Información básica de salud</span
+              >{{ $t('inmates.tabs.medical.profile.subtitle') }}</span
             >
           </h3>
           <div class="card-toolbar">
@@ -19,31 +19,31 @@
               class="btn btn-sm btn-light-primary"
             >
               <KTIcon icon-name="pencil" icon-class="fs-2" />
-              Editar
+              {{ $t('inmates.tabs.medical.buttons.edit') }}
             </button>
           </div>
         </div>
         <div class="card-body pt-0">
           <div v-if="loading.profile" class="text-center py-5">
             <div class="spinner-border text-primary" role="status">
-              <span class="visually-hidden">Cargando...</span>
+              <span class="visually-hidden">{{ $t('inmates.tabs.medical.loading') }}</span>
             </div>
           </div>
           <div v-else>
             <!-- Blood Type -->
             <div class="mb-4">
               <span class="fw-bold text-gray-600 d-block mb-2"
-                >Tipo de Sangre</span
+                >{{ $t('inmates.tabs.medical.fields.bloodType') }}</span
               >
               <span class="text-gray-800">
-                {{ medicalProfile?.bloodType?.name || medicalProfile?.blood_type?.name || "No especificado" }}
+                {{ medicalProfile?.bloodType?.name || medicalProfile?.blood_type?.name || $t('inmates.tabs.medical.notSpecified') }}
               </span>
             </div>
 
             <!-- Emergency Contact -->
             <div class="mb-4">
               <span class="fw-bold text-gray-600 d-block mb-2"
-                >Contacto de Emergencia</span
+                >{{ $t('inmates.tabs.medical.fields.emergencyContact') }}</span
               >
               <div v-if="medicalProfile?.emergency_contact_name">
                 <div class="text-gray-800">
@@ -53,39 +53,39 @@
                   {{ medicalProfile.emergency_contact_phone }}
                 </div>
               </div>
-              <span v-else class="text-gray-500">No especificado</span>
+              <span v-else class="text-gray-500">{{ $t('inmates.tabs.medical.notSpecified') }}</span>
             </div>
 
             <!-- Mental Health Status -->
             <div class="mb-4">
               <span class="fw-bold text-gray-600 d-block mb-2"
-                >Estado de Salud Mental</span
+                >{{ $t('inmates.tabs.medical.fields.mentalHealthStatus') }}</span
               >
               <span class="text-gray-800">
-                {{ medicalProfile?.mentalHealthStatus?.name || medicalProfile?.mental_health_status?.name || "No evaluado" }}
+                {{ medicalProfile?.mentalHealthStatus?.name || medicalProfile?.mental_health_status?.name || $t('inmates.tabs.medical.notEvaluated') }}
               </span>
             </div>
 
             <!-- Medical Alerts -->
             <div v-if="hasMedicalAlerts" class="mb-4">
               <span class="fw-bold text-gray-600 d-block mb-2"
-                >Alertas Médicas</span
+                >{{ $t('inmates.tabs.medical.alerts.medicalAlerts') }}</span
               >
               <div class="d-flex flex-wrap gap-2">
                 <span v-if="hasAllergies" class="badge badge-light-warning">
                   <KTIcon icon-name="warning-2" icon-class="fs-6 me-1" />
-                  Alergias
+                  {{ $t('inmates.tabs.medical.conditions.allergies') }}
                 </span>
                 <span
                   v-if="hasChronicDiseases"
                   class="badge badge-light-danger"
                 >
                   <KTIcon icon-name="heart" icon-class="fs-6 me-1" />
-                  Enfermedades Crónicas
+                  {{ $t('inmates.tabs.medical.conditions.chronicDiseases') }}
                 </span>
                 <span v-if="hasDisabilities" class="badge badge-light-info">
                   <KTIcon icon-name="information" icon-class="fs-6 me-1" />
-                  Discapacidades
+                  {{ $t('inmates.tabs.medical.conditions.disabilities') }}
                 </span>
               </div>
             </div>
@@ -93,7 +93,7 @@
             <!-- Last Medical Update -->
             <div class="text-gray-600 fs-8">
               <KTIcon icon-name="calendar" icon-class="fs-7 me-1" />
-              Última actualización:
+              {{ $t('inmates.tabs.medical.lastUpdate') }}:
               {{ formatDate(medicalProfile?.updated_at || "") }}
             </div>
           </div>
@@ -107,10 +107,10 @@
         <div class="card-header pt-7">
           <h3 class="card-title align-items-start flex-column">
             <span class="card-label fw-bold text-gray-800"
-              >Condiciones Crónicas</span
+              >{{ $t('inmates.tabs.medical.conditions.title') }}</span
             >
             <span class="text-gray-600 mt-1 fw-semibold fs-6"
-              >Enfermedades y discapacidades</span
+              >{{ $t('inmates.tabs.medical.conditions.subtitle') }}</span
             >
           </h3>
           <div class="card-toolbar">
@@ -120,21 +120,21 @@
               class="btn btn-sm btn-light-success"
             >
               <KTIcon icon-name="medical-mask" icon-class="fs-2" />
-              Gestionar
+              {{ $t('inmates.tabs.medical.buttons.manage') }}
             </button>
           </div>
         </div>
         <div class="card-body pt-0">
           <div v-if="loading.conditions" class="text-center py-5">
             <div class="spinner-border text-primary" role="status">
-              <span class="visually-hidden">Cargando...</span>
+              <span class="visually-hidden">{{ $t('inmates.tabs.medical.loading') }}</span>
             </div>
           </div>
           <div v-else class="scroll-y" style="max-height: 350px">
             <!-- Chronic Diseases -->
             <div v-if="chronicDiseases.length > 0" class="mb-4">
               <div class="fw-bold text-gray-700 fs-6 mb-3">
-                Enfermedades Crónicas
+                {{ $t('inmates.tabs.medical.conditions.chronicDiseases') }}
               </div>
               <div
                 v-for="disease in chronicDiseases"
@@ -150,7 +150,7 @@
                       v-if="disease.diagnosis_date"
                       class="text-gray-600 fs-8"
                     >
-                      Diagnóstico: {{ formatDate(disease.diagnosis_date) }}
+                      {{ $t('inmates.tabs.medical.conditions.diagnosis') }}: {{ formatDate(disease.diagnosis_date) }}
                     </div>
                     <div v-if="disease.severity" class="mt-1">
                       <span
@@ -170,7 +170,7 @@
 
             <!-- Disabilities -->
             <div v-if="disabilities.length > 0" class="mb-4">
-              <div class="fw-bold text-gray-700 fs-6 mb-3">Discapacidades</div>
+              <div class="fw-bold text-gray-700 fs-6 mb-3">{{ $t('inmates.tabs.medical.conditions.disabilities') }}</div>
               <div
                 v-for="disability in disabilities"
                 :key="disability.id"
@@ -180,7 +180,7 @@
                   {{ disability.name }}
                 </div>
                 <div v-if="disability.type" class="text-gray-600 fs-8">
-                  Tipo: {{ disability.type }}
+                  {{ $t('inmates.tabs.medical.conditions.type') }}: {{ disability.type }}
                 </div>
                 <div
                   v-if="disability.description"
@@ -193,7 +193,7 @@
 
             <!-- Allergies -->
             <div v-if="allergies.length > 0" class="mb-4">
-              <div class="fw-bold text-gray-700 fs-6 mb-3">Alergias</div>
+              <div class="fw-bold text-gray-700 fs-6 mb-3">{{ $t('inmates.tabs.medical.conditions.allergies') }}</div>
               <div
                 v-for="allergy in allergies"
                 :key="allergy.id"
@@ -212,7 +212,7 @@
                       v-if="allergy.reaction_type"
                       class="text-gray-600 fs-8"
                     >
-                      Reacción: {{ allergy.reaction_type }}
+                      {{ $t('inmates.tabs.medical.conditions.reaction') }}: {{ allergy.reaction_type }}
                     </div>
                     <div v-if="allergy.severity" class="mt-1">
                       <span
@@ -234,7 +234,7 @@
                 icon-class="fs-5x text-gray-400 mb-4"
               />
               <div class="text-gray-600">
-                No hay condiciones médicas registradas
+                {{ $t('inmates.tabs.medical.conditions.noData') }}
               </div>
             </div>
           </div>
@@ -248,10 +248,10 @@
         <div class="card-header pt-7">
           <h3 class="card-title align-items-start flex-column">
             <span class="card-label fw-bold text-gray-800"
-              >Tratamientos Activos</span
+              >{{ $t('inmates.tabs.medical.treatments.title') }}</span
             >
             <span class="text-gray-600 mt-1 fw-semibold fs-6"
-              >{{ activeTreatments.length }} tratamientos en curso</span
+              >{{ $t('inmates.tabs.medical.treatments.subtitle', { count: activeTreatments.length }) }}</span
             >
           </h3>
           <div class="card-toolbar">
@@ -261,14 +261,14 @@
               class="btn btn-sm btn-light-primary"
             >
               <KTIcon icon-name="pill" icon-class="fs-2" />
-              Agregar
+              {{ $t('inmates.tabs.medical.buttons.add') }}
             </button>
           </div>
         </div>
         <div class="card-body pt-0">
           <div v-if="loading.treatments" class="text-center py-5">
             <div class="spinner-border text-primary" role="status">
-              <span class="visually-hidden">Cargando...</span>
+              <span class="visually-hidden">{{ $t('inmates.tabs.medical.loading') }}</span>
             </div>
           </div>
           <div
@@ -276,7 +276,7 @@
             class="text-center py-5"
           >
             <KTIcon icon-name="pill" icon-class="fs-5x text-gray-400 mb-4" />
-            <div class="text-gray-600">No hay tratamientos activos</div>
+            <div class="text-gray-600">{{ $t('inmates.tabs.medical.treatments.noData') }}</div>
           </div>
           <div v-else class="scroll-y" style="max-height: 350px">
             <div
@@ -291,7 +291,7 @@
                   </div>
                   <div class="text-gray-600 fs-7">{{ treatment.dosage }}</div>
                   <div class="text-gray-600 fs-7">
-                    Frecuencia: {{ treatment.frequency }}
+                    {{ $t('inmates.tabs.medical.treatments.frequency') }}: {{ treatment.frequency }}
                   </div>
                   <div class="mt-2">
                     <span
@@ -308,10 +308,10 @@
                     </span>
                   </div>
                   <div class="text-gray-600 fs-8 mt-1">
-                    Prescrito: {{ formatDate(treatment.start_date) }}
+                    {{ $t('inmates.tabs.medical.treatments.prescribed') }}: {{ formatDate(treatment.start_date) }}
                   </div>
                   <div v-if="treatment.end_date" class="text-gray-600 fs-8">
-                    Fin: {{ formatDate(treatment.end_date) }}
+                    {{ $t('inmates.tabs.medical.treatments.end') }}: {{ formatDate(treatment.end_date) }}
                   </div>
                 </div>
                 <div class="dropdown">
@@ -330,7 +330,7 @@
                         class="menu-link px-3"
                       >
                         <KTIcon icon-name="time" icon-class="fs-6 me-2" />
-                        Historial
+                        {{ $t('inmates.tabs.medical.treatments.history') }}
                       </a>
                     </div>
                     <div v-if="canManageTreatments" class="menu-item px-3">
@@ -339,7 +339,7 @@
                         class="menu-link px-3"
                       >
                         <KTIcon icon-name="pencil" icon-class="fs-6 me-2" />
-                        Editar
+                        {{ $t('inmates.tabs.medical.buttons.edit') }}
                       </a>
                     </div>
                     <div
@@ -357,7 +357,7 @@
                         class="menu-link px-3 text-success"
                       >
                         <KTIcon icon-name="check" icon-class="fs-6 me-2" />
-                        Completar
+                        {{ $t('inmates.tabs.medical.treatments.complete') }}
                       </a>
                     </div>
                     <div
@@ -371,7 +371,7 @@
                         class="menu-link px-3 text-warning"
                       >
                         <KTIcon icon-name="pause" icon-class="fs-6 me-2" />
-                        Suspender
+                        {{ $t('inmates.tabs.medical.treatments.suspend') }}
                       </a>
                     </div>
                     <div v-if="canManageTreatments" class="menu-item px-3">
@@ -380,7 +380,7 @@
                         class="menu-link px-3 text-danger"
                       >
                         <KTIcon icon-name="cross" icon-class="fs-6 me-2" />
-                        Discontinuar
+                        {{ $t('inmates.tabs.medical.treatments.discontinue') }}
                       </a>
                     </div>
                   </div>
@@ -398,10 +398,10 @@
         <div class="card-header pt-7">
           <h3 class="card-title align-items-start flex-column">
             <span class="card-label fw-bold text-gray-800"
-              >Consultas Médicas Recientes</span
+              >{{ $t('inmates.tabs.medical.consultations.recentTitle') }}</span
             >
             <span class="text-gray-600 mt-1 fw-semibold fs-6"
-              >Últimas 10 consultas</span
+              >{{ $t('inmates.tabs.medical.consultations.subtitle') }}</span
             >
           </h3>
           <div class="card-toolbar">
@@ -411,7 +411,7 @@
               class="btn btn-sm btn-light-primary me-3"
             >
               <KTIcon icon-name="calendar-add" icon-class="fs-2" />
-              Agendar Consulta
+              {{ $t('inmates.tabs.medical.consultations.scheduleConsultation') }}
             </button>
             <button
               v-if="canAddConsultations"
@@ -419,14 +419,14 @@
               class="btn btn-sm btn-light-success"
             >
               <KTIcon icon-name="notepad-edit" icon-class="fs-2" />
-              Registrar Consulta
+              {{ $t('inmates.tabs.medical.consultations.registerConsultation') }}
             </button>
           </div>
         </div>
         <div class="card-body pt-0">
           <div v-if="loading.consultations" class="text-center py-5">
             <div class="spinner-border text-primary" role="status">
-              <span class="visually-hidden">Cargando...</span>
+              <span class="visually-hidden">{{ $t('inmates.tabs.medical.loading') }}</span>
             </div>
           </div>
           <div
@@ -438,7 +438,7 @@
               icon-class="fs-5x text-gray-400 mb-4"
             />
             <div class="text-gray-600">
-              No hay consultas médicas registradas
+              {{ $t('inmates.tabs.medical.consultations.noData') }}
             </div>
           </div>
           <div v-else>
@@ -448,12 +448,12 @@
                   <tr
                     class="fw-semibold fs-6 text-gray-800 border-bottom-2 border-gray-200"
                   >
-                    <th>Fecha</th>
-                    <th>Tipo de Consulta</th>
-                    <th>Médico</th>
-                    <th>Diagnóstico</th>
-                    <th>Estado</th>
-                    <th>Acciones</th>
+                    <th>{{ $t('inmates.tabs.medical.consultations.tableHeaders.date') }}</th>
+                    <th>{{ $t('inmates.tabs.medical.consultations.tableHeaders.consultationType') }}</th>
+                    <th>{{ $t('inmates.tabs.medical.consultations.tableHeaders.doctor') }}</th>
+                    <th>{{ $t('inmates.tabs.medical.consultations.tableHeaders.diagnosis') }}</th>
+                    <th>{{ $t('inmates.tabs.medical.consultations.tableHeaders.status') }}</th>
+                    <th>{{ $t('inmates.tabs.medical.consultations.tableHeaders.actions') }}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -486,7 +486,7 @@
                     </td>
                     <td>
                       <div>
-                        {{ consultation.primary_diagnosis || "Pendiente" }}
+                        {{ consultation.primary_diagnosis || $t('inmates.tabs.medical.consultations.pending') }}
                       </div>
                       <div
                         v-if="consultation.secondary_diagnoses"
@@ -508,7 +508,7 @@
                         <button
                           @click="viewConsultationDetails(consultation)"
                           class="btn btn-sm btn-light btn-active-light-primary"
-                          title="Ver Detalles"
+                          :title="$t('inmates.tabs.medical.consultations.viewDetails')"
                         >
                           <KTIcon icon-name="eye" icon-class="fs-7" />
                         </button>
@@ -519,7 +519,7 @@
                           "
                           @click="editConsultation(consultation)"
                           class="btn btn-sm btn-light btn-active-light-primary"
-                          title="Editar"
+                          :title="$t('inmates.tabs.medical.buttons.edit')"
                         >
                           <KTIcon icon-name="pencil" icon-class="fs-7" />
                         </button>
@@ -540,17 +540,17 @@
         <div class="card-header pt-7">
           <h3 class="card-title align-items-start flex-column">
             <span class="card-label fw-bold text-gray-800"
-              >Estadísticas Médicas</span
+              >{{ $t('inmates.tabs.medical.statistics.title') }}</span
             >
             <span class="text-gray-600 mt-1 fw-semibold fs-6"
-              >Resumen de atención</span
+              >{{ $t('inmates.tabs.medical.statistics.subtitle') }}</span
             >
           </h3>
         </div>
         <div class="card-body pt-0">
           <div v-if="loading.statistics" class="text-center py-5">
             <div class="spinner-border text-primary" role="status">
-              <span class="visually-hidden">Cargando...</span>
+              <span class="visually-hidden">{{ $t('inmates.tabs.medical.loading') }}</span>
             </div>
           </div>
           <div v-else>
@@ -567,7 +567,7 @@
                 </div>
               </div>
               <div class="flex-grow-1">
-                <div class="fw-bold text-gray-800 fs-6">Total Consultas</div>
+                <div class="fw-bold text-gray-800 fs-6">{{ $t('inmates.tabs.medical.statistics.totalConsultations') }}</div>
                 <div class="text-gray-600 fs-7">
                   {{ medicalStatistics.total_consultations || 0 }}
                 </div>
@@ -585,7 +585,7 @@
               </div>
               <div class="flex-grow-1">
                 <div class="fw-bold text-gray-800 fs-6">
-                  Tratamientos Activos
+                  {{ $t('inmates.tabs.medical.statistics.activeTreatments') }}
                 </div>
                 <div class="text-gray-600 fs-7">
                   {{ medicalStatistics.active_treatments || 0 }}
@@ -603,12 +603,12 @@
                 </div>
               </div>
               <div class="flex-grow-1">
-                <div class="fw-bold text-gray-800 fs-6">Última Consulta</div>
+                <div class="fw-bold text-gray-800 fs-6">{{ $t('inmates.tabs.medical.statistics.lastConsultation') }}</div>
                 <div class="text-gray-600 fs-7">
                   {{
                     medicalStatistics.last_consultation_date
                       ? formatDate(medicalStatistics.last_consultation_date)
-                      : "N/A"
+                      : $t('inmates.tabs.medical.na')
                   }}
                 </div>
               </div>
@@ -627,7 +627,7 @@
                 </div>
               </div>
               <div class="flex-grow-1">
-                <div class="fw-bold text-gray-800 fs-6">Nivel de Riesgo</div>
+                <div class="fw-bold text-gray-800 fs-6">{{ $t('inmates.tabs.medical.statistics.riskLevel') }}</div>
                 <div>
                   <span
                     class="badge"
@@ -658,7 +658,7 @@
     <div class="modal-dialog modal-lg">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title">Editar Perfil Médico</h5>
+          <h5 class="modal-title">{{ $t('inmates.tabs.medical.modal.editProfile') }}</h5>
           <button
             type="button"
             class="btn-close"
@@ -669,9 +669,9 @@
           <form @submit.prevent="saveMedicalProfile">
             <div class="row g-3">
               <div class="col-md-6">
-                <label class="form-label">Tipo de Sangre</label>
+                <label class="form-label">{{ $t('inmates.tabs.medical.fields.bloodType') }}</label>
                 <select v-model="medicalForm.blood_type_id" class="form-select">
-                  <option value="">Seleccione tipo de sangre</option>
+                  <option value="">{{ $t('inmates.tabs.medical.modal.selectBloodType') }}</option>
                   <option
                     v-for="type in bloodTypes"
                     :key="type.id"
@@ -682,12 +682,12 @@
                 </select>
               </div>
               <div class="col-md-6">
-                <label class="form-label">Estado de Salud Mental</label>
+                <label class="form-label">{{ $t('inmates.tabs.medical.fields.mentalHealthStatus') }}</label>
                 <select
                   v-model="medicalForm.mental_health_status_id"
                   class="form-select"
                 >
-                  <option value="">Seleccione estado</option>
+                  <option value="">{{ $t('inmates.tabs.medical.modal.selectStatus') }}</option>
                   <option
                     v-for="status in mentalHealthStatuses"
                     :key="status.id"
@@ -698,30 +698,30 @@
                 </select>
               </div>
               <div class="col-md-6">
-                <label class="form-label">Contacto de Emergencia</label>
+                <label class="form-label">{{ $t('inmates.tabs.medical.fields.emergencyContact') }}</label>
                 <input
                   v-model="medicalForm.emergency_contact_name"
                   type="text"
                   class="form-control"
-                  placeholder="Nombre del contacto"
+                  :placeholder="$t('inmates.tabs.medical.modal.contactName')"
                 />
               </div>
               <div class="col-md-6">
-                <label class="form-label">Teléfono de Emergencia</label>
+                <label class="form-label">{{ $t('inmates.tabs.medical.modal.emergencyPhone') }}</label>
                 <input
                   v-model="medicalForm.emergency_contact_phone"
                   type="text"
                   class="form-control"
-                  placeholder="Número de teléfono"
+                  :placeholder="$t('inmates.tabs.medical.modal.phoneNumber')"
                 />
               </div>
               <div class="col-12">
-                <label class="form-label">Notas Médicas</label>
+                <label class="form-label">{{ $t('inmates.tabs.medical.modal.medicalNotes') }}</label>
                 <textarea
                   v-model="medicalForm.medical_notes"
                   class="form-control"
                   rows="4"
-                  placeholder="Notas adicionales sobre el perfil médico"
+                  :placeholder="$t('inmates.tabs.medical.modal.notesPlaceholder')"
                 ></textarea>
               </div>
             </div>
@@ -729,7 +729,7 @@
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-light" data-bs-dismiss="modal">
-            Cancelar
+            {{ $t('inmates.tabs.medical.buttons.cancel') }}
           </button>
           <button
             type="button"
@@ -741,7 +741,7 @@
               v-if="loading.saving"
               class="spinner-border spinner-border-sm me-2"
             ></span>
-            Guardar Perfil
+            {{ $t('inmates.tabs.medical.buttons.saveProfile') }}
           </button>
         </div>
       </div>
@@ -751,10 +751,13 @@
 
 <script setup lang="ts">
 import { ref, onMounted, computed } from "vue";
+import { useI18n } from "vue-i18n";
 import { useAuthStore } from "@/stores/auth";
 import type { InmateDetail, InmateMedicalProfile } from "@/types/inmates";
 import Swal from "sweetalert2";
 import KTIcon from "@/core/helpers/kt-icon/KTIcon.vue";
+
+const { t } = useI18n();
 
 interface Props {
   inmate: InmateDetail;
@@ -1046,7 +1049,6 @@ const saveMedicalProfile = async () => {
     loading.value.saving = true;
 
     // Here would call backend API to save medical profile
-    console.log("Saving medical profile:", medicalForm.value);
 
     // Close modal
     const modal = (window as any).bootstrap.Modal.getInstance(
@@ -1058,16 +1060,16 @@ const saveMedicalProfile = async () => {
     await loadMedicalData();
 
     Swal.fire({
-      title: "Perfil Guardado",
-      text: "El perfil médico ha sido actualizado correctamente.",
+      title: t('inmates.tabs.medical.swal.profileSaved'),
+      text: t('inmates.tabs.medical.swal.profileSavedDesc'),
       icon: "success",
       confirmButtonText: "OK",
     });
   } catch (error) {
     console.error("Error saving medical profile:", error);
     Swal.fire({
-      title: "Error",
-      text: "No se pudo guardar el perfil médico.",
+      title: t('inmates.common.error'),
+      text: t('inmates.tabs.medical.swal.saveError'),
       icon: "error",
       confirmButtonText: "OK",
     });
@@ -1079,8 +1081,8 @@ const saveMedicalProfile = async () => {
 // Conditions management
 const openManageConditionsModal = () => {
   Swal.fire({
-    title: "Gestionar Condiciones",
-    text: "Funcionalidad de gestión de condiciones médicas en desarrollo.",
+    title: t('inmates.tabs.medical.swal.manageConditions'),
+    text: t('inmates.tabs.medical.swal.manageConditionsDesc'),
     icon: "info",
     confirmButtonText: "OK",
   });
@@ -1089,67 +1091,62 @@ const openManageConditionsModal = () => {
 // Treatment management
 const openAddTreatmentModal = () => {
   Swal.fire({
-    title: "Agregar Tratamiento",
-    text: "Funcionalidad de gestión de tratamientos en desarrollo.",
+    title: t('inmates.tabs.medical.swal.addTreatment'),
+    text: t('inmates.tabs.medical.swal.addTreatmentDesc'),
     icon: "info",
     confirmButtonText: "OK",
   });
 };
 
 const viewTreatmentHistory = (treatment: MedicalTreatment) => {
-  console.log("Viewing treatment history:", treatment.id);
 };
 
 const editTreatment = (treatment: MedicalTreatment) => {
-  console.log("Editing treatment:", treatment.id);
 };
 
 const completeTreatment = async (treatment: MedicalTreatment) => {
   const result = await Swal.fire({
-    title: "Completar Tratamiento",
-    text: `¿Marcar como completado el tratamiento ${treatment.medication_name}?`,
+    title: t('inmates.tabs.medical.swal.completeTreatment'),
+    text: t('inmates.tabs.medical.swal.completeTreatmentConfirm', { name: treatment.medication_name }),
     showCancelButton: true,
-    confirmButtonText: "Completar",
-    cancelButtonText: "Cancelar",
+    confirmButtonText: t('inmates.tabs.medical.treatments.complete'),
+    cancelButtonText: t('inmates.tabs.medical.buttons.cancel'),
   });
 
   if (result.isConfirmed) {
-    console.log("Completing treatment:", treatment.id);
     await loadTreatments();
   }
 };
 
 const suspendTreatment = async (treatment: MedicalTreatment) => {
   const { value: reason } = await Swal.fire({
-    title: "Suspender Tratamiento",
-    text: `¿Suspender el tratamiento ${treatment.medication_name}?`,
+    title: t('inmates.tabs.medical.swal.suspendTreatment'),
+    text: t('inmates.tabs.medical.swal.suspendTreatmentConfirm', { name: treatment.medication_name }),
     input: "textarea",
-    inputPlaceholder: "Motivo de la suspensión",
+    inputPlaceholder: t('inmates.tabs.medical.swal.suspensionReason'),
     showCancelButton: true,
-    confirmButtonText: "Suspender",
-    cancelButtonText: "Cancelar",
+    confirmButtonText: t('inmates.tabs.medical.treatments.suspend'),
+    cancelButtonText: t('inmates.tabs.medical.buttons.cancel'),
   });
 
   if (reason) {
-    console.log("Suspending treatment:", treatment.id, "Reason:", reason);
     await loadTreatments();
   }
 };
 
 const discontinueTreatment = async (treatment: MedicalTreatment) => {
   const { value: reason } = await Swal.fire({
-    title: "Discontinuar Tratamiento",
-    text: `¿Discontinuar permanentemente el tratamiento ${treatment.medication_name}?`,
+    title: t('inmates.tabs.medical.swal.discontinueTreatment'),
+    text: t('inmates.tabs.medical.swal.discontinueTreatmentConfirm', { name: treatment.medication_name }),
     input: "textarea",
-    inputPlaceholder: "Motivo de la discontinuación",
+    inputPlaceholder: t('inmates.tabs.medical.swal.discontinuationReason'),
     showCancelButton: true,
-    confirmButtonText: "Discontinuar",
-    cancelButtonText: "Cancelar",
+    confirmButtonText: t('inmates.tabs.medical.treatments.discontinue'),
+    cancelButtonText: t('inmates.tabs.medical.buttons.cancel'),
     confirmButtonColor: "#d33",
   });
 
   if (reason) {
-    console.log("Discontinuing treatment:", treatment.id, "Reason:", reason);
     await loadTreatments();
   }
 };
@@ -1157,8 +1154,8 @@ const discontinueTreatment = async (treatment: MedicalTreatment) => {
 // Consultation management
 const openScheduleConsultationModal = () => {
   Swal.fire({
-    title: "Agendar Consulta",
-    text: "Funcionalidad de agendamiento de consultas en desarrollo.",
+    title: t('inmates.tabs.medical.swal.scheduleConsultation'),
+    text: t('inmates.tabs.medical.swal.scheduleConsultationDesc'),
     icon: "info",
     confirmButtonText: "OK",
   });
@@ -1166,19 +1163,17 @@ const openScheduleConsultationModal = () => {
 
 const openAddConsultationModal = () => {
   Swal.fire({
-    title: "Registrar Consulta",
-    text: "Funcionalidad de registro de consultas en desarrollo.",
+    title: t('inmates.tabs.medical.swal.registerConsultation'),
+    text: t('inmates.tabs.medical.swal.registerConsultationDesc'),
     icon: "info",
     confirmButtonText: "OK",
   });
 };
 
 const viewConsultationDetails = (consultation: MedicalConsultation) => {
-  console.log("Viewing consultation details:", consultation.id);
 };
 
 const editConsultation = (consultation: MedicalConsultation) => {
-  console.log("Editing consultation:", consultation.id);
 };
 
 // Helper methods
@@ -1192,12 +1187,10 @@ const getSeverityClass = (severity: string): string => {
 };
 
 const getSeverityText = (severity: string): string => {
-  const texts: Record<string, string> = {
-    mild: "Leve",
-    moderate: "Moderado",
-    severe: "Severo",
-  };
-  return texts[severity] || severity;
+  if (!severity) return severity;
+  const severityKey = `inmates.tabs.medical.severity.${severity}`;
+  const translated = t(severityKey);
+  return translated !== severityKey ? translated : severity;
 };
 
 const getAllergySeverityClass = (severity: string): string => {
@@ -1211,13 +1204,14 @@ const getAllergySeverityClass = (severity: string): string => {
 };
 
 const getAllergySeverityText = (severity: string): string => {
-  const texts: Record<string, string> = {
-    mild: "Leve",
-    moderate: "Moderado",
-    severe: "Severo",
-    life_threatening: "Mortal",
+  if (!severity) return severity;
+  const severityMap: Record<string, string> = {
+    life_threatening: "lifeThreatening",
   };
-  return texts[severity] || severity;
+  const key = severityMap[severity] || severity;
+  const severityKey = `inmates.tabs.medical.severity.${key}`;
+  const translated = t(severityKey);
+  return translated !== severityKey ? translated : severity;
 };
 
 const getTreatmentStatusClass = (status: string): string => {
@@ -1231,13 +1225,10 @@ const getTreatmentStatusClass = (status: string): string => {
 };
 
 const getTreatmentStatusText = (status: string): string => {
-  const texts: Record<string, string> = {
-    active: "Activo",
-    completed: "Completado",
-    suspended: "Suspendido",
-    discontinued: "Discontinuado",
-  };
-  return texts[status] || status;
+  if (!status) return status;
+  const statusKey = `inmates.tabs.medical.treatmentStatuses.${status}`;
+  const translated = t(statusKey);
+  return translated !== statusKey ? translated : status;
 };
 
 const getConsultationStatusClass = (status: string): string => {
@@ -1251,13 +1242,10 @@ const getConsultationStatusClass = (status: string): string => {
 };
 
 const getConsultationStatusText = (status: string): string => {
-  const texts: Record<string, string> = {
-    scheduled: "Programada",
-    in_progress: "En Progreso",
-    completed: "Completada",
-    cancelled: "Cancelada",
-  };
-  return texts[status] || status;
+  if (!status) return status;
+  const statusKey = `inmates.tabs.medical.consultationStatuses.${status}`;
+  const translated = t(statusKey);
+  return translated !== statusKey ? translated : status;
 };
 
 const getRiskLevelClass = (level: string): string => {
@@ -1271,13 +1259,10 @@ const getRiskLevelClass = (level: string): string => {
 };
 
 const getRiskLevelText = (level: string): string => {
-  const texts: Record<string, string> = {
-    low: "Bajo",
-    medium: "Medio",
-    high: "Alto",
-    critical: "Crítico",
-  };
-  return texts[level] || level;
+  if (!level) return level;
+  const levelKey = `inmates.tabs.medical.riskLevels.${level}`;
+  const translated = t(levelKey);
+  return translated !== levelKey ? translated : level;
 };
 
 const formatDate = (date: string): string => {

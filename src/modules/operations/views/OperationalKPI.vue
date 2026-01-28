@@ -514,7 +514,6 @@ const initCharts = () => {
 
 const updateData = () => {
   // TODO: Update data based on selected period
-  console.log('Updating data for period:', selectedPeriod.value)
 }
 
 const getEfficiencyClass = (efficiency: number) => {

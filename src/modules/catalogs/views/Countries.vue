@@ -121,7 +121,6 @@ const createCountry = async (formData: any) => {
     if (response.data.success) {
       await loadCountries(currentPage.value, searchTerm.value);
       modalSuccess.value = true;
-      console.log("Country created successfully:", response.data.data);
 
       setTimeout(() => {
         modalSuccess.value = false;
@@ -143,7 +142,6 @@ const editCountry = async (id: number, formData: any) => {
     if (response.data.success) {
       await loadCountries(currentPage.value, searchTerm.value);
       modalSuccess.value = true;
-      console.log("Country updated successfully:", response.data.data);
 
       setTimeout(() => {
         modalSuccess.value = false;

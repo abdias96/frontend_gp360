@@ -45,12 +45,9 @@ export function usePrivateChat() {
   const loadAvailableUsers = async () => {
     isLoading.value = true;
     try {
-      console.log('Loading available users...');
       const response = await ApiService.get("/chat/users");
-      console.log('Users response:', response.data);
       if (response.data.success) {
         availableUsers.value = response.data.users || [];
-        console.log('Available users loaded:', availableUsers.value.length);
       }
     } catch (error) {
       console.error("Error loading available users:", error);
@@ -171,7 +168,6 @@ export function usePrivateChat() {
     if (privateChannel.value) {
       privateChannel.value
         .listen('.private.message.sent', (data: PrivateMessage) => {
-          console.log('New private message received:', data);
 
           // Only add if it's not our own message
           // (our messages are added via optimistic update)

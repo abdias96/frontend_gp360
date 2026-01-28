@@ -93,17 +93,17 @@
             <!-- Etapa Procesal -->
             <div class="row g-6 mb-6">
               <div class="col-md-12">
-                <label class="form-label">Etapa Procesal</label>
+                <label class="form-label">Etapa procesal</label>
                 <select v-model="form.procedural_stage" class="form-select">
                   <option value="">Seleccionar etapa procesal...</option>
-                  <option value="investigation">Etapa Preparatoria</option>
-                  <option value="intermediate_phase">Etapa Intermedia</option>
-                  <option value="oral_trial">Juicio Oral</option>
-                  <option value="sentence_execution">Ejecución de Sentencia</option>
-                  <option value="appeal_process">Proceso de Apelación</option>
+                  <option value="investigation">Etapa preparatoria</option>
+                  <option value="intermediate_phase">Etapa intermedia</option>
+                  <option value="oral_trial">Juicio oral</option>
+                  <option value="sentence_execution">Ejecución de sentencia</option>
+                  <option value="appeal_process">Proceso de apelación</option>
                   <option value="cassation">Casación</option>
-                  <option value="constitutional_appeal">Amparo Constitucional</option>
-                  <option value="review_process">Proceso de Revisión</option>
+                  <option value="constitutional_appeal">Amparo constitucional</option>
+                  <option value="review_process">Proceso de revisión</option>
                 </select>
               </div>
             </div>

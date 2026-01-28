@@ -411,7 +411,7 @@ export const catalogsTranslations = {
       // Términos generales de catálogos
       catalog: "Catálogo",
       catalogs: "Catálogos",
-      manageCatalogs: "Gestionar Catálogos",
+      manageCatalogs: "Gestionar catálogos",
 
       // Campos comunes
       fields: {
@@ -419,10 +419,10 @@ export const catalogsTranslations = {
         code: "Código",
         description: "Descripción",
         active: "Activo",
-        createdBy: "Creado Por",
-        updatedBy: "Actualizado Por",
-        createdAt: "Fecha de Creación",
-        updatedAt: "Fecha de Actualización",
+        createdBy: "Creado por",
+        updatedBy: "Actualizado por",
+        createdAt: "Fecha de creación",
+        updatedAt: "Fecha de actualización",
       },
 
       // Catálogos geográficos
@@ -430,9 +430,9 @@ export const catalogsTranslations = {
         title: "Países",
         singular: "País",
         fields: {
-          name: "Nombre del País",
-          code: "Código del País (ISO)",
-          description: "Descripción del País",
+          name: "Nombre del país",
+          code: "Código del país (ISO)",
+          description: "Descripción del país",
         },
         placeholders: {
           name: "Ingrese el nombre del país",
@@ -445,8 +445,8 @@ export const catalogsTranslations = {
         title: "Departamentos",
         singular: "Departamento",
         fields: {
-          name: "Nombre del Departamento",
-          code: "Código del Departamento",
+          name: "Nombre del departamento",
+          code: "Código del departamento",
           country: "País",
         },
         placeholders: {
@@ -460,8 +460,8 @@ export const catalogsTranslations = {
         title: "Municipios",
         singular: "Municipio",
         fields: {
-          name: "Nombre del Municipio",
-          code: "Código del Municipio",
+          name: "Nombre del municipio",
+          code: "Código del municipio",
           country: "País",
           department: "Departamento",
         },
@@ -474,8 +474,8 @@ export const catalogsTranslations = {
 
       // Catálogos de datos personales
       civilStatuses: {
-        title: "Estados Civiles",
-        singular: "Estado Civil",
+        title: "Estados civiles",
+        singular: "Estado civil",
         placeholders: {
           name: "Ingrese el nombre del estado civil",
           code: "Ingrese el código del estado civil",
@@ -483,8 +483,8 @@ export const catalogsTranslations = {
       },
 
       ethnicGroups: {
-        title: "Grupos Étnicos",
-        singular: "Grupo Étnico",
+        title: "Grupos étnicos",
+        singular: "Grupo étnico",
         placeholders: {
           name: "Ingrese el nombre del grupo étnico",
           code: "Ingrese el código del grupo étnico",
@@ -492,8 +492,8 @@ export const catalogsTranslations = {
       },
 
       bloodTypes: {
-        title: "Tipos de Sangre",
-        singular: "Tipo de Sangre",
+        title: "Tipos de sangre",
+        singular: "Tipo de sangre",
         placeholders: {
           name: "Ingrese el tipo de sangre (ej: A+, O-, AB+)",
           code: "Ingrese el código del tipo de sangre",
@@ -501,8 +501,8 @@ export const catalogsTranslations = {
       },
 
       academicDegrees: {
-        title: "Grados Académicos",
-        singular: "Grado Académico",
+        title: "Grados académicos",
+        singular: "Grado académico",
         placeholders: {
           name: "Ingrese el nombre del grado académico",
           code: "Ingrese el código del grado académico",
@@ -546,8 +546,8 @@ export const catalogsTranslations = {
       },
 
       chronicDiseases: {
-        title: "Enfermedades Crónicas",
-        singular: "Enfermedad Crónica",
+        title: "Enfermedades crónicas",
+        singular: "Enfermedad crónica",
         placeholders: {
           name: "Ingrese el nombre de la enfermedad crónica",
           code: "Ingrese el código de la enfermedad crónica",
@@ -564,8 +564,8 @@ export const catalogsTranslations = {
       },
 
       mentalHealthStatuses: {
-        title: "Estados de Salud Mental",
-        singular: "Estado de Salud Mental",
+        title: "Estados de salud mental",
+        singular: "Estado de salud mental",
         placeholders: {
           name: "Ingrese el estado de salud mental",
           code: "Ingrese el código del estado",
@@ -579,8 +579,8 @@ export const catalogsTranslations = {
         fields: {
           article: "Artículo",
           classification: "Clasificación",
-          minPenalty: "Pena Mínima (meses)",
-          maxPenalty: "Pena Máxima (meses)",
+          minPenalty: "Pena mínima (meses)",
+          maxPenalty: "Pena máxima (meses)",
         },
         placeholders: {
           name: "Ingrese el nombre del delito",
@@ -592,8 +592,8 @@ export const catalogsTranslations = {
       },
 
       crimeClassifications: {
-        title: "Clasificaciones de Delitos",
-        singular: "Clasificación de Delito",
+        title: "Clasificaciones de delitos",
+        singular: "Clasificación de delito",
         placeholders: {
           name: "Ingrese el nombre de la clasificación de delito",
           code: "Código único de la clasificación de delito",
@@ -610,8 +610,8 @@ export const catalogsTranslations = {
       },
 
       sentenceTypes: {
-        title: "Tipos de Sentencia",
-        singular: "Tipo de Sentencia",
+        title: "Tipos de sentencia",
+        singular: "Tipo de sentencia",
         placeholders: {
           name: "Ingrese el nombre del tipo de sentencia",
           code: "Ingrese el código del tipo de sentencia",
@@ -619,8 +619,8 @@ export const catalogsTranslations = {
       },
 
       proceduralStatuses: {
-        title: "Estados Procesales",
-        singular: "Estado Procesal",
+        title: "Estados procesales",
+        singular: "Estado procesal",
         fields: {
           stage: "Etapa",
         },
@@ -637,7 +637,7 @@ export const catalogsTranslations = {
         singular: "Centro",
         fields: {
           capacity: "Capacidad",
-          currentPopulation: "Población Actual",
+          currentPopulation: "Población actual",
           location: "Ubicación",
           director: "Director",
         },
@@ -657,8 +657,8 @@ export const catalogsTranslations = {
         fields: {
           center: "Centro",
           capacity: "Capacidad",
-          currentPopulation: "Población Actual",
-          securityLevel: "Nivel de Seguridad",
+          currentPopulation: "Población actual",
+          securityLevel: "Nivel de seguridad",
         },
         placeholders: {
           name: "Ingrese el nombre del sector",
@@ -698,8 +698,8 @@ export const catalogsTranslations = {
       },
 
       documentTypes: {
-        title: "Tipos de Documento",
-        singular: "Tipo de Documento",
+        title: "Tipos de documento",
+        singular: "Tipo de documento",
         placeholders: {
           name: "Ingrese el nombre del tipo de documento",
           code: "Ingrese el código del tipo de documento",
@@ -707,10 +707,10 @@ export const catalogsTranslations = {
       },
 
       visitTypes: {
-        title: "Tipos de Visita",
-        singular: "Tipo de Visita",
+        title: "Tipos de visita",
+        singular: "Tipo de visita",
         fields: {
-          requiresAuthorization: "Requiere Autorización",
+          requiresAuthorization: "Requiere autorización",
         },
         placeholders: {
           name: "Ingrese el nombre del tipo de visita",
@@ -719,8 +719,8 @@ export const catalogsTranslations = {
       },
 
       benefitTypes: {
-        title: "Tipos de Beneficio",
-        singular: "Tipo de Beneficio",
+        title: "Tipos de beneficio",
+        singular: "Tipo de beneficio",
         placeholders: {
           name: "Ingrese el nombre del tipo de beneficio",
           code: "Ingrese el código del tipo de beneficio",
@@ -728,8 +728,8 @@ export const catalogsTranslations = {
       },
 
       transferReasons: {
-        title: "Motivos de Traslado",
-        singular: "Motivo de Traslado",
+        title: "Motivos de traslado",
+        singular: "Motivo de traslado",
         placeholders: {
           name: "Ingrese el motivo de traslado",
           code: "Ingrese el código del motivo de traslado",
@@ -737,8 +737,8 @@ export const catalogsTranslations = {
       },
 
       exitReasons: {
-        title: "Motivos de Egreso",
-        singular: "Motivo de Egreso",
+        title: "Motivos de egreso",
+        singular: "Motivo de egreso",
         placeholders: {
           name: "Ingrese el motivo de egreso",
           code: "Ingrese el código del motivo de egreso",
@@ -746,8 +746,8 @@ export const catalogsTranslations = {
       },
 
       socioeconomicLevels: {
-        title: "Niveles Socioeconómicos",
-        singular: "Nivel Socioeconómico",
+        title: "Niveles socioeconómicos",
+        singular: "Nivel socioeconómico",
         placeholders: {
           name: "Ingrese el nivel socioeconómico",
           code: "Ingrese el código del nivel",
@@ -755,8 +755,8 @@ export const catalogsTranslations = {
       },
 
       riskClassifications: {
-        title: "Clasificaciones de Riesgo",
-        singular: "Clasificación de Riesgo",
+        title: "Clasificaciones de riesgo",
+        singular: "Clasificación de riesgo",
         placeholders: {
           name: "Ingrese la clasificación de riesgo",
           code: "Ingrese el código de la clasificación",
@@ -764,8 +764,8 @@ export const catalogsTranslations = {
       },
 
       progressivePhases: {
-        title: "Fases Progresivas",
-        singular: "Fase Progresiva",
+        title: "Fases progresivas",
+        singular: "Fase progresiva",
         placeholders: {
           name: "Ingrese el nombre de la fase progresiva",
           code: "Ingrese el código de la fase",
@@ -773,8 +773,8 @@ export const catalogsTranslations = {
       },
 
       rehabilitationPrograms: {
-        title: "Programas de Rehabilitación",
-        singular: "Programa de Rehabilitación",
+        title: "Programas de rehabilitación",
+        singular: "Programa de rehabilitación",
         placeholders: {
           name: "Ingrese el nombre del programa",
           code: "Ingrese el código del programa",
@@ -782,8 +782,8 @@ export const catalogsTranslations = {
       },
 
       disciplinarySanctions: {
-        title: "Sanciones Disciplinarias",
-        singular: "Sanción Disciplinaria",
+        title: "Sanciones disciplinarias",
+        singular: "Sanción disciplinaria",
         placeholders: {
           name: "Ingrese el nombre de la sanción",
           code: "Ingrese el código de la sanción",
@@ -791,8 +791,8 @@ export const catalogsTranslations = {
       },
 
       measureTypes: {
-        title: "Tipos de Medida",
-        singular: "Tipo de Medida",
+        title: "Tipos de medida",
+        singular: "Tipo de medida",
         placeholders: {
           name: "Ingrese el nombre del tipo de medida",
           code: "Ingrese el código del tipo de medida",

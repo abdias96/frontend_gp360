@@ -66,7 +66,6 @@ export function useBiometricMatching() {
       
       if (matcherResponse.data.status === 'healthy') {
         serviceAvailable.value = true
-        console.log('✅ Servicio de matching C# disponible:', matcherResponse.data)
         return true
       }
     } catch (error) {
@@ -203,11 +202,9 @@ export function useBiometricMatching() {
       const serviceOk = await checkServiceStatus()
       if (serviceOk) {
         try {
-          console.log('Converting fingerprint to DPFP template for verification...')
           const template = await convertToTemplate(capturedFingerprint)
           if (template && template.format === 'DPFP_TEMPLATE') {
             templateToSend = template.template
-            console.log('Successfully converted to DPFP template')
           } else {
             console.warn('Could not convert to DPFP template, using image')
           }
@@ -399,7 +396,6 @@ export function useBiometricMatching() {
       const response = await axios.post(`${MATCHER_SERVICE}/api/capture-from-reader`)
       
       if (response.data.success) {
-        console.log('FMD capturado desde lector:', response.data.format)
         return {
           template: response.data.template,
           format: response.data.format,
@@ -457,7 +453,6 @@ export function useBiometricMatching() {
     }
     
     const base64 = btoa(binary)
-    console.log('Simulated FMD template generated', { size: fmdSize, base64Length: base64.length })
     
     return base64
   }

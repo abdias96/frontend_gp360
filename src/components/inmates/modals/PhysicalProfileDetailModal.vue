@@ -581,7 +581,6 @@ const close = () => {
 
 const exportProfile = () => {
   // TODO: Implement export functionality
-  console.log('Export profile:', props.profile);
 };
 
 // Utility functions

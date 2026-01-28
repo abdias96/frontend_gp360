@@ -560,13 +560,11 @@ const handleViewVisitorHistory = () => {
 }
 
 const handleContactVisitor = () => {
-  console.log('Contact visitor:', request.value.visitor.phone)
 }
 
 // Lifecycle
 onMounted(() => {
   // Load request data based on route.params.id
-  console.log('Loading request:', route.params.id)
 })
 </script>
 

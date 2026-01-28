@@ -417,7 +417,6 @@ const editRelationship = () => {
 
 const viewFullHistory = () => {
   // TODO: Navigate to full history view
-  console.log('View full history for relationship:', props.relationship?.id)
 }
 
 // Utility functions

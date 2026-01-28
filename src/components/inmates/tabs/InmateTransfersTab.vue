@@ -684,7 +684,6 @@ const manageRequests = () => {
 };
 
 const viewRequestDetails = (request: TransferRequest) => {
-  console.log('View request:', request);
 };
 
 const approveRequest = (id: number) => {

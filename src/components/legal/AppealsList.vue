@@ -407,7 +407,6 @@ const openNewAppeal = () => {
 
 const viewAppeal = (appeal: any) => {
   // Could open a detail modal or navigate to detail view
-  console.log('View appeal:', appeal);
 };
 
 const editAppeal = (appeal: any) => {

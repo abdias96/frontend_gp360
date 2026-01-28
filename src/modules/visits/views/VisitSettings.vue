@@ -774,7 +774,6 @@ const handleSaveSettings = async () => {
   })
 
   if (result.isConfirmed) {
-    console.log('Saving settings:', settings.value)
     
     Swal.fire({
       title: t('common.success'),
@@ -785,12 +784,10 @@ const handleSaveSettings = async () => {
 }
 
 const handleAddRoom = () => {
-  console.log('Add new room')
   // Open modal to add room
 }
 
 const handleEditRoom = (roomId: number) => {
-  console.log('Edit room:', roomId)
   // Open modal to edit room
 }
 

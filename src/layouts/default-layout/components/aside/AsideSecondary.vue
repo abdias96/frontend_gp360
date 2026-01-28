@@ -146,19 +146,6 @@
                         }}</span>
                       </router-link>
                     </div>
-                    <div
-                      class="menu-item"
-                      v-if="isSuperAdmin || hasPermission('inmates.search')"
-                    >
-                      <router-link to="/inmates/search" class="menu-link">
-                        <span class="menu-bullet"
-                          ><span class="bullet bullet-dot"></span
-                        ></span>
-                        <span class="menu-title">{{
-                          $t("menu.inmateSearch")
-                        }}</span>
-                      </router-link>
-                    </div>
                   </div>
                 </div>
 

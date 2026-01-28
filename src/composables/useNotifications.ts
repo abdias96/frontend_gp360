@@ -80,7 +80,6 @@ export function useNotifications() {
 
     // Subscribe to user's private notification channel
     webSocketService.subscribeToUserNotifications(userId, (notification) => {
-      console.log('New notification received:', notification);
       
       // Increment unread count
       incrementUnreadCount();

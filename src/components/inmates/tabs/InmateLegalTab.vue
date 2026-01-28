@@ -105,6 +105,18 @@
                   <!-- Quick Actions -->
                   <div class="d-flex gap-2 ms-auto me-3" @click.stop>
                     <button
+                      v-if="canEdit && profile.profile_status === 'active'"
+                      type="button"
+                      class="btn btn-sm btn-icon btn-light-warning"
+                      @click="openCaseTransfer(profile.id)"
+                      title="Traslado de Causa"
+                    >
+                      <i class="ki-duotone ki-arrow-right-left fs-4">
+                        <span class="path1"></span>
+                        <span class="path2"></span>
+                      </i>
+                    </button>
+                    <button
                       v-if="canEdit"
                       type="button"
                       class="btn btn-sm btn-icon btn-light-primary"
@@ -227,6 +239,89 @@
                   <div v-if="profile.legal_notes" class="col-12">
                     <label class="text-muted fw-semibold mb-2">Notas Legales</label>
                     <div class="text-gray-700">{{ profile.legal_notes }}</div>
+                  </div>
+
+                  <!-- Case Transfer History -->
+                  <div class="col-12 mt-5">
+                    <div class="separator separator-dashed my-4"></div>
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                      <label class="text-muted fw-semibold">
+                        <i class="ki-duotone ki-arrow-right-left fs-4 me-2 text-warning">
+                          <span class="path1"></span>
+                          <span class="path2"></span>
+                        </i>
+                        Historial de Traslados de Causa
+                      </label>
+                      <button
+                        type="button"
+                        class="btn btn-sm btn-light-warning"
+                        @click="loadCaseTransferHistory(profile.id)"
+                        :disabled="loadingCaseTransferHistory[profile.id]"
+                      >
+                        <span v-if="loadingCaseTransferHistory[profile.id]" class="spinner-border spinner-border-sm me-1"></span>
+                        <i v-else class="ki-duotone ki-time fs-4 me-1">
+                          <span class="path1"></span>
+                          <span class="path2"></span>
+                        </i>
+                        {{ caseTransferHistories[profile.id] ? 'Actualizar' : 'Ver Historial' }}
+                      </button>
+                    </div>
+
+                    <!-- History List -->
+                    <div v-if="caseTransferHistories[profile.id]">
+                      <div v-if="caseTransferHistories[profile.id].length === 0" class="text-center py-4 text-muted">
+                        <i class="ki-duotone ki-information fs-2x mb-2">
+                          <span class="path1"></span>
+                          <span class="path2"></span>
+                          <span class="path3"></span>
+                        </i>
+                        <div>No hay traslados de causa registrados</div>
+                      </div>
+                      <div v-else class="timeline timeline-border-dashed">
+                        <div v-for="transfer in caseTransferHistories[profile.id]" :key="transfer.id" class="timeline-item">
+                          <div class="timeline-line"></div>
+                          <div class="timeline-icon bg-warning">
+                            <i class="ki-duotone ki-arrow-right-left text-white fs-4">
+                              <span class="path1"></span>
+                              <span class="path2"></span>
+                            </i>
+                          </div>
+                          <div class="timeline-content mb-4 ms-3">
+                            <div class="d-flex justify-content-between mb-1">
+                              <span class="fw-bold text-gray-800">Traslado de Causa</span>
+                              <span class="text-muted fs-7">{{ formatDate(transfer.date) }}</span>
+                            </div>
+                            <div class="text-gray-700 mb-2">{{ transfer.transfer_reason }}</div>
+                            <div v-if="transfer.resolution_reference" class="text-muted fs-7 mb-2">
+                              <i class="ki-duotone ki-document fs-6 me-1">
+                                <span class="path1"></span>
+                                <span class="path2"></span>
+                              </i>
+                              Ref: {{ transfer.resolution_reference }}
+                              <span v-if="transfer.resolution_date"> ({{ formatDate(transfer.resolution_date) }})</span>
+                            </div>
+                            <div v-if="Object.keys(transfer.changes || {}).length > 0" class="mt-2">
+                              <div v-for="(change, field) in transfer.changes" :key="field" class="badge badge-light-primary me-2 mb-1">
+                                <span class="text-capitalize">{{ getFieldLabel(field as string) }}:</span>
+                                <span class="text-danger ms-1">{{ formatChangeValue(change.from) }}</span>
+                                <i class="ki-duotone ki-arrow-right fs-7 mx-1">
+                                  <span class="path1"></span>
+                                  <span class="path2"></span>
+                                </i>
+                                <span class="text-success">{{ formatChangeValue(change.to) }}</span>
+                              </div>
+                            </div>
+                            <div v-if="transfer.user" class="text-muted fs-8 mt-2">
+                              <i class="ki-duotone ki-user fs-7 me-1">
+                                <span class="path1"></span>
+                                <span class="path2"></span>
+                              </i>
+                              Por: {{ transfer.user.name }}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -653,6 +748,15 @@
       @close="handleModalClose"
     />
     <!--end::Legal Profile Modal-->
+
+    <!--begin::Case Transfer Modal-->
+    <CaseTransferModal
+      :show="showCaseTransferModal"
+      :profile-id="selectedProfileIdForTransfer"
+      @completed="handleCaseTransferCompleted"
+      @close="showCaseTransferModal = false"
+    />
+    <!--end::Case Transfer Modal-->
   </div>
 </template>
 
@@ -665,6 +769,7 @@ import Swal from 'sweetalert2';
 import { formatDate, formatDateTime } from '@/core/helpers/formatters';
 import ResolutionList from '@/components/legal/ResolutionList.vue';
 import LegalProfileModal from '@/components/inmates/modals/LegalProfileModal.vue';
+import CaseTransferModal from '@/components/inmates/modals/CaseTransferModal.vue';
 import { Modal } from 'bootstrap';
 
 // Props
@@ -684,6 +789,10 @@ const legalProfile = ref<any>(null);
 const legalProfiles = ref<any[]>([]);
 const loadingProfiles = ref(false);
 const expandedProfileId = ref<number | null>(null);
+const showCaseTransferModal = ref(false);
+const selectedProfileIdForTransfer = ref<number | null>(null);
+const caseTransferHistories = ref<Record<number, any[]>>({});
+const loadingCaseTransferHistory = ref<Record<number, boolean>>({});
 const activeCrimes = ref<any[]>([]);
 const upcomingHearings = ref<any[]>([]);
 const activeAppeals = ref<any[]>([]);
@@ -865,7 +974,6 @@ const fetchLegalData = async () => {
 
     // Use inmate prop if available (preferred), otherwise fetch
     if (props.inmate?.legal_profiles) {
-      console.log('Using inmate data from props with legal profiles:', props.inmate.legal_profiles);
       legalData = {
         inmate: props.inmate,
         legal_profiles: props.inmate.legal_profiles
@@ -876,12 +984,7 @@ const fetchLegalData = async () => {
       legalData = legalResponse.data.data;
     }
 
-    console.log('Legal data received:', legalData);
-    console.log('Legal profiles array:', legalData.legal_profiles);
     if (legalData.legal_profiles && legalData.legal_profiles.length > 0) {
-      console.log('First legal profile fields:', Object.keys(legalData.legal_profiles[0]));
-      console.log('First legal profile status field:', legalData.legal_profiles[0].status);
-      console.log('First legal profile is_active field:', legalData.legal_profiles[0].is_active);
     }
 
     // Get all active legal profiles (multiple processes can be active simultaneously)
@@ -906,7 +1009,6 @@ const fetchLegalData = async () => {
       return b.id - a.id;
     })[0] || (legalData.legal_profiles || [])[0]; // Fallback to first profile if no active ones
 
-    console.log(`Found ${activeProfiles.length} active legal profile(s) out of ${legalData.legal_profiles?.length || 0} total`);
 
     // Set legal profile with proper defaults
     if (activeProfile) {
@@ -931,7 +1033,6 @@ const fetchLegalData = async () => {
       location: crime.crime_location
     }));
 
-      console.log('Active crimes loaded:', activeCrimes.value.length, activeCrimes.value);
 
       // Filter upcoming hearings (future dates) from active profile
       const now = new Date();
@@ -1100,14 +1201,12 @@ const updatePreventiveDetentionAlerts = (status: any) => {
 const processResolutions = (resolutions: any[]) => {
   // Process judicial resolutions data
   // This can be expanded to show recent resolutions in the UI
-  console.log('Processing resolutions:', resolutions.length);
 };
 
 // Process legal measures
 const processLegalMeasures = (measures: any[]) => {
   // Process active legal measures
   // This can be expanded to show active measures in the UI
-  console.log('Processing legal measures:', measures.length);
 };
 
 // Map benefit status to Spanish
@@ -1285,6 +1384,66 @@ const editLegalProfile = (profileId: number) => {
   window.location.href = `/legal/profiles/${profileId}/edit`;
 };
 
+// Open Case Transfer Modal
+const openCaseTransfer = (profileId: number) => {
+  selectedProfileIdForTransfer.value = profileId;
+  showCaseTransferModal.value = true;
+};
+
+// Handle Case Transfer Completed
+const handleCaseTransferCompleted = async () => {
+  showCaseTransferModal.value = false;
+  const profileId = selectedProfileIdForTransfer.value;
+  selectedProfileIdForTransfer.value = null;
+  // Reload data after case transfer
+  await loadLegalProfiles();
+  await fetchLegalData();
+  // Reload history for this profile
+  if (profileId) {
+    await loadCaseTransferHistory(profileId);
+  }
+};
+
+// Load Case Transfer History
+const loadCaseTransferHistory = async (profileId: number) => {
+  try {
+    loadingCaseTransferHistory.value[profileId] = true;
+    const response = await ApiService.get(`/legal/profiles/${profileId}/case-transfer-history`);
+    caseTransferHistories.value[profileId] = response.data.data?.history || [];
+  } catch (error) {
+    console.error('Error loading case transfer history:', error);
+    caseTransferHistories.value[profileId] = [];
+  } finally {
+    loadingCaseTransferHistory.value[profileId] = false;
+  }
+};
+
+// Get field label for case transfer changes
+const getFieldLabel = (field: string): string => {
+  const labels: Record<string, string> = {
+    court: 'Juzgado',
+    procedural_status: 'Estatus',
+    procedural_stage: 'Etapa',
+    sentence_type: 'Tipo Sentencia',
+    crimes: 'Delitos',
+    sentence_years: 'Años',
+    sentence_months: 'Meses',
+    sentence_days: 'Días',
+    sentence_start_date: 'Inicio Sentencia',
+    sentence_end_date: 'Fin Sentencia',
+    sentence_final: 'Sentencia Firme'
+  };
+  return labels[field] || field;
+};
+
+// Format change value for display
+const formatChangeValue = (value: any): string => {
+  if (value === null || value === undefined) return 'N/A';
+  if (typeof value === 'boolean') return value ? 'Sí' : 'No';
+  if (Array.isArray(value)) return value.join(', ') || 'Ninguno';
+  return String(value);
+};
+
 // Complete a legal profile (mark as resolved)
 const completeProfile = async (profile: any) => {
   const result = await Swal.fire({
@@ -1388,7 +1547,6 @@ watch([legalProfile, upcomingHearings, activeAppeals], () => {
 // Watch for changes in inmate prop
 watch(() => props.inmate, (newInmate) => {
   if (newInmate?.legal_profiles) {
-    console.log('Inmate prop changed, reloading legal data');
     fetchLegalData();
   }
 }, { deep: true });

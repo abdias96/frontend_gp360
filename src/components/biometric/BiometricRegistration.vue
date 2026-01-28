@@ -268,7 +268,6 @@ const selectInmate = async () => {
 }
 
 const onFMDCaptured = async (data: any) => {
-  console.log('FMD captured for registration:', data)
   
   capturedFingerprint.value = data.template
   templateFormat.value = data.format

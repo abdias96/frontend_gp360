@@ -294,10 +294,8 @@ export default defineComponent({
 
         // Upload file if selected
         if (selectedFile.value) {
-          console.log('Uploading file:', selectedFile.value.name);
           try {
             const uploadResult = await uploadAttachment(selectedFile.value);
-            console.log('File uploaded successfully:', uploadResult);
             attachment = uploadResult;
           } catch (uploadError) {
             console.error('Error uploading file:', uploadError);
@@ -312,7 +310,6 @@ export default defineComponent({
           }
         }
 
-        console.log('Sending message with attachment:', attachment);
         await sendMessage(text, attachment);
         newMessageText.value = "";
         selectedFile.value = null;

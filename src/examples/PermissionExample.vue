@@ -217,58 +217,44 @@ const isDevelopment = computed(() => import.meta.env.DEV);
 // Methods
 const createUser = () => {
   if (canCreate("users")) {
-    console.log("Crear usuario");
     // Lógica para crear usuario
   }
 };
 
 const editUser = (user: any) => {
   if (canEdit("users")) {
-    console.log("Editar usuario:", user);
     // Lógica para editar usuario
   }
 };
 
 const deleteUser = (user: any) => {
   if (canDelete("users")) {
-    console.log("Eliminar usuario:", user);
     // Lógica para eliminar usuario
   }
 };
 
 const viewUser = (user: any) => {
-  console.log("Ver usuario:", user);
   // Lógica para ver detalles del usuario
 };
 
 const exportUsers = () => {
   if (can("users.export") || can("reports.export")) {
-    console.log("Exportar usuarios");
     // Lógica para exportar
   }
 };
 
 const openSettings = () => {
   if (isSuperAdmin.value) {
-    console.log("Abrir configuración");
     // Lógica para abrir configuración
   }
 };
 
 // Ejemplo de uso programático de permisos
 const checkPermissions = () => {
-  console.log("¿Puede crear usuarios?", canCreate("users"));
-  console.log("¿Puede editar usuarios?", canEdit("users"));
-  console.log("¿Puede eliminar usuarios?", canDelete("users"));
-  console.log("¿Tiene permiso específico?", can("users.manage_roles"));
-  console.log(
-    "¿Tiene alguno de estos permisos?",
-    can({ permissions: ["users.edit", "users.delete"] }),
-  );
-  console.log(
-    "¿Tiene todos estos permisos?",
-    can({ permissions: ["users.edit", "users.delete"], requireAll: true }),
-  );
+  // Check if user has any of these permissions
+  can({ permissions: ["users.edit", "users.delete"] });
+  // Check if user has all of these permissions
+  can({ permissions: ["users.edit", "users.delete"], requireAll: true });
 };
 
 // Ejecutar verificación al montar el componente

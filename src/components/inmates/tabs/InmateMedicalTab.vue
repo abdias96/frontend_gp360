@@ -522,8 +522,6 @@ const getMobilityLabel = (status: string) => {
 const fetchMedicalData = async () => {
   loadingProfile.value = true;
   try {
-    console.log('Inmate data in medical tab:', props.inmate);
-    console.log('Medical profile from inmate (snake_case):', props.inmate.medical_profile);
 
     // Use data already loaded from InmateController show() method
     // Backend returns snake_case keys

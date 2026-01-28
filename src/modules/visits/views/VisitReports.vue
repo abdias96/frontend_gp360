@@ -589,7 +589,6 @@ const handleGenerateReport = () => {
 }
 
 const handleRefreshPreview = () => {
-  console.log('Refreshing preview with config:', reportConfig.value)
   // Refresh preview data
 }
 
@@ -610,7 +609,6 @@ const handleDownloadReport = async () => {
   })
 
   if (result.isConfirmed) {
-    console.log('Downloading report:', result.value)
     
     Swal.fire({
       title: t('common.success'),
@@ -621,11 +619,9 @@ const handleDownloadReport = async () => {
 }
 
 const handleViewReport = (reportId: number) => {
-  console.log('View report:', reportId)
 }
 
 const handleDownloadSavedReport = (reportId: number) => {
-  console.log('Download saved report:', reportId)
 }
 
 const handleDeleteReport = async (reportId: number) => {

@@ -389,7 +389,6 @@ const close = () => {
 
 const printClassification = () => {
   // TODO: Implement print functionality
-  console.log('Print classification for:', props.classification);
 };
 
 // Utility functions

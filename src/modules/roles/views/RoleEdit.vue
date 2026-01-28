@@ -5,25 +5,25 @@
       <h1
         class="page-heading d-flex text-dark fw-bold fs-3 flex-column justify-content-center my-0"
       >
-        Editar Rol
+        {{ $t('roles.form.title.edit') }}
       </h1>
     </div>
 
     <!-- Loading state -->
     <div v-if="loadingRole" class="d-flex justify-content-center my-5">
       <div class="spinner-border" role="status">
-        <span class="visually-hidden">Cargando...</span>
+        <span class="visually-hidden">{{ $t('roles.list.loading') }}</span>
       </div>
     </div>
 
     <!-- Formulario -->
     <div v-else-if="role" class="card mt-5">
       <div class="card-header">
-        <h3 class="card-title">Información del Rol</h3>
+        <h3 class="card-title">{{ $t('roles.form.sections.roleInfo') }}</h3>
         <div class="card-toolbar">
           <router-link to="/roles" class="btn btn-secondary me-2">
             <i class="bi bi-arrow-left me-1"></i>
-            Volver
+            {{ $t('roles.form.buttons.back') }}
           </router-link>
         </div>
       </div>
@@ -32,20 +32,20 @@
         <form @submit.prevent="handleSubmit" class="row g-3">
           <!-- Información Básica -->
           <div class="col-12">
-            <h5 class="fw-bold text-primary">Información Básica</h5>
+            <h5 class="fw-bold text-primary">{{ $t('roles.form.sections.basicInfo') }}</h5>
             <hr />
           </div>
 
           <div class="col-md-6">
             <label for="name" class="form-label"
-              >Nombre <span class="text-danger">*</span></label
+              >{{ $t('roles.form.fields.name') }} <span class="text-danger">*</span></label
             >
             <input
               v-model="form.name"
               type="text"
               class="form-control"
               id="name"
-              placeholder="Nombre del rol"
+              :placeholder="$t('roles.form.placeholders.name')"
               required
               @input="generateSlug"
             />
@@ -53,43 +53,42 @@
 
           <div class="col-md-6">
             <label for="slug" class="form-label"
-              >Slug <span class="text-danger">*</span></label
+              >{{ $t('roles.form.fields.slug') }} <span class="text-danger">*</span></label
             >
             <input
               v-model="form.slug"
               type="text"
               class="form-control"
               id="slug"
-              placeholder="slug-del-rol"
+              :placeholder="$t('roles.form.placeholders.slug')"
               required
               pattern="[a-z0-9_-]+"
-              title="Solo letras minúsculas, números, guiones y guiones bajos"
+              :title="$t('roles.form.hints.slugFormat')"
               :disabled="form.slug === 'super_admin'"
             />
             <small class="form-text text-muted">
-              Identificador único del rol (solo letras minúsculas, números, - y
-              _)
+              {{ $t('roles.form.hints.slugFormat') }}
             </small>
             <small v-if="form.slug === 'super_admin'" class="form-text text-warning d-block">
               <i class="bi bi-exclamation-triangle me-1"></i>
-              El slug del Super Administrador no puede ser modificado
+              {{ $t('roles.form.hints.superAdminSlugNoEdit') }}
             </small>
           </div>
 
           <div class="col-12">
-            <label for="description" class="form-label">Descripción</label>
+            <label for="description" class="form-label">{{ $t('roles.form.fields.description') }}</label>
             <textarea
               v-model="form.description"
               class="form-control"
               id="description"
               rows="3"
-              placeholder="Descripción del rol y sus responsabilidades"
+              :placeholder="$t('roles.form.placeholders.description')"
             ></textarea>
           </div>
 
           <!-- Estado -->
           <div class="col-12 mt-4">
-            <h5 class="fw-bold text-primary">Estado</h5>
+            <h5 class="fw-bold text-primary">{{ $t('roles.form.sections.status') }}</h5>
             <hr />
           </div>
 
@@ -102,27 +101,27 @@
                 id="active"
                 :disabled="form.slug === 'super_admin'"
               />
-              <label class="form-check-label" for="active"> Rol Activo </label>
+              <label class="form-check-label" for="active">{{ $t('roles.form.fields.active') }}</label>
             </div>
             <small v-if="form.slug === 'super_admin'" class="form-text text-warning">
               <i class="bi bi-exclamation-triangle me-1"></i>
-              El Super Administrador siempre debe estar activo
+              {{ $t('roles.form.hints.superAdminMustBeActive') }}
             </small>
           </div>
 
           <!-- Permisos -->
           <div class="col-12 mt-4">
-            <h5 class="fw-bold text-primary">Permisos</h5>
+            <h5 class="fw-bold text-primary">{{ $t('roles.form.sections.permissions') }}</h5>
             <hr />
             <p class="text-muted">
-              Seleccione los permisos que tendrá este rol:
+              {{ $t('roles.form.hints.selectPermissions') }}
             </p>
           </div>
 
           <!-- Loading permisos -->
           <div v-if="loadingPermissions" class="col-12 text-center">
             <div class="spinner-border" role="status">
-              <span class="visually-hidden">Cargando permisos...</span>
+              <span class="visually-hidden">{{ $t('roles.list.loadingPermissions') }}</span>
             </div>
           </div>
 
@@ -150,8 +149,8 @@
                       >
                         {{
                           isModuleSelected(module)
-                            ? "Desmarcar Todo"
-                            : "Marcar Todo"
+                            ? $t('roles.form.buttons.deselectAll')
+                            : $t('roles.form.buttons.selectAll')
                         }}
                       </button>
                     </div>
@@ -193,12 +192,12 @@
             <div class="d-flex justify-content-between">
               <div>
                 <span class="text-muted">
-                  Permisos seleccionados: {{ form.permission_ids.length }}
+                  {{ $t('roles.form.hints.permissionsSelected') }} {{ form.permission_ids.length }}
                 </span>
               </div>
               <div class="d-flex gap-2">
                 <router-link to="/roles" class="btn btn-secondary">
-                  Cancelar
+                  {{ $t('roles.form.buttons.cancel') }}
                 </router-link>
                 <button
                   type="submit"
@@ -213,7 +212,7 @@
                     <span class="visually-hidden">Loading...</span>
                   </div>
                   <i v-else class="bi bi-save me-1"></i>
-                  {{ loading ? "Guardando..." : "Guardar Cambios" }}
+                  {{ loading ? $t('roles.form.buttons.saving') : $t('roles.form.buttons.save') }}
                 </button>
               </div>
             </div>
@@ -224,10 +223,10 @@
 
     <!-- Error state -->
     <div v-else class="alert alert-danger mt-5">
-      <h4>Error</h4>
-      <p>No se pudo cargar la información del rol.</p>
+      <h4>{{ $t('common.swal.titles.error') }}</h4>
+      <p>{{ $t('roles.errors.loadFailed') }}</p>
       <router-link to="/roles" class="btn btn-secondary">
-        Volver a la lista
+        {{ $t('roles.errors.backToList') }}
       </router-link>
     </div>
   </div>
@@ -236,9 +235,12 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from "vue";
 import { useRouter, useRoute } from "vue-router";
+import { useI18n } from "vue-i18n";
 import { usePermissions } from "@/composables/usePermissions";
 import ApiService from "@/core/services/ApiService";
 import Swal from "sweetalert2";
+
+const { t } = useI18n();
 
 // Composables
 const router = useRouter();
@@ -322,8 +324,8 @@ const loadRole = async () => {
     role.value = null;
     Swal.fire({
       icon: 'error',
-      title: 'Error',
-      text: 'No se pudo cargar la información del rol'
+      title: t('common.swal.titles.error'),
+      text: t('roles.swal.roleLoadError')
     });
   } finally {
     loadingRole.value = false;
@@ -356,13 +358,12 @@ const loadPermissions = async () => {
     }
 
     permissions.value = flatPermissions;
-    console.log("Loaded permissions for edit:", permissions.value.length);
   } catch (error) {
     console.error("Error loading permissions:", error);
     Swal.fire({
       icon: 'error',
-      title: 'Error',
-      text: 'No se pudieron cargar los permisos'
+      title: t('common.swal.titles.error'),
+      text: t('roles.swal.permissionsLoadError')
     });
   } finally {
     loadingPermissions.value = false;
@@ -396,8 +397,8 @@ const handleSubmit = async () => {
   if (!canEdit("roles")) {
     Swal.fire({
       icon: 'error',
-      title: 'Acceso Denegado',
-      text: 'No tienes permisos para editar roles'
+      title: t('common.swal.titles.accessDenied'),
+      text: t('roles.swal.noPermissionEdit')
     });
     return;
   }
@@ -405,8 +406,8 @@ const handleSubmit = async () => {
   if (!form.value.name.trim()) {
     Swal.fire({
       icon: 'error',
-      title: 'Error',
-      text: 'El nombre del rol es obligatorio'
+      title: t('common.swal.titles.error'),
+      text: t('roles.swal.nameRequired')
     });
     return;
   }
@@ -414,8 +415,8 @@ const handleSubmit = async () => {
   if (!form.value.slug.trim()) {
     Swal.fire({
       icon: 'error',
-      title: 'Error',
-      text: 'El slug del rol es obligatorio'
+      title: t('common.swal.titles.error'),
+      text: t('roles.swal.slugRequired')
     });
     return;
   }
@@ -425,7 +426,6 @@ const handleSubmit = async () => {
   try {
     const roleId = route.params.id;
 
-    // Update role basic info
     await ApiService.put(`roles/${roleId}`, {
       name: form.value.name,
       slug: form.value.slug,
@@ -433,15 +433,14 @@ const handleSubmit = async () => {
       active: form.value.active,
     });
 
-    // Update permissions
     await ApiService.put(`permissions/by-role/${roleId}`, {
       permission_ids: form.value.permission_ids,
     });
 
     await Swal.fire({
       icon: 'success',
-      title: '¡Éxito!',
-      text: 'Rol actualizado exitosamente',
+      title: t('common.swal.titles.success'),
+      text: t('roles.swal.updateSuccess'),
       timer: 2000,
       showConfirmButton: false
     });
@@ -452,8 +451,8 @@ const handleSubmit = async () => {
 
     Swal.fire({
       icon: 'error',
-      title: 'Error',
-      text: error.response?.data?.message || 'Error al actualizar el rol. Por favor intente nuevamente.'
+      title: t('common.swal.titles.error'),
+      text: error.response?.data?.message || t('roles.swal.updateError')
     });
   } finally {
     loading.value = false;

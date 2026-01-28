@@ -494,7 +494,6 @@ const loadWeightHistory = async () => {
     weightHistory.value = response.data.data || [];
   } catch (error) {
     // Silently fail, weight history might not be available
-    console.log('Weight history not available');
     weightHistory.value = [];
   }
 };

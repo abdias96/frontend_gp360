@@ -251,11 +251,6 @@ export function useQuickAccess() {
                   ? custom.order
                   : defaultItem.order,
             };
-            console.log(`Item ${defaultItem.id}:`, {
-              default: defaultItem.enabled,
-              custom: custom.enabled,
-              final: mergedItem.enabled,
-            });
             return mergedItem;
           }
           return defaultItem;
@@ -349,16 +344,10 @@ export function useQuickAccess() {
         order: item.order,
       }));
 
-      console.log("Saving quick access configuration:", configToSave);
 
-      const response = await ApiService.post("/user/quick-access", {
+      await ApiService.post("/user/quick-access", {
         quick_access: configToSave,
       });
-
-      console.log(
-        "Quick access configuration saved successfully:",
-        response.data,
-      );
     } catch (error) {
       console.error("Error saving quick access configuration:", error);
     }
@@ -392,15 +381,10 @@ export function useQuickAccess() {
   };
 
   const toggleItem = (itemId: string) => {
-    console.log("toggleItem called with:", itemId);
     const item = quickAccessItems.value.find((item) => item.id === itemId);
     if (item) {
-      console.log("Item found, current enabled state:", item.enabled);
       item.enabled = !item.enabled;
-      console.log("Item new enabled state:", item.enabled);
       saveQuickAccessConfiguration(quickAccessItems.value);
-    } else {
-      console.log("Item not found");
     }
   };
 

@@ -552,7 +552,6 @@ const postponeReview = async (review: any) => {
 
 const exportReviews = () => {
   // TODO: Implement export functionality
-  console.log('Export reviews:', filteredReviews.value);
 };
 
 const notifyOverdue = async () => {

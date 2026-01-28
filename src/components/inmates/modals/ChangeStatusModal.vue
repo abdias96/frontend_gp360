@@ -5,7 +5,7 @@
         <div class="modal-header bg-primary text-white">
           <h5 class="modal-title">
             <i class="bi bi-arrow-left-right me-2"></i>
-            Cambiar Estado del Interno
+            {{ $t('inmates.changeStatusModal.title') }}
           </h5>
           <button
             type="button"
@@ -22,9 +22,9 @@
             <div>
               <div class="fw-bold">{{ inmate.full_name }}</div>
               <div class="text-muted small">
-                DPI: {{ inmate.document_number }} |
-                Número Interno: {{ inmate.inmate_number }} |
-                Estado Actual: <span class="badge badge-light-primary">{{ getStatusLabel(inmate.status) }}</span>
+                {{ $t('inmates.changeStatusModal.documentNumber') }}: {{ inmate.document_number }} |
+                {{ $t('inmates.changeStatusModal.inmateNumber') }}: {{ inmate.inmate_number }} |
+                {{ $t('inmates.changeStatusModal.currentStatus') }}: <span class="badge badge-light-primary">{{ getStatusLabel(inmate.status) }}</span>
               </div>
             </div>
           </div>
@@ -32,25 +32,25 @@
           <form @submit.prevent="submitStatusChange">
             <!-- Selección de Nuevo Estado -->
             <div class="mb-6">
-              <label class="form-label required">Nuevo Estado</label>
+              <label class="form-label required">{{ $t('inmates.changeStatusModal.newStatus') }}</label>
               <select
                 v-model="form.new_status"
                 class="form-select"
                 required
                 @change="handleStatusChange"
               >
-                <option value="">Seleccionar nuevo estado...</option>
-                <option value="active">Activo</option>
-                <option value="court_hearing">En Audiencia/Juzgado</option>
-                <option value="hospital_external">Hospital Externo</option>
-                <option value="hospital_internal">Enfermería del Centro</option>
-                <option value="isolation">Aislamiento/Castigo</option>
-                <option value="released" class="text-danger">Liberado</option>
-                <option value="deceased" class="text-danger">Fallecido</option>
-                <option value="escaped" class="text-danger">Fugado</option>
+                <option value="">{{ $t('inmates.changeStatusModal.selectNewStatus') }}</option>
+                <option value="active">{{ $t('inmates.changeStatusModal.statuses.active') }}</option>
+                <option value="court_hearing">{{ $t('inmates.changeStatusModal.statuses.court_hearing') }}</option>
+                <option value="hospital_external">{{ $t('inmates.changeStatusModal.statuses.hospital_external') }}</option>
+                <option value="hospital_internal">{{ $t('inmates.changeStatusModal.statuses.hospital_internal') }}</option>
+                <option value="isolation">{{ $t('inmates.changeStatusModal.statuses.isolation') }}</option>
+                <option value="released" class="text-danger">{{ $t('inmates.changeStatusModal.statuses.released') }}</option>
+                <option value="deceased" class="text-danger">{{ $t('inmates.changeStatusModal.statuses.deceased') }}</option>
+                <option value="escaped" class="text-danger">{{ $t('inmates.changeStatusModal.statuses.escaped') }}</option>
               </select>
               <div class="form-text">
-                Seleccione el nuevo estado del interno
+                {{ $t('inmates.changeStatusModal.statusHint') }}
               </div>
             </div>
 
@@ -61,15 +61,15 @@
             >
               <i class="bi bi-exclamation-triangle-fill fs-2x me-3"></i>
               <div>
-                <strong>Atención:</strong>
+                <strong>{{ $t('inmates.changeStatusModal.warnings.attention') }}</strong>
                 <span v-if="form.new_status === 'released'">
-                  Este estado requiere completar un proceso de liberación formal.
+                  {{ $t('inmates.changeStatusModal.warnings.releasedWarning') }}
                 </span>
                 <span v-else-if="form.new_status === 'deceased'">
-                  Este estado marcará al interno como fallecido y cerrará su perfil legal.
+                  {{ $t('inmates.changeStatusModal.warnings.deceasedWarning') }}
                 </span>
                 <span v-else-if="form.new_status === 'escaped'">
-                  Este estado marcará al interno como fugado y generará alertas.
+                  {{ $t('inmates.changeStatusModal.warnings.escapedWarning') }}
                 </span>
               </div>
             </div>
@@ -77,13 +77,13 @@
             <!-- Campo especial para Liberación -->
             <div v-if="form.new_status === 'released'" class="mb-6">
               <div class="alert alert-danger">
-                <h6 class="alert-heading">Proceso de Liberación Requerido</h6>
-                <p>Para liberar un interno, debe completar el proceso formal de liberación que incluye:</p>
+                <h6 class="alert-heading">{{ $t('inmates.changeStatusModal.releaseProcess.title') }}</h6>
+                <p>{{ $t('inmates.changeStatusModal.releaseProcess.description') }}</p>
                 <ul class="mb-0">
-                  <li>Seleccionar motivo de liberación</li>
-                  <li>Ingresar documentación de autorización</li>
-                  <li>Completar checklist de liberación</li>
-                  <li>Actualizar perfil legal</li>
+                  <li>{{ $t('inmates.changeStatusModal.releaseProcess.step1') }}</li>
+                  <li>{{ $t('inmates.changeStatusModal.releaseProcess.step2') }}</li>
+                  <li>{{ $t('inmates.changeStatusModal.releaseProcess.step3') }}</li>
+                  <li>{{ $t('inmates.changeStatusModal.releaseProcess.step4') }}</li>
                 </ul>
                 <hr>
                 <button
@@ -92,14 +92,14 @@
                   @click="openReleaseModal"
                 >
                   <i class="bi bi-box-arrow-right me-2"></i>
-                  Iniciar Proceso de Liberación
+                  {{ $t('inmates.changeStatusModal.releaseProcess.startProcess') }}
                 </button>
               </div>
             </div>
 
             <!-- Campo especial para Fallecido -->
             <div v-if="form.new_status === 'deceased'" class="mb-6">
-              <label class="form-label required">Fecha de Fallecimiento</label>
+              <label class="form-label required">{{ $t('inmates.changeStatusModal.deathDate') }}</label>
               <input
                 v-model="form.death_date"
                 type="date"
@@ -111,7 +111,7 @@
 
             <!-- Campo especial para Fugado -->
             <div v-if="form.new_status === 'escaped'" class="mb-6">
-              <label class="form-label required">Fecha y Hora de Fuga</label>
+              <label class="form-label required">{{ $t('inmates.changeStatusModal.escapeDateTime') }}</label>
               <input
                 v-model="form.escape_datetime"
                 type="datetime-local"
@@ -123,24 +123,24 @@
 
             <!-- Razón del Cambio (obligatorio para todos) -->
             <div class="mb-6">
-              <label class="form-label required">Razón del Cambio</label>
+              <label class="form-label required">{{ $t('inmates.changeStatusModal.changeReason') }}</label>
               <textarea
                 v-model="form.reason"
                 class="form-control"
                 rows="4"
-                placeholder="Describa detalladamente la razón del cambio de estado..."
+                :placeholder="$t('inmates.changeStatusModal.changeReasonPlaceholder')"
                 required
               ></textarea>
             </div>
 
             <!-- Observaciones Adicionales -->
             <div class="mb-6">
-              <label class="form-label">Observaciones Adicionales</label>
+              <label class="form-label">{{ $t('inmates.changeStatusModal.additionalObservations') }}</label>
               <textarea
                 v-model="form.observations"
                 class="form-control"
                 rows="3"
-                placeholder="Información adicional relevante (opcional)"
+                :placeholder="$t('inmates.changeStatusModal.additionalObservationsPlaceholder')"
               ></textarea>
             </div>
           </form>
@@ -152,7 +152,7 @@
             class="btn btn-light"
             data-bs-dismiss="modal"
           >
-            Cancelar
+            {{ $t('inmates.changeStatusModal.cancel') }}
           </button>
           <button
             v-if="form.new_status !== 'released'"
@@ -164,11 +164,11 @@
           >
             <span v-if="loading">
               <span class="spinner-border spinner-border-sm me-2"></span>
-              Procesando...
+              {{ $t('inmates.changeStatusModal.processing') }}
             </span>
             <span v-else>
               <i class="bi bi-check-circle me-2"></i>
-              Confirmar Cambio de Estado
+              {{ $t('inmates.changeStatusModal.confirmChange') }}
             </span>
           </button>
         </div>
@@ -187,10 +187,13 @@
 
 <script lang="ts" setup>
 import { ref, computed, watch } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { useLegalProfiles } from '@/composables/useLegalProfiles';
 import ApiService from '@/core/services/ApiService';
 import Swal from 'sweetalert2';
 import ReleaseModal from './ReleaseModal.vue';
+
+const { t } = useI18n();
 
 interface Props {
   inmate?: any;
@@ -210,20 +213,10 @@ const form = ref({
   escape_datetime: ''
 });
 
-const statusLabels: Record<string, string> = {
-  active: 'Activo',
-  transferred: 'En Traslado',
-  court_hearing: 'En Audiencia',
-  hospital_external: 'Hospital Externo',
-  hospital_internal: 'Enfermería',
-  isolation: 'Aislamiento',
-  released: 'Liberado',
-  deceased: 'Fallecido',
-  escaped: 'Fugado'
-};
-
 const getStatusLabel = (status: string) => {
-  return statusLabels[status] || status;
+  const key = `inmates.changeStatusModal.statuses.${status}`;
+  const translation = t(key);
+  return translation !== key ? translation : status;
 };
 
 const isCriticalStatus = computed(() => {
@@ -259,8 +252,8 @@ const submitStatusChange = async () => {
   // Validaciones
   if (!form.value.new_status) {
     Swal.fire({
-      title: 'Error',
-      text: 'Debe seleccionar un nuevo estado',
+      title: t('inmates.changeStatusModal.swal.error'),
+      text: t('inmates.changeStatusModal.swal.selectStatus'),
       icon: 'error'
     });
     return;
@@ -268,8 +261,8 @@ const submitStatusChange = async () => {
 
   if (!form.value.reason.trim()) {
     Swal.fire({
-      title: 'Error',
-      text: 'Debe proporcionar una razón para el cambio',
+      title: t('inmates.changeStatusModal.swal.error'),
+      text: t('inmates.changeStatusModal.swal.provideReason'),
       icon: 'error'
     });
     return;
@@ -278,8 +271,8 @@ const submitStatusChange = async () => {
   // No permitir cambio directo a "released" sin proceso formal
   if (form.value.new_status === 'released') {
     Swal.fire({
-      title: 'Proceso Incompleto',
-      text: 'Debe usar el proceso formal de liberación',
+      title: t('inmates.changeStatusModal.swal.incompleteProcess'),
+      text: t('inmates.changeStatusModal.swal.useRelease'),
       icon: 'warning'
     });
     return;
@@ -288,17 +281,17 @@ const submitStatusChange = async () => {
   // Confirmación especial para estados críticos
   if (isCriticalStatus.value) {
     const result = await Swal.fire({
-      title: '¿Está completamente seguro?',
+      title: t('inmates.changeStatusModal.swal.confirmTitle'),
       html: `
-        <p>Va a cambiar el estado del interno a <strong>${getStatusLabel(form.value.new_status)}</strong>.</p>
-        <p class="text-danger">Esta acción tiene implicaciones importantes y puede ser irreversible.</p>
+        <p>${t('inmates.changeStatusModal.swal.confirmMessage')} <strong>${getStatusLabel(form.value.new_status)}</strong>.</p>
+        <p class="text-danger">${t('inmates.changeStatusModal.swal.confirmWarning')}</p>
       `,
       icon: 'warning',
       showCancelButton: true,
       confirmButtonColor: '#d33',
       cancelButtonColor: '#3085d6',
-      confirmButtonText: 'Sí, confirmar cambio',
-      cancelButtonText: 'Cancelar'
+      confirmButtonText: t('inmates.changeStatusModal.swal.confirmButton'),
+      cancelButtonText: t('inmates.changeStatusModal.swal.cancelButton')
     });
 
     if (!result.isConfirmed) {
@@ -344,8 +337,8 @@ const submitStatusChange = async () => {
   } catch (error: any) {
     console.error('Error changing status:', error);
     Swal.fire({
-      title: 'Error',
-      text: error.response?.data?.message || error.message || 'No se pudo cambiar el estado',
+      title: t('inmates.changeStatusModal.swal.error'),
+      text: error.response?.data?.message || error.message || t('inmates.changeStatusModal.swal.updateError'),
       icon: 'error'
     });
   } finally {
@@ -365,12 +358,12 @@ const updateInmateStatus = async () => {
   const response = await ApiService.put(`/inmates/${props.inmate.id}/status`, payload);
 
   if (!response.data.success) {
-    throw new Error(response.data.message || 'Error al actualizar estado');
+    throw new Error(response.data.message || t('inmates.changeStatusModal.swal.updateError'));
   }
 
   Swal.fire({
-    title: '¡Estado Actualizado!',
-    text: `El estado del interno ha sido cambiado a ${getStatusLabel(form.value.new_status)}`,
+    title: t('inmates.changeStatusModal.swal.successTitle'),
+    text: `${t('inmates.changeStatusModal.swal.successMessage')} ${getStatusLabel(form.value.new_status)}`,
     icon: 'success'
   });
 };

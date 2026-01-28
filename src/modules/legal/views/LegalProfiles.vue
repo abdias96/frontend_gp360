@@ -99,26 +99,27 @@
                 </thead>
                 <tbody>
                   <tr v-for="profile in profiles" :key="profile.id">
-                    <td>
-                      <div class="d-flex align-items-center">
-                        <div class="symbol symbol-45px me-5" v-if="profile.inmate">
+                    <td class="d-flex align-items-center">
+                      <div class="symbol symbol-circle symbol-50px overflow-hidden me-3">
+                        <div class="symbol-label">
                           <img
-                            :src="profile.inmate?.photo_url || getAssetPath('media/avatars/blank.png')"
-                            :alt="profile.inmate?.name || profile.inmate?.full_name || 'PPL'"
+                            :src="getInmatePhoto(profile.inmate)"
+                            :alt="profile.inmate?.full_name || 'PPL'"
+                            class="w-100"
                           />
                         </div>
-                        <div class="d-flex justify-content-start flex-column">
-                          <a
-                            href="#"
-                            class="text-gray-900 fw-bold text-hover-primary fs-6"
-                            @click.prevent="profile.inmate?.id && viewInmateDetail(profile.inmate.id)"
-                          >
-                            {{ profile.inmate?.full_name || 'Sin nombre' }}
-                          </a>
-                          <span class="text-muted fw-semibold text-muted d-block fs-7">
-                            {{ profile.case_number || '-' }}
-                          </span>
-                        </div>
+                      </div>
+                      <div class="d-flex flex-column">
+                        <a
+                          href="#"
+                          class="text-gray-800 text-hover-primary mb-1"
+                          @click.prevent="profile.inmate?.id && viewInmateDetail(profile.inmate.id)"
+                        >
+                          {{ profile.inmate?.full_name || 'Sin nombre' }}
+                        </a>
+                        <span class="text-muted">
+                          {{ profile.case_number || '-' }}
+                        </span>
                       </div>
                     </td>
                     <td>
@@ -485,10 +486,6 @@ const handleSearch = () => {
 };
 
 const handleFilter = () => {
-  console.log('Filtering with:', {
-    center: selectedCenter.value,
-    status: selectedStatus.value
-  });
   currentPage.value = 1;
   loadProfiles();
 };
@@ -541,17 +538,20 @@ const getStatusBadgeClass = (statusCode: string | number) => {
 
 const getProceduralStageLabel = (stage: string) => {
   if (!stage) return '';
-  
+
   const stageMap: Record<string, string> = {
     'investigation': t('legal.profiles.proceduralStages.investigation'),
     'intermediate_phase': t('legal.profiles.proceduralStages.intermediate'),
     'trial': t('legal.profiles.proceduralStages.trial'),
+    'oral_trial': t('legal.profiles.proceduralStages.oralTrial'),
     'sentence_execution': t('legal.profiles.proceduralStages.sentenceExecution'),
     'appeal_process': t('legal.profiles.proceduralStages.appeal'),
     'cassation': t('legal.profiles.proceduralStages.cassation'),
-    'amparo_process': t('legal.profiles.proceduralStages.amparo')
+    'amparo_process': t('legal.profiles.proceduralStages.amparo'),
+    'constitutional_appeal': t('legal.profiles.proceduralStages.constitutionalAppeal'),
+    'review_process': t('legal.profiles.proceduralStages.reviewProcess'),
   };
-  
+
   return stageMap[stage] || stage;
 };
 
@@ -560,13 +560,39 @@ const getProceduralStageBadgeClass = (stage: string) => {
     'investigation': 'badge-light-warning',
     'intermediate_phase': 'badge-light-info',
     'trial': 'badge-light-primary',
+    'oral_trial': 'badge-light-primary',
     'sentence_execution': 'badge-light-success',
     'appeal_process': 'badge-light-danger',
     'cassation': 'badge-light-dark',
-    'amparo_process': 'badge-light-secondary'
+    'amparo_process': 'badge-light-secondary',
+    'constitutional_appeal': 'badge-light-secondary',
+    'review_process': 'badge-light-info',
   };
-  
+
   return badgeClasses[stage] || 'badge-light-secondary';
+};
+
+const getInmatePhoto = (inmate: any): string => {
+  if (!inmate) return getAssetPath('media/avatars/blank.png');
+
+  // Primero intentar photo_url (del backend transformado)
+  if (inmate.photo_url) {
+    return inmate.photo_url;
+  }
+
+  // Luego photo_path directo
+  if (inmate.photo_path) {
+    return inmate.photo_path;
+  }
+
+  // Buscar en el array de fotos
+  if (inmate.photos && inmate.photos.length > 0) {
+    const currentPhoto = inmate.photos.find((photo: any) => photo.is_current);
+    const photoToUse = currentPhoto || inmate.photos[0];
+    return photoToUse.photo_data || photoToUse.photo_url || photoToUse.photo_path || getAssetPath('media/avatars/blank.png');
+  }
+
+  return getAssetPath('media/avatars/blank.png');
 };
 
 const viewInmateDetail = (inmateId: number) => {

@@ -455,13 +455,11 @@ const getStatusBadgeClass = (status: string) => {
 }
 
 const loadSchedule = () => {
-  console.log('Loading schedule for:', selectedDate.value)
   // Load schedule data
 }
 
 const handleViewCalendar = () => {
   // Show calendar view
-  console.log('View calendar')
 }
 
 const handleNewSchedule = () => {
@@ -535,7 +533,6 @@ const handlePrintSchedule = () => {
 }
 
 const handleExportSchedule = () => {
-  console.log('Export schedule')
 }
 
 // Lifecycle

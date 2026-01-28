@@ -651,14 +651,6 @@ const launchBiometricService = async (inmateId: number) => {
       // Obtener session_id de la respuesta
       const sessionId = response.data.data.session_id;
 
-      // Log para debugging
-      console.log('Biometric Protocol Response:', {
-        url: protocolUrl,
-        sessionId: sessionId,
-        token: token ? `${token.substring(0, 20)}...` : 'NO TOKEN',
-        inmateId
-      });
-
       // Cerrar el loading
       Swal.close();
 

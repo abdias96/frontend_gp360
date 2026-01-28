@@ -12,6 +12,10 @@ import { helpTranslations } from "./modules/help";
 import { legalTranslations } from "./modules/legal";
 import { admissionsTranslations } from "./modules/admissions";
 import { visitsTranslations } from "./modules/visits";
+import { biometricTranslations } from "./modules/biometric";
+import { rolesTranslations } from "./modules/roles";
+import { inmatesTranslations } from "./modules/inmates";
+import { documentsTranslations } from "./modules/documents";
 import operationsEs from "./es/operations";
 import operationsEn from "./en/operations";
 import visitsEs from "./es/visits";
@@ -39,7 +43,7 @@ function deepMerge(target: any, source: any): any {
 // Combine all translations for English
 const enTranslations = deepMerge(
   {},
-  deepMerge(authTranslations.en, 
+  deepMerge(authTranslations.en,
     deepMerge(usersTranslations.en,
       deepMerge(dashboardTranslations.en,
         deepMerge(commonTranslations.en,
@@ -52,7 +56,15 @@ const enTranslations = deepMerge(
                       deepMerge(legalTranslations.en,
                         deepMerge(admissionsTranslations.en,
                           deepMerge(visitsTranslations.en,
-                            deepMerge(operationsEn, visitsEn)
+                            deepMerge(biometricTranslations.en,
+                              deepMerge(rolesTranslations.en,
+                                deepMerge(inmatesTranslations.en,
+                                  deepMerge(documentsTranslations.en,
+                                    deepMerge(operationsEn, visitsEn)
+                                  )
+                                )
+                              )
+                            )
                           )
                         )
                       )
@@ -84,7 +96,15 @@ const esTranslations = deepMerge(
                       deepMerge(legalTranslations.es,
                         deepMerge(admissionsTranslations.es,
                           deepMerge(visitsTranslations.es,
-                            deepMerge(operationsEs, visitsEs)
+                            deepMerge(biometricTranslations.es,
+                              deepMerge(rolesTranslations.es,
+                                deepMerge(inmatesTranslations.es,
+                                  deepMerge(documentsTranslations.es,
+                                    deepMerge(operationsEs, visitsEs)
+                                  )
+                                )
+                              )
+                            )
                           )
                         )
                       )

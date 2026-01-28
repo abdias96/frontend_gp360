@@ -49,20 +49,9 @@ class FileStorageService {
       formData.append("subfolder", options.subfolder);
     }
 
-    // Debug log
-    console.log("FileStorageService: Uploading file", {
-      fileName: file.name,
-      fileSize: file.size,
-      fileType: file.type,
-      module: options.module,
-      subfolder: options.subfolder,
-      formDataEntries: Array.from(formData.entries()),
-    });
-
     try {
       const { data } = await ApiService.upload("files/upload", formData);
 
-      console.log("FileStorageService: Upload successful", data);
       return data;
     } catch (error: any) {
       console.error("FileStorageService: Upload failed", {

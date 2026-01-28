@@ -3,19 +3,19 @@
     <!-- Page Header -->
     <div class="d-flex justify-content-between align-items-center mb-5">
       <div>
-        <h1 class="fs-2 fw-bold text-gray-900">Verificación Biométrica 1:N</h1>
+        <h1 class="fs-2 fw-bold text-gray-900">{{ t('biometric.verification.title') }}</h1>
         <p class="text-gray-600 fs-6 mt-1">
-          Detectar reincidentes mediante verificación biométrica antes del ingreso
+          {{ t('biometric.verification.subtitle') }}
         </p>
       </div>
-      
+
       <div>
         <button
           class="btn btn-sm btn-primary"
           @click="resetView"
         >
           <i class="ki-outline ki-arrow-circle-left fs-4 me-2"></i>
-          Limpiar Formulario
+          {{ t('biometric.verification.clearForm') }}
         </button>
       </div>
     </div>
@@ -26,33 +26,33 @@
       <!-- Search Methods Tabs -->
       <ul class="nav nav-tabs nav-line-tabs nav-line-tabs-2x mb-5 fs-6">
         <li class="nav-item">
-          <a 
-            class="nav-link active" 
-            data-bs-toggle="tab" 
+          <a
+            class="nav-link active"
+            data-bs-toggle="tab"
             href="#biometric-search"
           >
             <i class="ki-outline ki-fingerprint-scanning fs-4 me-2"></i>
-            Búsqueda Biométrica
+            {{ t('biometric.verification.tabs.biometric') }}
           </a>
         </li>
         <li class="nav-item">
-          <a 
-            class="nav-link" 
-            data-bs-toggle="tab" 
+          <a
+            class="nav-link"
+            data-bs-toggle="tab"
             href="#document-search"
           >
             <i class="ki-outline ki-profile-user fs-4 me-2"></i>
-            Búsqueda por Documento
+            {{ t('biometric.verification.tabs.document') }}
           </a>
         </li>
         <li class="nav-item">
-          <a 
-            class="nav-link" 
-            data-bs-toggle="tab" 
+          <a
+            class="nav-link"
+            data-bs-toggle="tab"
             href="#name-search"
           >
             <i class="ki-outline ki-user-search fs-4 me-2"></i>
-            Búsqueda por Nombres
+            {{ t('biometric.verification.tabs.name') }}
           </a>
         </li>
       </ul>
@@ -70,18 +70,18 @@
                 <span class="path3"></span>
               </i>
               <div>
-                <h4 class="mb-2">Servicio Biométrico Local Requerido</h4>
+                <h4 class="mb-2">{{ t('biometric.verification.service.localRequired') }}</h4>
                 <p class="mb-2">
-                  Para utilizar la verificación biométrica, necesita ejecutar el servicio Java localmente en su computadora.
+                  {{ t('biometric.verification.service.localRequiredDesc') }}
                 </p>
                 <ol class="mb-2">
-                  <li>Descargue e instale el BiometricService en su computadora</li>
-                  <li>Conecte el lector de huellas DigitalPersona</li>
-                  <li>Ejecute el servicio con: <code>java -jar BiometricService.jar</code></li>
-                  <li>El servicio se conectará automáticamente en el puerto 8080</li>
+                  <li>{{ t('biometric.verification.service.steps.download') }}</li>
+                  <li>{{ t('biometric.verification.service.steps.connect') }}</li>
+                  <li>{{ t('biometric.verification.service.steps.run') }} <code>java -jar BiometricService.jar</code></li>
+                  <li>{{ t('biometric.verification.service.steps.autoConnect') }}</li>
                 </ol>
                 <p class="mb-0 text-muted">
-                  <small>Nota: El servicio debe ejecutarse en la misma computadora donde está el lector de huellas.</small>
+                  <small>{{ t('biometric.verification.service.note') }}</small>
                 </p>
               </div>
             </div>
@@ -98,15 +98,15 @@
                       <span class="path2"></span>
                       <span class="path3"></span>
                     </i>
-                    <h3 class="fw-bold">Verificación Dactilar</h3>
+                    <h3 class="fw-bold">{{ t('biometric.verification.fingerprint.title') }}</h3>
                     <p class="text-gray-600">
-                      Búsqueda rápida mediante huella dactilar en toda la base de datos
+                      {{ t('biometric.verification.fingerprint.description') }}
                     </p>
                     <div class="badge badge-light-warning">
-                      Sistema Java BiometricService
+                      {{ t('biometric.verification.service.javaSystem') }}
                     </div>
                   </div>
-                  
+
                   <button
                     class="btn btn-primary w-100"
                     @click="startFingerprintVerification"
@@ -114,11 +114,11 @@
                   >
                     <span v-if="verificationInProgress" class="spinner-border spinner-border-sm me-2"></span>
                     <i v-else class="ki-outline ki-fingerprint-scanning fs-4 me-2"></i>
-                    {{ verificationInProgress ? 'Verificando...' : 'Iniciar Escaneo Dactilar' }}
+                    {{ verificationInProgress ? t('biometric.verification.fingerprint.verifying') : t('biometric.verification.fingerprint.startScan') }}
                   </button>
-                  
+
                   <div class="text-center mt-3 text-muted fs-7">
-                    Requiere BiometricService.jar ejecutándose
+                    {{ t('biometric.verification.service.requiresJar') }}
                   </div>
                 </div>
               </div>
@@ -135,21 +135,21 @@
                       <span class="path3"></span>
                       <span class="path4"></span>
                     </i>
-                    <h3 class="fw-bold">Reconocimiento Facial</h3>
+                    <h3 class="fw-bold">{{ t('biometric.verification.facial.title') }}</h3>
                     <p class="text-gray-600">
-                      No disponible - Calidad de fotos insuficiente
+                      {{ t('biometric.verification.facial.notAvailable') }}
                     </p>
                     <div class="badge badge-light-danger">
-                      En desarrollo
+                      {{ t('biometric.verification.facial.inDevelopment') }}
                     </div>
                   </div>
-                  
-                  <button 
+
+                  <button
                     class="btn btn-secondary w-100"
                     disabled
                   >
                     <i class="ki-outline ki-camera fs-4 me-2"></i>
-                    No Disponible
+                    {{ t('biometric.identification.serviceUnavailable') }}
                   </button>
                 </div>
               </div>
@@ -161,20 +161,20 @@
         <div class="tab-pane fade" id="document-search">
           <div class="card">
             <div class="card-body p-7">
-              <h3 class="fw-bold mb-5">Búsqueda por Documento de Identificación</h3>
+              <h3 class="fw-bold mb-5">{{ t('biometric.verification.document.title') }}</h3>
 
               <div class="row g-5">
                 <div class="col-md-12">
-                  <label class="form-label required">Número de Documento</label>
+                  <label class="form-label required">{{ t('biometric.verification.document.label') }}</label>
                   <input
                     v-model="searchData.documentNumber"
                     type="text"
                     class="form-control form-control-lg"
-                    placeholder="Ingrese el número de documento (puede ser búsqueda parcial)"
+                    :placeholder="t('biometric.verification.document.placeholder')"
                     @keyup.enter="searchByDocument"
                   />
                   <div class="form-text">
-                    Puede ingresar el número completo o parcial del documento (DPI, pasaporte, etc.)
+                    {{ t('biometric.verification.document.hint') }}
                   </div>
                 </div>
               </div>
@@ -186,7 +186,7 @@
                   :disabled="!searchData.documentNumber || searchData.documentNumber.length < 3"
                 >
                   <i class="ki-outline ki-search-list fs-4 me-2"></i>
-                  Buscar PPL
+                  {{ t('biometric.verification.document.searchPpl') }}
                 </button>
               </div>
             </div>
@@ -197,66 +197,66 @@
         <div class="tab-pane fade" id="name-search">
           <div class="card">
             <div class="card-body p-7">
-              <h3 class="fw-bold mb-5">Búsqueda por Nombres y Apellidos</h3>
-              
+              <h3 class="fw-bold mb-5">{{ t('biometric.verification.name.title') }}</h3>
+
               <div class="row g-5">
                 <div class="col-md-6">
-                  <label class="form-label">Primer Nombre</label>
+                  <label class="form-label">{{ t('biometric.verification.name.firstName') }}</label>
                   <input
                     v-model="searchData.firstName"
                     type="text"
                     class="form-control"
-                    placeholder="Ej: Juan, Jose (sin acentos funciona)"
+                    :placeholder="t('biometric.verification.name.firstNamePlaceholder')"
                     @keyup.enter="searchByName"
                   />
                 </div>
 
                 <div class="col-md-6">
-                  <label class="form-label">Segundo Nombre</label>
+                  <label class="form-label">{{ t('biometric.verification.name.middleName') }}</label>
                   <input
                     v-model="searchData.middleName"
                     type="text"
                     class="form-control"
-                    placeholder="Segundo nombre (opcional)"
+                    :placeholder="t('biometric.verification.name.middleNamePlaceholder')"
                     @keyup.enter="searchByName"
                   />
                 </div>
 
                 <div class="col-md-6">
-                  <label class="form-label">Primer Apellido</label>
+                  <label class="form-label">{{ t('biometric.verification.name.lastName') }}</label>
                   <input
                     v-model="searchData.lastName"
                     type="text"
                     class="form-control"
-                    placeholder="Ej: Garcia, Lopez"
+                    :placeholder="t('biometric.verification.name.lastNamePlaceholder')"
                     @keyup.enter="searchByName"
                   />
                 </div>
 
                 <div class="col-md-6">
-                  <label class="form-label">Segundo Apellido</label>
+                  <label class="form-label">{{ t('biometric.verification.name.secondLastName') }}</label>
                   <input
                     v-model="searchData.secondLastName"
                     type="text"
                     class="form-control"
-                    placeholder="Segundo apellido (opcional)"
+                    :placeholder="t('biometric.verification.name.secondLastNamePlaceholder')"
                     @keyup.enter="searchByName"
                   />
                 </div>
 
                 <div class="col-md-6">
-                  <label class="form-label">Apellido de Casada</label>
+                  <label class="form-label">{{ t('biometric.verification.name.marriedSurname') }}</label>
                   <input
                     v-model="searchData.marriedSurname"
                     type="text"
                     class="form-control"
-                    placeholder="Apellido de casada (opcional)"
+                    :placeholder="t('biometric.verification.name.marriedSurnamePlaceholder')"
                     @keyup.enter="searchByName"
                   />
                 </div>
 
                 <div class="col-md-6">
-                  <label class="form-label">Fecha de Nacimiento (opcional)</label>
+                  <label class="form-label">{{ t('biometric.verification.name.birthDate') }}</label>
                   <input
                     v-model="searchData.birthDate"
                     type="date"
@@ -264,21 +264,20 @@
                   />
                 </div>
               </div>
-              
+
               <div class="separator separator-dashed my-5"></div>
 
               <div class="alert alert-light-info d-flex align-items-center p-3 mb-3">
                 <i class="ki-outline ki-information-5 fs-2 text-info me-3"></i>
                 <div class="fs-7">
-                  <strong>Búsqueda flexible:</strong> No importa si escribe con o sin acentos.
-                  Por ejemplo: "Jose" encontrará "José" y viceversa. La búsqueda es parcial.
+                  <strong>{{ t('biometric.verification.name.flexibleSearch') }}</strong> {{ t('biometric.verification.name.flexibleSearchDesc') }}
                 </div>
               </div>
 
               <div class="alert alert-light-primary d-flex align-items-center p-3">
                 <i class="ki-outline ki-check-circle fs-2 text-primary me-3"></i>
                 <div class="fs-7">
-                  Puede buscar con cualquier combinación de nombres. Se requiere al menos 2 caracteres en algún campo.
+                  {{ t('biometric.verification.name.anyCombo') }}
                 </div>
               </div>
 
@@ -289,7 +288,7 @@
                   :disabled="!canSearchByName"
                 >
                   <i class="ki-outline ki-search-list fs-4 me-2"></i>
-                  Buscar PPL
+                  {{ t('biometric.verification.name.searchPpl') }}
                 </button>
               </div>
             </div>
@@ -313,8 +312,8 @@
                     <span class="stepper-number">1</span>
                   </div>
                   <div class="stepper-label">
-                    <h3 class="stepper-title">Captura</h3>
-                    <div class="stepper-desc">Capturar biometría</div>
+                    <h3 class="stepper-title">{{ t('biometric.verification.process.step1') }}</h3>
+                    <div class="stepper-desc">{{ t('biometric.verification.process.step1Desc') }}</div>
                   </div>
                 </div>
                 <div class="stepper-line h-40px"></div>
@@ -327,8 +326,8 @@
                     <span class="stepper-number">2</span>
                   </div>
                   <div class="stepper-label">
-                    <h3 class="stepper-title">Búsqueda</h3>
-                    <div class="stepper-desc">Verificar en BD</div>
+                    <h3 class="stepper-title">{{ t('biometric.verification.process.step2') }}</h3>
+                    <div class="stepper-desc">{{ t('biometric.verification.process.step2Desc') }}</div>
                   </div>
                 </div>
                 <div class="stepper-line h-40px"></div>
@@ -341,8 +340,8 @@
                     <span class="stepper-number">3</span>
                   </div>
                   <div class="stepper-label">
-                    <h3 class="stepper-title">Resultado</h3>
-                    <div class="stepper-desc">Mostrar coincidencias</div>
+                    <h3 class="stepper-title">{{ t('biometric.verification.process.step3') }}</h3>
+                    <div class="stepper-desc">{{ t('biometric.verification.process.step3Desc') }}</div>
                   </div>
                 </div>
               </div>
@@ -354,26 +353,26 @@
             <!-- Step 1: Capture -->
             <div v-if="currentStep === 1" class="current">
               <div class="w-100">
-                <h4 class="fw-bold mb-5">Capturar Huella Dactilar</h4>
-                
+                <h4 class="fw-bold mb-5">{{ t('biometric.verification.process.captureFingerprint') }}</h4>
+
                 <div class="text-center py-10">
                   <i class="ki-duotone ki-fingerprint-scanning text-primary fs-5x mb-5">
                     <span class="path1"></span>
                     <span class="path2"></span>
                     <span class="path3"></span>
                   </i>
-                  
+
                   <p class="fs-5 text-gray-700 mb-5">
-                    El sistema Java abrirá una ventana de captura
+                    {{ t('biometric.verification.process.javaWindowInfo') }}
                   </p>
-                  
+
                   <p class="text-muted mb-5">
-                    Coloque el dedo en el lector cuando se le indique
+                    {{ t('biometric.verification.process.placeFingerInfo') }}
                   </p>
-                  
+
                   <div class="alert alert-light-primary d-inline-flex align-items-center p-3">
                     <i class="ki-outline ki-information-5 fs-4 text-primary me-3"></i>
-                    <span class="fs-7">La captura se realiza mediante BiometricService.jar con el lector DigitalPersona</span>
+                    <span class="fs-7">{{ t('biometric.verification.process.captureViaJava') }}</span>
                   </div>
                 </div>
               </div>
@@ -382,16 +381,16 @@
             <!-- Step 2: Searching -->
             <div v-if="currentStep === 2" class="current">
               <div class="w-100 text-center">
-                <h4 class="fw-bold mb-5">Buscando Coincidencias</h4>
-                
+                <h4 class="fw-bold mb-5">{{ t('biometric.verification.process.searchingMatches') }}</h4>
+
                 <div class="py-10">
                   <div class="spinner-border text-primary" role="status">
-                    <span class="visually-hidden">Buscando...</span>
+                    <span class="visually-hidden">{{ t('biometric.verification.process.searching') }}</span>
                   </div>
                   <div class="mt-5">
-                    <p class="text-gray-600">Verificando en base de datos...</p>
+                    <p class="text-gray-600">{{ t('biometric.verification.process.verifyingInDb') }}</p>
                     <p class="text-muted fs-7">
-                      Comparando con {{ stats.totalTemplates }} huellas registradas
+                      {{ t('biometric.verification.process.comparingWith', { count: stats.totalTemplates }) }}
                     </p>
                   </div>
                 </div>
@@ -401,17 +400,17 @@
             <!-- Step 3: Results -->
             <div v-if="currentStep === 3" class="current">
               <div class="w-100">
-                <h4 class="fw-bold mb-5">Resultados de Verificación</h4>
+                <h4 class="fw-bold mb-5">{{ t('biometric.verification.process.verificationResults') }}</h4>
                 
                 <!-- Match Found -->
                 <div v-if="verificationResult && verificationResult.found" class="alert alert-danger d-flex align-items-start">
                   <i class="ki-outline ki-shield-cross fs-2x text-danger me-4"></i>
                   <div class="flex-grow-1">
-                    <h4 class="alert-heading">¡Reincidente Detectado!</h4>
-                    <p>Se encontró una coincidencia en la base de datos del sistema.</p>
-                    
+                    <h4 class="alert-heading">{{ t('biometric.verification.matchFound.title') }}</h4>
+                    <p>{{ t('biometric.verification.matchFound.description') }}</p>
+
                     <div class="separator separator-dashed my-5"></div>
-                    
+
                     <div class="d-flex align-items-center mb-5">
                       <div class="symbol symbol-100px symbol-circle me-5">
                         <img :src="verificationResult.photo || '/media/avatars/blank.png'" alt="Foto"/>
@@ -423,60 +422,60 @@
                         <span class="badge badge-light-danger ms-2">{{ verificationResult.inmate_code }}</span>
                         <div class="text-muted fs-7 fw-semibold mt-1">
                           <i class="ki-outline ki-fingerprint-scanning fs-6 me-1"></i>
-                          Coincidencia: {{ (verificationResult.score * 100).toFixed(2) }}%
+                          {{ t('biometric.verification.matchFound.matchScore', { score: (verificationResult.score * 100).toFixed(2) }) }}
                         </div>
                         <div class="text-muted fs-7 fw-semibold">
                           <i class="ki-outline ki-technology fs-6 me-1"></i>
-                          Método: {{ verificationResult.method }}
+                          {{ t('biometric.verification.matchFound.method') }} {{ verificationResult.method }}
                         </div>
                       </div>
                     </div>
-                    
+
                     <div class="d-flex">
                       <a :href="`/inmates/${verificationResult.inmate_id}`" class="btn btn-danger me-3">
                         <i class="ki-outline ki-user fs-4 me-2"></i>
-                        Ver Perfil Completo
+                        {{ t('biometric.verification.matchFound.viewFullProfile') }}
                       </a>
                       <button @click="resetView" class="btn btn-light-danger">
                         <i class="ki-outline ki-arrows-circle fs-4 me-2"></i>
-                        Nueva Verificación
+                        {{ t('biometric.verification.matchFound.newVerification') }}
                       </button>
                     </div>
                   </div>
                 </div>
-                
+
                 <!-- No Match -->
                 <div v-else-if="verificationResult && !verificationResult.found" class="alert alert-success d-flex align-items-start">
                   <i class="ki-outline ki-shield-tick fs-2x text-success me-4"></i>
                   <div class="flex-grow-1">
-                    <h4 class="alert-heading">Sin Coincidencias</h4>
-                    <p>No se encontraron registros previos de esta persona en el sistema.</p>
+                    <h4 class="alert-heading">{{ t('biometric.verification.noMatch.title') }}</h4>
+                    <p>{{ t('biometric.verification.noMatch.description') }}</p>
                     <p class="text-muted fs-7 mb-0">
-                      {{ verificationResult.message || 'La persona puede proceder con el proceso de ingreso.' }}
+                      {{ verificationResult.message || t('biometric.verification.noMatch.canProceed') }}
                     </p>
-                    
+
                     <div class="separator separator-dashed my-5"></div>
-                    
+
                     <div class="d-flex">
                       <button @click="proceedToAdmission" class="btn btn-success me-3">
                         <i class="ki-outline ki-user-tick fs-4 me-2"></i>
-                        Proceder con Ingreso
+                        {{ t('biometric.verification.noMatch.proceedWithAdmission') }}
                       </button>
                       <button @click="resetView" class="btn btn-light-success">
                         <i class="ki-outline ki-arrows-circle fs-4 me-2"></i>
-                        Nueva Verificación
+                        {{ t('biometric.verification.noMatch.newVerification') }}
                       </button>
                     </div>
                   </div>
                 </div>
-                
+
                 <!-- Error -->
                 <div v-else-if="verificationError" class="alert alert-warning">
-                  <h4 class="alert-heading">Error en Verificación</h4>
+                  <h4 class="alert-heading">{{ t('biometric.verification.error.title') }}</h4>
                   <p>{{ verificationError }}</p>
                   <button @click="retryVerification" class="btn btn-warning mt-3">
                     <i class="ki-outline ki-arrows-circle fs-4 me-2"></i>
-                    Reintentar
+                    {{ t('biometric.verification.error.retry') }}
                   </button>
                 </div>
               </div>
@@ -492,9 +491,12 @@
 <script setup lang="ts">
 import { ref, onMounted, onActivated, computed } from 'vue'
 import { useRouter } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import { useJavaBiometric } from '@/composables/useJavaBiometric'
 import Swal from 'sweetalert2'
 import axios from 'axios'
+
+const { t } = useI18n()
 
 // Configurar axios con la URL base de la API
 axios.defaults.baseURL = import.meta.env.VITE_APP_API_URL || 'http://127.0.0.1:8000/api'
@@ -562,16 +564,16 @@ const startFingerprintVerification = async () => {
       verificationInProgress.value = false
       currentStep.value = 1
     } else {
-      throw new Error(result.message || 'No se pudo lanzar la aplicación de verificación')
+      throw new Error(result.message || t('biometric.swal.couldNotLaunchApp'))
     }
   } catch (error: any) {
-    verificationError.value = error.message || 'Error al lanzar la aplicación de verificación'
+    verificationError.value = error.message || t('biometric.swal.couldNotLaunchApp')
     currentStep.value = 3
     verificationInProgress.value = false
 
     await Swal.fire({
       icon: 'error',
-      title: 'Error',
+      title: t('common.swal.titles.error'),
       text: verificationError.value
     })
   }
@@ -583,11 +585,11 @@ const startFacialVerification = () => {
   currentStep.value = 1
   verificationResult.value = null
   verificationError.value = ''
-  
+
   Swal.fire({
     icon: 'info',
-    title: 'Próximamente',
-    text: 'El reconocimiento facial estará disponible en la próxima versión'
+    title: t('common.swal.titles.comingSoon'),
+    text: t('biometric.swal.facialComingSoonText')
   })
   verificationInProgress.value = false
 }
@@ -647,8 +649,8 @@ const searchByDocument = async () => {
   if (!searchData.value.documentNumber || searchData.value.documentNumber.trim().length < 3) {
     Swal.fire({
       icon: 'warning',
-      title: 'Búsqueda muy corta',
-      text: 'Por favor ingrese al menos 3 caracteres para buscar'
+      title: t('biometric.swal.searchTooShort'),
+      text: t('biometric.swal.minCharsDocument')
     })
     return
   }
@@ -668,9 +670,9 @@ const searchByDocument = async () => {
       } else {
         Swal.fire({
           icon: 'success',
-          title: 'Sin Coincidencias',
-          text: 'No se encontraron PPL con ese documento. Puede proceder con el registro.',
-          confirmButtonText: 'Proceder con Ingreso'
+          title: t('biometric.swal.noMatches'),
+          text: t('biometric.swal.noMatchesDocumentText'),
+          confirmButtonText: t('biometric.swal.proceedWithAdmission')
         }).then((result) => {
           if (result.isConfirmed) {
             proceedToAdmission()
@@ -681,8 +683,8 @@ const searchByDocument = async () => {
   } catch (error: any) {
     Swal.fire({
       icon: 'error',
-      title: 'Error',
-      text: error.response?.data?.message || 'Error al buscar PPL'
+      title: t('common.swal.titles.error'),
+      text: error.response?.data?.message || t('biometric.errors.searchError')
     })
   } finally {
     isSearching.value = false
@@ -701,8 +703,8 @@ const searchByName = async () => {
   if (!hasValidField) {
     Swal.fire({
       icon: 'warning',
-      title: 'Búsqueda muy corta',
-      text: 'Por favor ingrese al menos 2 caracteres en algún campo de nombre o apellido'
+      title: t('biometric.swal.searchTooShort'),
+      text: t('biometric.swal.minCharsName')
     })
     return
   }
@@ -730,7 +732,7 @@ const searchByName = async () => {
     if (searchData.value.birthDate) searchParams.birth_date = searchData.value.birthDate
 
     const response = await axios.post('/inmates/search-by-name', searchParams)
-    
+
     if (response.data.success) {
       if (response.data.inmates && response.data.inmates.length > 0) {
         // Mostrar resultados
@@ -738,9 +740,9 @@ const searchByName = async () => {
       } else {
         Swal.fire({
           icon: 'success',
-          title: 'Sin Coincidencias',
-          text: 'No se encontraron PPL con esos datos. Puede proceder con el registro.',
-          confirmButtonText: 'Proceder con Ingreso'
+          title: t('biometric.swal.noMatches'),
+          text: t('biometric.swal.noMatchesNameText'),
+          confirmButtonText: t('biometric.swal.proceedWithAdmission')
         }).then((result) => {
           if (result.isConfirmed) {
             proceedToAdmission()
@@ -751,8 +753,8 @@ const searchByName = async () => {
   } catch (error: any) {
     Swal.fire({
       icon: 'error',
-      title: 'Error',
-      text: error.response?.data?.message || 'Error al buscar PPL'
+      title: t('common.swal.titles.error'),
+      text: error.response?.data?.message || t('biometric.errors.searchError')
     })
   } finally {
     isSearching.value = false
@@ -761,17 +763,19 @@ const searchByName = async () => {
 
 const showSearchResults = (inmates: any[]) => {
   searchResults.value = inmates
-  
+
   // Crear HTML para mostrar los resultados
+  const matchesText = t('biometric.swal.matchesFoundCount', { count: inmates.length })
   let resultsHtml = '<div class="text-start">'
-  resultsHtml += `<p class="mb-3">Se encontraron <strong>${inmates.length}</strong> coincidencias:</p>`
+  resultsHtml += `<p class="mb-3">${matchesText}</p>`
   resultsHtml += '<div class="mh-300px overflow-auto">'
-  
+
+  const viewProfileText = t('biometric.swal.viewProfile')
   inmates.forEach((inmate: any) => {
     resultsHtml += `
       <div class="d-flex align-items-center p-3 border rounded mb-2">
         <div class="symbol symbol-50px me-3">
-          <img src="${inmate.photo_url || '/media/avatars/blank.png'}" alt="Foto"/>
+          <img src="${inmate.photo_url || '/media/avatars/blank.png'}" alt=""/>
         </div>
         <div class="flex-grow-1">
           <div class="fw-bold">${inmate.full_name}</div>
@@ -783,32 +787,32 @@ const showSearchResults = (inmates: any[]) => {
           </div>
         </div>
         <a href="/inmates/${inmate.id}" class="btn btn-sm btn-light-primary" target="_blank">
-          Ver Perfil
+          ${viewProfileText}
         </a>
       </div>
     `
   })
-  
+
   resultsHtml += '</div></div>'
-  
+
   Swal.fire({
     icon: 'warning',
-    title: '¡Posibles Coincidencias Encontradas!',
+    title: t('biometric.swal.matchesFoundTitle'),
     html: resultsHtml,
     width: '600px',
     showCancelButton: true,
-    confirmButtonText: 'Proceder de Todos Modos',
-    cancelButtonText: 'Cancelar',
+    confirmButtonText: t('biometric.swal.proceedAnyway'),
+    cancelButtonText: t('common.swal.buttons.cancel'),
     confirmButtonColor: '#d33'
   }).then((result) => {
     if (result.isConfirmed) {
       Swal.fire({
         icon: 'question',
-        title: 'Confirmación',
-        text: '¿Está seguro que desea proceder con un nuevo ingreso a pesar de las coincidencias encontradas?',
+        title: t('common.swal.titles.confirm'),
+        text: t('biometric.swal.confirmProceedText'),
         showCancelButton: true,
-        confirmButtonText: 'Sí, Proceder',
-        cancelButtonText: 'No, Revisar'
+        confirmButtonText: t('common.swal.buttons.yesProceed'),
+        cancelButtonText: t('common.swal.buttons.noReview')
       }).then((confirmResult) => {
         if (confirmResult.isConfirmed) {
           proceedToAdmission()
@@ -845,11 +849,11 @@ const startService = async () => {
 const buildService = async () => {
   const result = await Swal.fire({
     icon: 'question',
-    title: '¿Compilar servicio?',
-    text: 'Se ejecutará Build.ps1 para compilar el proyecto Java. El servicio se detendrá si está en ejecución.',
+    title: t('biometric.swal.buildService'),
+    text: t('biometric.swal.buildServiceText'),
     showCancelButton: true,
-    confirmButtonText: 'Sí, compilar',
-    cancelButtonText: 'Cancelar'
+    confirmButtonText: t('biometric.swal.yesBuild'),
+    cancelButtonText: t('common.swal.buttons.cancel')
   })
   
   if (!result.isConfirmed) return
@@ -860,16 +864,18 @@ const buildService = async () => {
     const response = await axios.post('biometric-service/build')
     
     if (response.data.success) {
+      const jarCompiledText = t('biometric.swal.jarCompiled')
+      const jarSizeText = t('biometric.swal.jarSize')
       await Swal.fire({
         icon: 'success',
-        title: '¡Compilación exitosa!',
+        title: t('biometric.swal.buildSuccess'),
         html: `
           <div class="text-start">
-            <p><strong>JAR compilado:</strong> ${response.data.data?.jar_path || 'BiometricService.jar'}</p>
-            ${response.data.data?.jar_size ? `<p><strong>Tamaño:</strong> ${(response.data.data.jar_size / 1024).toFixed(2)} KB</p>` : ''}
+            <p><strong>${jarCompiledText}</strong> ${response.data.data?.jar_path || 'BiometricService.jar'}</p>
+            ${response.data.data?.jar_size ? `<p><strong>${jarSizeText}</strong> ${(response.data.data.jar_size / 1024).toFixed(2)} KB</p>` : ''}
           </div>
         `,
-        confirmButtonText: 'Aceptar'
+        confirmButtonText: t('common.swal.buttons.accept')
       })
       
       // Actualizar estado del servicio
@@ -877,23 +883,23 @@ const buildService = async () => {
     } else {
       await Swal.fire({
         icon: 'error',
-        title: 'Error en compilación',
+        title: t('biometric.swal.buildError'),
         html: `
           <div class="text-start">
             <p>${response.data.message}</p>
             ${response.data.output ? `<pre class="mt-3" style="max-height: 300px; overflow-y: auto;">${response.data.output}</pre>` : ''}
           </div>
         `,
-        confirmButtonText: 'Aceptar'
+        confirmButtonText: t('common.swal.buttons.accept')
       })
     }
   } catch (error: any) {
     console.error('Error al compilar servicio:', error)
     await Swal.fire({
       icon: 'error',
-      title: 'Error',
-      text: error.response?.data?.message || 'No se pudo compilar el servicio',
-      confirmButtonText: 'Aceptar'
+      title: t('common.swal.titles.error'),
+      text: error.response?.data?.message || t('biometric.swal.buildError'),
+      confirmButtonText: t('common.swal.buttons.accept')
     })
   } finally {
     isBuildingService.value = false
@@ -903,11 +909,11 @@ const buildService = async () => {
 const stopService = async () => {
   const result = await Swal.fire({
     icon: 'warning',
-    title: '¿Detener servicio?',
-    text: 'Esto deshabilitará la verificación biométrica',
+    title: t('biometric.swal.stopService'),
+    text: t('biometric.swal.stopServiceText'),
     showCancelButton: true,
-    confirmButtonText: 'Sí, detener',
-    cancelButtonText: 'Cancelar',
+    confirmButtonText: t('biometric.swal.yesStop'),
+    cancelButtonText: t('common.swal.buttons.cancel'),
     confirmButtonColor: '#d33'
   })
   
@@ -921,12 +927,12 @@ const stopService = async () => {
     if (response.data.success) {
       Swal.fire({
         icon: 'success',
-        title: 'Servicio Detenido',
-        text: 'BiometricService se ha detenido correctamente',
+        title: t('biometric.swal.serviceStopped'),
+        text: t('biometric.swal.serviceStoppedText'),
         timer: 2000,
         showConfirmButton: false
       })
-      
+
       // Actualizar estado
       javaServiceAvailable.value = false
       checkServiceFullStatus()
@@ -934,8 +940,8 @@ const stopService = async () => {
   } catch (error: any) {
     Swal.fire({
       icon: 'error',
-      title: 'Error',
-      text: error.response?.data?.message || 'Error al detener el servicio'
+      title: t('common.swal.titles.error'),
+      text: error.response?.data?.message || t('biometric.swal.stopServiceError')
     })
   } finally {
     isServiceLoading.value = false
@@ -947,17 +953,17 @@ const showServiceLogs = async () => {
     const response = await axios.get('biometric-service/logs', {
       params: { lines: 30 }
     })
-    
+
     if (response.data.success && response.data.logs) {
       const logsHtml = response.data.logs
         .map((line: string) => `<div class="text-start font-monospace small">${line}</div>`)
         .join('')
-      
+
       Swal.fire({
-        title: 'Logs del Servicio',
+        title: t('biometric.swal.serviceLogs'),
         html: `<div class="mh-400px overflow-auto">${logsHtml}</div>`,
         width: '800px',
-        confirmButtonText: 'Cerrar'
+        confirmButtonText: t('common.swal.buttons.close')
       })
     }
   } catch (error) {
@@ -979,13 +985,11 @@ onMounted(async () => {
   // Marcar como listo
   isBiometricReady.value = true
 
-  console.log('BiometricVerification: Vista cargada, servicio Java:', javaServiceAvailable.value)
 })
 
 // Resetear cuando el componente se reactive (al volver de otra ruta)
 onActivated(() => {
   resetView()
-  console.log('BiometricVerification: Vista reactivada, reseteando estado')
 })
 </script>
 

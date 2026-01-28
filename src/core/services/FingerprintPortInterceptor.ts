@@ -21,11 +21,9 @@ export class FingerprintPortInterceptor {
   
   public initialize() {
     if (this.initialized) {
-      console.log('[PortInterceptor] Already initialized');
       return;
     }
     
-    console.log('[PortInterceptor] Initializing port interceptor...');
     
     // Store originals
     this.originalWebSocket = window.WebSocket;
@@ -34,18 +32,15 @@ export class FingerprintPortInterceptor {
     // Intercept WebSocket
     const self = this;
     window.WebSocket = function(url: string, ...args: any[]) {
-      console.log('[PortInterceptor] WebSocket attempting:', url);
       
       // Check if it's trying to connect to wrong port
       if (url.includes('65453') || url.includes('65454')) {
         // Try working ports
         for (const port of self.workingPorts) {
           const newUrl = url.replace(/:\d+/, ':' + port);
-          console.log('[PortInterceptor] Redirecting WebSocket to:', newUrl);
           try {
             return new self.originalWebSocket(newUrl, ...args);
           } catch (e) {
-            console.log('[PortInterceptor] Failed on port', port);
           }
         }
       }
@@ -56,7 +51,6 @@ export class FingerprintPortInterceptor {
     // Intercept XHR
     XMLHttpRequest.prototype.open = function(method: string, url: string, ...args: any[]) {
       if (typeof url === 'string' && (url.includes('127.0.0.1') || url.includes('localhost'))) {
-        console.log('[PortInterceptor] XHR attempting:', method, url);
         
         // Check if it's trying wrong port
         if (url.includes(':65453') || url.includes(':65454')) {
@@ -64,7 +58,6 @@ export class FingerprintPortInterceptor {
           let newUrl = url.replace(/:\d+/, ':' + self.workingPorts[0]);
           // Change HTTPS to HTTP
           newUrl = newUrl.replace('https://', 'http://');
-          console.log('[PortInterceptor] Redirecting XHR to:', newUrl);
           return self.originalXHROpen.apply(this, [method, newUrl, ...args]);
         }
       }
@@ -73,13 +66,11 @@ export class FingerprintPortInterceptor {
     };
     
     this.initialized = true;
-    console.log('[PortInterceptor] Port interceptor initialized');
   }
   
   public restore() {
     if (!this.initialized) return;
     
-    console.log('[PortInterceptor] Restoring original functions');
     window.WebSocket = this.originalWebSocket;
     XMLHttpRequest.prototype.open = this.originalXHROpen;
     this.initialized = false;

@@ -636,7 +636,6 @@ const handleAddRestriction = () => {
   }).then(async (result) => {
     if (result.isConfirmed && result.value) {
       // TODO: Call API to add restriction when endpoint is ready
-      console.log('Add restriction:', result.value)
       Swal.fire({
         title: 'Pendiente',
         text: 'La funcionalidad de agregar restricciones estará disponible próximamente',
@@ -658,7 +657,6 @@ const handleRemoveRestriction = async (id: number) => {
 
   if (result.isConfirmed) {
     // Remove restriction
-    console.log('Remove restriction:', id)
   }
 }
 

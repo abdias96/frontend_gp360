@@ -168,12 +168,10 @@ const openAddHearingModal = () => {
 
 const viewHearing = (hearing: any) => {
   // TODO: Implement view
-  console.log('View hearing:', hearing);
 };
 
 const editHearing = (hearing: any) => {
   // TODO: Implement edit
-  console.log('Edit hearing:', hearing);
 };
 
 // Lifecycle

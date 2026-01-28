@@ -33,7 +33,6 @@ class WebSocketService {
     }
 
     if (this.isConnected) {
-      console.log('WebSocket already connected');
       return;
     }
 
@@ -70,7 +69,6 @@ class WebSocketService {
       this.isConnected = true;
       this.reconnectAttempts = 0;
 
-      console.log('WebSocket connected successfully');
 
       // Set up connection event listeners
       this.setupConnectionListeners();
@@ -93,7 +91,6 @@ class WebSocketService {
       this.echo.disconnect();
       this.echo = null;
       this.isConnected = false;
-      console.log('WebSocket disconnected');
     }
   }
 
@@ -184,7 +181,6 @@ class WebSocketService {
 
     // Listen for connection state changes
     this.echo.connector.pusher.connection.bind('state_change', (states: any) => {
-      console.log('WebSocket state changed:', states.current);
 
       if (states.current === 'disconnected' || states.current === 'failed') {
         this.isConnected = false;
@@ -244,13 +240,10 @@ class WebSocketService {
 
     return this.echo.join('chat.general')
       .here((users: any[]) => {
-        console.log('Users in chat:', users);
       })
       .joining((user: any) => {
-        console.log('User joined chat:', user);
       })
       .leaving((user: any) => {
-        console.log('User left chat:', user);
       })
       .error((error: any) => {
         console.error('Chat channel error:', error);

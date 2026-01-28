@@ -28,27 +28,27 @@ export const helpTranslations = {
   },
   es: {
     help: {
-      title: "Ayuda y Soporte",
-      currentPage: "Ayuda de la Página Actual",
-      quickActions: "Acciones Rápidas",
+      title: "Ayuda y soporte",
+      currentPage: "Ayuda de la página actual",
+      quickActions: "Acciones rápidas",
       userManual: {
-        title: "Manual de Usuario",
+        title: "Manual de usuario",
       },
       systemStatus: {
-        title: "Estado del Sistema",
+        title: "Estado del sistema",
         online: "En línea",
         systemOnline: "Sistema en línea",
         usersOnline: "Usuarios conectados",
         version: "Versión",
       },
       quickLinks: {
-        title: "Enlaces Rápidos",
+        title: "Enlaces rápidos",
       },
       support: {
-        title: "Contactar Soporte",
+        title: "Contactar soporte",
         description:
           "Si necesitas ayuda adicional, contacta a nuestro equipo de soporte técnico.",
-        email: "Enviar Email",
+        email: "Enviar email",
         phone: "Llamarnos",
       },
     },

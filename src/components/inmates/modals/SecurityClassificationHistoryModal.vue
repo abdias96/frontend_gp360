@@ -342,7 +342,6 @@ const close = () => {
 
 const exportHistory = () => {
   // TODO: Implement export functionality
-  console.log('Export history for:', props.inmate);
 };
 
 // Utility functions

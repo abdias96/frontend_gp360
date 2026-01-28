@@ -52,7 +52,7 @@ class ApiService {
         }
 
         // Add timestamp to prevent caching
-        if (config.method === "get") {
+        if (config.method?.toLowerCase() === "get") {
           config.params = { ...config.params, _t: Date.now() };
         }
 

@@ -124,23 +124,19 @@ export function useChat() {
     if (chatChannel.value) {
       chatChannel.value
         .here((users: ChatUser[]) => {
-          console.log('Users currently in chat:', users);
           onlineUsers.value = users;
         })
         .joining((user: ChatUser) => {
-          console.log('User joined chat:', user);
           // Add user to online list if not already there
           if (!onlineUsers.value.find(u => u.id === user.id)) {
             onlineUsers.value.push(user);
           }
         })
         .leaving((user: ChatUser) => {
-          console.log('User left chat:', user);
           // Remove user from online list
           onlineUsers.value = onlineUsers.value.filter(u => u.id !== user.id);
         })
         .listen('.message.sent', (data: ChatMessage) => {
-          console.log('New chat message received from other user:', data);
 
           const authStore = useAuthStore();
 

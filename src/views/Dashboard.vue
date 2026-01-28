@@ -597,7 +597,6 @@ onMounted(() => {
 
 const updateDashboardData = () => {
   // Función para actualizar datos del dashboard
-  console.log('Actualizando datos del dashboard...');
 };
 </script>
 

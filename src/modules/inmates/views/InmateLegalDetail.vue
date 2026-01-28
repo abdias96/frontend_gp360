@@ -2,7 +2,7 @@
   <div class="card">
     <div class="card-header border-0 pt-6">
       <div class="card-title">
-        <h3 class="fw-bold m-0">Información Legal del Interno</h3>
+        <h3 class="fw-bold m-0">{{ $t('inmates.legalDetail.title') }}</h3>
       </div>
       <div class="card-toolbar">
         <router-link :to="`/inmates/${inmateId}`" class="btn btn-light-secondary me-3">
@@ -10,7 +10,7 @@
             <span class="path1"></span>
             <span class="path2"></span>
           </i>
-          Volver al Perfil
+          {{ $t('inmates.legalDetail.backToProfile') }}
         </router-link>
       </div>
     </div>
@@ -19,8 +19,8 @@
       <!-- Legal Tabs Navigation -->
       <ul class="nav nav-tabs nav-line-tabs nav-line-tabs-2x mb-5 fs-6">
         <li class="nav-item">
-          <a 
-            class="nav-link" 
+          <a
+            class="nav-link"
             :class="{ active: activeTab === 'profile' }"
             @click="activeTab = 'profile'"
             href="#"
@@ -29,11 +29,11 @@
               <span class="path1"></span>
               <span class="path2"></span>
             </i>
-            Perfil Legal
+            {{ $t('inmates.legalDetail.tabs.legalProfile') }}
           </a>
         </li>
         <li class="nav-item">
-          <a 
+          <a
             class="nav-link"
             :class="{ active: activeTab === 'crimes' }"
             @click="activeTab = 'crimes'"
@@ -43,11 +43,11 @@
               <span class="path1"></span>
               <span class="path2"></span>
             </i>
-            Delitos
+            {{ $t('inmates.legalDetail.tabs.crimes') }}
           </a>
         </li>
         <li class="nav-item">
-          <a 
+          <a
             class="nav-link"
             :class="{ active: activeTab === 'hearings' }"
             @click="activeTab = 'hearings'"
@@ -57,11 +57,11 @@
               <span class="path1"></span>
               <span class="path2"></span>
             </i>
-            Audiencias
+            {{ $t('inmates.legalDetail.tabs.hearings') }}
           </a>
         </li>
         <li class="nav-item">
-          <a 
+          <a
             class="nav-link"
             :class="{ active: activeTab === 'resolutions' }"
             @click="activeTab = 'resolutions'"
@@ -71,7 +71,7 @@
               <span class="path1"></span>
               <span class="path2"></span>
             </i>
-            Resoluciones
+            {{ $t('inmates.legalDetail.tabs.resolutions') }}
           </a>
         </li>
       </ul>
@@ -80,41 +80,41 @@
       <div class="tab-content">
         <!-- Legal Profile Tab -->
         <div v-if="activeTab === 'profile'" class="tab-pane fade show active">
-          <h4 class="mb-4">Perfil Legal</h4>
+          <h4 class="mb-4">{{ $t('inmates.legalDetail.profile.title') }}</h4>
           <div v-if="loading" class="text-center py-5">
             <div class="spinner-border text-primary" role="status">
-              <span class="visually-hidden">Cargando...</span>
+              <span class="visually-hidden">{{ $t('inmates.legalDetail.profile.loading') }}</span>
             </div>
           </div>
           <div v-else-if="legalProfile" class="row g-5">
             <div class="col-md-6">
-              <label class="form-label fw-bold">Número de Caso:</label>
-              <p>{{ legalProfile.case_number || 'No especificado' }}</p>
+              <label class="form-label fw-bold">{{ $t('inmates.legalDetail.profile.caseNumber') }}</label>
+              <p>{{ legalProfile.case_number || $t('inmates.legalDetail.profile.notSpecified') }}</p>
             </div>
             <div class="col-md-6">
-              <label class="form-label fw-bold">Estado Legal:</label>
-              <p>{{ legalProfile.legal_status || 'No especificado' }}</p>
+              <label class="form-label fw-bold">{{ $t('inmates.legalDetail.profile.legalStatus') }}</label>
+              <p>{{ legalProfile.legal_status || $t('inmates.legalDetail.profile.notSpecified') }}</p>
             </div>
             <div class="col-md-6">
-              <label class="form-label fw-bold">Estado Procesal:</label>
-              <p>{{ legalProfile.procedural_status?.name || 'No especificado' }}</p>
+              <label class="form-label fw-bold">{{ $t('inmates.legalDetail.profile.proceduralStatus') }}</label>
+              <p>{{ legalProfile.procedural_status?.name || $t('inmates.legalDetail.profile.notSpecified') }}</p>
             </div>
             <div class="col-md-6">
-              <label class="form-label fw-bold">Juzgado:</label>
-              <p>{{ legalProfile.court?.name || 'No especificado' }}</p>
+              <label class="form-label fw-bold">{{ $t('inmates.legalDetail.profile.court') }}</label>
+              <p>{{ legalProfile.court?.name || $t('inmates.legalDetail.profile.notSpecified') }}</p>
             </div>
           </div>
           <div v-else class="alert alert-info">
-            No hay información legal disponible para este interno.
+            {{ $t('inmates.legalDetail.profile.noInfo') }}
           </div>
         </div>
 
         <!-- Crimes Tab -->
         <div v-if="activeTab === 'crimes'" class="tab-pane fade show active">
-          <h4 class="mb-4">Delitos Imputados</h4>
+          <h4 class="mb-4">{{ $t('inmates.legalDetail.crimes.title') }}</h4>
           <div v-if="loading" class="text-center py-5">
             <div class="spinner-border text-primary" role="status">
-              <span class="visually-hidden">Cargando...</span>
+              <span class="visually-hidden">{{ $t('inmates.legalDetail.crimes.loading') }}</span>
             </div>
           </div>
           <div v-else-if="crimes && crimes.length > 0">
@@ -122,19 +122,19 @@
               <table class="table table-row-dashed table-row-gray-300 align-middle gs-0 gy-4">
                 <thead>
                   <tr class="fw-bold text-muted">
-                    <th>Delito</th>
-                    <th>Clasificación</th>
-                    <th>Fecha</th>
-                    <th>Estado</th>
+                    <th>{{ $t('inmates.legalDetail.crimes.table.crime') }}</th>
+                    <th>{{ $t('inmates.legalDetail.crimes.table.classification') }}</th>
+                    <th>{{ $t('inmates.legalDetail.crimes.table.date') }}</th>
+                    <th>{{ $t('inmates.legalDetail.crimes.table.status') }}</th>
                   </tr>
                 </thead>
                 <tbody>
                   <tr v-for="crime in crimes" :key="crime.id">
-                    <td>{{ crime.crime?.name || 'No especificado' }}</td>
+                    <td>{{ crime.crime?.name || $t('inmates.legalDetail.crimes.notSpecified') }}</td>
                     <td>{{ crime.crime?.classification || '-' }}</td>
                     <td>{{ formatDate(crime.created_at) }}</td>
                     <td>
-                      <span class="badge badge-light-primary">{{ crime.status || 'Activo' }}</span>
+                      <span class="badge badge-light-primary">{{ crime.status || $t('inmates.legalDetail.crimes.active') }}</span>
                     </td>
                   </tr>
                 </tbody>
@@ -142,16 +142,16 @@
             </div>
           </div>
           <div v-else class="alert alert-info">
-            No hay delitos registrados para este interno.
+            {{ $t('inmates.legalDetail.crimes.noData') }}
           </div>
         </div>
 
         <!-- Hearings Tab -->
         <div v-if="activeTab === 'hearings'" class="tab-pane fade show active">
-          <h4 class="mb-4">Audiencias</h4>
+          <h4 class="mb-4">{{ $t('inmates.legalDetail.hearings.title') }}</h4>
           <div v-if="loading" class="text-center py-5">
             <div class="spinner-border text-primary" role="status">
-              <span class="visually-hidden">Cargando...</span>
+              <span class="visually-hidden">{{ $t('inmates.legalDetail.hearings.loading') }}</span>
             </div>
           </div>
           <div v-else-if="hearings && hearings.length > 0">
@@ -159,20 +159,20 @@
               <table class="table table-row-dashed table-row-gray-300 align-middle gs-0 gy-4">
                 <thead>
                   <tr class="fw-bold text-muted">
-                    <th>Fecha</th>
-                    <th>Tipo</th>
-                    <th>Juzgado</th>
-                    <th>Estado</th>
+                    <th>{{ $t('inmates.legalDetail.hearings.table.date') }}</th>
+                    <th>{{ $t('inmates.legalDetail.hearings.table.type') }}</th>
+                    <th>{{ $t('inmates.legalDetail.hearings.table.court') }}</th>
+                    <th>{{ $t('inmates.legalDetail.hearings.table.status') }}</th>
                   </tr>
                 </thead>
                 <tbody>
                   <tr v-for="hearing in hearings" :key="hearing.id">
                     <td>{{ formatDate(hearing.hearing_date) }}</td>
-                    <td>{{ hearing.hearing_type || 'No especificado' }}</td>
+                    <td>{{ hearing.hearing_type || $t('inmates.legalDetail.hearings.notSpecified') }}</td>
                     <td>{{ hearing.court?.name || '-' }}</td>
                     <td>
                       <span :class="`badge badge-light-${getStatusColor(hearing.status)}`">
-                        {{ hearing.status || 'Pendiente' }}
+                        {{ hearing.status || $t('inmates.legalDetail.hearings.pending') }}
                       </span>
                     </td>
                   </tr>
@@ -181,16 +181,16 @@
             </div>
           </div>
           <div v-else class="alert alert-info">
-            No hay audiencias programadas para este interno.
+            {{ $t('inmates.legalDetail.hearings.noData') }}
           </div>
         </div>
 
         <!-- Resolutions Tab -->
         <div v-if="activeTab === 'resolutions'" class="tab-pane fade show active">
-          <h4 class="mb-4">Resoluciones Judiciales</h4>
+          <h4 class="mb-4">{{ $t('inmates.legalDetail.resolutions.title') }}</h4>
           <div v-if="loading" class="text-center py-5">
             <div class="spinner-border text-primary" role="status">
-              <span class="visually-hidden">Cargando...</span>
+              <span class="visually-hidden">{{ $t('inmates.legalDetail.resolutions.loading') }}</span>
             </div>
           </div>
           <div v-else-if="resolutions && resolutions.length > 0">
@@ -198,16 +198,16 @@
               <table class="table table-row-dashed table-row-gray-300 align-middle gs-0 gy-4">
                 <thead>
                   <tr class="fw-bold text-muted">
-                    <th>Fecha</th>
-                    <th>Tipo</th>
-                    <th>Descripción</th>
-                    <th>Juzgado</th>
+                    <th>{{ $t('inmates.legalDetail.resolutions.table.date') }}</th>
+                    <th>{{ $t('inmates.legalDetail.resolutions.table.type') }}</th>
+                    <th>{{ $t('inmates.legalDetail.resolutions.table.description') }}</th>
+                    <th>{{ $t('inmates.legalDetail.resolutions.table.court') }}</th>
                   </tr>
                 </thead>
                 <tbody>
                   <tr v-for="resolution in resolutions" :key="resolution.id">
                     <td>{{ formatDate(resolution.resolution_date) }}</td>
-                    <td>{{ resolution.resolution_type || 'No especificado' }}</td>
+                    <td>{{ resolution.resolution_type || $t('inmates.legalDetail.resolutions.notSpecified') }}</td>
                     <td>{{ resolution.description || '-' }}</td>
                     <td>{{ resolution.court?.name || '-' }}</td>
                   </tr>
@@ -216,7 +216,7 @@
             </div>
           </div>
           <div v-else class="alert alert-info">
-            No hay resoluciones judiciales registradas para este interno.
+            {{ $t('inmates.legalDetail.resolutions.noData') }}
           </div>
         </div>
       </div>
@@ -227,8 +227,10 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue';
 import { useRoute } from 'vue-router';
+import { useI18n } from 'vue-i18n';
 import ApiService from '@/core/services/ApiService';
 
+const { t } = useI18n();
 const route = useRoute();
 const inmateId = computed(() => route.params.id);
 const activeTab = ref('profile');

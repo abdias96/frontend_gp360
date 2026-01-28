@@ -585,7 +585,6 @@ const filterHistory = () => {
 
 const exportHistory = () => {
   // TODO: Implement export functionality
-  console.log('Export weight history:', filteredHistory.value);
 };
 
 const close = () => {

@@ -43,7 +43,7 @@ const routes: Array<RouteRecordRaw> = [
         name: "user-profile",
         component: () => import("@/modules/users/views/UserProfile.vue"),
         meta: {
-          pageTitle: "Mi Perfil",
+          pageTitle: "Mi perfil",
           breadcrumbs: ["Usuario", "Perfil"],
         },
       },
@@ -52,7 +52,7 @@ const routes: Array<RouteRecordRaw> = [
         name: "debug-auth",
         component: () => import("@/views/crafted/authentication/DebugAuth.vue"),
         meta: {
-          pageTitle: "Debug Auth",
+          pageTitle: "Debug auth",
           breadcrumbs: ["Debug"],
         },
       },
@@ -61,7 +61,7 @@ const routes: Array<RouteRecordRaw> = [
         name: "access-denied",
         component: () => import("@/views/crafted/authentication/Error403.vue"),
         meta: {
-          pageTitle: "Acceso Denegado",
+          pageTitle: "Acceso denegado",
         },
       },
       {
@@ -69,7 +69,7 @@ const routes: Array<RouteRecordRaw> = [
         name: "users-list",
         component: () => import("@/modules/users/views/UsersList.vue"),
         meta: {
-          pageTitle: "Gestión de Usuarios",
+          pageTitle: "Gestión de usuarios",
           breadcrumbs: ["Usuarios"],
           permissions: "users.list",
         },
@@ -79,7 +79,7 @@ const routes: Array<RouteRecordRaw> = [
         name: "users-create",
         component: () => import("@/modules/users/views/UserCreate.vue"),
         meta: {
-          pageTitle: "Crear Usuario",
+          pageTitle: "Crear usuario",
           breadcrumbs: ["Usuarios", "Crear"],
           permissions: "users.create",
         },
@@ -89,7 +89,7 @@ const routes: Array<RouteRecordRaw> = [
         name: "users-edit",
         component: () => import("@/modules/users/views/UserEdit.vue"),
         meta: {
-          pageTitle: "Editar Usuario",
+          pageTitle: "Editar usuario",
           breadcrumbs: ["Usuarios", "Editar"],
           permissions: "users.edit",
         },
@@ -99,7 +99,7 @@ const routes: Array<RouteRecordRaw> = [
         name: "roles-list",
         component: () => import("@/modules/roles/views/RolesList.vue"),
         meta: {
-          pageTitle: "Gestión de Roles",
+          pageTitle: "Gestión de roles",
           breadcrumbs: ["Roles"],
           permissions: "roles.list",
         },
@@ -109,7 +109,7 @@ const routes: Array<RouteRecordRaw> = [
         name: "roles-create",
         component: () => import("@/modules/roles/views/RoleCreate.vue"),
         meta: {
-          pageTitle: "Crear Rol",
+          pageTitle: "Crear rol",
           breadcrumbs: ["Roles", "Crear"],
           permissions: "roles.create",
         },
@@ -119,7 +119,7 @@ const routes: Array<RouteRecordRaw> = [
         name: "roles-edit",
         component: () => import("@/modules/roles/views/RoleEdit.vue"),
         meta: {
-          pageTitle: "Editar Rol",
+          pageTitle: "Editar rol",
           breadcrumbs: ["Roles", "Editar"],
           permissions: "roles.edit",
         },
@@ -130,7 +130,7 @@ const routes: Array<RouteRecordRaw> = [
         component: () =>
           import("@/modules/permissions/views/PermissionsList.vue"),
         meta: {
-          pageTitle: "Gestión de Permisos",
+          pageTitle: "Gestión de permisos",
           breadcrumbs: ["Permisos"],
           permissions: "permissions.list",
         },
@@ -140,7 +140,7 @@ const routes: Array<RouteRecordRaw> = [
         name: "system-settings",
         component: () => import("@/modules/settings/views/SystemSettings.vue"),
         meta: {
-          pageTitle: "Configuración del Sistema",
+          pageTitle: "Configuración del sistema",
           breadcrumbs: ["Configuración"],
           permissions: "settings.view",
         },
@@ -150,7 +150,7 @@ const routes: Array<RouteRecordRaw> = [
         name: "settings-general",
         component: () => import("@/modules/settings/views/GeneralSettings.vue"),
         meta: {
-          pageTitle: "Configuración General",
+          pageTitle: "Configuración general",
           breadcrumbs: ["Configuración", "General"],
           permissions: "settings.general",
         },
@@ -161,7 +161,7 @@ const routes: Array<RouteRecordRaw> = [
         component: () =>
           import("@/modules/settings/views/SecuritySettings.vue"),
         meta: {
-          pageTitle: "Configuración de Seguridad",
+          pageTitle: "Configuración de seguridad",
           breadcrumbs: ["Configuración", "Seguridad"],
           permissions: "settings.security",
         },
@@ -171,8 +171,8 @@ const routes: Array<RouteRecordRaw> = [
         name: "activity-logs",
         component: () => import("@/modules/system/views/ActivityLogs.vue"),
         meta: {
-          pageTitle: "Logs de Actividad",
-          breadcrumbs: ["Sistema", "Logs de Actividad"],
+          pageTitle: "Logs de actividad",
+          breadcrumbs: ["Sistema", "Logs de actividad"],
           permissions: "logs.view",
         },
       },
@@ -193,7 +193,7 @@ const routes: Array<RouteRecordRaw> = [
         name: "inmates-list",
         component: () => import("@/modules/inmates/views/InmatesList.vue"),
         meta: {
-          pageTitle: "Gestión de Internos",
+          pageTitle: "Gestión de internos",
           breadcrumbs: ["Internos"],
           permissions: "inmates.list",
         },
@@ -203,8 +203,8 @@ const routes: Array<RouteRecordRaw> = [
         name: "inmates-biometric-verification",
         component: () => import("@/modules/inmates/views/BiometricVerification.vue"),
         meta: {
-          pageTitle: "Identificación Biométrica 1:N",
-          breadcrumbs: ["Internos", "Identificación Biométrica 1:N"],
+          pageTitle: "Identificación biométrica 1:N",
+          breadcrumbs: ["Internos", "Identificación biométrica 1:N"],
           permissions: ["biometric.view", "biometric.identify"],
         },
       },
@@ -213,8 +213,8 @@ const routes: Array<RouteRecordRaw> = [
         name: "inmates-biometric-identification",
         component: () => import("@/components/biometric/BiometricIdentification.vue"),
         meta: {
-          pageTitle: "Identificación Biométrica 1:N",
-          breadcrumbs: ["Internos", "Identificación Biométrica"],
+          pageTitle: "Identificación biométrica 1:N",
+          breadcrumbs: ["Internos", "Identificación biométrica"],
           permissions: ["biometric.view", "biometric.identify"],
         },
       },
@@ -223,8 +223,8 @@ const routes: Array<RouteRecordRaw> = [
         name: "test-direct-biometric",
         component: () => import("@/modules/test/DirectBiometricTest.vue"),
         meta: {
-          pageTitle: "Test Directo Biométrico",
-          breadcrumbs: ["Test", "Biométrico Directo"],
+          pageTitle: "Test directo biométrico",
+          breadcrumbs: ["Test", "Biométrico directo"],
           permissions: ["biometric.view", "biometric.identify"],
         },
       },
@@ -233,7 +233,7 @@ const routes: Array<RouteRecordRaw> = [
         name: "inmates-create",
         component: () => import("@/modules/operations/views/AdmissionWizard.vue"),
         meta: {
-          pageTitle: "Proceso de Admisión de Interno",
+          pageTitle: "Proceso de admisión de interno",
           breadcrumbs: ["Internos", "Admisión"],
           permissions: "inmates.create",
         },
@@ -243,7 +243,7 @@ const routes: Array<RouteRecordRaw> = [
         name: "inmates-detail",
         component: () => import("@/modules/inmates/views/InmateDetail.vue"),
         meta: {
-          pageTitle: "Detalle del Interno",
+          pageTitle: "Detalle del interno",
           breadcrumbs: ["Internos", "Detalle"],
           permissions: "inmates.view",
         },
@@ -253,7 +253,7 @@ const routes: Array<RouteRecordRaw> = [
         name: "inmates-edit",
         component: () => import("@/modules/inmates/views/InmateEdit.vue"),
         meta: {
-          pageTitle: "Editar Interno",
+          pageTitle: "Editar interno",
           breadcrumbs: ["Internos", "Editar"],
           permissions: "inmates.edit",
         },
@@ -263,7 +263,7 @@ const routes: Array<RouteRecordRaw> = [
         name: "inmates-transfers",
         component: () => import("@/modules/inmates/views/InmateTransfers.vue"),
         meta: {
-          pageTitle: "Traslados de Internos",
+          pageTitle: "Traslados de internos",
           breadcrumbs: ["Internos", "Traslados"],
           permissions: "inmates.transfer",
         },
@@ -274,8 +274,8 @@ const routes: Array<RouteRecordRaw> = [
         component: () =>
           import("@/modules/inmates/views/InmateLegalProfiles.vue"),
         meta: {
-          pageTitle: "Perfiles Legales",
-          breadcrumbs: ["Internos", "Perfiles Legales"],
+          pageTitle: "Perfiles legales",
+          breadcrumbs: ["Internos", "Perfiles legales"],
           permissions: "inmates.legal",
         },
       },
@@ -285,8 +285,8 @@ const routes: Array<RouteRecordRaw> = [
         component: () =>
           import("@/modules/inmates/views/InmateSecurityClassifications.vue"),
         meta: {
-          pageTitle: "Clasificaciones de Seguridad",
-          breadcrumbs: ["Internos", "Clasificaciones de Seguridad"],
+          pageTitle: "Clasificaciones de seguridad",
+          breadcrumbs: ["Internos", "Clasificaciones de seguridad"],
           permissions: "inmates.security",
         },
       },
@@ -296,8 +296,8 @@ const routes: Array<RouteRecordRaw> = [
         component: () =>
           import("@/modules/inmates/views/InmatePhysicalProfiles.vue"),
         meta: {
-          pageTitle: "Perfiles Físicos",
-          breadcrumbs: ["Internos", "Perfiles Físicos"],
+          pageTitle: "Perfiles físicos",
+          breadcrumbs: ["Internos", "Perfiles físicos"],
           permissions: "inmates.physical",
         },
       },
@@ -308,8 +308,8 @@ const routes: Array<RouteRecordRaw> = [
         component: () =>
           import("@/modules/inmates/views/InmateLegalDetail.vue"),
         meta: {
-          pageTitle: "Información Legal",
-          breadcrumbs: ["Internos", "Información Legal"],
+          pageTitle: "Información legal",
+          breadcrumbs: ["Internos", "Información legal"],
           permissions: ["inmates.legal", "legal.profiles", "legal.manage"],
         },
       },
@@ -329,7 +329,7 @@ const routes: Array<RouteRecordRaw> = [
         name: "operations-admissions",
         component: () => import("@/modules/operations/views/AdmissionProcess.vue"),
         meta: {
-          pageTitle: "Gestión de Admisiones",
+          pageTitle: "Gestión de admisiones",
           breadcrumbs: ["Operaciones", "Admisiones"],
           permissions: "admissions.view",
         },
@@ -339,7 +339,7 @@ const routes: Array<RouteRecordRaw> = [
         name: "operations-admissions-new",
         component: () => import("@/modules/operations/views/AdmissionNew.vue"),
         meta: {
-          pageTitle: "Nueva Admisión",
+          pageTitle: "Nueva admisión",
           breadcrumbs: ["Operaciones", "Admisiones", "Nueva"],
           permissions: "admissions.create",
         },
@@ -349,7 +349,7 @@ const routes: Array<RouteRecordRaw> = [
         name: "operations-admissions-detail",
         component: () => import("@/modules/operations/views/AdmissionDetail.vue"),
         meta: {
-          pageTitle: "Detalle de Admisión",
+          pageTitle: "Detalle de admisión",
           breadcrumbs: ["Operaciones", "Admisiones", "Detalle"],
           permissions: "admissions.view",
         },
@@ -359,8 +359,8 @@ const routes: Array<RouteRecordRaw> = [
         name: "operations-counts",
         component: () => import("@/modules/operations/views/DailyCountManagement.vue"),
         meta: {
-          pageTitle: "Conteo Diario",
-          breadcrumbs: ["Operaciones", "Conteo Diario"],
+          pageTitle: "Conteo diario",
+          breadcrumbs: ["Operaciones", "Conteo diario"],
           permissions: "counts.view",
         },
       },
@@ -369,8 +369,8 @@ const routes: Array<RouteRecordRaw> = [
         name: "operations-counts-history",
         component: () => import("@/modules/operations/views/CountHistory.vue"),
         meta: {
-          pageTitle: "Historial de Conteos",
-          breadcrumbs: ["Operaciones", "Conteo Diario", "Historial"],
+          pageTitle: "Historial de conteos",
+          breadcrumbs: ["Operaciones", "Conteo diario", "Historial"],
           permissions: "counts.view",
         },
       },
@@ -379,8 +379,8 @@ const routes: Array<RouteRecordRaw> = [
         name: "operations-counts-discrepancies",
         component: () => import("@/modules/operations/views/CountDiscrepancies.vue"),
         meta: {
-          pageTitle: "Discrepancias de Conteo",
-          breadcrumbs: ["Operaciones", "Conteo Diario", "Discrepancias"],
+          pageTitle: "Discrepancias de conteo",
+          breadcrumbs: ["Operaciones", "Conteo diario", "Discrepancias"],
           permissions: "counts.manage",
         },
       },
@@ -389,7 +389,7 @@ const routes: Array<RouteRecordRaw> = [
         name: "operations-movements",
         component: () => import("@/modules/operations/views/MovementControl.vue"),
         meta: {
-          pageTitle: "Control de Movimientos",
+          pageTitle: "Control de movimientos",
           breadcrumbs: ["Operaciones", "Movimientos"],
           permissions: "movements.view",
         },
@@ -399,7 +399,7 @@ const routes: Array<RouteRecordRaw> = [
         name: "operations-movements-create",
         component: () => import("@/modules/operations/views/MovementCreate.vue"),
         meta: {
-          pageTitle: "Solicitar Movimiento",
+          pageTitle: "Solicitar movimiento",
           breadcrumbs: ["Operaciones", "Movimientos", "Solicitar"],
           permissions: "movements.create",
         },
@@ -409,7 +409,7 @@ const routes: Array<RouteRecordRaw> = [
         name: "operations-movements-history",
         component: () => import("@/modules/operations/views/MovementHistory.vue"),
         meta: {
-          pageTitle: "Historial de Movimientos",
+          pageTitle: "Historial de movimientos",
           breadcrumbs: ["Operaciones", "Movimientos", "Historial"],
           permissions: "movements.view",
         },
@@ -419,7 +419,7 @@ const routes: Array<RouteRecordRaw> = [
         name: "operations-movements-detail",
         component: () => import("@/modules/operations/views/MovementDetail.vue"),
         meta: {
-          pageTitle: "Detalle de Movimiento",
+          pageTitle: "Detalle de movimiento",
           breadcrumbs: ["Operaciones", "Movimientos", "Detalle"],
           permissions: "movements.view",
         },
@@ -429,7 +429,7 @@ const routes: Array<RouteRecordRaw> = [
         name: "operations-releases",
         component: () => import("@/modules/operations/views/ReleaseManagement.vue"),
         meta: {
-          pageTitle: "Gestión de Liberaciones",
+          pageTitle: "Gestión de liberaciones",
           breadcrumbs: ["Operaciones", "Liberaciones"],
           permissions: "releases.view",
         },
@@ -439,7 +439,7 @@ const routes: Array<RouteRecordRaw> = [
         name: "operations-releases-plans",
         component: () => import("@/modules/operations/views/ReleasePlanning.vue"),
         meta: {
-          pageTitle: "Planificación de Liberaciones",
+          pageTitle: "Planificación de liberaciones",
           breadcrumbs: ["Operaciones", "Liberaciones", "Planificación"],
           permissions: "releases.plans.view",
         },
@@ -449,7 +449,7 @@ const routes: Array<RouteRecordRaw> = [
         name: "operations-releases-plans-detail",
         component: () => import("@/modules/operations/views/ReleasePlanDetail.vue"),
         meta: {
-          pageTitle: "Detalle de Plan de Liberación",
+          pageTitle: "Detalle de plan de liberación",
           breadcrumbs: ["Operaciones", "Liberaciones", "Planificación", "Detalle"],
           permissions: "releases.plans.view",
         },
@@ -459,7 +459,7 @@ const routes: Array<RouteRecordRaw> = [
         name: "operations-releases-history",
         component: () => import("@/modules/operations/views/ReleaseHistory.vue"),
         meta: {
-          pageTitle: "Historial de Liberaciones",
+          pageTitle: "Historial de liberaciones",
           breadcrumbs: ["Operaciones", "Liberaciones", "Historial"],
           permissions: "releases.view",
         },
@@ -469,7 +469,7 @@ const routes: Array<RouteRecordRaw> = [
         name: "operations-releases-detail",
         component: () => import("@/modules/operations/views/ReleaseDetail.vue"),
         meta: {
-          pageTitle: "Detalle de Liberación",
+          pageTitle: "Detalle de liberación",
           breadcrumbs: ["Operaciones", "Liberaciones", "Detalle"],
           permissions: "releases.view",
         },
@@ -479,7 +479,7 @@ const routes: Array<RouteRecordRaw> = [
         name: "operations-statistics",
         redirect: "/operations/statistics/dashboard",
         meta: {
-          pageTitle: "Estadísticas Operativas",
+          pageTitle: "Estadísticas operativas",
           breadcrumbs: ["Operaciones", "Estadísticas"],
           permissions: "operations.statistics.view",
         },
@@ -489,7 +489,7 @@ const routes: Array<RouteRecordRaw> = [
         name: "operations-statistics-dashboard",
         component: () => import("@/modules/operations/views/OperationalDashboard.vue"),
         meta: {
-          pageTitle: "Dashboard Operativo",
+          pageTitle: "Dashboard operativo",
           breadcrumbs: ["Operaciones", "Estadísticas", "Dashboard"],
           permissions: "operations.statistics.view",
         },
@@ -499,7 +499,7 @@ const routes: Array<RouteRecordRaw> = [
         name: "operations-statistics-reports",
         component: () => import("@/modules/operations/views/OperationalReports.vue"),
         meta: {
-          pageTitle: "Reportes Operativos",
+          pageTitle: "Reportes operativos",
           breadcrumbs: ["Operaciones", "Estadísticas", "Reportes"],
           permissions: "operations.reports.view",
         },
@@ -519,7 +519,7 @@ const routes: Array<RouteRecordRaw> = [
         name: "operations-transfers",
         component: () => import("@/modules/operations/views/TransferManagement.vue"),
         meta: {
-          pageTitle: "Gestión de Traslados",
+          pageTitle: "Gestión de traslados",
           breadcrumbs: ["Operaciones", "Traslados"],
           permissions: "transfers.view",
         },
@@ -529,7 +529,7 @@ const routes: Array<RouteRecordRaw> = [
         name: "operations-locations",
         component: () => import("@/modules/operations/views/LocationManagement.vue"),
         meta: {
-          pageTitle: "Gestión de Ubicaciones",
+          pageTitle: "Gestión de ubicaciones",
           breadcrumbs: ["Operaciones", "Ubicaciones"],
           permissions: "locations.view",
         },
@@ -540,7 +540,7 @@ const routes: Array<RouteRecordRaw> = [
         name: "visits",
         redirect: "/visits/visitors",
         meta: {
-          pageTitle: "Sistema de Visitas",
+          pageTitle: "Sistema de visitas",
           breadcrumbs: ["Visitas"],
           permissions: "visits.view",
         },
@@ -550,7 +550,7 @@ const routes: Array<RouteRecordRaw> = [
         name: "visits-visitor-management",
         component: () => import("@/modules/visits/views/VisitorRegistration.vue"),
         meta: {
-          pageTitle: "Registro de Visitantes",
+          pageTitle: "Registro de visitantes",
           breadcrumbs: ["Visitas", "Visitantes"],
           permissions: "visits.visitors_view",
         },
@@ -560,7 +560,7 @@ const routes: Array<RouteRecordRaw> = [
         name: "visits-visitors-detail",
         component: () => import("@/modules/visits/views/VisitorDetail.vue"),
         meta: {
-          pageTitle: "Detalle de Visitante",
+          pageTitle: "Detalle de visitante",
           breadcrumbs: ["Visitas", "Visitantes", "Detalle"],
           permissions: "visits.visitors_view",
         },
@@ -570,7 +570,7 @@ const routes: Array<RouteRecordRaw> = [
         name: "visits-visitors-edit",
         component: () => import("@/modules/visits/views/VisitorEdit.vue"),
         meta: {
-          pageTitle: "Editar Visitante",
+          pageTitle: "Editar visitante",
           breadcrumbs: ["Visitas", "Visitantes", "Editar"],
           permissions: "visits.visitors_edit",
         },
@@ -580,7 +580,7 @@ const routes: Array<RouteRecordRaw> = [
         name: "visits-relationships",
         component: () => import("@/modules/visits/views/VisitorRelationships.vue"),
         meta: {
-          pageTitle: "Relaciones de Visita",
+          pageTitle: "Relaciones de visita",
           breadcrumbs: ["Visitas", "Relaciones"],
           permissions: "visits.relationships_view",
         },
@@ -590,7 +590,7 @@ const routes: Array<RouteRecordRaw> = [
         name: "visits-relationships-detail",
         component: () => import("@/modules/visits/views/RelationshipDetail.vue"),
         meta: {
-          pageTitle: "Detalle de Relación",
+          pageTitle: "Detalle de relación",
           breadcrumbs: ["Visitas", "Relaciones", "Detalle"],
           permissions: "visits.relationships_view",
         },
@@ -600,7 +600,7 @@ const routes: Array<RouteRecordRaw> = [
         name: "visits-requests",
         component: () => import("@/modules/visits/views/VisitRequests.vue"),
         meta: {
-          pageTitle: "Solicitudes de Visita",
+          pageTitle: "Solicitudes de visita",
           breadcrumbs: ["Visitas", "Solicitudes"],
           permissions: "visits.requests_view",
         },
@@ -610,7 +610,7 @@ const routes: Array<RouteRecordRaw> = [
         name: "visits-requests-detail",
         component: () => import("@/modules/visits/views/VisitRequestDetail.vue"),
         meta: {
-          pageTitle: "Detalle de Solicitud",
+          pageTitle: "Detalle de solicitud",
           breadcrumbs: ["Visitas", "Solicitudes", "Detalle"],
           permissions: "visits.requests_view",
         },
@@ -620,7 +620,7 @@ const routes: Array<RouteRecordRaw> = [
         name: "visits-scheduling",
         component: () => import("@/modules/visits/views/VisitScheduling.vue"),
         meta: {
-          pageTitle: "Programación de Visitas",
+          pageTitle: "Programación de visitas",
           breadcrumbs: ["Visitas", "Programación"],
           permissions: "visits.scheduling_view",
         },
@@ -630,8 +630,8 @@ const routes: Array<RouteRecordRaw> = [
         name: "visits-active",
         component: () => import("@/modules/visits/views/ActiveVisits.vue"),
         meta: {
-          pageTitle: "Visitas Activas",
-          breadcrumbs: ["Visitas", "Visitas Activas"],
+          pageTitle: "Visitas activas",
+          breadcrumbs: ["Visitas", "Visitas activas"],
           permissions: "visits.monitoring_view",
         },
       },
@@ -640,8 +640,8 @@ const routes: Array<RouteRecordRaw> = [
         name: "visits-biometric-control",
         component: () => import("@/modules/visits/views/BiometricControl.vue"),
         meta: {
-          pageTitle: "Control Biométrico",
-          breadcrumbs: ["Visitas", "Control Biométrico"],
+          pageTitle: "Control biométrico",
+          breadcrumbs: ["Visitas", "Control biométrico"],
           permissions: "visits.biometric_view",
         },
       },
@@ -650,7 +650,7 @@ const routes: Array<RouteRecordRaw> = [
         name: "visits-control",
         component: () => import("@/modules/visits/views/VisitMonitoring.vue"),
         meta: {
-          pageTitle: "Control de Entradas/Salidas",
+          pageTitle: "Control de entradas/salidas",
           breadcrumbs: ["Visitas", "Control"],
           permissions: "visits.control_view",
         },
@@ -660,7 +660,7 @@ const routes: Array<RouteRecordRaw> = [
         name: "visits-reports",
         component: () => import("@/modules/visits/views/VisitReports.vue"),
         meta: {
-          pageTitle: "Reportes de Visitas",
+          pageTitle: "Reportes de visitas",
           breadcrumbs: ["Visitas", "Reportes"],
           permissions: "visits.reports_view",
         },
@@ -670,7 +670,7 @@ const routes: Array<RouteRecordRaw> = [
         name: "visits-statistics",
         component: () => import("@/modules/visits/views/VisitStatistics.vue"),
         meta: {
-          pageTitle: "Estadísticas de Visitas",
+          pageTitle: "Estadísticas de visitas",
           breadcrumbs: ["Visitas", "Estadísticas"],
           permissions: "visits.statistics_view",
         },
@@ -680,7 +680,7 @@ const routes: Array<RouteRecordRaw> = [
         name: "visits-settings",
         component: () => import("@/modules/visits/views/VisitSettings.vue"),
         meta: {
-          pageTitle: "Configuración de Visitas",
+          pageTitle: "Configuración de visitas",
           breadcrumbs: ["Visitas", "Configuración"],
           permissions: "visits.settings_manage",
         },
@@ -721,8 +721,8 @@ const routes: Array<RouteRecordRaw> = [
         name: "catalogs-academic-degrees",
         component: () => import("@/modules/catalogs/views/AcademicDegrees.vue"),
         meta: {
-          pageTitle: "Grados Académicos",
-          breadcrumbs: ["Catálogos", "Grados Académicos"],
+          pageTitle: "Grados académicos",
+          breadcrumbs: ["Catálogos", "Grados académicos"],
           permissions: "catalogs.academic_degrees",
         },
       },
@@ -731,8 +731,8 @@ const routes: Array<RouteRecordRaw> = [
         name: "catalogs-blood-types",
         component: () => import("@/modules/catalogs/views/BloodTypes.vue"),
         meta: {
-          pageTitle: "Tipos de Sangre",
-          breadcrumbs: ["Catálogos", "Tipos de Sangre"],
+          pageTitle: "Tipos de sangre",
+          breadcrumbs: ["Catálogos", "Tipos de sangre"],
           permissions: "catalogs.blood_types",
         },
       },
@@ -765,8 +765,8 @@ const routes: Array<RouteRecordRaw> = [
         name: "catalogs-ethnic-groups",
         component: () => import("@/modules/catalogs/views/EthnicGroups.vue"),
         meta: {
-          pageTitle: "Grupos Étnicos",
-          breadcrumbs: ["Catálogos", "Grupos Étnicos"],
+          pageTitle: "Grupos étnicos",
+          breadcrumbs: ["Catálogos", "Grupos étnicos"],
           permissions: "catalogs.ethnic_groups",
         },
       },
@@ -775,8 +775,8 @@ const routes: Array<RouteRecordRaw> = [
         name: "catalogs-civil-statuses",
         component: () => import("@/modules/catalogs/views/CivilStatuses.vue"),
         meta: {
-          pageTitle: "Estados Civiles",
-          breadcrumbs: ["Catálogos", "Estados Civiles"],
+          pageTitle: "Estados civiles",
+          breadcrumbs: ["Catálogos", "Estados civiles"],
           permissions: "catalogs.civil_statuses",
         },
       },
@@ -805,8 +805,8 @@ const routes: Array<RouteRecordRaw> = [
         name: "catalogs-sentence-types",
         component: () => import("@/modules/catalogs/views/SentenceTypes.vue"),
         meta: {
-          pageTitle: "Tipos de Sentencia",
-          breadcrumbs: ["Catálogos", "Tipos de Sentencia"],
+          pageTitle: "Tipos de sentencia",
+          breadcrumbs: ["Catálogos", "Tipos de sentencia"],
           permissions: "catalogs.sentence_types",
         },
       },
@@ -816,8 +816,8 @@ const routes: Array<RouteRecordRaw> = [
         component: () =>
           import("@/modules/catalogs/views/ProceduralStatuses.vue"),
         meta: {
-          pageTitle: "Estados Procesales",
-          breadcrumbs: ["Catálogos", "Estados Procesales"],
+          pageTitle: "Estados procesales",
+          breadcrumbs: ["Catálogos", "Estados procesales"],
           permissions: "catalogs.procedural_statuses",
         },
       },
@@ -836,8 +836,8 @@ const routes: Array<RouteRecordRaw> = [
         name: "catalogs-document-types",
         component: () => import("@/modules/catalogs/views/DocumentTypes.vue"),
         meta: {
-          pageTitle: "Tipos de Documento",
-          breadcrumbs: ["Catálogos", "Tipos de Documento"],
+          pageTitle: "Tipos de documento",
+          breadcrumbs: ["Catálogos", "Tipos de documento"],
           permissions: "catalogs.document_types",
         },
       },
@@ -847,8 +847,8 @@ const routes: Array<RouteRecordRaw> = [
         component: () =>
           import("@/modules/catalogs/views/RiskClassifications.vue"),
         meta: {
-          pageTitle: "Clasificaciones de Riesgo",
-          breadcrumbs: ["Catálogos", "Clasificaciones de Riesgo"],
+          pageTitle: "Clasificaciones de riesgo",
+          breadcrumbs: ["Catálogos", "Clasificaciones de riesgo"],
           permissions: "catalogs.risk_classifications",
         },
       },
@@ -858,8 +858,8 @@ const routes: Array<RouteRecordRaw> = [
         component: () =>
           import("@/modules/catalogs/views/ProgressivePhases.vue"),
         meta: {
-          pageTitle: "Fases Progresivas",
-          breadcrumbs: ["Catálogos", "Fases Progresivas"],
+          pageTitle: "Fases progresivas",
+          breadcrumbs: ["Catálogos", "Fases progresivas"],
           permissions: "catalogs.progressive_phases",
         },
       },
@@ -868,8 +868,8 @@ const routes: Array<RouteRecordRaw> = [
         name: "catalogs-exit-reasons",
         component: () => import("@/modules/catalogs/views/ExitReasons.vue"),
         meta: {
-          pageTitle: "Motivos de Egreso",
-          breadcrumbs: ["Catálogos", "Motivos de Egreso"],
+          pageTitle: "Motivos de egreso",
+          breadcrumbs: ["Catálogos", "Motivos de egreso"],
           permissions: "catalogs.exit_reasons",
         },
       },
@@ -888,8 +888,8 @@ const routes: Array<RouteRecordRaw> = [
         name: "catalogs-benefit-types",
         component: () => import("@/modules/catalogs/views/BenefitTypes.vue"),
         meta: {
-          pageTitle: "Tipos de Beneficio",
-          breadcrumbs: ["Catálogos", "Tipos de Beneficio"],
+          pageTitle: "Tipos de beneficio",
+          breadcrumbs: ["Catálogos", "Tipos de beneficio"],
           permissions: "catalogs.benefit_types",
         },
       },
@@ -898,8 +898,8 @@ const routes: Array<RouteRecordRaw> = [
         name: "catalogs-chronic-diseases",
         component: () => import("@/modules/catalogs/views/ChronicDiseases.vue"),
         meta: {
-          pageTitle: "Enfermedades Crónicas",
-          breadcrumbs: ["Catálogos", "Enfermedades Crónicas"],
+          pageTitle: "Enfermedades crónicas",
+          breadcrumbs: ["Catálogos", "Enfermedades crónicas"],
           permissions: "catalogs.chronic_diseases",
         },
       },
@@ -909,8 +909,8 @@ const routes: Array<RouteRecordRaw> = [
         component: () =>
           import("@/modules/catalogs/views/CrimeClassifications.vue"),
         meta: {
-          pageTitle: "Clasificaciones de Delitos",
-          breadcrumbs: ["Catálogos", "Clasificaciones de Delitos"],
+          pageTitle: "Clasificaciones de delitos",
+          breadcrumbs: ["Catálogos", "Clasificaciones de delitos"],
           permissions: "catalogs.crime_classifications",
         },
       },
@@ -930,8 +930,8 @@ const routes: Array<RouteRecordRaw> = [
         component: () =>
           import("@/modules/catalogs/views/DisciplinarySanctions.vue"),
         meta: {
-          pageTitle: "Sanciones Disciplinarias",
-          breadcrumbs: ["Catálogos", "Sanciones Disciplinarias"],
+          pageTitle: "Sanciones disciplinarias",
+          breadcrumbs: ["Catálogos", "Sanciones disciplinarias"],
           permissions: "catalogs.disciplinary_sanctions",
         },
       },
@@ -950,8 +950,8 @@ const routes: Array<RouteRecordRaw> = [
         name: "catalogs-measure-types",
         component: () => import("@/modules/catalogs/views/MeasureTypes.vue"),
         meta: {
-          pageTitle: "Tipos de Medida",
-          breadcrumbs: ["Catálogos", "Tipos de Medida"],
+          pageTitle: "Tipos de medida",
+          breadcrumbs: ["Catálogos", "Tipos de medida"],
           permissions: "catalogs.measure_types",
         },
       },
@@ -961,8 +961,8 @@ const routes: Array<RouteRecordRaw> = [
         component: () =>
           import("@/modules/catalogs/views/MentalHealthStatuses.vue"),
         meta: {
-          pageTitle: "Estados de Salud Mental",
-          breadcrumbs: ["Catálogos", "Estados de Salud Mental"],
+          pageTitle: "Estados de salud mental",
+          breadcrumbs: ["Catálogos", "Estados de salud mental"],
           permissions: "catalogs.mental_health_statuses",
         },
       },
@@ -992,8 +992,8 @@ const routes: Array<RouteRecordRaw> = [
         component: () =>
           import("@/modules/catalogs/views/RehabilitationPrograms.vue"),
         meta: {
-          pageTitle: "Programas de Rehabilitación",
-          breadcrumbs: ["Catálogos", "Programas de Rehabilitación"],
+          pageTitle: "Programas de rehabilitación",
+          breadcrumbs: ["Catálogos", "Programas de rehabilitación"],
           permissions: "catalogs.rehabilitation_programs",
         },
       },
@@ -1003,8 +1003,8 @@ const routes: Array<RouteRecordRaw> = [
         component: () =>
           import("@/modules/catalogs/views/SocioeconomicLevels.vue"),
         meta: {
-          pageTitle: "Niveles Socioeconómicos",
-          breadcrumbs: ["Catálogos", "Niveles Socioeconómicos"],
+          pageTitle: "Niveles socioeconómicos",
+          breadcrumbs: ["Catálogos", "Niveles socioeconómicos"],
           permissions: "catalogs.socioeconomic_levels",
         },
       },
@@ -1013,8 +1013,8 @@ const routes: Array<RouteRecordRaw> = [
         name: "catalogs-transfer-reasons",
         component: () => import("@/modules/catalogs/views/TransferReasons.vue"),
         meta: {
-          pageTitle: "Motivos de Traslado",
-          breadcrumbs: ["Catálogos", "Motivos de Traslado"],
+          pageTitle: "Motivos de traslado",
+          breadcrumbs: ["Catálogos", "Motivos de traslado"],
           permissions: "catalogs.transfer_reasons",
         },
       },
@@ -1023,8 +1023,8 @@ const routes: Array<RouteRecordRaw> = [
         name: "catalogs-visit-types",
         component: () => import("@/modules/catalogs/views/VisitTypes.vue"),
         meta: {
-          pageTitle: "Tipos de Visita",
-          breadcrumbs: ["Catálogos", "Tipos de Visita"],
+          pageTitle: "Tipos de visita",
+          breadcrumbs: ["Catálogos", "Tipos de visita"],
           permissions: "catalogs.visit_types",
         },
       },
@@ -1033,19 +1033,8 @@ const routes: Array<RouteRecordRaw> = [
         name: "quick-access",
         component: () => import("@/views/QuickAccess.vue"),
         meta: {
-          pageTitle: "Accesos Rápidos",
-          breadcrumbs: ["Panel", "Accesos Rápidos"],
-        },
-      },
-      // Inmates additional routes
-      {
-        path: "/inmates/search",
-        name: "inmates-search",
-        component: () => import("@/modules/inmates/views/InmateSearch.vue"),
-        meta: {
-          pageTitle: "Buscar Internos",
-          breadcrumbs: ["Internos", "Buscar"],
-          permissions: "inmates.search",
+          pageTitle: "Accesos rápidos",
+          breadcrumbs: ["Panel", "Accesos rápidos"],
         },
       },
       // Legal Module routes
@@ -1054,7 +1043,7 @@ const routes: Array<RouteRecordRaw> = [
         name: "legal",
         redirect: "/legal/profiles",
         meta: {
-          pageTitle: "Gestión Legal",
+          pageTitle: "Gestión legal",
           breadcrumbs: ["Legal"],
           permissions: ["legal.profiles", "legal.manage"],
         },
@@ -1064,7 +1053,7 @@ const routes: Array<RouteRecordRaw> = [
         name: "legal-profiles",
         component: () => import("@/modules/legal/views/LegalProfiles.vue"),
         meta: {
-          pageTitle: "Perfiles Legales",
+          pageTitle: "Perfiles legales",
           breadcrumbs: ["Legal", "Perfiles"],
           permissions: "legal.profiles",
         },
@@ -1074,7 +1063,7 @@ const routes: Array<RouteRecordRaw> = [
         name: "legal-profile-detail",
         component: () => import("@/modules/legal/views/LegalProfileDetail.vue"),
         meta: {
-          pageTitle: "Detalle del Perfil Legal",
+          pageTitle: "Detalle del perfil legal",
           breadcrumbs: ["Legal", "Perfiles", "Detalle"],
           permissions: "legal.profiles",
         },
@@ -1084,7 +1073,7 @@ const routes: Array<RouteRecordRaw> = [
         name: "legal-profile-edit",
         component: () => import("@/modules/legal/views/LegalProfileEdit.vue"),
         meta: {
-          pageTitle: "Editar Perfil Legal",
+          pageTitle: "Editar perfil legal",
           breadcrumbs: ["Legal", "Perfiles", "Editar"],
           permissions: ["legal.profiles", "inmates.legal_edit", "legal.manage"],
         },
@@ -1094,7 +1083,7 @@ const routes: Array<RouteRecordRaw> = [
         name: "legal-profile-timeline",
         component: () => import("@/modules/legal/views/LegalProfileTimeline.vue"),
         meta: {
-          pageTitle: "Línea de Tiempo",
+          pageTitle: "Línea de tiempo",
           breadcrumbs: ["Legal", "Perfiles", "Timeline"],
           permissions: "legal.profiles",
         },
@@ -1175,7 +1164,7 @@ const routes: Array<RouteRecordRaw> = [
         name: "security",
         redirect: "/security/physical-profiles",
         meta: {
-          pageTitle: "Gestión de Seguridad",
+          pageTitle: "Gestión de seguridad",
           breadcrumbs: ["Seguridad"],
           permissions: "security.view",
         },
@@ -1195,8 +1184,8 @@ const routes: Array<RouteRecordRaw> = [
         name: "security-physical-profile-detail",
         component: () => import("@/modules/security/views/PhysicalProfileDetail.vue"),
         meta: {
-          pageTitle: "Detalle Perfil Físico",
-          breadcrumbs: ["Seguridad", "Perfiles Físicos", "Detalle"],
+          pageTitle: "Detalle perfil físico",
+          breadcrumbs: ["Seguridad", "Perfiles físicos", "Detalle"],
           permissions: "security.physical_profiles",
         },
       },
@@ -1205,8 +1194,8 @@ const routes: Array<RouteRecordRaw> = [
         name: "security-physical-profile-edit",
         component: () => import("@/modules/security/views/PhysicalProfileEdit.vue"),
         meta: {
-          pageTitle: "Editar Perfil Físico",
-          breadcrumbs: ["Seguridad", "Perfiles Físicos", "Editar"],
+          pageTitle: "Editar perfil físico",
+          breadcrumbs: ["Seguridad", "Perfiles físicos", "Editar"],
           permissions: "security.physical_profiles.edit",
         },
       },
@@ -1215,8 +1204,8 @@ const routes: Array<RouteRecordRaw> = [
         name: "security-biometric-capture",
         component: () => import("@/modules/security/views/BiometricCapture.vue"),
         meta: {
-          pageTitle: "Captura Biométrica",
-          breadcrumbs: ["Seguridad", "Captura Biométrica"],
+          pageTitle: "Captura biométrica",
+          breadcrumbs: ["Seguridad", "Captura biométrica"],
           permissions: ["biometric.view", "biometric.enroll"],
         },
       },
@@ -1225,7 +1214,7 @@ const routes: Array<RouteRecordRaw> = [
         name: "security-physical-profile-photo",
         component: () => import("@/modules/security/views/PhotoCapture.vue"),
         meta: {
-          pageTitle: "Captura de Fotografías",
+          pageTitle: "Captura de fotografías",
           breadcrumbs: ["Seguridad", "Fotografías"],
           permissions: "security.photos",
         },
@@ -1235,7 +1224,7 @@ const routes: Array<RouteRecordRaw> = [
         name: "security-classifications",
         component: () => import("@/modules/security/views/SecurityClassifications.vue"),
         meta: {
-          pageTitle: "Clasificaciones de Seguridad",
+          pageTitle: "Clasificaciones de seguridad",
           breadcrumbs: ["Seguridad", "Clasificaciones"],
           permissions: "security.classifications",
         },
@@ -1245,7 +1234,7 @@ const routes: Array<RouteRecordRaw> = [
         name: "security-gang-affiliations",
         component: () => import("@/modules/security/views/GangAffiliations.vue"),
         meta: {
-          pageTitle: "Afiliaciones a Pandillas",
+          pageTitle: "Afiliaciones a pandillas",
           breadcrumbs: ["Seguridad", "Pandillas"],
           permissions: "security.gangs",
         },
@@ -1255,7 +1244,7 @@ const routes: Array<RouteRecordRaw> = [
         name: "security-incidents",
         component: () => import("@/modules/security/views/SecurityIncidents.vue"),
         meta: {
-          pageTitle: "Incidentes de Seguridad",
+          pageTitle: "Incidentes de seguridad",
           breadcrumbs: ["Seguridad", "Incidentes"],
           permissions: "security.incidents",
         },
@@ -1265,7 +1254,7 @@ const routes: Array<RouteRecordRaw> = [
         name: "security-alerts",
         component: () => import("@/modules/security/views/SecurityAlerts.vue"),
         meta: {
-          pageTitle: "Alertas de Seguridad",
+          pageTitle: "Alertas de seguridad",
           breadcrumbs: ["Seguridad", "Alertas"],
           permissions: "security.alerts",
         },
@@ -1275,7 +1264,7 @@ const routes: Array<RouteRecordRaw> = [
         name: "security-monitoring",
         component: () => import("@/modules/security/views/CommunicationMonitoring.vue"),
         meta: {
-          pageTitle: "Monitoreo de Comunicaciones",
+          pageTitle: "Monitoreo de comunicaciones",
           breadcrumbs: ["Seguridad", "Monitoreo"],
           permissions: "security.monitoring",
         },
@@ -1285,7 +1274,7 @@ const routes: Array<RouteRecordRaw> = [
         name: "security-reports",
         component: () => import("@/modules/security/views/SecurityReports.vue"),
         meta: {
-          pageTitle: "Reportes de Seguridad",
+          pageTitle: "Reportes de seguridad",
           breadcrumbs: ["Seguridad", "Reportes"],
           permissions: "security.reports",
         },
@@ -1296,7 +1285,7 @@ const routes: Array<RouteRecordRaw> = [
         name: "medical",
         redirect: "/medical/profiles",
         meta: {
-          pageTitle: "Gestión Médica",
+          pageTitle: "Gestión médica",
           breadcrumbs: ["Médico"],
           permissions: "medical.view",
         },
@@ -1306,7 +1295,7 @@ const routes: Array<RouteRecordRaw> = [
         name: "medical-profiles",
         component: () => import("@/modules/medical/views/MedicalProfiles.vue"),
         meta: {
-          pageTitle: "Perfiles Médicos",
+          pageTitle: "Perfiles médicos",
           breadcrumbs: ["Médico", "Perfiles"],
           permissions: "medical.profiles",
         },
@@ -1346,8 +1335,8 @@ const routes: Array<RouteRecordRaw> = [
         name: "medical-mental-health",
         component: () => import("@/modules/medical/views/MentalHealth.vue"),
         meta: {
-          pageTitle: "Salud Mental",
-          breadcrumbs: ["Médico", "Salud Mental"],
+          pageTitle: "Salud mental",
+          breadcrumbs: ["Médico", "Salud mental"],
           permissions: "medical.mental_health",
         },
       },
@@ -1366,7 +1355,7 @@ const routes: Array<RouteRecordRaw> = [
         name: "medical-emergencies",
         component: () => import("@/modules/medical/views/Emergencies.vue"),
         meta: {
-          pageTitle: "Emergencias Médicas",
+          pageTitle: "Emergencias médicas",
           breadcrumbs: ["Médico", "Emergencias"],
           permissions: "medical.emergency",
         },
@@ -1377,7 +1366,7 @@ const routes: Array<RouteRecordRaw> = [
         name: "security",
         redirect: "/security/classifications",
         meta: {
-          pageTitle: "Gestión de Seguridad",
+          pageTitle: "Gestión de seguridad",
           breadcrumbs: ["Seguridad"],
           permissions: "security.view",
         },
@@ -1560,7 +1549,7 @@ const routes: Array<RouteRecordRaw> = [
         name: "education-basic",
         component: () => import("@/modules/rehabilitation/views/education/Basic.vue"),
         meta: {
-          pageTitle: "Educación Básica",
+          pageTitle: "Educación básica",
           breadcrumbs: ["Rehabilitación", "Educación", "Básica"],
           permissions: "education.basic",
         },
@@ -1570,7 +1559,7 @@ const routes: Array<RouteRecordRaw> = [
         name: "education-higher",
         component: () => import("@/modules/rehabilitation/views/education/Higher.vue"),
         meta: {
-          pageTitle: "Educación Superior",
+          pageTitle: "Educación superior",
           breadcrumbs: ["Rehabilitación", "Educación", "Superior"],
           permissions: "education.higher",
         },
@@ -1581,9 +1570,9 @@ const routes: Array<RouteRecordRaw> = [
         name: "documents",
         redirect: "/documents/files",
         meta: {
-          pageTitle: "Gestión Documental",
+          pageTitle: "Gestión documental",
           breadcrumbs: ["Documentos"],
-          permissions: "documents.view",
+          permissions: "inmates.documents",
         },
       },
       {
@@ -1591,9 +1580,9 @@ const routes: Array<RouteRecordRaw> = [
         name: "documents-files",
         component: () => import("@/modules/documents/views/DigitalFiles.vue"),
         meta: {
-          pageTitle: "Archivos Digitales",
+          pageTitle: "Archivos digitales",
           breadcrumbs: ["Documentos", "Archivos"],
-          permissions: "documents.files",
+          permissions: "inmates.documents",
         },
       },
       {
@@ -1601,9 +1590,9 @@ const routes: Array<RouteRecordRaw> = [
         name: "documents-legal",
         component: () => import("@/modules/documents/views/LegalDocuments.vue"),
         meta: {
-          pageTitle: "Documentos Legales",
+          pageTitle: "Documentos legales",
           breadcrumbs: ["Documentos", "Legales"],
-          permissions: "documents.legal",
+          permissions: "inmates.documents",
         },
       },
       {
@@ -1611,9 +1600,9 @@ const routes: Array<RouteRecordRaw> = [
         name: "documents-medical",
         component: () => import("@/modules/documents/views/MedicalDocuments.vue"),
         meta: {
-          pageTitle: "Documentos Médicos",
+          pageTitle: "Documentos médicos",
           breadcrumbs: ["Documentos", "Médicos"],
-          permissions: "documents.medical",
+          permissions: "inmates.documents",
         },
       },
       {
@@ -1632,7 +1621,7 @@ const routes: Array<RouteRecordRaw> = [
         name: "emergency",
         redirect: "/emergency/incidents",
         meta: {
-          pageTitle: "Gestión de Emergencias",
+          pageTitle: "Gestión de emergencias",
           breadcrumbs: ["Emergencias"],
           permissions: "emergency.view",
         },
@@ -1662,7 +1651,7 @@ const routes: Array<RouteRecordRaw> = [
         name: "emergency-teams",
         component: () => import("@/modules/emergency/views/ResponseTeams.vue"),
         meta: {
-          pageTitle: "Equipos de Respuesta",
+          pageTitle: "Equipos de respuesta",
           breadcrumbs: ["Emergencias", "Equipos"],
           permissions: "emergency.teams",
         },
@@ -1693,7 +1682,7 @@ const routes: Array<RouteRecordRaw> = [
         name: "reports-inmates",
         component: () => import("@/modules/reports/views/InmateReports.vue"),
         meta: {
-          pageTitle: "Reportes de Internos",
+          pageTitle: "Reportes de internos",
           breadcrumbs: ["Reportes", "Internos"],
           permissions: "reports.inmates",
         },
@@ -1703,7 +1692,7 @@ const routes: Array<RouteRecordRaw> = [
         name: "reports-legal",
         component: () => import("@/modules/reports/views/LegalReports.vue"),
         meta: {
-          pageTitle: "Reportes Legales",
+          pageTitle: "Reportes legales",
           breadcrumbs: ["Reportes", "Legal"],
           permissions: "reports.legal",
         },
@@ -1713,7 +1702,7 @@ const routes: Array<RouteRecordRaw> = [
         name: "reports-medical",
         component: () => import("@/modules/reports/views/MedicalReports.vue"),
         meta: {
-          pageTitle: "Reportes Médicos",
+          pageTitle: "Reportes médicos",
           breadcrumbs: ["Reportes", "Médico"],
           permissions: "reports.medical",
         },
@@ -1723,7 +1712,7 @@ const routes: Array<RouteRecordRaw> = [
         name: "reports-security",
         component: () => import("@/modules/reports/views/SecurityReports.vue"),
         meta: {
-          pageTitle: "Reportes de Seguridad",
+          pageTitle: "Reportes de seguridad",
           breadcrumbs: ["Reportes", "Seguridad"],
           permissions: "reports.security",
         },
@@ -1733,7 +1722,7 @@ const routes: Array<RouteRecordRaw> = [
         name: "reports-operations",
         component: () => import("@/modules/reports/views/OperationsReports.vue"),
         meta: {
-          pageTitle: "Reportes de Operaciones",
+          pageTitle: "Reportes de operaciones",
           breadcrumbs: ["Reportes", "Operaciones"],
           permissions: "reports.operations",
         },
@@ -1743,7 +1732,7 @@ const routes: Array<RouteRecordRaw> = [
         name: "reports-statistical",
         component: () => import("@/modules/reports/views/StatisticalReports.vue"),
         meta: {
-          pageTitle: "Reportes Estadísticos",
+          pageTitle: "Reportes estadísticos",
           breadcrumbs: ["Reportes", "Estadísticos"],
           permissions: "reports.statistical",
         },
@@ -1754,8 +1743,8 @@ const routes: Array<RouteRecordRaw> = [
         component: () =>
           import("@/modules/reports/views/UserActivityReport.vue"),
         meta: {
-          pageTitle: "Reporte de Actividad de Usuarios",
-          breadcrumbs: ["Reportes", "Actividad de Usuarios"],
+          pageTitle: "Reporte de actividad de usuarios",
+          breadcrumbs: ["Reportes", "Actividad de usuarios"],
           permissions: "reports.user_activity",
         },
       },
@@ -1764,8 +1753,8 @@ const routes: Array<RouteRecordRaw> = [
         name: "reports-system-logs",
         component: () => import("@/modules/reports/views/SystemLogsReport.vue"),
         meta: {
-          pageTitle: "Reporte de Logs del Sistema",
-          breadcrumbs: ["Reportes", "Logs del Sistema"],
+          pageTitle: "Reporte de logs del sistema",
+          breadcrumbs: ["Reportes", "Logs del sistema"],
           permissions: "reports.system_logs",
         },
       },
@@ -1774,8 +1763,8 @@ const routes: Array<RouteRecordRaw> = [
         name: "cache-monitor",
         component: () => import("@/views/CacheMonitor.vue"),
         meta: {
-          pageTitle: "Monitor de Cache",
-          breadcrumbs: ["Sistema", "Monitor de Cache"],
+          pageTitle: "Monitor de caché",
+          breadcrumbs: ["Sistema", "Monitor de caché"],
           permissions: "settings.system",
         },
       },
@@ -1784,8 +1773,8 @@ const routes: Array<RouteRecordRaw> = [
         name: "jobs-monitor",
         component: () => import("@/views/JobsMonitor.vue"),
         meta: {
-          pageTitle: "Monitor de Jobs",
-          breadcrumbs: ["Sistema", "Monitor de Jobs"],
+          pageTitle: "Monitor de jobs",
+          breadcrumbs: ["Sistema", "Monitor de jobs"],
           permissions: "settings.system",
         },
       },
@@ -1794,8 +1783,8 @@ const routes: Array<RouteRecordRaw> = [
         name: "session-manager",
         component: () => import("@/views/SessionManager.vue"),
         meta: {
-          pageTitle: "Gestor de Sesiones",
-          breadcrumbs: ["Sistema", "Gestor de Sesiones"],
+          pageTitle: "Gestor de sesiones",
+          breadcrumbs: ["Sistema", "Gestor de sesiones"],
           permissions: "settings.system",
         },
       },
@@ -1815,7 +1804,7 @@ const routes: Array<RouteRecordRaw> = [
         name: "system-audit",
         component: () => import("@/modules/system/views/AuditLogs.vue"),
         meta: {
-          pageTitle: "Logs de Auditoría",
+          pageTitle: "Logs de auditoría",
           breadcrumbs: ["Sistema", "Auditoría"],
           permissions: "audit.view",
         },
@@ -1825,7 +1814,7 @@ const routes: Array<RouteRecordRaw> = [
         name: "system-notifications",
         component: () => import("@/modules/system/views/SystemNotifications.vue"),
         meta: {
-          pageTitle: "Notificaciones del Sistema",
+          pageTitle: "Notificaciones del sistema",
           breadcrumbs: ["Sistema", "Notificaciones"],
           permissions: "notifications.send",
         },
@@ -1835,7 +1824,7 @@ const routes: Array<RouteRecordRaw> = [
         name: "test-notifications",
         component: () => import("@/views/TestNotifications.vue"),
         meta: {
-          pageTitle: "Pruebas de Notificaciones",
+          pageTitle: "Pruebas de notificaciones",
           breadcrumbs: ["Desarrollo", "Pruebas", "Notificaciones"],
         },
       },
@@ -2231,7 +2220,7 @@ const routes: Array<RouteRecordRaw> = [
         name: "login",
         component: () => import("@/modules/auth/views/Login.vue"),
         meta: {
-          pageTitle: "Iniciar Sesión",
+          pageTitle: "Iniciar sesión",
         },
       },
       {
@@ -2247,7 +2236,7 @@ const routes: Array<RouteRecordRaw> = [
         name: "password-reset",
         component: () => import("@/modules/auth/views/PasswordReset.vue"),
         meta: {
-          pageTitle: "Restablecer Contraseña",
+          pageTitle: "Restablecer contraseña",
         },
       },
       // Backwards compatibility redirects
@@ -2348,7 +2337,6 @@ router.beforeEach(async (to, from, next) => {
       await authStore.verifyAuth();
 
       if (!authStore.isAuthenticated || !authStore.user?.id) {
-        console.log("Authentication failed, redirecting to login");
         return next({ name: "login", replace: true });
       }
     }

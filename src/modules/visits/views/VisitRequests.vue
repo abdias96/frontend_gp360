@@ -497,6 +497,5 @@ const handleReject = async (id: number) => {
 }
 
 const handleExport = () => {
-  console.log('Export visit requests')
 }
 </script>

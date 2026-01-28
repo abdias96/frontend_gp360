@@ -362,11 +362,6 @@ const authStore = useAuthStore();
 
 // Debug logging on mount
 onMounted(() => {
-  console.log('InmateLegalTab - Inmate data:', props.inmate);
-  console.log('InmateLegalTab - legal_profile (singular):', props.inmate.legal_profile);
-  console.log('InmateLegalTab - legal_profiles (plural):', props.inmate.legal_profiles);
-  console.log('InmateLegalTab - legalProfile (camelCase):', props.inmate.legalProfile);
-  console.log('InmateLegalTab - legalProfiles (camelCase):', props.inmate.legalProfiles);
 });
 
 // Computed properties

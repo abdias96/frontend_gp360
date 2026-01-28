@@ -2,39 +2,51 @@
 
 export interface InmateListItem {
   id: number;
-  identification_number: string;
-  internal_number: string;
+  // Document identification - matches backend column names
+  document_number: string;
+  inmate_number: string;
+  // Name fields - matches backend column names
   first_name: string;
-  second_name?: string;
+  middle_name?: string;
   third_name?: string;
-  first_surname: string;
-  second_surname?: string;
+  last_name: string;
+  second_last_name?: string;
   married_surname?: string;
+  alias?: string;
   full_name: string;
   gender: "M" | "F";
   birth_date: string;
-  age: number;
-  status: "active" | "transferred" | "released" | "deceased";
-  legal_status: string;
+  age?: number;
+  status: "active" | "inactive" | "transferred" | "court_hearing" | "hospital_external" | "hospital_internal" | "isolation" | "released" | "deceased" | "escaped";
+  legal_status?: string;
   current_center_id: number;
-  center_name: string;
+  center_name?: string;
   current_sector_id?: number;
   sector_name?: string;
   current_cell_number?: string;
   admission_date: string;
   photo_url?: string;
-  has_biometric_data: boolean;
+  photo_path?: string;
+  has_biometric_data?: boolean;
   security_level?: string;
   gang_affiliation_status?: string;
-  requires_special_protection: boolean;
+  requires_special_protection?: boolean;
+  // Related objects (when loaded with relationships)
+  current_center?: { id: number; name: string };
+  current_sector?: { id: number; name: string };
+  document_type?: { id: number; name: string };
+  nationality?: { id: number; name: string };
+  photos?: InmatePhoto[];
   created_at: string;
   updated_at: string;
 }
 
 export interface InmateDetail extends InmateListItem {
+  // Document information
   case_number?: string;
   document_type_id?: number;
   document_type_name?: string;
+  // Note: document_number and inmate_number are inherited from InmateListItem
   civil_status_id?: number;
   civil_status_name?: string;
   religion_id?: number;
@@ -124,30 +136,35 @@ export interface InmateDetail extends InmateListItem {
 }
 
 export interface InmateCreate {
-  // Required fields
-  identification_number: string;
+  // Required fields - matches backend validation
+  document_number: string;
   document_type_id: number;
   first_name: string;
-  first_surname: string;
+  last_name: string;
   gender: "M" | "F";
   birth_date: string;
   current_center_id: number;
+  current_sector_id: number;
   admission_date: string;
   legal_status: string;
+  nationality_id: number;
+  country_id: number;
+  department_id: number;
+  risk_classification_id: number;
+  procedural_status_id: number;
 
-  // Optional personal information
-  second_name?: string;
+  // Optional personal information - matches backend column names
+  middle_name?: string;
   third_name?: string;
-  second_surname?: string;
+  second_last_name?: string;
   married_surname?: string;
   alias?: string;
   case_number?: string;
-  internal_number?: string;
+  inmate_number?: string;
 
   // Demographics
   civil_status_id?: number;
   religion_id?: number;
-  nationality_id?: number;
   birth_municipality_id?: number;
   ethnic_group_id?: number;
   primary_language_id?: number;
@@ -168,7 +185,6 @@ export interface InmateCreate {
   // Contact and location
   address?: string;
   municipality_id?: number;
-  department_id?: number;
   phone?: string;
   emergency_contact_name?: string;
   emergency_contact_phone?: string;
@@ -188,7 +204,6 @@ export interface InmateCreate {
   visitor_screening_required?: boolean;
 
   // Location
-  current_sector_id?: number;
   current_cell_number?: string;
   current_occupancy_number?: number;
 
@@ -203,18 +218,48 @@ export interface InmateUpdate extends Partial<InmateCreate> {
 export interface InmatePhysicalProfile {
   id: number;
   inmate_id: number;
-  height_cm?: number;
-  weight_kg?: number;
-  build?: string;
+  // Medidas corporales
+  height?: number; // En centímetros
+  weight?: number; // En kilogramos
+  build_type?: string; // Complexión: delgado, robusto, atlético, etc.
+  blood_type_id?: number;
+  // Características faciales
   eye_color?: string;
+  eye_shape?: string;
   hair_color?: string;
-  hair_type?: string;
-  skin_color?: string;
-  face_shape?: string;
-  distinctive_marks?: any;
+  hair_type?: string; // Liso, rizado, ondulado
+  skin_tone?: string;
+  face_shape?: string; // Oval, redondo, cuadrado, etc.
+  nose_type?: string;
+  mouth_type?: string;
+  lips_type?: string;
+  eyebrows_type?: string;
+  chin_type?: string;
+  forehead_type?: string;
+  // Marcas distintivas
   tattoos_description?: string;
+  tattoos_locations?: string[];
   scars_description?: string;
-  other_characteristics?: string;
+  scars_locations?: string[];
+  birthmarks?: string;
+  other_distinguishing_marks?: string;
+  distinguishing_features?: string;
+  // Características especiales
+  has_beard?: boolean;
+  has_mustache?: boolean;
+  wears_glasses?: boolean;
+  has_dental_work?: boolean;
+  dental_characteristics?: string;
+  has_prosthetics?: boolean;
+  prosthetics_description?: string;
+  // Capacidades físicas
+  can_read?: boolean;
+  can_write?: boolean;
+  mobility_status?: 'normal' | 'limited' | 'wheelchair' | 'crutches' | 'immobile';
+  mobility_notes?: string;
+  // Auditoría
+  created_by?: number;
+  updated_by?: number;
   created_at: string;
   updated_at: string;
 }

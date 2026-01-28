@@ -16,19 +16,19 @@
             <!-- Información Básica -->
             <div class="row g-6 mb-6">
               <div class="col-md-6">
-                <label class="form-label required">Tipo de Audiencia</label>
+                <label class="form-label required">Tipo de audiencia</label>
                 <select v-model="form.hearing_type" class="form-select" required>
                   <option value="">Seleccionar tipo...</option>
-                  <option value="first_declaration">Primera Declaración</option>
-                  <option value="preliminary_hearing">Audiencia Preliminar</option>
-                  <option value="intermediate_hearing">Audiencia Intermedia</option>
-                  <option value="oral_trial">Juicio Oral</option>
+                  <option value="first_declaration">Primera declaración</option>
+                  <option value="preliminary_hearing">Audiencia preliminar</option>
+                  <option value="intermediate_hearing">Audiencia intermedia</option>
+                  <option value="oral_trial">Juicio oral</option>
                   <option value="sentencing">Sentencia</option>
-                  <option value="appeal_hearing">Audiencia de Apelación</option>
-                  <option value="review_hearing">Audiencia de Revisión</option>
-                  <option value="benefit_request">Solicitud de Beneficios</option>
-                  <option value="transfer_request">Solicitud de Traslado</option>
-                  <option value="medical_evaluation">Evaluación Médica Judicial</option>
+                  <option value="appeal_hearing">Audiencia de apelación</option>
+                  <option value="review_hearing">Audiencia de revisión</option>
+                  <option value="benefit_request">Solicitud de beneficios</option>
+                  <option value="transfer_request">Solicitud de traslado</option>
+                  <option value="medical_evaluation">Evaluación médica judicial</option>
                 </select>
               </div>
               <div class="col-md-6">

@@ -687,8 +687,6 @@ const loadVisitorRelationships = async (visitor: any) => {
       selectedVisitor.value = response.data.data.visitor
       approvedRelationships.value = response.data.data.can_visit_today || []
 
-      console.log('Approved relationships:', approvedRelationships.value)
-      console.log('First relationship inmate:', approvedRelationships.value[0]?.inmate)
 
       if (approvedRelationships.value.length === 0) {
         Swal.fire({
@@ -739,12 +737,10 @@ const clearVisitor = () => {
 }
 
 const onRelationshipChange = () => {
-  console.log('Relationship changed:', selectedRelationship.value)
   if (selectedRelationship.value) {
     visitForm.value.visitor_id = selectedVisitor.value.id
     visitForm.value.inmate_id = selectedRelationship.value.inmate_id
     visitForm.value.relationship_id = selectedRelationship.value.id
-    console.log('Visit form updated:', visitForm.value)
   }
 }
 
@@ -862,11 +858,9 @@ const fetchVisitTypes = async () => {
       params: { simple: true } // Get simple list without pagination
     })
 
-    console.log('Visit types raw response:', response.data)
 
     const data = response.data.data || []
     visitTypes.value = Array.isArray(data) ? data.filter(t => t && t.id) : []
-    console.log('Visit types loaded:', visitTypes.value)
   } catch (error) {
     console.error('Error fetching visit types:', error)
     visitTypes.value = []

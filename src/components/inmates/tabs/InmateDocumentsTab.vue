@@ -547,33 +547,87 @@ const getApprovalStatusColor = (status: string) => {
 const fetchDocumentData = async () => {
   loadingProfile.value = true;
   try {
-    // TODO: Uncomment when API endpoints are ready
-    // const statsResponse = await ApiService.get(`/inmates/${props.inmate.id}/document-stats`);
-    // documentStats.value = statsResponse.data.data || {};
-    
-    // TODO: Fetch different document categories when endpoints are ready
-    // const [recentRes, legalRes, medicalRes, adminRes] = await Promise.all([
-    //   ApiService.get(`/inmates/${props.inmate.id}/documents?recent=true&limit=5`),
-    //   ApiService.get(`/inmates/${props.inmate.id}/documents?category=legal&limit=5`),
-    //   ApiService.get(`/inmates/${props.inmate.id}/documents?category=medical&limit=5`),
-    //   ApiService.get(`/inmates/${props.inmate.id}/documents?category=administrative&limit=5`)
-    // ]);
-    
-    // Temporary mock data
+    // Load digital files from inmate props
+    const digitalFilesData = props.inmate.digital_files ||
+                             props.inmate.digitalFiles ||
+                             props.inmate.documents || [];
+
+    // Map digital files to a consistent format
+    const allDocuments = Array.isArray(digitalFilesData)
+      ? digitalFilesData.map((doc: any) => ({
+          id: doc.id,
+          name: doc.original_filename || doc.file_name || doc.name || 'Documento',
+          type: doc.file_type?.code || doc.file_type_name?.toLowerCase() || 'other',
+          category: doc.file_type?.name || doc.file_type_name || 'General',
+          status: doc.access_level === 'confidential' ? 'restringido' : 'aprobado',
+          uploaded_at: doc.upload_date || doc.created_at,
+          created_at: doc.created_at,
+          is_ai_processed: doc.is_ai_processed || false,
+          is_signed: doc.is_digitally_signed || false,
+          is_confidential: doc.access_level === 'confidential',
+          file_url: doc.file_url,
+          uploader_name: doc.uploader_name,
+          description: doc.description,
+          tags: doc.tags,
+          document_date: doc.upload_date || doc.created_at,
+          court: doc.court_name,
+          authority: doc.authority,
+          medical_specialty: doc.specialty,
+          department: doc.department,
+          approval_status: doc.approval_status || 'Pendiente'
+        }))
+      : [];
+
+    // Sort by most recent first
+    allDocuments.sort((a: any, b: any) =>
+      new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+    );
+
+    // Recent documents (last 5)
+    recentDocuments.value = allDocuments.slice(0, 5);
+
+    // Categorize documents by type
+    legalDocuments.value = allDocuments.filter((doc: any) =>
+      doc.type === 'legal' || doc.type === 'judicial' ||
+      doc.category?.toLowerCase().includes('legal') ||
+      doc.category?.toLowerCase().includes('judicial')
+    ).slice(0, 5);
+
+    medicalDocuments.value = allDocuments.filter((doc: any) =>
+      doc.type === 'medical' ||
+      doc.category?.toLowerCase().includes('médic') ||
+      doc.category?.toLowerCase().includes('medic') ||
+      doc.category?.toLowerCase().includes('salud')
+    ).slice(0, 5);
+
+    administrativeDocuments.value = allDocuments.filter((doc: any) =>
+      doc.type === 'administrative' ||
+      doc.category?.toLowerCase().includes('administrativ') ||
+      doc.category?.toLowerCase().includes('admin')
+    ).slice(0, 5);
+
+    // Calculate statistics
+    const pendingReview = allDocuments.filter((doc: any) =>
+      doc.status === 'pendiente' || doc.approval_status === 'Pendiente'
+    ).length;
+
+    const aiProcessed = allDocuments.filter((doc: any) =>
+      doc.is_ai_processed
+    ).length;
+
+    const digitalSignatures = allDocuments.filter((doc: any) =>
+      doc.is_signed
+    ).length;
+
     documentStats.value = {
-      total_documents: 0,
-      pending_review: 0,
-      ai_processed: 0,
-      digital_signatures: 0,
+      total_documents: allDocuments.length,
+      pending_review: pendingReview,
+      ai_processed: aiProcessed,
+      digital_signatures: digitalSignatures,
       ai_processing_errors: 0,
-      missing_signatures: 0
+      missing_signatures: allDocuments.length - digitalSignatures
     };
-    
-    recentDocuments.value = [];
-    legalDocuments.value = [];
-    medicalDocuments.value = [];
-    administrativeDocuments.value = [];
-    
+
   } catch (error) {
     console.error('Error fetching document data:', error);
     // Set default values in case of error
@@ -585,6 +639,10 @@ const fetchDocumentData = async () => {
       ai_processing_errors: 0,
       missing_signatures: 0
     };
+    recentDocuments.value = [];
+    legalDocuments.value = [];
+    medicalDocuments.value = [];
+    administrativeDocuments.value = [];
   } finally {
     loadingProfile.value = false;
   }

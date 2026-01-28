@@ -540,7 +540,6 @@ const loadResolutions = async () => {
 
     const response = await ApiService.get('/legal/resolutions', { params });
 
-    console.log('API Response:', response.data);
 
     if (response.data.success) {
       resolutions.value = response.data.data.data || [];
@@ -548,8 +547,6 @@ const loadResolutions = async () => {
       totalPages.value = response.data.data.last_page || 1;
       currentPage.value = response.data.data.current_page || 1;
 
-      console.log('Loaded resolutions:', resolutions.value);
-      console.log('First resolution:', resolutions.value[0]);
 
       // Calculate statistics
       calculateStatistics();
@@ -619,9 +616,6 @@ const showCreateModal = () => {
 };
 
 const editResolution = (resolution: Resolution) => {
-  console.log('Edit resolution called with:', resolution);
-  console.log('Resolution ID:', resolution.id);
-  console.log('Inmate ID:', resolution.inmate_id);
 
   selectedInmateId.value = resolution.inmate_id || null;
   resolutionModal.value?.openModal(resolution);
@@ -676,8 +670,6 @@ const updateCompliance = async (resolution: Resolution) => {
 };
 
 const deleteResolution = async (resolution: Resolution) => {
-  console.log('Delete resolution called with:', resolution);
-  console.log('Resolution ID:', resolution.id);
 
   const result = await Swal.fire({
     title: '¿Está seguro?',

@@ -1,7 +1,7 @@
 <template>
   <div v-if="loading" class="d-flex justify-content-center py-10">
     <div class="spinner-border text-primary" role="status">
-      <span class="visually-hidden">Cargando...</span>
+      <span class="visually-hidden">{{ $t('inmates.detail.loading') }}</span>
     </div>
   </div>
 
@@ -12,7 +12,7 @@
     </i>
     {{ error }}
     <router-link to="/inmates" class="btn btn-sm btn-light-primary ms-3">
-      Volver a la Lista
+      {{ $t('inmates.detail.backToList') }}
     </router-link>
   </div>
 
@@ -24,7 +24,7 @@
         <ol class="breadcrumb text-muted fs-6 fw-semibold">
           <li class="breadcrumb-item">
             <router-link to="/inmates" class="text-muted text-hover-primary">
-              Internos
+              {{ $t('inmates.detail.breadcrumb.inmates') }}
             </router-link>
           </li>
           <li class="breadcrumb-item text-muted">{{ inmate.full_name }}</li>
@@ -43,7 +43,7 @@
             <span class="path1"></span>
             <span class="path2"></span>
           </i>
-          Editar
+          {{ $t('inmates.detail.actions.edit') }}
         </router-link>
 
         <button
@@ -56,7 +56,7 @@
             <span class="path1"></span>
             <span class="path2"></span>
           </i>
-          Transferir
+          {{ $t('inmates.detail.actions.transfer') }}
         </button>
 
         <div class="dropdown">
@@ -77,7 +77,7 @@
                   <span class="path2"></span>
                   <span class="path3"></span>
                 </i>
-                Verificar Identidad (1:1)
+                {{ $t('inmates.detail.actions.verifyIdentity') }}
               </a>
             </li>
             <li class="menu-item px-3">
@@ -87,7 +87,7 @@
                   <span class="path2"></span>
                   <span class="path3"></span>
                 </i>
-                Imprimir Perfil
+                {{ $t('inmates.detail.actions.printProfile') }}
               </a>
             </li>
             <li class="menu-item px-3">
@@ -96,7 +96,7 @@
                   <span class="path1"></span>
                   <span class="path2"></span>
                 </i>
-                Exportar Datos
+                {{ $t('inmates.detail.actions.exportData') }}
               </a>
             </li>
             <li class="menu-separator"></li>
@@ -106,7 +106,7 @@
                   <span class="path1"></span>
                   <span class="path2"></span>
                 </i>
-                Cambiar Estado
+                {{ $t('inmates.detail.actions.changeStatus') }}
               </a>
             </li>
           </ul>
@@ -150,54 +150,54 @@
           <div class="col-lg-9">
             <div class="row g-5">
               <div class="col-md-6">
-                <div class="fw-semibold text-gray-600">Número de Interno:</div>
+                <div class="fw-semibold text-gray-600">{{ $t('inmates.detail.fields.inmateNumber') }}</div>
                 <div class="text-gray-900 fs-6">{{ inmate.inmate_number }}</div>
               </div>
               <div class="col-md-6">
-                <div class="fw-semibold text-gray-600">Documento:</div>
+                <div class="fw-semibold text-gray-600">{{ $t('inmates.detail.fields.document') }}</div>
                 <div class="text-gray-900 fs-6">
-                  {{ inmate.document_type?.name || "N/A" }} -
+                  {{ inmate.document_type?.name || $t('common.na') }} -
                   {{ inmate.document_number }}
                 </div>
               </div>
               <div class="col-md-6">
                 <div class="fw-semibold text-gray-600">
-                  Fecha de Nacimiento:
+                  {{ $t('inmates.detail.fields.birthDate') }}
                 </div>
                 <div class="text-gray-900 fs-6">
                   {{ formatDate(inmate.birth_date) }}
                   <span class="text-muted"
-                    >({{ calculateAge(inmate.birth_date) }} años)</span
+                    >({{ calculateAge(inmate.birth_date) }} {{ $t('inmates.detail.fields.years') }})</span
                   >
                 </div>
               </div>
               <div class="col-md-6">
-                <div class="fw-semibold text-gray-600">Género:</div>
+                <div class="fw-semibold text-gray-600">{{ $t('inmates.detail.fields.gender') }}</div>
                 <div class="text-gray-900 fs-6">
-                  {{ inmate.gender === "M" ? "Masculino" : "Femenino" }}
+                  {{ inmate.gender === "M" ? $t('inmates.detail.fields.male') : $t('inmates.detail.fields.female') }}
                 </div>
               </div>
               <div class="col-md-6">
-                <div class="fw-semibold text-gray-600">Centro Actual:</div>
+                <div class="fw-semibold text-gray-600">{{ $t('inmates.detail.fields.currentCenter') }}</div>
                 <div class="text-gray-900 fs-6">
-                  {{ inmate.current_center?.name || "N/A" }}
+                  {{ inmate.current_center?.name || $t('common.na') }}
                 </div>
               </div>
               <div class="col-md-6">
-                <div class="fw-semibold text-gray-600">Sector:</div>
+                <div class="fw-semibold text-gray-600">{{ $t('inmates.detail.fields.sector') }}</div>
                 <div class="text-gray-900 fs-6">
-                  {{ inmate.current_sector?.name || "N/A" }}
+                  {{ inmate.current_sector?.name || $t('common.na') }}
                 </div>
               </div>
               <div class="col-md-6">
-                <div class="fw-semibold text-gray-600">Fecha de Ingreso:</div>
+                <div class="fw-semibold text-gray-600">{{ $t('inmates.detail.fields.admissionDate') }}</div>
                 <div class="text-gray-900 fs-6">
                   {{ formatDate(inmate.admission_date) }}
                 </div>
               </div>
               <div class="col-md-6">
                 <div class="fw-semibold text-gray-600">
-                  Clasificación de Riesgo:
+                  {{ $t('inmates.detail.fields.riskClassification') }}
                 </div>
                 <div class="text-gray-900 fs-6">
                   <span
@@ -207,7 +207,7 @@
                   >
                     {{ inmate.risk_classification.name }}
                   </span>
-                  <span v-else class="text-muted">No asignada</span>
+                  <span v-else class="text-muted">{{ $t('inmates.detail.fields.notAssigned') }}</span>
                 </div>
               </div>
             </div>
@@ -234,7 +234,7 @@
                 aria-selected="true"
                 role="tab"
               >
-                Información General
+                {{ $t('inmates.detail.tabs.overview') }}
               </a>
             </li>
             <li class="nav-item" role="presentation">
@@ -245,7 +245,7 @@
                 aria-selected="false"
                 role="tab"
               >
-                Legal
+                {{ $t('inmates.detail.tabs.legal') }}
               </a>
             </li>
             <li class="nav-item" role="presentation">
@@ -256,7 +256,7 @@
                 aria-selected="false"
                 role="tab"
               >
-                Físico
+                {{ $t('inmates.detail.tabs.physical') }}
               </a>
             </li>
             <li class="nav-item" role="presentation">
@@ -267,7 +267,7 @@
                 aria-selected="false"
                 role="tab"
               >
-                Salud
+                {{ $t('inmates.detail.tabs.medical') }}
               </a>
             </li>
             <li class="nav-item" role="presentation">
@@ -278,7 +278,7 @@
                 aria-selected="false"
                 role="tab"
               >
-                Seguridad
+                {{ $t('inmates.detail.tabs.security') }}
               </a>
             </li>
             <li class="nav-item" role="presentation">
@@ -289,7 +289,7 @@
                 aria-selected="false"
                 role="tab"
               >
-                Rehabilitación
+                {{ $t('inmates.detail.tabs.rehabilitation') }}
               </a>
             </li>
             <li class="nav-item" role="presentation">
@@ -300,7 +300,7 @@
                 aria-selected="false"
                 role="tab"
               >
-                Visitas
+                {{ $t('inmates.detail.tabs.visits') }}
               </a>
             </li>
             <li class="nav-item" role="presentation">
@@ -311,7 +311,7 @@
                 aria-selected="false"
                 role="tab"
               >
-                Documentos
+                {{ $t('inmates.detail.tabs.documents') }}
               </a>
             </li>
             <li class="nav-item" role="presentation">
@@ -322,7 +322,7 @@
                 aria-selected="false"
                 role="tab"
               >
-                Operaciones
+                {{ $t('inmates.detail.tabs.operations') }}
               </a>
             </li>
           </ul>
@@ -413,16 +413,18 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from "vue";
 import { useRoute, useRouter } from "vue-router";
+import { useI18n } from "vue-i18n";
 import { useInmatesStore } from "@/stores/inmates";
 import { useAuthStore } from "@/stores/auth";
-import InmateOverviewTab from "@/modules/inmates/components/InmateOverviewTab.vue";
+// Tabs de detalle de interno - usar versiones más completas de /components/inmates/tabs/
+import InmateOverviewTab from "@/components/inmates/tabs/InmateOverviewTab.vue";
 import InmateLegalTab from "@/components/inmates/tabs/InmateLegalTab.vue";
 import InmatePhysicalTab from "@/modules/inmates/components/InmatePhysicalTab.vue";
 import InmateMedicalTab from "@/modules/inmates/components/InmateMedicalTab.vue";
 import InmateSecurityTab from "@/modules/inmates/components/InmateSecurityTab.vue";
 import InmateRehabilitationTab from "@/components/inmates/tabs/InmateRehabilitationTab.vue";
 import InmateVisitsTab from "@/modules/inmates/components/InmateVisitsTab.vue";
-import InmateDocumentsTab from "@/modules/inmates/components/InmateDocumentsTab.vue";
+import InmateDocumentsTab from "@/components/inmates/tabs/InmateDocumentsTab.vue";
 import InmateOperationsTab from "@/components/inmates/tabs/InmateOperationsTab.vue";
 import TransferFormModal from "@/components/inmates/modals/TransferFormModal.vue";
 import ChangeStatusModal from "@/components/inmates/modals/ChangeStatusModal.vue";
@@ -430,6 +432,9 @@ import Swal from "sweetalert2";
 import { useBiometricMatching } from "@/composables/useBiometricMatching";
 import { formatDate as formatDateHelper } from "@/core/helpers/formatters";
 import ApiService from "@/core/services/ApiService";
+
+// i18n
+const { t } = useI18n();
 
 // Stores
 const inmatesStore = useInmatesStore();
@@ -510,18 +515,10 @@ const getStatusBadgeClass = (status: string) => {
 };
 
 const getStatusLabel = (status: string) => {
-  const labels = {
-    active: "Activo",
-    transferred: "En traslado",
-    court_hearing: "En audiencia",
-    hospital_external: "Hospital externo",
-    hospital_internal: "Enfermería",
-    isolation: "Aislamiento",
-    released: "Liberado",
-    deceased: "Fallecido",
-    escaped: "Fugado",
-  };
-  return labels[status as keyof typeof labels] || "Desconocido";
+  if (!status) return t('inmates.detail.statuses.unknown');
+  const statusKey = `inmates.detail.statuses.${status}`;
+  const translated = t(statusKey);
+  return translated !== statusKey ? translated : t('inmates.detail.statuses.unknown');
 };
 
 const getRiskBadgeClass = (level: number) => {
@@ -561,10 +558,10 @@ const verifyBiometric = async () => {
   try {
     // Usar el composable
     const { verifyFingerprint, simulateFingerCapture } = useBiometricMatching();
-    
+
     // Mostrar diálogo de captura
     const result = await Swal.fire({
-      title: 'Verificación Biométrica 1:1',
+      title: t('inmates.detail.biometric.title'),
       html: `
         <div class="text-center">
           <i class="ki-duotone ki-fingerprint-scanning fs-5x text-primary mb-3">
@@ -572,55 +569,55 @@ const verifyBiometric = async () => {
             <span class="path2"></span>
             <span class="path3"></span>
           </i>
-          <p>Coloque el dedo del interno en el lector para verificar su identidad</p>
-          <p class="text-muted">Se comparará con las huellas registradas de ${inmate.value.full_name}</p>
+          <p>${t('inmates.detail.biometric.instruction')}</p>
+          <p class="text-muted">${t('inmates.detail.biometric.compareWith', { name: inmate.value.full_name })}</p>
         </div>
       `,
       showCancelButton: true,
-      confirmButtonText: 'Capturar Huella',
-      cancelButtonText: 'Cancelar',
+      confirmButtonText: t('inmates.detail.biometric.capture'),
+      cancelButtonText: t('inmates.detail.biometric.cancel'),
       allowOutsideClick: false
     });
-    
+
     if (result.isConfirmed) {
       // Mostrar loading
       Swal.fire({
-        title: 'Capturando huella...',
-        html: 'Por favor espere...',
+        title: t('inmates.detail.biometric.capturing'),
+        html: t('inmates.detail.biometric.pleaseWait'),
         allowOutsideClick: false,
         didOpen: () => {
           Swal.showLoading();
         }
       });
-      
+
       // Simular captura (en producción sería captura real)
       const capturedFingerprint = simulateFingerCapture();
-      
+
       // Verificar contra las huellas del interno
       const verificationResult = await verifyFingerprint(
         inmate.value.id,
         capturedFingerprint
       );
-      
+
       if (verificationResult.verified) {
         await Swal.fire({
           icon: 'success',
-          title: '✅ Identidad Verificada',
+          title: `✅ ${t('inmates.detail.biometric.verified')}`,
           html: `
             <div class="text-start">
-              <p><strong>Interno:</strong> ${inmate.value.full_name}</p>
-              <p><strong>Dedo:</strong> ${verificationResult.finger_type || 'N/A'}</p>
-              <p><strong>Coincidencia:</strong> ${(verificationResult.score * 100).toFixed(1)}%</p>
+              <p><strong>${t('inmates.detail.biometric.inmate')}</strong> ${inmate.value.full_name}</p>
+              <p><strong>${t('inmates.detail.biometric.finger')}</strong> ${verificationResult.finger_type || t('common.na')}</p>
+              <p><strong>${t('inmates.detail.biometric.match')}</strong> ${(verificationResult.score * 100).toFixed(1)}%</p>
             </div>
           `,
-          confirmButtonText: 'Aceptar'
+          confirmButtonText: t('inmates.detail.biometric.accept')
         });
       } else {
         await Swal.fire({
           icon: 'error',
-          title: '❌ Verificación Fallida',
-          text: 'La huella no coincide con las registradas para este interno',
-          confirmButtonText: 'Aceptar'
+          title: `❌ ${t('inmates.detail.biometric.verificationFailed')}`,
+          text: t('inmates.detail.biometric.noMatch'),
+          confirmButtonText: t('inmates.detail.biometric.accept')
         });
       }
     }
@@ -628,8 +625,8 @@ const verifyBiometric = async () => {
     console.error('Error en verificación biométrica:', error);
     await Swal.fire({
       icon: 'error',
-      title: 'Error',
-      text: 'No se pudo completar la verificación biométrica'
+      title: t('inmates.detail.swal.error'),
+      text: t('inmates.detail.biometric.error')
     });
   }
 };
@@ -642,8 +639,8 @@ const printProfile = () => {
   if (!printWindow) {
     Swal.fire({
       icon: 'error',
-      title: 'Error',
-      text: 'No se pudo abrir la ventana de impresión. Verifique que los pop-ups estén habilitados.'
+      title: t('inmates.detail.swal.error'),
+      text: t('inmates.detail.print.popupError')
     });
     return;
   }
@@ -683,41 +680,12 @@ const printProfile = () => {
   const recentTransfers = (inmate.value.transfers || []).slice(0, 3);
 
   // Organizar huellas digitales por tipo
-  console.log('🔍 Full inmate object keys:', Object.keys(inmate.value));
-  console.log('🔍 Debugging biometric data (snake_case):', {
-    hasBiometricData: !!inmate.value.biometric_data,
-    isArray: Array.isArray(inmate.value.biometric_data),
-    count: inmate.value.biometric_data?.length || 0,
-    sample: inmate.value.biometric_data?.[0]
-  });
-  console.log('🔍 Debugging biometric data (camelCase):', {
-    hasBiometricData: !!(inmate.value as any).biometricData,
-    isArray: Array.isArray((inmate.value as any).biometricData),
-    count: (inmate.value as any).biometricData?.length || 0,
-    sample: (inmate.value as any).biometricData?.[0]
-  });
-
   // Intentar ambas versiones del nombre
   const biometricData = inmate.value.biometric_data || (inmate.value as any).biometricData;
-
-  console.log('🔍 Selected biometric data:', {
-    exists: !!biometricData,
-    isArray: Array.isArray(biometricData),
-    count: biometricData?.length || 0
-  });
 
   const fingerprintMap: Record<string, string> = {};
   if (biometricData && Array.isArray(biometricData)) {
     biometricData.forEach((bio: any) => {
-      console.log('📌 Processing fingerprint:', {
-        finger_type: bio.finger_type,
-        fingerType: bio.fingerType,
-        has_image: !!bio.fingerprint_image,
-        has_image_camel: !!bio.fingerprintImage,
-        image_preview: (bio.fingerprint_image || bio.fingerprintImage)?.substring(0, 50),
-        all_keys: Object.keys(bio)
-      });
-
       const fingerType = bio.finger_type || bio.fingerType;
       const fingerprintImage = bio.fingerprint_image || bio.fingerprintImage;
 
@@ -730,8 +698,6 @@ const printProfile = () => {
       }
     });
   }
-
-  console.log('🖐️ Fingerprint map:', Object.keys(fingerprintMap));
 
   // Crear arrays ordenados de huellas para cada mano
   const rightHandFingers = ['right_thumb', 'right_index', 'right_middle', 'right_ring', 'right_pinky'];
@@ -1358,8 +1324,8 @@ const exportData = async () => {
     if (!inmate.value) return;
 
     Swal.fire({
-      title: "Exportando...",
-      text: "Generando archivo de exportación",
+      title: t('inmates.detail.export.exporting'),
+      text: t('inmates.detail.export.generating'),
       allowOutsideClick: false,
       didOpen: () => {
         Swal.showLoading();
@@ -1388,18 +1354,18 @@ const exportData = async () => {
 
       Swal.fire({
         icon: 'success',
-        title: 'Exportación Completada',
-        text: 'Los datos se han exportado en formato JSON',
+        title: t('inmates.detail.export.completed'),
+        text: t('inmates.detail.export.successMessage'),
         timer: 2000
       });
     } else {
-      throw new Error('No se pudieron exportar los datos');
+      throw new Error(t('inmates.detail.export.error'));
     }
   } catch (error: any) {
     console.error('Error exporting data:', error);
     await Swal.fire({
-      title: "Error",
-      text: error.response?.data?.message || "No se pudieron exportar los datos",
+      title: t('inmates.detail.swal.error'),
+      text: error.response?.data?.message || t('inmates.detail.export.error'),
       icon: "error",
     });
   }
@@ -1426,8 +1392,8 @@ const closeTransferModal = () => {
 const handleTransferSaved = async () => {
   await Swal.fire({
     icon: 'success',
-    title: 'Traslado Registrado',
-    text: 'El traslado se ha registrado correctamente',
+    title: t('inmates.detail.swal.transferSaved'),
+    text: t('inmates.detail.swal.transferSavedDesc'),
     timer: 2000
   });
 
@@ -1438,8 +1404,8 @@ const handleTransferSaved = async () => {
 const handleStatusChanged = async () => {
   await Swal.fire({
     icon: 'success',
-    title: 'Estado Actualizado',
-    text: 'El estado del PPL se ha actualizado correctamente',
+    title: t('inmates.detail.swal.statusUpdated'),
+    text: t('inmates.detail.swal.statusUpdatedDesc'),
     timer: 2000
   });
 
@@ -1449,9 +1415,9 @@ const handleStatusChanged = async () => {
 const handleReleased = async () => {
   await Swal.fire({
     icon: 'success',
-    title: 'PPL Liberado',
-    text: 'El proceso de liberación se ha completado correctamente',
-    confirmButtonText: 'Volver al Listado'
+    title: t('inmates.detail.swal.released'),
+    text: t('inmates.detail.swal.releasedDesc'),
+    confirmButtonText: t('inmates.detail.swal.backToList')
   });
 
   router.push('/inmates');

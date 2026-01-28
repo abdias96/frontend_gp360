@@ -4,7 +4,7 @@
     <div class="card-header border-0 pt-6">
       <div class="card-title">
         <h3 class="fw-bold m-0">
-          Editar Interno
+          {{ $t('inmates.edit.title') }}
           <span v-if="currentInmate" class="text-muted fs-6 fw-normal ms-2">
             #{{ currentInmate.inmate_number }}
           </span>
@@ -16,7 +16,7 @@
             <span class="path1"></span>
             <span class="path2"></span>
           </i>
-          Cancelar
+          {{ $t('inmates.edit.cancel') }}
         </router-link>
         <button
           type="submit"
@@ -28,7 +28,7 @@
             v-if="loading"
             class="spinner-border spinner-border-sm me-2"
           ></span>
-          {{ loading ? "Guardando..." : "Guardar Cambios" }}
+          {{ loading ? $t('inmates.edit.saving') : $t('inmates.edit.saveChanges') }}
         </button>
       </div>
     </div>
@@ -42,10 +42,10 @@
           class="spinner-border spinner-border-lg text-primary"
           role="status"
         >
-          <span class="visually-hidden">Cargando...</span>
+          <span class="visually-hidden">{{ $t('inmates.edit.loading') }}</span>
         </div>
         <div class="text-gray-600 fs-6 fw-semibold mt-5">
-          Cargando información del interno...
+          {{ $t('inmates.edit.loadingInfo') }}
         </div>
       </div>
 
@@ -58,7 +58,7 @@
             <span class="path3"></span>
           </i>
           <div class="d-flex flex-column">
-            <h4 class="mb-1 text-danger">Error al cargar el interno</h4>
+            <h4 class="mb-1 text-danger">{{ $t('inmates.edit.errorLoading') }}</h4>
             <span>{{ error }}</span>
           </div>
         </div>
@@ -75,21 +75,21 @@
         <div class="card mb-7">
           <div class="card-header border-0 pt-6">
             <div class="card-title">
-              <h4 class="fw-bold text-gray-800">Información Básica</h4>
+              <h4 class="fw-bold text-gray-800">{{ $t('inmates.edit.sections.basicInfo') }}</h4>
             </div>
           </div>
           <div class="card-body pt-0">
             <div class="row g-6">
               <!--begin::Document Information-->
               <div class="col-md-6">
-                <label class="form-label required">Tipo de Documento</label>
+                <label class="form-label required">{{ $t('inmates.edit.fields.documentType') }}</label>
                 <select
                   v-model="form.document_type_id"
                   class="form-select"
                   :class="{ 'is-invalid': errors.document_type_id }"
                   required
                 >
-                  <option value="">Seleccionar tipo de documento</option>
+                  <option value="">{{ $t('inmates.edit.fields.selectDocumentType') }}</option>
                   <option
                     v-for="type in documentTypes"
                     :key="type.id"
@@ -104,15 +104,13 @@
               </div>
 
               <div class="col-md-6">
-                <label class="form-label required"
-                  >Número de Identificación</label
-                >
+                <label class="form-label required">{{ $t('inmates.edit.fields.identificationNumber') }}</label>
                 <input
                   type="text"
                   v-model="form.document_number"
                   class="form-control"
                   :class="{ 'is-invalid': errors.document_number }"
-                  placeholder="Ingrese el número de identificación"
+                  :placeholder="$t('inmates.edit.fields.identificationPlaceholder')"
                   required
                 />
                 <div v-if="errors.document_number" class="invalid-feedback">
@@ -122,13 +120,13 @@
 
               <!--begin::Names-->
               <div class="col-md-4">
-                <label class="form-label required">Primer Nombre</label>
+                <label class="form-label required">{{ $t('inmates.edit.fields.firstName') }}</label>
                 <input
                   type="text"
                   v-model="form.first_name"
                   class="form-control"
                   :class="{ 'is-invalid': errors.first_name }"
-                  placeholder="Primer nombre"
+                  :placeholder="$t('inmates.edit.fields.firstNamePlaceholder')"
                   required
                 />
                 <div v-if="errors.first_name" class="invalid-feedback">
@@ -137,34 +135,34 @@
               </div>
 
               <div class="col-md-4">
-                <label class="form-label">Segundo Nombre</label>
+                <label class="form-label">{{ $t('inmates.edit.fields.middleName') }}</label>
                 <input
                   type="text"
                   v-model="form.middle_name"
                   class="form-control"
-                  placeholder="Segundo nombre (opcional)"
+                  :placeholder="$t('inmates.edit.fields.middleNamePlaceholder')"
                 />
               </div>
 
               <div class="col-md-4">
-                <label class="form-label">Tercer Nombre</label>
+                <label class="form-label">{{ $t('inmates.edit.fields.thirdName') }}</label>
                 <input
                   type="text"
                   v-model="form.third_name"
                   class="form-control"
-                  placeholder="Tercer nombre (opcional)"
+                  :placeholder="$t('inmates.edit.fields.thirdNamePlaceholder')"
                 />
               </div>
 
               <!--begin::Surnames-->
               <div class="col-md-4">
-                <label class="form-label required">Primer Apellido</label>
+                <label class="form-label required">{{ $t('inmates.edit.fields.lastName') }}</label>
                 <input
                   type="text"
                   v-model="form.last_name"
                   class="form-control"
                   :class="{ 'is-invalid': errors.last_name }"
-                  placeholder="Primer apellido"
+                  :placeholder="$t('inmates.edit.fields.lastNamePlaceholder')"
                   required
                 />
                 <div v-if="errors.last_name" class="invalid-feedback">
@@ -173,39 +171,39 @@
               </div>
 
               <div class="col-md-4">
-                <label class="form-label">Segundo Apellido</label>
+                <label class="form-label">{{ $t('inmates.edit.fields.secondLastName') }}</label>
                 <input
                   type="text"
                   v-model="form.second_last_name"
                   class="form-control"
-                  placeholder="Segundo apellido (opcional)"
+                  :placeholder="$t('inmates.edit.fields.secondLastNamePlaceholder')"
                 />
               </div>
 
               <div class="col-md-4">
-                <label class="form-label">Apellido de Casada</label>
+                <label class="form-label">{{ $t('inmates.edit.fields.marriedSurname') }}</label>
                 <input
                   type="text"
                   v-model="form.married_surname"
                   class="form-control"
-                  placeholder="Apellido de casada (opcional)"
+                  :placeholder="$t('inmates.edit.fields.marriedSurnamePlaceholder')"
                 />
               </div>
               <!--end::Surnames-->
 
               <div class="col-md-12">
-                <label class="form-label">Alias/Sobrenombre</label>
+                <label class="form-label">{{ $t('inmates.edit.fields.alias') }}</label>
                 <input
                   type="text"
                   v-model="form.alias"
                   class="form-control"
-                  placeholder="Alias o sobrenombre (opcional)"
+                  :placeholder="$t('inmates.edit.fields.aliasPlaceholder')"
                 />
               </div>
 
               <!--begin::Personal Information-->
               <div class="col-md-4">
-                <label class="form-label required">Fecha de Nacimiento</label>
+                <label class="form-label required">{{ $t('inmates.edit.fields.birthDate') }}</label>
                 <input
                   type="date"
                   v-model="form.birth_date"
@@ -219,16 +217,16 @@
               </div>
 
               <div class="col-md-4">
-                <label class="form-label required">Género</label>
+                <label class="form-label required">{{ $t('inmates.edit.fields.gender') }}</label>
                 <select
                   v-model="form.gender"
                   class="form-select"
                   :class="{ 'is-invalid': errors.gender }"
                   required
                 >
-                  <option value="">Seleccionar género</option>
-                  <option value="M">Masculino</option>
-                  <option value="F">Femenino</option>
+                  <option value="">{{ $t('inmates.edit.fields.selectGender') }}</option>
+                  <option value="M">{{ $t('inmates.edit.fields.male') }}</option>
+                  <option value="F">{{ $t('inmates.edit.fields.female') }}</option>
                 </select>
                 <div v-if="errors.gender" class="invalid-feedback">
                   {{ errors.gender[0] }}
@@ -236,9 +234,9 @@
               </div>
 
               <div class="col-md-4">
-                <label class="form-label">Tipo de Sangre</label>
+                <label class="form-label">{{ $t('inmates.edit.fields.bloodType') }}</label>
                 <select v-model="form.blood_type_id" class="form-select">
-                  <option value="">Seleccionar tipo de sangre</option>
+                  <option value="">{{ $t('inmates.edit.fields.selectBloodType') }}</option>
                   <option
                     v-for="type in bloodTypes"
                     :key="type.id"
@@ -258,7 +256,7 @@
                     <span class="path1"></span>
                     <span class="path2"></span>
                   </i>
-                  Información de Diversidad Sexual (Opcional y Confidencial)
+                  {{ $t('inmates.edit.sections.lgbtiq') }}
                 </h5>
                 <div
                   class="alert alert-info d-flex align-items-center p-5 mb-6"
@@ -268,23 +266,19 @@
                     <span class="path2"></span>
                   </i>
                   <div class="d-flex flex-column">
-                    <h5 class="mb-1">Información Confidencial</h5>
-                    <span
-                      >Esta información es voluntaria, confidencial y se utiliza
-                      únicamente para garantizar el respeto a los derechos
-                      humanos y proporcionar las acomodaciones necesarias.</span
-                    >
+                    <h5 class="mb-1">{{ $t('inmates.edit.sections.lgbtiqConfidential') }}</h5>
+                    <span>{{ $t('inmates.edit.sections.lgbtiqConfidentialDesc') }}</span>
                   </div>
                 </div>
               </div>
 
               <div class="col-md-6">
-                <label class="form-label">Orientación Sexual</label>
+                <label class="form-label">{{ $t('inmates.edit.fields.sexualOrientation') }}</label>
                 <select
                   v-model="form.sexual_orientation_id"
                   class="form-select"
                 >
-                  <option value="">No especificado</option>
+                  <option value="">{{ $t('inmates.edit.fields.notSpecified') }}</option>
                   <option
                     v-for="orientation in sexualOrientations"
                     :key="orientation?.id"
@@ -296,9 +290,9 @@
               </div>
 
               <div class="col-md-6">
-                <label class="form-label">Identidad de Género</label>
+                <label class="form-label">{{ $t('inmates.edit.fields.genderIdentity') }}</label>
                 <select v-model="form.gender_identity_id" class="form-select">
-                  <option value="">No especificado</option>
+                  <option value="">{{ $t('inmates.edit.fields.notSpecified') }}</option>
                   <option
                     v-for="identity in genderIdentities"
                     :key="identity?.id"
@@ -319,27 +313,25 @@
                     v-model="form.requires_lgbtiq_accommodations"
                   />
                   <label class="form-check-label">
-                    Requiere Acomodaciones Especiales LGBTIQ+
+                    {{ $t('inmates.edit.fields.requiresLgbtiqAccommodations') }}
                   </label>
                 </div>
               </div>
 
               <div v-if="form.requires_lgbtiq_accommodations" class="col-md-12">
-                <label class="form-label"
-                  >Notas sobre Acomodaciones LGBTIQ+</label
-                >
+                <label class="form-label">{{ $t('inmates.edit.fields.lgbtiqAccommodationNotes') }}</label>
                 <textarea
                   v-model="form.lgbtiq_accommodation_notes"
                   class="form-control"
                   rows="3"
-                  placeholder="Describir las acomodaciones especiales necesarias para garantizar la seguridad, dignidad y respeto de los derechos humanos..."
+                  :placeholder="$t('inmates.edit.fields.lgbtiqAccommodationPlaceholder')"
                 ></textarea>
               </div>
               <!--end::LGBTIQ+ Information-->
 
               <!--begin::Birth Location-->
               <div class="col-md-4">
-                <label class="form-label required">País de Nacimiento</label>
+                <label class="form-label required">{{ $t('inmates.edit.fields.birthCountry') }}</label>
                 <select
                   v-model="form.birth_country_id"
                   class="form-select"
@@ -347,7 +339,7 @@
                   @change="onBirthCountryChange"
                   required
                 >
-                  <option value="">Seleccionar país</option>
+                  <option value="">{{ $t('inmates.edit.fields.selectCountry') }}</option>
                   <option
                     v-for="country in countries"
                     :key="country.id"
@@ -362,7 +354,7 @@
               </div>
 
               <div class="col-md-4">
-                <label class="form-label required">Departamento de Nacimiento</label>
+                <label class="form-label required">{{ $t('inmates.edit.fields.birthDepartment') }}</label>
                 <select
                   v-model="form.birth_department_id"
                   class="form-select"
@@ -371,13 +363,13 @@
                   :disabled="!form.birth_country_id"
                   required
                 >
-                  <option value="">Seleccionar departamento</option>
+                  <option value="">{{ $t('inmates.edit.fields.selectDepartment') }}</option>
                   <option
                     v-for="department in birthDepartments"
                     :key="department?.id || Math.random()"
                     :value="department?.id"
                   >
-                    {{ department?.name || 'Sin nombre' }}
+                    {{ department?.name || $t('inmates.edit.fields.noName') }}
                   </option>
                 </select>
                 <div v-if="errors.birth_department_id" class="invalid-feedback">
@@ -386,20 +378,20 @@
               </div>
 
               <div class="col-md-4">
-                <label class="form-label">Municipio de Nacimiento</label>
+                <label class="form-label">{{ $t('inmates.edit.fields.birthMunicipality') }}</label>
                 <select
                   v-model="form.birth_municipality_id"
                   class="form-select"
                   :class="{ 'is-invalid': errors.birth_municipality_id }"
                   :disabled="!form.birth_department_id"
                 >
-                  <option value="">Seleccionar municipio</option>
+                  <option value="">{{ $t('inmates.edit.fields.selectMunicipality') }}</option>
                   <option
                     v-for="municipality in birthMunicipalities"
                     :key="municipality?.id || Math.random()"
                     :value="municipality?.id"
                   >
-                    {{ municipality?.name || 'Sin nombre' }}
+                    {{ municipality?.name || $t('inmates.edit.fields.noName') }}
                   </option>
                 </select>
                 <div v-if="errors.birth_municipality_id" class="invalid-feedback">
@@ -416,13 +408,13 @@
         <div class="card mb-7">
           <div class="card-header border-0 pt-6">
             <div class="card-title">
-              <h4 class="fw-bold text-gray-800">Información de Residencia y Cultura</h4>
+              <h4 class="fw-bold text-gray-800">{{ $t('inmates.edit.sections.residenceCulture') }}</h4>
             </div>
           </div>
           <div class="card-body pt-0">
             <div class="row g-6">
               <div class="col-md-4">
-                <label class="form-label required">País de Residencia</label>
+                <label class="form-label required">{{ $t('inmates.edit.fields.residenceCountry') }}</label>
                 <select
                   v-model="form.country_id"
                   class="form-select"
@@ -430,7 +422,7 @@
                   required
                   @change="onCountryChange"
                 >
-                  <option value="">Seleccionar país</option>
+                  <option value="">{{ $t('inmates.edit.fields.selectCountry') }}</option>
                   <option
                     v-for="country in countries"
                     :key="country.id"
@@ -445,7 +437,7 @@
               </div>
 
               <div class="col-md-4">
-                <label class="form-label required">Departamento</label>
+                <label class="form-label required">{{ $t('inmates.edit.fields.department') }}</label>
                 <select
                   v-model="form.department_id"
                   class="form-select"
@@ -454,13 +446,13 @@
                   required
                   @change="onDepartmentChange"
                 >
-                  <option value="">Seleccionar departamento</option>
+                  <option value="">{{ $t('inmates.edit.fields.selectDepartment') }}</option>
                   <option
                     v-for="department in departments"
                     :key="department?.id || Math.random()"
                     :value="department?.id"
                   >
-                    {{ department?.name || 'Sin nombre' }}
+                    {{ department?.name || $t('inmates.edit.fields.noName') }}
                   </option>
                 </select>
                 <div v-if="errors.department_id" class="invalid-feedback">
@@ -469,20 +461,20 @@
               </div>
 
               <div class="col-md-4">
-                <label class="form-label">Municipio</label>
+                <label class="form-label">{{ $t('inmates.edit.fields.municipality') }}</label>
                 <select
                   v-model="form.municipality_id"
                   class="form-select"
                   :class="{ 'is-invalid': errors.municipality_id }"
                   :disabled="!form.department_id"
                 >
-                  <option value="">Seleccionar municipio</option>
+                  <option value="">{{ $t('inmates.edit.fields.selectMunicipality') }}</option>
                   <option
                     v-for="municipality in municipalities"
                     :key="municipality?.id || Math.random()"
                     :value="municipality?.id"
                   >
-                    {{ municipality?.name || 'Sin nombre' }}
+                    {{ municipality?.name || $t('inmates.edit.fields.noName') }}
                   </option>
                 </select>
                 <div v-if="errors.municipality_id" class="invalid-feedback">
@@ -491,60 +483,58 @@
               </div>
 
               <div class="col-md-6">
-                <label class="form-label">Dirección</label>
+                <label class="form-label">{{ $t('inmates.edit.fields.address') }}</label>
                 <input
                   type="text"
                   v-model="form.address"
                   class="form-control"
-                  placeholder="Dirección de residencia"
+                  :placeholder="$t('inmates.edit.fields.addressPlaceholder')"
                 />
               </div>
 
               <div class="col-md-6">
-                <label class="form-label">Teléfono</label>
+                <label class="form-label">{{ $t('inmates.edit.fields.phone') }}</label>
                 <input
                   type="tel"
                   v-model="form.phone"
                   class="form-control"
-                  placeholder="Número de teléfono"
+                  :placeholder="$t('inmates.edit.fields.phonePlaceholder')"
                 />
               </div>
 
               <div class="col-md-6">
-                <label class="form-label">Correo Electrónico</label>
+                <label class="form-label">{{ $t('inmates.edit.fields.email') }}</label>
                 <input
                   type="email"
                   v-model="form.email"
                   class="form-control"
-                  placeholder="Correo electrónico (opcional)"
+                  :placeholder="$t('inmates.edit.fields.emailPlaceholder')"
                 />
               </div>
 
               <div class="col-md-6">
-                <label class="form-label">Prácticas Culturales</label>
+                <label class="form-label">{{ $t('inmates.edit.fields.culturalPractices') }}</label>
                 <select v-model="form.cultural_practices" class="form-select">
-                  <option value="">Seleccionar práctica cultural</option>
-                  <option value="maya_traditional">Maya Tradicional</option>
-                  <option value="xinca_traditional">Xinca Tradicional</option>
-                  <option value="garifuna_traditional">
-                    Garífuna Tradicional
-                  </option>
-                  <option value="catholic">Católica</option>
-                  <option value="evangelical">Evangélica</option>
-                  <option value="other_religious">Otra Religiosa</option>
-                  <option value="none">Ninguna</option>
+                  <option value="">{{ $t('inmates.edit.fields.selectCulturalPractices') }}</option>
+                  <option value="maya_traditional">{{ $t('inmates.edit.culturalPractices.maya_traditional') }}</option>
+                  <option value="xinca_traditional">{{ $t('inmates.edit.culturalPractices.xinca_traditional') }}</option>
+                  <option value="garifuna_traditional">{{ $t('inmates.edit.culturalPractices.garifuna_traditional') }}</option>
+                  <option value="catholic">{{ $t('inmates.edit.culturalPractices.catholic') }}</option>
+                  <option value="evangelical">{{ $t('inmates.edit.culturalPractices.evangelical') }}</option>
+                  <option value="other_religious">{{ $t('inmates.edit.culturalPractices.other_religious') }}</option>
+                  <option value="none">{{ $t('inmates.edit.culturalPractices.none') }}</option>
                 </select>
               </div>
 
               <div class="col-md-6">
-                <label class="form-label required">Idioma Materno</label>
+                <label class="form-label required">{{ $t('inmates.edit.fields.primaryLanguage') }}</label>
                 <select
                   v-model="form.primary_language_id"
                   class="form-select"
                   :class="{ 'is-invalid': errors.primary_language_id }"
                   required
                 >
-                  <option value="">Seleccionar idioma materno</option>
+                  <option value="">{{ $t('inmates.edit.fields.selectLanguage') }}</option>
                   <option
                     v-for="language in languages"
                     :key="language?.id"
@@ -567,190 +557,41 @@
                     type="checkbox"
                     v-model="form.requires_interpreter"
                   />
-                  <label class="form-check-label"> Requiere Intérprete </label>
+                  <label class="form-check-label">{{ $t('inmates.edit.fields.requiresInterpreter') }}</label>
                 </div>
               </div>
 
               <div v-if="form.requires_interpreter" class="col-md-12">
-                <label class="form-label"
-                  >Necesidades Culturales Especiales</label
-                >
+                <label class="form-label">{{ $t('inmates.edit.fields.specialCulturalNeeds') }}</label>
                 <textarea
                   v-model="form.special_cultural_needs"
                   class="form-control"
                   rows="3"
-                  placeholder="Describir necesidades culturales especiales, ceremonias, dietas específicas, etc."
+                  :placeholder="$t('inmates.edit.fields.specialCulturalNeedsPlaceholder')"
                 ></textarea>
               </div>
             </div>
           </div>
         </div>
 
-        <!--begin::Step 3: Institutional Information-->
+        <!--begin::Step 3: Additional Information-->
         <div class="card mb-7">
           <div class="card-header border-0 pt-6">
             <div class="card-title">
-              <h4 class="fw-bold text-gray-800">Información Institucional</h4>
-            </div>
-          </div>
-          <div class="card-body pt-0">
-            <div class="row g-6">
-              <div class="col-md-6">
-                <label class="form-label required">Centro Actual</label>
-                <select
-                  v-model="form.current_center_id"
-                  class="form-select"
-                  :class="{ 'is-invalid': errors.current_center_id }"
-                  required
-                  @change="onCenterChange"
-                >
-                  <option value="">Seleccionar centro</option>
-                  <option
-                    v-for="center in centers"
-                    :key="center.id"
-                    :value="center.id"
-                  >
-                    {{ center.name }}
-                  </option>
-                </select>
-                <div v-if="errors.current_center_id" class="invalid-feedback">
-                  {{ errors.current_center_id[0] }}
-                </div>
-              </div>
-
-              <div class="col-md-6">
-                <label class="form-label">Sector Actual</label>
-                <select
-                  v-model="form.current_sector_id"
-                  class="form-select"
-                  :disabled="!form.current_center_id"
-                >
-                  <option value="">Seleccionar sector</option>
-                  <option
-                    v-for="sector in filteredSectors"
-                    :key="sector.id"
-                    :value="sector.id"
-                  >
-                    {{ sector.name }}
-                  </option>
-                </select>
-              </div>
-
-              <div class="col-md-6">
-                <label class="form-label">Estado</label>
-                <select v-model="form.status" class="form-select">
-                  <option value="active">Activo</option>
-                  <option value="transferred">En traslado</option>
-                  <option value="court_hearing">En audiencia</option>
-                  <option value="hospital_external">Hospital externo</option>
-                  <option value="hospital_internal">Enfermería</option>
-                  <option value="isolation">Aislamiento</option>
-                  <option value="released">Liberado</option>
-                  <option value="deceased">Fallecido</option>
-                  <option value="escaped">Fugado</option>
-                </select>
-              </div>
-
-              <div class="col-md-6">
-                <label class="form-label">Fecha de Ingreso</label>
-                <input
-                  type="date"
-                  v-model="form.admission_date"
-                  class="form-control"
-                  :class="{ 'is-invalid': errors.admission_date }"
-                />
-                <div v-if="errors.admission_date" class="invalid-feedback">
-                  {{ errors.admission_date[0] }}
-                </div>
-              </div>
-
-              <div class="col-md-6">
-                <label class="form-label">Hora de Ingreso</label>
-                <input
-                  type="time"
-                  v-model="form.admission_time"
-                  class="form-control"
-                />
-              </div>
-
-              <div class="col-md-6">
-                <label class="form-label">Tipo de Admisión</label>
-                <select v-model="form.admission_type" class="form-select">
-                  <option value="">Seleccionar tipo</option>
-                  <option value="new_admission">Ingreso Nuevo</option>
-                  <option value="recapture">Reingreso</option>
-                </select>
-              </div>
-
-              <div class="col-md-6">
-                <label class="form-label">Número de Orden de Ingreso</label>
-                <input
-                  type="text"
-                  v-model="form.admission_order_number"
-                  class="form-control"
-                  placeholder="Número de orden"
-                />
-              </div>
-
-              <div class="col-md-6">
-                <label class="form-label">Documento de Remisión</label>
-                <input
-                  type="text"
-                  v-model="form.remission_document_number"
-                  class="form-control"
-                  placeholder="Número de documento"
-                />
-              </div>
-
-              <div class="col-md-6">
-                <label class="form-label">Juzgado Remitente</label>
-                <select v-model="form.remitting_court_id" class="form-select">
-                  <option value="">Seleccionar juzgado</option>
-                  <option
-                    v-for="court in courts"
-                    :key="court.id"
-                    :value="court.id"
-                  >
-                    {{ court.name }}
-                  </option>
-                </select>
-              </div>
-
-              <div class="col-md-6">
-                <label class="form-label">¿Posee Expediente Judicial?</label>
-                <div class="form-check form-switch form-check-custom form-check-solid">
-                  <input
-                    class="form-check-input"
-                    type="checkbox"
-                    v-model="form.has_judicial_file"
-                  />
-                  <label class="form-check-label">
-                    Sí, el expediente está disponible
-                  </label>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!--begin::Step 4: Additional Information-->
-        <div class="card mb-7">
-          <div class="card-header border-0 pt-6">
-            <div class="card-title">
-              <h4 class="fw-bold text-gray-800">Información Adicional</h4>
+              <h4 class="fw-bold text-gray-800">{{ $t('inmates.edit.sections.additional') }}</h4>
             </div>
           </div>
           <div class="card-body pt-0">
             <div class="row g-6">
               <div class="col-md-4">
-                <label class="form-label required">Nacionalidad</label>
+                <label class="form-label required">{{ $t('inmates.edit.fields.nationality') }}</label>
                 <select
                   v-model="form.nationality_id"
                   class="form-select"
                   :class="{ 'is-invalid': errors.nationality_id }"
                   required
                 >
-                  <option value="">Seleccionar nacionalidad</option>
+                  <option value="">{{ $t('inmates.edit.fields.selectNationality') }}</option>
                   <option
                     v-for="nationality in nationalities"
                     :key="nationality.id"
@@ -765,9 +606,9 @@
               </div>
 
               <div class="col-md-4">
-                <label class="form-label">Grupo Étnico</label>
+                <label class="form-label">{{ $t('inmates.edit.fields.ethnicGroup') }}</label>
                 <select v-model="form.ethnic_group_id" class="form-select">
-                  <option value="">Seleccionar grupo étnico</option>
+                  <option value="">{{ $t('inmates.edit.fields.selectEthnicGroup') }}</option>
                   <option
                     v-for="group in ethnicGroups"
                     :key="group.id"
@@ -779,9 +620,9 @@
               </div>
 
               <div class="col-md-4">
-                <label class="form-label">Estado Civil</label>
+                <label class="form-label">{{ $t('inmates.edit.fields.civilStatus') }}</label>
                 <select v-model="form.civil_status_id" class="form-select">
-                  <option value="">Seleccionar estado civil</option>
+                  <option value="">{{ $t('inmates.edit.fields.selectCivilStatus') }}</option>
                   <option
                     v-for="status in civilStatuses"
                     :key="status.id"
@@ -793,9 +634,9 @@
               </div>
 
               <div class="col-md-4">
-                <label class="form-label">Grado Académico</label>
+                <label class="form-label">{{ $t('inmates.edit.fields.academicDegree') }}</label>
                 <select v-model="form.academic_degree_id" class="form-select">
-                  <option value="">Seleccionar grado académico</option>
+                  <option value="">{{ $t('inmates.edit.fields.selectAcademicDegree') }}</option>
                   <option
                     v-for="degree in academicDegrees"
                     :key="degree.id"
@@ -807,9 +648,9 @@
               </div>
 
               <div class="col-md-4">
-                <label class="form-label">Ocupación</label>
+                <label class="form-label">{{ $t('inmates.edit.fields.occupation') }}</label>
                 <select v-model="form.occupation_id" class="form-select">
-                  <option value="">Seleccionar ocupación</option>
+                  <option value="">{{ $t('inmates.edit.fields.selectOccupation') }}</option>
                   <option
                     v-for="occupation in occupations"
                     :key="occupation.id"
@@ -821,9 +662,9 @@
               </div>
 
               <div class="col-md-4">
-                <label class="form-label">Religión</label>
+                <label class="form-label">{{ $t('inmates.edit.fields.religion') }}</label>
                 <select v-model="form.religion_id" class="form-select">
-                  <option value="">Seleccionar religión</option>
+                  <option value="">{{ $t('inmates.edit.fields.selectReligion') }}</option>
                   <option
                     v-for="religion in religions"
                     :key="religion.id"
@@ -835,14 +676,14 @@
               </div>
 
               <div class="col-md-6">
-                <label class="form-label required">Clasificación de Riesgo</label>
+                <label class="form-label required">{{ $t('inmates.edit.fields.riskClassification') }}</label>
                 <select
                   v-model="form.risk_classification_id"
                   class="form-select"
                   :class="{ 'is-invalid': errors.risk_classification_id }"
                   required
                 >
-                  <option value="">Seleccionar clasificación</option>
+                  <option value="">{{ $t('inmates.edit.fields.selectClassification') }}</option>
                   <option
                     v-for="classification in riskClassifications"
                     :key="classification.id"
@@ -857,14 +698,14 @@
               </div>
 
               <div class="col-md-6">
-                <label class="form-label required">Estado Procesal</label>
+                <label class="form-label required">{{ $t('inmates.edit.fields.proceduralStatus') }}</label>
                 <select
                   v-model="form.procedural_status_id"
                   class="form-select"
                   :class="{ 'is-invalid': errors.procedural_status_id }"
                   required
                 >
-                  <option value="">Seleccionar estado procesal</option>
+                  <option value="">{{ $t('inmates.edit.fields.selectProceduralStatus') }}</option>
                   <option
                     v-for="status in proceduralStatuses"
                     :key="status.id"
@@ -879,9 +720,9 @@
               </div>
 
               <div class="col-md-6">
-                <label class="form-label">Nivel Socioeconómico</label>
+                <label class="form-label">{{ $t('inmates.edit.fields.socioeconomicLevel') }}</label>
                 <select v-model="form.socioeconomic_level_id" class="form-select">
-                  <option value="">Seleccionar nivel socioeconómico</option>
+                  <option value="">{{ $t('inmates.edit.fields.selectSocioeconomicLevel') }}</option>
                   <option
                     v-for="level in socioeconomicLevels"
                     :key="level?.id"
@@ -894,81 +735,81 @@
 
             <!-- Professional Information -->
             <div class="col-md-12">
-              <h5 class="text-muted mt-5 mb-3">Información Profesional y Social</h5>
+              <h5 class="text-muted mt-5 mb-3">{{ $t('inmates.edit.sections.professionalSocial') }}</h5>
             </div>
-            
+
             <div class="col-md-6">
-              <label class="form-label">Detalles de Ocupación</label>
+              <label class="form-label">{{ $t('inmates.edit.fields.occupationDetails') }}</label>
               <input
                 type="text"
                 v-model="form.occupation_details"
                 class="form-control"
-                placeholder="Detalles sobre la ocupación actual o anterior"
+                :placeholder="$t('inmates.edit.fields.occupationDetailsPlaceholder')"
               />
             </div>
 
             <div class="col-md-6">
-              <label class="form-label">Ocupación Anterior</label>
+              <label class="form-label">{{ $t('inmates.edit.fields.previousOccupation') }}</label>
               <input
                 type="text"
                 v-model="form.previous_occupation"
                 class="form-control"
-                placeholder="Ocupación anterior al ingreso"
+                :placeholder="$t('inmates.edit.fields.previousOccupationPlaceholder')"
               />
             </div>
 
             <div class="col-md-12">
-              <label class="form-label">Experiencia Laboral</label>
+              <label class="form-label">{{ $t('inmates.edit.fields.workExperience') }}</label>
               <textarea
                 v-model="form.work_experience"
                 class="form-control"
                 rows="2"
-                placeholder="Descripción de la experiencia laboral previa"
+                :placeholder="$t('inmates.edit.fields.workExperiencePlaceholder')"
               ></textarea>
             </div>
 
             <div class="col-md-12">
-              <label class="form-label">Habilidades y Destrezas</label>
+              <label class="form-label">{{ $t('inmates.edit.fields.skillsAndAbilities') }}</label>
               <textarea
                 v-model="form.skills_and_abilities"
                 class="form-control"
                 rows="2"
-                placeholder="Habilidades especiales, oficios, destrezas técnicas, etc."
+                :placeholder="$t('inmates.edit.fields.skillsPlaceholder')"
               ></textarea>
             </div>
 
             <!-- Emergency Contact Information -->
             <div class="col-md-12">
-              <h5 class="text-muted mt-5 mb-3">Contacto de Emergencia</h5>
+              <h5 class="text-muted mt-5 mb-3">{{ $t('inmates.edit.sections.emergencyContact') }}</h5>
             </div>
-            
+
             <div class="col-md-4">
-              <label class="form-label">Nombre del Contacto</label>
+              <label class="form-label">{{ $t('inmates.edit.fields.contactName') }}</label>
               <input
                 type="text"
                 v-model="form.emergency_contact_name"
                 class="form-control"
-                placeholder="Nombre completo del contacto"
+                :placeholder="$t('inmates.edit.fields.contactNamePlaceholder')"
               />
             </div>
 
             <div class="col-md-4">
-              <label class="form-label">Teléfono del Contacto</label>
+              <label class="form-label">{{ $t('inmates.edit.fields.contactPhone') }}</label>
               <input
                 type="text"
                 v-model="form.emergency_contact_phone"
                 class="form-control"
-                placeholder="Número de teléfono"
+                :placeholder="$t('inmates.edit.fields.contactPhonePlaceholder')"
               />
             </div>
 
             <div class="col-md-4">
-              <label class="form-label">Relación con el Interno</label>
+              <label class="form-label">{{ $t('inmates.edit.fields.contactRelationship') }}</label>
               <select
                 v-model="form.emergency_contact_relationship_id"
                 class="form-select"
               >
-                <option value="">Seleccionar relación</option>
+                <option value="">{{ $t('inmates.edit.fields.selectRelationship') }}</option>
                 <option
                   v-for="relationship in relationshipTypes"
                   :key="relationship.id"
@@ -980,12 +821,12 @@
             </div>
 
             <div class="col-md-4">
-              <label class="form-label">Idioma del Contacto</label>
+              <label class="form-label">{{ $t('inmates.edit.fields.contactLanguage') }}</label>
               <select
                 v-model="form.emergency_contact_language_id"
                 class="form-select"
               >
-                <option value="">Seleccionar idioma del contacto</option>
+                <option value="">{{ $t('inmates.edit.fields.selectContactLanguage') }}</option>
                 <option
                   v-for="language in languages"
                   :key="language?.id"
@@ -1000,47 +841,22 @@
           </div>
         </div>
 
-        <!--begin::Step 5: Medical Information (Optional)-->
+        <!--begin::Step 4: General Notes-->
         <div class="card mb-7">
           <div class="card-header border-0 pt-6">
             <div class="card-title">
-              <h4 class="fw-bold text-gray-800">
-                Información Médica (Opcional)
-              </h4>
+              <h4 class="fw-bold text-gray-800">{{ $t('inmates.edit.sections.generalNotes') }}</h4>
             </div>
           </div>
           <div class="card-body pt-0">
             <div class="row g-6">
               <div class="col-md-12">
-                <label class="form-label">Observaciones Médicas</label>
-                <textarea
-                  v-model="form.medical_observations"
-                  class="form-control"
-                  rows="3"
-                  placeholder="Observaciones médicas adicionales (opcional)"
-                ></textarea>
-              </div>
-            </div>
-          </div>
-        </div>
-        <!--end::Step 5-->
-
-        <!--begin::Step 6: Additional Notes-->
-        <div class="card mb-7">
-          <div class="card-header border-0 pt-6">
-            <div class="card-title">
-              <h4 class="fw-bold text-gray-800">Observaciones Generales</h4>
-            </div>
-          </div>
-          <div class="card-body pt-0">
-            <div class="row g-6">
-              <div class="col-md-12">
-                <label class="form-label">Observaciones</label>
+                <label class="form-label">{{ $t('inmates.edit.fields.generalObservations') }}</label>
                 <textarea
                   v-model="form.general_notes"
                   class="form-control"
                   rows="4"
-                  placeholder="Observaciones generales sobre el interno (opcional)"
+                  :placeholder="$t('inmates.edit.fields.generalObservationsPlaceholder')"
                 ></textarea>
               </div>
             </div>
@@ -1055,8 +871,9 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, watch } from "vue";
+import { ref, computed, onMounted } from "vue";
 import { useRoute, useRouter } from "vue-router";
+import { useI18n } from "vue-i18n";
 import { useInmatesStore } from "@/stores/inmates";
 import { useCatalogsStore } from "@/stores/catalogs";
 import { useCatalogs } from "@/composables/useCatalogs";
@@ -1064,25 +881,13 @@ import ApiService from "@/core/services/ApiService";
 import Swal from "sweetalert2";
 import { formatDateForInput } from "@/core/helpers/date-formatters";
 
+// i18n
+const { t } = useI18n();
+
 // Stores and composables
 const inmatesStore = useInmatesStore();
 const catalogsStore = useCatalogsStore();
 const {
-  centersOptions,
-  documentTypesOptions,
-  bloodTypesOptions,
-  countriesOptions,
-  departmentsOptions,
-  municipalitiesOptions,
-  sectorsOptions,
-  nationalitiesOptions,
-  ethnicGroupsOptions,
-  civilStatusesOptions,
-  academicDegreesOptions,
-  occupationsOptions,
-  religionsOptions,
-  riskClassificationsOptions,
-  proceduralStatusesOptions,
   socioeconomicLevels,
   relationshipTypes,
   loadInmateCatalogs,
@@ -1139,16 +944,6 @@ const form = ref({
   country_id: "",
   department_id: "",
   municipality_id: "",
-  current_center_id: "",
-  current_sector_id: "",
-  status: "active",
-  admission_date: "",
-  admission_time: "",
-  admission_type: "",
-  admission_order_number: "",
-  remission_document_number: "",
-  remitting_court_id: "",
-  has_judicial_file: false,
   nationality_id: "",
   ethnic_group_id: "",
   civil_status_id: "",
@@ -1180,8 +975,6 @@ const form = ref({
   work_experience: "",
   skills_and_abilities: "",
   socioeconomic_level_id: "",
-  // Medical fields
-  medical_observations: "",
   // General notes
   general_notes: "",
 });
@@ -1194,8 +987,6 @@ const error = computed(() => inmatesStore.error);
 const documentTypes = computed(() => catalogsStore.getCatalog("document-types"));
 const bloodTypes = computed(() => catalogsStore.getCatalog("blood-types"));
 const countries = computed(() => catalogsStore.getCatalog("countries"));
-const centers = computed(() => catalogsStore.getCatalog("centers"));
-const courts = computed(() => catalogsStore.getCatalog("courts"));
 const nationalities = computed(() => catalogsStore.getCatalog("nationalities"));
 const ethnicGroups = computed(() => catalogsStore.getCatalog("ethnic-groups"));
 const civilStatuses = computed(() => catalogsStore.getCatalog("civil-statuses"));
@@ -1205,29 +996,6 @@ const religions = computed(() => catalogsStore.getCatalog("religions"));
 const riskClassifications = computed(() => catalogsStore.getCatalog("risk-classifications"));
 const proceduralStatuses = computed(() => catalogsStore.getCatalog("procedural-statuses"));
 const languages = computed(() => catalogsStore.getCatalog("languages"));
-
-// Filtered data based on selections
-const filteredDepartments = computed(() => {
-  if (!form.value.country_id) return [];
-  const departments = catalogsStore.getCatalog("departments");
-  return departments.filter((dept) => dept.country_id == form.value.country_id);
-});
-
-const filteredMunicipalities = computed(() => {
-  if (!form.value.department_id) return [];
-  const municipalities = catalogsStore.getCatalog("municipalities");
-  return municipalities.filter(
-    (mun) => mun.department_id == form.value.department_id,
-  );
-});
-
-const filteredSectors = computed(() => {
-  if (!form.value.current_center_id) return [];
-  const sectors = catalogsStore.getCatalog("sectors");
-  return sectors.filter(
-    (sector) => sector.center_id == form.value.current_center_id,
-  );
-});
 
 // Methods
 const loadInmate = async () => {
@@ -1250,7 +1018,6 @@ const populateForm = async () => {
   if (!currentInmate.value) return;
 
   const inmate = currentInmate.value;
-  console.log('Datos del interno para popular el form:', inmate);
   form.value = {
     document_type_id: inmate.document_type_id?.toString() || "",
     document_number: inmate.document_number || "",
@@ -1270,16 +1037,6 @@ const populateForm = async () => {
     country_id: inmate.country_id?.toString() || "",
     department_id: inmate.department_id?.toString() || "",
     municipality_id: inmate.municipality_id?.toString() || "",
-    current_center_id: inmate.current_center_id?.toString() || "",
-    current_sector_id: inmate.current_sector_id?.toString() || "",
-    status: inmate.status || "active",
-    admission_date: formatDateForInput(inmate.admission_date),
-    admission_time: inmate.admission_datetime ? new Date(inmate.admission_datetime).toTimeString().substring(0, 5) : "",
-    admission_type: inmate.admission_type || "",
-    admission_order_number: inmate.admission_order_number || "",
-    remission_document_number: inmate.remission_document_number || "",
-    remitting_court_id: inmate.remitting_court_id?.toString() || "",
-    has_judicial_file: inmate.has_judicial_file || false,
     nationality_id: inmate.nationality_id?.toString() || "",
     ethnic_group_id: inmate.ethnic_group_id?.toString() || "",
     civil_status_id: inmate.civil_status_id?.toString() || "",
@@ -1311,8 +1068,6 @@ const populateForm = async () => {
     work_experience: inmate.work_experience || "",
     skills_and_abilities: inmate.skills_and_abilities || "",
     socioeconomic_level_id: inmate.socioeconomic_level_id?.toString() || "",
-    // Medical fields
-    medical_observations: inmate.medical_observations || "",
     // General notes
     general_notes: inmate.general_notes || "",
   };
@@ -1424,10 +1179,6 @@ const onDepartmentChange = async () => {
   }
 };
 
-const onCenterChange = () => {
-  form.value.current_sector_id = "";
-};
-
 const loadSexualOrientations = async () => {
   const result = await fetchCatalog("/catalogs/sexual-orientations");
   if (!result || result.length === 0) {
@@ -1479,31 +1230,20 @@ const handleSubmit = async () => {
 
     // Validate required fields
     if (!form.value.nationality_id) {
-      errors.value = { nationality_id: ["El campo nacionalidad es requerido."] };
+      errors.value = { nationality_id: [t('inmates.edit.swal.selectNationality')] };
       loading.value = false;
       Swal.fire({
-        title: "Error de Validación",
-        text: "Por favor seleccione la nacionalidad del interno",
+        title: t('inmates.edit.swal.validationError'),
+        text: t('inmates.edit.swal.selectNationality'),
         icon: "error",
-        confirmButtonText: "Aceptar",
+        confirmButtonText: t('inmates.edit.swal.accept'),
       });
       return;
-    }
-
-    // Combine admission date and time into admission_datetime
-    let admission_datetime = null;
-    if (form.value.admission_date && form.value.admission_time) {
-      admission_datetime = `${form.value.admission_date} ${form.value.admission_time}:00`;
-    } else if (form.value.admission_date) {
-      admission_datetime = `${form.value.admission_date} 00:00:00`;
     }
 
     // Convert string IDs to numbers where needed
     const formData = {
       ...form.value,
-      admission_datetime,
-      // Ensure admission_type is either a valid value or null
-      admission_type: form.value.admission_type || null,
       document_type_id: form.value.document_type_id
         ? Number(form.value.document_type_id)
         : null,
@@ -1525,12 +1265,6 @@ const handleSubmit = async () => {
         : null,
       municipality_id: form.value.municipality_id
         ? Number(form.value.municipality_id)
-        : null,
-      current_center_id: form.value.current_center_id
-        ? Number(form.value.current_center_id)
-        : null,
-      current_sector_id: form.value.current_sector_id
-        ? Number(form.value.current_sector_id)
         : null,
       nationality_id: form.value.nationality_id
         ? Number(form.value.nationality_id)
@@ -1556,10 +1290,6 @@ const handleSubmit = async () => {
       procedural_status_id: form.value.procedural_status_id
         ? Number(form.value.procedural_status_id)
         : null,
-      // Additional fields
-      remitting_court_id: form.value.remitting_court_id
-        ? Number(form.value.remitting_court_id)
-        : null,
       emergency_contact_language_id: form.value.emergency_contact_language_id
         ? Number(form.value.emergency_contact_language_id)
         : null,
@@ -1580,15 +1310,12 @@ const handleSubmit = async () => {
         : null,
     };
 
-    // Remove admission_time as it's combined into admission_datetime
-    delete formData.admission_time;
-
     const inmateId = route.params.id as string;
     await inmatesStore.updateInmate(inmateId, formData);
 
     await Swal.fire({
-      title: "Éxito",
-      text: "El interno ha sido actualizado correctamente",
+      title: t('inmates.edit.swal.success'),
+      text: t('inmates.edit.swal.successMessage'),
       icon: "success",
       timer: 2000,
     });
@@ -1601,8 +1328,8 @@ const handleSubmit = async () => {
     }
 
     await Swal.fire({
-      title: "Error",
-      text: error.response?.data?.message || "Error al actualizar el interno",
+      title: t('inmates.edit.swal.error'),
+      text: error.response?.data?.message || t('inmates.edit.swal.errorMessage'),
       icon: "error",
     });
   } finally {
@@ -1620,7 +1347,6 @@ onMounted(async () => {
     catalogsStore.fetchCountries(),
     catalogsStore.fetchDepartments(),
     catalogsStore.fetchMunicipalities(),
-    catalogsStore.fetchCourts(),
   ]);
 
   // Load additional catalogs

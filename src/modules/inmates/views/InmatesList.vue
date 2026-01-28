@@ -15,7 +15,7 @@
             v-model="searchTerm"
             @input="handleSearch"
             class="form-control form-control-solid w-300px ps-13"
-            placeholder="Buscar por nombre, DPI o número interno..."
+            :placeholder="$t('inmates.list.searchPlaceholder')"
           />
         </div>
         <!--end::Search-->
@@ -36,12 +36,13 @@
               <span class="path1"></span>
               <span class="path2"></span>
             </i>
-            Filtros
+            {{ $t('inmates.list.filters') }}
           </button>
           <!--end::Filter-->
 
           <!--begin::Advanced Search-->
           <button
+            v-if="canAdvancedSearch"
             type="button"
             class="btn btn-light-info"
             @click="openAdvancedSearch"
@@ -51,7 +52,7 @@
               <span class="path2"></span>
               <span class="path3"></span>
             </i>
-            Búsqueda Avanzada
+            {{ $t('inmates.list.advancedSearch') }}
           </button>
           <!--end::Advanced Search-->
 
@@ -62,7 +63,7 @@
             v-if="canCreate"
           >
             <i class="ki-duotone ki-plus fs-2"></i>
-            Registrar Interno
+            {{ $t('inmates.list.registerInmate') }}
           </router-link>
           <!--end::Add inmate-->
         </div>
@@ -77,13 +78,13 @@
       <div class="card-title w-100">
         <div class="row w-100 g-3">
           <div class="col-md-3">
-            <label class="form-label fs-7 fw-bold">Centro</label>
+            <label class="form-label fs-7 fw-bold">{{ $t('inmates.list.filterLabels.center') }}</label>
             <select
               v-model="localFilters.center_id"
               class="form-select form-select-solid"
               @change="handleFilterChange"
             >
-              <option value="">Todos los centros</option>
+              <option value="">{{ $t('inmates.list.filterLabels.allCenters') }}</option>
               <option
                 v-for="option in centersOptions"
                 :key="option.value"
@@ -94,44 +95,44 @@
             </select>
           </div>
           <div class="col-md-3">
-            <label class="form-label fs-7 fw-bold">Estado</label>
+            <label class="form-label fs-7 fw-bold">{{ $t('inmates.list.filterLabels.status') }}</label>
             <select
               v-model="localFilters.status"
               class="form-select form-select-solid"
               @change="handleFilterChange"
             >
-              <option value="">Todos los estados</option>
-              <option value="active">Activo</option>
-              <option value="transferred">En traslado</option>
-              <option value="court_hearing">En audiencia</option>
-              <option value="hospital_external">Hospital externo</option>
-              <option value="hospital_internal">Enfermería</option>
-              <option value="isolation">Aislamiento</option>
-              <option value="released">Liberado</option>
-              <option value="deceased">Fallecido</option>
-              <option value="escaped">Fugado</option>
+              <option value="">{{ $t('inmates.list.filterLabels.allStatuses') }}</option>
+              <option value="active">{{ $t('inmates.list.statuses.active') }}</option>
+              <option value="transferred">{{ $t('inmates.list.statuses.transferred') }}</option>
+              <option value="court_hearing">{{ $t('inmates.list.statuses.court_hearing') }}</option>
+              <option value="hospital_external">{{ $t('inmates.list.statuses.hospital_external') }}</option>
+              <option value="hospital_internal">{{ $t('inmates.list.statuses.hospital_internal') }}</option>
+              <option value="isolation">{{ $t('inmates.list.statuses.isolation') }}</option>
+              <option value="released">{{ $t('inmates.list.statuses.released') }}</option>
+              <option value="deceased">{{ $t('inmates.list.statuses.deceased') }}</option>
+              <option value="escaped">{{ $t('inmates.list.statuses.escaped') }}</option>
             </select>
           </div>
           <div class="col-md-3">
-            <label class="form-label fs-7 fw-bold">Género</label>
+            <label class="form-label fs-7 fw-bold">{{ $t('inmates.list.filterLabels.gender') }}</label>
             <select
               v-model="localFilters.gender"
               class="form-select form-select-solid"
               @change="handleFilterChange"
             >
-              <option value="">Todos</option>
-              <option value="M">Masculino</option>
-              <option value="F">Femenino</option>
+              <option value="">{{ $t('inmates.list.filterLabels.allGenders') }}</option>
+              <option value="M">{{ $t('inmates.list.genders.M') }}</option>
+              <option value="F">{{ $t('inmates.list.genders.F') }}</option>
             </select>
           </div>
           <div class="col-md-3">
-            <label class="form-label fs-7 fw-bold">Nacionalidad</label>
+            <label class="form-label fs-7 fw-bold">{{ $t('inmates.list.filterLabels.nationality') }}</label>
             <select
               v-model="localFilters.nationality_id"
               class="form-select form-select-solid"
               @change="handleFilterChange"
             >
-              <option value="">Todas</option>
+              <option value="">{{ $t('inmates.list.filterLabels.allNationalities') }}</option>
               <option
                 v-for="option in nationalitiesOptions"
                 :key="option.value"
@@ -149,7 +150,7 @@
             @click="clearFilters"
             v-if="hasActiveFilters"
           >
-            Limpiar Filtros
+            {{ $t('inmates.list.clearFilters') }}
           </button>
         </div>
       </div>
@@ -161,7 +162,7 @@
       <!--begin::Loading-->
       <div v-if="loading" class="d-flex justify-content-center py-10">
         <div class="spinner-border text-primary" role="status">
-          <span class="visually-hidden">Cargando...</span>
+          <span class="visually-hidden">{{ $t('inmates.list.loading') }}</span>
         </div>
       </div>
       <!--end::Loading-->
@@ -178,7 +179,7 @@
           class="btn btn-sm btn-light-danger ms-3"
           @click="fetchInmates"
         >
-          Reintentar
+          {{ $t('inmates.list.retry') }}
         </button>
       </div>
       <!--end::Error-->
@@ -186,129 +187,150 @@
       <!--begin::Content-->
       <div v-else>
         <!--begin::Statistics-->
-        <div v-if="statistics" class="row g-4 mb-6">
-          <!-- Total Internos -->
-          <div class="col-md-6 col-lg-3">
-            <div class="card bg-light-primary border-0 h-100">
-              <div
-                class="card-body d-flex flex-column justify-content-between p-6"
-              >
-                <div class="d-flex align-items-center mb-3">
-                  <div class="symbol symbol-40px me-3">
-                    <div class="symbol-label bg-primary">
-                      <i class="ki-duotone ki-people fs-2 text-white">
-                        <span class="path1"></span>
-                        <span class="path2"></span>
-                        <span class="path3"></span>
-                        <span class="path4"></span>
-                        <span class="path5"></span>
-                      </i>
+        <div class="row g-4 mb-6">
+          <!-- Loading Skeleton for Statistics -->
+          <template v-if="loadingStatistics && !statistics">
+            <div class="col-md-6 col-lg-3" v-for="i in 4" :key="i">
+              <div class="card bg-light border-0 h-100">
+                <div class="card-body p-6">
+                  <div class="d-flex align-items-center mb-3">
+                    <div class="skeleton-box rounded-circle me-3" style="width: 40px; height: 40px;"></div>
+                    <div class="flex-grow-1">
+                      <div class="skeleton-box rounded mb-2" style="width: 60%; height: 14px;"></div>
+                      <div class="skeleton-box rounded" style="width: 40%; height: 24px;"></div>
                     </div>
                   </div>
-                  <div class="flex-grow-1">
-                    <div class="text-muted fw-semibold fs-7">Total</div>
-                    <div class="fw-bold fs-3 text-gray-800">
-                      {{ statistics?.total_inmates || 0 }}
-                    </div>
-                  </div>
+                  <div class="skeleton-box rounded" style="width: 80%; height: 14px;"></div>
                 </div>
-                <div class="text-muted fw-semibold fs-6">Internos Totales</div>
               </div>
             </div>
-          </div>
+          </template>
 
-          <!-- Internos Activos -->
-          <div class="col-md-6 col-lg-3">
-            <div class="card bg-light-success border-0 h-100">
-              <div
-                class="card-body d-flex flex-column justify-content-between p-6"
-              >
-                <div class="d-flex align-items-center mb-3">
-                  <div class="symbol symbol-40px me-3">
-                    <div class="symbol-label bg-success">
-                      <i class="ki-duotone ki-check-circle fs-2 text-white">
-                        <span class="path1"></span>
-                        <span class="path2"></span>
-                      </i>
+          <!-- Statistics Content -->
+          <template v-else-if="statistics">
+            <!-- Total Internos -->
+            <div class="col-md-6 col-lg-3">
+              <div class="card bg-light-primary border-0 h-100">
+                <div
+                  class="card-body d-flex flex-column justify-content-between p-6"
+                >
+                  <div class="d-flex align-items-center mb-3">
+                    <div class="symbol symbol-40px me-3">
+                      <div class="symbol-label bg-primary">
+                        <i class="ki-duotone ki-people fs-2 text-white">
+                          <span class="path1"></span>
+                          <span class="path2"></span>
+                          <span class="path3"></span>
+                          <span class="path4"></span>
+                          <span class="path5"></span>
+                        </i>
+                      </div>
+                    </div>
+                    <div class="flex-grow-1">
+                      <div class="text-muted fw-semibold fs-7">{{ $t('inmates.list.statistics.total') }}</div>
+                      <div class="fw-bold fs-3 text-gray-800">
+                        {{ statistics?.total_inmates || 0 }}
+                      </div>
                     </div>
                   </div>
-                  <div class="flex-grow-1">
-                    <div class="text-muted fw-semibold fs-7">Activos</div>
-                    <div class="fw-bold fs-3 text-gray-800">
-                      {{ statistics?.active_inmates || 0 }}
-                    </div>
-                  </div>
+                  <div class="text-muted fw-semibold fs-6">{{ $t('inmates.list.statistics.totalInmates') }}</div>
                 </div>
-                <div class="text-muted fw-semibold fs-6">Internos Activos</div>
               </div>
             </div>
-          </div>
 
-          <!-- Tasa de Ocupación -->
-          <div class="col-md-6 col-lg-3">
-            <div class="card bg-light-warning border-0 h-100">
-              <div
-                class="card-body d-flex flex-column justify-content-between p-6"
-              >
-                <div class="d-flex align-items-center mb-3">
-                  <div class="symbol symbol-40px me-3">
-                    <div class="symbol-label bg-warning">
-                      <i class="ki-duotone ki-chart-pie-4 fs-2 text-white">
-                        <span class="path1"></span>
-                        <span class="path2"></span>
-                        <span class="path3"></span>
-                      </i>
+            <!-- Internos Activos -->
+            <div class="col-md-6 col-lg-3">
+              <div class="card bg-light-success border-0 h-100">
+                <div
+                  class="card-body d-flex flex-column justify-content-between p-6"
+                >
+                  <div class="d-flex align-items-center mb-3">
+                    <div class="symbol symbol-40px me-3">
+                      <div class="symbol-label bg-success">
+                        <i class="ki-duotone ki-check-circle fs-2 text-white">
+                          <span class="path1"></span>
+                          <span class="path2"></span>
+                        </i>
+                      </div>
+                    </div>
+                    <div class="flex-grow-1">
+                      <div class="text-muted fw-semibold fs-7">{{ $t('inmates.list.statistics.active') }}</div>
+                      <div class="fw-bold fs-3 text-gray-800">
+                        {{ statistics?.active_inmates || 0 }}
+                      </div>
                     </div>
                   </div>
-                  <div class="flex-grow-1">
-                    <div class="text-muted fw-semibold fs-7">Ocupación</div>
-                    <div class="fw-bold fs-3 text-gray-800">
-                      {{
-                        Math.round(
-                          statistics?.overcrowding_stats?.occupancy_rate || 0,
-                        )
-                      }}%
-                    </div>
-                  </div>
-                </div>
-                <div class="text-muted fw-semibold fs-6">
-                  {{ statistics?.overcrowding_stats?.current_population || 0 }}
-                  /
-                  {{ statistics?.overcrowding_stats?.total_capacity || 0 }}
+                  <div class="text-muted fw-semibold fs-6">{{ $t('inmates.list.statistics.activeInmates') }}</div>
                 </div>
               </div>
             </div>
-          </div>
 
-          <!-- Requieren Protección -->
-          <div class="col-md-6 col-lg-3">
-            <div class="card bg-light-danger border-0 h-100">
-              <div
-                class="card-body d-flex flex-column justify-content-between p-6"
-              >
-                <div class="d-flex align-items-center mb-3">
-                  <div class="symbol symbol-40px me-3">
-                    <div class="symbol-label bg-danger">
-                      <i class="ki-duotone ki-shield-tick fs-2 text-white">
-                        <span class="path1"></span>
-                        <span class="path2"></span>
-                        <span class="path3"></span>
-                      </i>
+            <!-- Tasa de Ocupación -->
+            <div class="col-md-6 col-lg-3">
+              <div class="card bg-light-warning border-0 h-100">
+                <div
+                  class="card-body d-flex flex-column justify-content-between p-6"
+                >
+                  <div class="d-flex align-items-center mb-3">
+                    <div class="symbol symbol-40px me-3">
+                      <div class="symbol-label bg-warning">
+                        <i class="ki-duotone ki-chart-pie-4 fs-2 text-white">
+                          <span class="path1"></span>
+                          <span class="path2"></span>
+                          <span class="path3"></span>
+                        </i>
+                      </div>
+                    </div>
+                    <div class="flex-grow-1">
+                      <div class="text-muted fw-semibold fs-7">{{ $t('inmates.list.statistics.occupancy') }}</div>
+                      <div class="fw-bold fs-3 text-gray-800">
+                        {{
+                          Math.round(
+                            statistics?.overcrowding_stats?.occupancy_rate || 0,
+                          )
+                        }}%
+                      </div>
                     </div>
                   </div>
-                  <div class="flex-grow-1">
-                    <div class="text-muted fw-semibold fs-7">Protección</div>
-                    <div class="fw-bold fs-3 text-gray-800">
-                      {{ statistics?.requiring_protection || 0 }}
-                    </div>
+                  <div class="text-muted fw-semibold fs-6">
+                    {{ statistics?.overcrowding_stats?.current_population || 0 }}
+                    /
+                    {{ statistics?.overcrowding_stats?.total_capacity || 0 }}
                   </div>
-                </div>
-                <div class="text-muted fw-semibold fs-6">
-                  Requieren Protección
                 </div>
               </div>
             </div>
-          </div>
+
+            <!-- Requieren Protección -->
+            <div class="col-md-6 col-lg-3">
+              <div class="card bg-light-danger border-0 h-100">
+                <div
+                  class="card-body d-flex flex-column justify-content-between p-6"
+                >
+                  <div class="d-flex align-items-center mb-3">
+                    <div class="symbol symbol-40px me-3">
+                      <div class="symbol-label bg-danger">
+                        <i class="ki-duotone ki-shield-tick fs-2 text-white">
+                          <span class="path1"></span>
+                          <span class="path2"></span>
+                          <span class="path3"></span>
+                        </i>
+                      </div>
+                    </div>
+                    <div class="flex-grow-1">
+                      <div class="text-muted fw-semibold fs-7">{{ $t('inmates.list.statistics.protection') }}</div>
+                      <div class="fw-bold fs-3 text-gray-800">
+                        {{ statistics?.requiring_protection || 0 }}
+                      </div>
+                    </div>
+                  </div>
+                  <div class="text-muted fw-semibold fs-6">
+                    {{ $t('inmates.list.statistics.requireProtection') }}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </template>
         </div>
         <!--end::Statistics-->
 
@@ -320,13 +342,13 @@
               <tr
                 class="text-start text-muted fw-bold fs-7 text-uppercase gs-0"
               >
-                <th class="min-w-200px">Interno</th>
-                <th class="min-w-125px">Identificación</th>
-                <th class="min-w-125px">Estado</th>
-                <th class="min-w-125px">Centro</th>
-                <th class="min-w-100px">Seguridad</th>
-                <th class="min-w-100px">Ingreso</th>
-                <th class="text-end min-w-100px">Acciones</th>
+                <th class="min-w-200px">{{ $t('inmates.list.tableHeaders.inmate') }}</th>
+                <th class="min-w-125px">{{ $t('inmates.list.tableHeaders.identification') }}</th>
+                <th class="min-w-125px">{{ $t('inmates.list.tableHeaders.status') }}</th>
+                <th class="min-w-125px">{{ $t('inmates.list.tableHeaders.center') }}</th>
+                <th class="min-w-100px">{{ $t('inmates.list.tableHeaders.security') }}</th>
+                <th class="min-w-100px">{{ $t('inmates.list.tableHeaders.admission') }}</th>
+                <th class="text-end min-w-100px">{{ $t('inmates.list.tableHeaders.actions') }}</th>
               </tr>
             </thead>
             <!--end::Table head-->
@@ -390,10 +412,10 @@
                 <td>
                   <div class="d-flex flex-column">
                     <span class="text-gray-800 mb-1">{{
-                      inmate?.current_center?.name || "Sin centro"
+                      inmate?.current_center?.name || $t('inmates.list.noCenter')
                     }}</span>
                     <span class="text-muted">{{
-                      inmate?.current_sector?.name || "Sin sector"
+                      inmate?.current_sector?.name || $t('inmates.list.noSector')
                     }}</span>
                   </div>
                 </td>
@@ -425,7 +447,7 @@
                       class="btn btn-sm btn-light btn-active-light-primary dropdown-toggle"
                       data-bs-toggle="dropdown"
                     >
-                      Acciones
+                      {{ $t('inmates.list.actions.actions') }}
                     </button>
                     <ul class="dropdown-menu">
                       <li>
@@ -434,7 +456,7 @@
                           class="dropdown-item"
                         >
                           <i class="ki-duotone ki-eye fs-6 me-2"></i>
-                          Ver Detalle
+                          {{ $t('inmates.list.actions.viewDetail') }}
                         </router-link>
                       </li>
                       <li v-if="canEdit">
@@ -443,7 +465,7 @@
                           class="dropdown-item"
                         >
                           <i class="ki-duotone ki-pencil fs-6 me-2"></i>
-                          Editar
+                          {{ $t('inmates.list.actions.edit') }}
                         </router-link>
                       </li>
                       <li v-if="canTransfer">
@@ -453,7 +475,7 @@
                           @click.prevent="initiateTransfer(inmate)"
                         >
                           <i class="ki-duotone ki-switch fs-6 me-2"></i>
-                          Transferir
+                          {{ $t('inmates.list.actions.transfer') }}
                         </a>
                       </li>
                       <li v-if="canChangeStatus">
@@ -463,7 +485,7 @@
                           @click.prevent="changeStatus(inmate)"
                         >
                           <i class="ki-duotone ki-status fs-6 me-2"></i>
-                          Cambiar Estado
+                          {{ $t('inmates.list.actions.changeStatus') }}
                         </a>
                       </li>
                     </ul>
@@ -487,7 +509,7 @@
             </i>
           </div>
           <div class="fs-6 text-gray-600 mb-4">
-            No se encontraron internos con los criterios especificados.
+            {{ $t('inmates.list.noResults') }}
           </div>
           <button
             v-if="hasActiveFilters"
@@ -495,7 +517,7 @@
             class="btn btn-light-primary"
             @click="clearFilters"
           >
-            Limpiar Filtros
+            {{ $t('inmates.list.clearFilters') }}
           </button>
         </div>
         <!--end::Empty state-->
@@ -506,18 +528,18 @@
           class="d-flex flex-stack flex-wrap pt-10"
         >
           <div class="fs-6 fw-semibold text-gray-700">
-            Mostrando
-            {{ (pagination.current_page - 1) * pagination.per_page + 1 }} a
+            {{ $t('inmates.list.pagination.showing') }}
+            {{ (pagination.current_page - 1) * pagination.per_page + 1 }} {{ $t('inmates.list.pagination.to') }}
             {{
               Math.min(
                 pagination.current_page * pagination.per_page,
                 pagination.total,
               )
             }}
-            de {{ pagination.total }} registros
+            {{ $t('inmates.list.pagination.of') }} {{ pagination.total }} {{ $t('inmates.list.pagination.records') }}
           </div>
 
-          <nav aria-label="Paginación">
+          <nav>
             <ul class="pagination">
               <li
                 class="page-item"
@@ -528,7 +550,7 @@
                   @click="changePage(pagination.current_page - 1)"
                   :disabled="pagination.current_page === 1"
                 >
-                  Anterior
+                  {{ $t('inmates.list.pagination.previous') }}
                 </button>
               </li>
 
@@ -559,7 +581,7 @@
                   @click="changePage(pagination.current_page + 1)"
                   :disabled="pagination.current_page === pagination.last_page"
                 >
-                  Siguiente
+                  {{ $t('inmates.list.pagination.next') }}
                 </button>
               </li>
             </ul>
@@ -616,6 +638,7 @@ const router = useRouter();
 const searchTerm = ref("");
 const showFilters = ref(false);
 const statistics = ref<InmateStatistics | null>(null);
+const loadingStatistics = ref(false);
 const selectedInmate = ref<InmateListItem | null>(null);
 const showTransferModal = ref(false);
 
@@ -642,6 +665,9 @@ const canTransfer = computed(() =>
 );
 const canChangeStatus = computed(() =>
   authStore.hasPermission("inmates.change_status"),
+);
+const canAdvancedSearch = computed(() =>
+  authStore.hasPermission("inmates.advanced_search"),
 );
 
 // Check if any filter is active
@@ -694,7 +720,7 @@ const paginationPages = computed(() => {
 
 // Helper functions
 const getInmateFullName = (inmate: any) => {
-  if (!inmate) return "Sin nombre";
+  if (!inmate) return t('inmates.list.noName');
 
   const parts = [
     inmate.first_name,
@@ -704,7 +730,7 @@ const getInmateFullName = (inmate: any) => {
     inmate.second_last_name,
   ].filter(Boolean);
 
-  return parts.length > 0 ? parts.join(" ") : "Sin nombre";
+  return parts.length > 0 ? parts.join(" ") : t('inmates.list.noName');
 };
 
 const getInmatePhoto = (inmate: any): string => {
@@ -724,13 +750,10 @@ const getInmatePhoto = (inmate: any): string => {
 };
 
 const getStatusLabel = (status: string) => {
-  const statusMap: { [key: string]: string } = {
-    active: "Activo",
-    released: "Liberado",
-    transferred: "Transferido",
-    deceased: "Fallecido",
-  };
-  return statusMap[status] || status || "N/A";
+  if (!status) return t('inmates.common.na');
+  const statusKey = `inmates.list.statuses.${status}`;
+  const translated = t(statusKey);
+  return translated !== statusKey ? translated : status;
 };
 
 // Methods
@@ -791,12 +814,15 @@ const fetchInmates = async () => {
 };
 
 const fetchStatistics = async () => {
+  loadingStatistics.value = true;
   try {
     statistics.value = await inmatesStore.fetchStatistics();
   } catch (error) {
     console.error("Error fetching statistics:", error);
     // Don't show error to user, just disable statistics display
     statistics.value = null;
+  } finally {
+    loadingStatistics.value = false;
   }
 };
 
@@ -815,6 +841,34 @@ const initiateTransfer = (inmate: InmateListItem) => {
 };
 
 const openAdvancedSearch = async () => {
+  // Get translations for the modal
+  const modal = {
+    title: t('inmates.list.advancedSearchModal.title'),
+    fullName: t('inmates.list.advancedSearchModal.fullName'),
+    fullNamePlaceholder: t('inmates.list.advancedSearchModal.fullNamePlaceholder'),
+    documentNumber: t('inmates.list.advancedSearchModal.documentNumber'),
+    documentPlaceholder: t('inmates.list.advancedSearchModal.documentPlaceholder'),
+    inmateNumber: t('inmates.list.advancedSearchModal.inmateNumber'),
+    inmateNumberPlaceholder: t('inmates.list.advancedSearchModal.inmateNumberPlaceholder'),
+    centers: t('inmates.list.advancedSearchModal.centers'),
+    nationalities: t('inmates.list.advancedSearchModal.nationalities'),
+    gender: t('inmates.list.advancedSearchModal.gender'),
+    status: t('inmates.list.advancedSearchModal.status'),
+    ageMin: t('inmates.list.advancedSearchModal.ageMin'),
+    ageMax: t('inmates.list.advancedSearchModal.ageMax'),
+    admissionFrom: t('inmates.list.advancedSearchModal.admissionFrom'),
+    admissionTo: t('inmates.list.advancedSearchModal.admissionTo'),
+    search: t('inmates.list.advancedSearchModal.search'),
+    cancel: t('inmates.list.advancedSearchModal.cancel'),
+    all: t('inmates.list.filterLabels.allStatuses'),
+    genderM: t('inmates.list.genders.M'),
+    genderF: t('inmates.list.genders.F'),
+    statusActive: t('inmates.list.statuses.active'),
+    statusTransferred: t('inmates.list.statuses.transferred'),
+    statusCourtHearing: t('inmates.list.statuses.court_hearing'),
+    statusReleased: t('inmates.list.statuses.released'),
+  };
+
   const centersOptionsHtml = centersOptions.value
     .map((option) => `<option value="${option.value}">${option.label}</option>`)
     .join("");
@@ -824,72 +878,72 @@ const openAdvancedSearch = async () => {
     .join("");
 
   const { value: formValues } = await Swal.fire({
-    title: "Búsqueda Avanzada de Internos",
+    title: modal.title,
     html: `
       <div class="row g-3">
         <div class="col-12">
-          <label for="fullName" class="form-label">Nombre Completo</label>
-          <input id="fullName" type="text" class="swal2-input" placeholder="Buscar por nombre completo...">
+          <label for="fullName" class="form-label">${modal.fullName}</label>
+          <input id="fullName" type="text" class="swal2-input" placeholder="${modal.fullNamePlaceholder}">
         </div>
         <div class="col-6">
-          <label for="documentNumber" class="form-label">Número de Documento</label>
-          <input id="documentNumber" type="text" class="swal2-input" placeholder="DPI, Pasaporte, etc.">
+          <label for="documentNumber" class="form-label">${modal.documentNumber}</label>
+          <input id="documentNumber" type="text" class="swal2-input" placeholder="${modal.documentPlaceholder}">
         </div>
         <div class="col-6">
-          <label for="inmateNumber" class="form-label">Número de Interno</label>
-          <input id="inmateNumber" type="text" class="swal2-input" placeholder="Número interno...">
+          <label for="inmateNumber" class="form-label">${modal.inmateNumber}</label>
+          <input id="inmateNumber" type="text" class="swal2-input" placeholder="${modal.inmateNumberPlaceholder}">
         </div>
         <div class="col-6">
-          <label for="searchCenters" class="form-label">Centros</label>
+          <label for="searchCenters" class="form-label">${modal.centers}</label>
           <select id="searchCenters" class="swal2-select" multiple>
             ${centersOptionsHtml}
           </select>
         </div>
         <div class="col-6">
-          <label for="searchNationalities" class="form-label">Nacionalidades</label>
+          <label for="searchNationalities" class="form-label">${modal.nationalities}</label>
           <select id="searchNationalities" class="swal2-select" multiple>
             ${nationalitiesOptionsHtml}
           </select>
         </div>
         <div class="col-6">
-          <label for="searchGender" class="form-label">Género</label>
+          <label for="searchGender" class="form-label">${modal.gender}</label>
           <select id="searchGender" class="swal2-select">
-            <option value="">Todos</option>
-            <option value="M">Masculino</option>
-            <option value="F">Femenino</option>
+            <option value="">${modal.all}</option>
+            <option value="M">${modal.genderM}</option>
+            <option value="F">${modal.genderF}</option>
           </select>
         </div>
         <div class="col-6">
-          <label for="searchStatus" class="form-label">Estado</label>
+          <label for="searchStatus" class="form-label">${modal.status}</label>
           <select id="searchStatus" class="swal2-select">
-            <option value="">Todos</option>
-            <option value="active">Activo</option>
-            <option value="transferred">En traslado</option>
-            <option value="court_hearing">En audiencia</option>
-            <option value="released">Liberado</option>
+            <option value="">${modal.all}</option>
+            <option value="active">${modal.statusActive}</option>
+            <option value="transferred">${modal.statusTransferred}</option>
+            <option value="court_hearing">${modal.statusCourtHearing}</option>
+            <option value="released">${modal.statusReleased}</option>
           </select>
         </div>
         <div class="col-6">
-          <label for="ageMin" class="form-label">Edad Mínima</label>
+          <label for="ageMin" class="form-label">${modal.ageMin}</label>
           <input id="ageMin" type="number" class="swal2-input" min="18" max="100">
         </div>
         <div class="col-6">
-          <label for="ageMax" class="form-label">Edad Máxima</label>
+          <label for="ageMax" class="form-label">${modal.ageMax}</label>
           <input id="ageMax" type="number" class="swal2-input" min="18" max="100">
         </div>
         <div class="col-6">
-          <label for="admissionFrom" class="form-label">Fecha Ingreso Desde</label>
+          <label for="admissionFrom" class="form-label">${modal.admissionFrom}</label>
           <input id="admissionFrom" type="date" class="swal2-input">
         </div>
         <div class="col-6">
-          <label for="admissionTo" class="form-label">Fecha Ingreso Hasta</label>
+          <label for="admissionTo" class="form-label">${modal.admissionTo}</label>
           <input id="admissionTo" type="date" class="swal2-input">
         </div>
       </div>
     `,
     showCancelButton: true,
-    confirmButtonText: "Buscar",
-    cancelButtonText: "Cancelar",
+    confirmButtonText: modal.search,
+    cancelButtonText: modal.cancel,
     width: "800px",
     preConfirm: () => {
       const fullName = (document.getElementById("fullName") as HTMLInputElement)
@@ -928,7 +982,7 @@ const openAdvancedSearch = async () => {
       // Validate age range
       if (ageMin && ageMax && parseInt(ageMin) > parseInt(ageMax)) {
         Swal.showValidationMessage(
-          "La edad mínima no puede ser mayor que la máxima",
+          t('inmates.list.advancedSearchModal.ageValidation'),
         );
         return false;
       }
@@ -940,7 +994,7 @@ const openAdvancedSearch = async () => {
         new Date(admissionFrom) > new Date(admissionTo)
       ) {
         Swal.showValidationMessage(
-          "La fecha de inicio no puede ser posterior a la fecha final",
+          t('inmates.list.advancedSearchModal.dateValidation'),
         );
         return false;
       }
@@ -980,8 +1034,8 @@ const openAdvancedSearch = async () => {
 
       if (Object.keys(cleanParams).length === 0) {
         Swal.fire({
-          title: "Sin Criterios",
-          text: "Debe especificar al menos un criterio de búsqueda",
+          title: t('inmates.list.advancedSearchModal.noCriteria'),
+          text: t('inmates.list.advancedSearchModal.noCriteriaMessage'),
           icon: "warning",
         });
         return;
@@ -990,17 +1044,26 @@ const openAdvancedSearch = async () => {
       await inmatesStore.advancedSearch(cleanParams);
 
       Swal.fire({
-        title: "Búsqueda Completada",
-        text: `Se encontraron ${inmates.value.length} resultados`,
+        title: t('inmates.list.advancedSearchModal.searchCompleted'),
+        text: t('inmates.list.advancedSearchModal.resultsFound', { count: inmates.value.length }),
         icon: "success",
         timer: 2000,
       });
     } catch (error: any) {
-      Swal.fire({
-        title: "Error en Búsqueda",
-        text: error.message || "No se pudo realizar la búsqueda avanzada",
-        icon: "error",
-      });
+      // Handle permission denied error
+      if (error.response?.status === 403) {
+        Swal.fire({
+          title: t('common.status.accessDenied'),
+          text: t('inmates.list.advancedSearchModal.noPermission'),
+          icon: "error",
+        });
+      } else {
+        Swal.fire({
+          title: t('inmates.list.advancedSearchModal.searchError'),
+          text: error.message || t('inmates.list.advancedSearchModal.searchErrorMessage'),
+          icon: "error",
+        });
+      }
     }
   }
 };
@@ -1052,8 +1115,8 @@ const handleReleased = () => {
   fetchStatistics();
 
   Swal.fire({
-    title: '¡Interno Liberado!',
-    text: 'El interno ha sido liberado exitosamente',
+    title: t('inmates.list.swal.inmateReleased'),
+    text: t('inmates.list.swal.inmateReleasedDesc'),
     icon: 'success',
     timer: 3000
   });
@@ -1082,5 +1145,26 @@ watch(
 
 .page-item.disabled .page-link {
   cursor: not-allowed;
+}
+
+/* Skeleton loader animation */
+.skeleton-box {
+  background: linear-gradient(
+    90deg,
+    #e8e8e8 25%,
+    #f5f5f5 50%,
+    #e8e8e8 75%
+  );
+  background-size: 200% 100%;
+  animation: skeleton-loading 1.5s infinite;
+}
+
+@keyframes skeleton-loading {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
 }
 </style>

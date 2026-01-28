@@ -5,12 +5,14 @@
       <div class="card card-flush h-100">
         <div class="card-header pt-7">
           <h3 class="card-title align-items-start flex-column">
-            <span class="card-label fw-bold text-gray-800"
-              >Visitantes Autorizados</span
-            >
-            <span class="text-gray-600 mt-1 fw-semibold fs-6"
-              >{{ authorizedVisitors.length }} visitantes registrados</span
-            >
+            <span class="card-label fw-bold text-gray-800">{{
+              $t("inmates.tabs.visits.authorizedVisitors.title")
+            }}</span>
+            <span class="text-gray-600 mt-1 fw-semibold fs-6">{{
+              $t("inmates.tabs.visits.authorizedVisitors.visitorsRegistered", {
+                count: authorizedVisitors.length,
+              })
+            }}</span>
           </h3>
           <div class="card-toolbar">
             <button
@@ -19,14 +21,16 @@
               class="btn btn-sm btn-light-primary"
             >
               <KTIcon icon-name="plus" icon-class="fs-2" />
-              Agregar
+              {{ $t("inmates.tabs.visits.buttons.add") }}
             </button>
           </div>
         </div>
         <div class="card-body pt-0">
           <div v-if="authorizedVisitors.length === 0" class="text-center py-5">
             <KTIcon icon-name="people" icon-class="fs-5x text-gray-400 mb-4" />
-            <div class="text-gray-600">No hay visitantes autorizados</div>
+            <div class="text-gray-600">{{
+              $t("inmates.tabs.visits.authorizedVisitors.noData")
+            }}</div>
           </div>
           <div v-else class="scroll-y" style="max-height: 400px">
             <div
@@ -40,7 +44,8 @@
                     {{ visitor.visitor_name }}
                   </div>
                   <div class="text-gray-600 fs-7">
-                    DPI: {{ visitor.visitor_dpi }}
+                    {{ $t("inmates.tabs.visits.authorizedVisitors.dpi") }}:
+                    {{ visitor.visitor_dpi }}
                   </div>
                   <div class="text-gray-600 fs-7">
                     {{ visitor.relationship_type_name }}
@@ -56,14 +61,16 @@
                       v-if="visitor.relationship_verified"
                       class="badge badge-light-success ms-2"
                     >
-                      Verificado
+                      {{ $t("inmates.tabs.visits.authorizedVisitors.verified") }}
                     </span>
                   </div>
                   <div
                     v-if="visitor.visit_limit_per_month"
                     class="text-gray-600 fs-8 mt-1"
                   >
-                    Límite: {{ visitor.visit_limit_per_month }} visitas/mes
+                    {{ $t("inmates.tabs.visits.authorizedVisitors.limit") }}:
+                    {{ visitor.visit_limit_per_month }}
+                    {{ $t("inmates.tabs.visits.authorizedVisitors.visitsPerMonth") }}
                   </div>
                 </div>
                 <div class="dropdown">
@@ -82,7 +89,7 @@
                         class="menu-link px-3"
                       >
                         <KTIcon icon-name="time" icon-class="fs-6 me-2" />
-                        Historial de Visitas
+                        {{ $t("inmates.tabs.visits.buttons.viewHistory") }}
                       </a>
                     </div>
                     <div v-if="canManageVisitors" class="menu-item px-3">
@@ -91,7 +98,7 @@
                         class="menu-link px-3"
                       >
                         <KTIcon icon-name="pencil" icon-class="fs-6 me-2" />
-                        Editar Relación
+                        {{ $t("inmates.tabs.visits.buttons.editRelationship") }}
                       </a>
                     </div>
                     <div v-if="canManageVisitors" class="menu-separator"></div>
@@ -104,7 +111,7 @@
                         class="menu-link px-3 text-warning"
                       >
                         <KTIcon icon-name="pause" icon-class="fs-6 me-2" />
-                        Suspender
+                        {{ $t("inmates.tabs.visits.buttons.suspend") }}
                       </a>
                     </div>
                     <div
@@ -116,7 +123,7 @@
                         class="menu-link px-3 text-success"
                       >
                         <KTIcon icon-name="check" icon-class="fs-6 me-2" />
-                        Reactivar
+                        {{ $t("inmates.tabs.visits.buttons.reactivate") }}
                       </a>
                     </div>
                     <div v-if="canManageVisitors" class="menu-item px-3">
@@ -125,7 +132,7 @@
                         class="menu-link px-3 text-danger"
                       >
                         <KTIcon icon-name="trash" icon-class="fs-6 me-2" />
-                        Revocar
+                        {{ $t("inmates.tabs.visits.buttons.revoke") }}
                       </a>
                     </div>
                   </div>
@@ -142,12 +149,12 @@
       <div class="card card-flush h-100">
         <div class="card-header pt-7">
           <h3 class="card-title align-items-start flex-column">
-            <span class="card-label fw-bold text-gray-800"
-              >Visitas Recientes</span
-            >
-            <span class="text-gray-600 mt-1 fw-semibold fs-6"
-              >Últimas 10 visitas</span
-            >
+            <span class="card-label fw-bold text-gray-800">{{
+              $t("inmates.tabs.visits.recentVisits.title")
+            }}</span>
+            <span class="text-gray-600 mt-1 fw-semibold fs-6">{{
+              $t("inmates.tabs.visits.recentVisits.last10")
+            }}</span>
           </h3>
           <div class="card-toolbar">
             <button
@@ -156,14 +163,16 @@
               class="btn btn-sm btn-light-primary"
             >
               <KTIcon icon-name="calendar" icon-class="fs-2" />
-              Agendar
+              {{ $t("inmates.tabs.visits.buttons.schedule") }}
             </button>
           </div>
         </div>
         <div class="card-body pt-0">
           <div v-if="loading.visits" class="text-center py-5">
             <div class="spinner-border text-primary" role="status">
-              <span class="visually-hidden">Cargando...</span>
+              <span class="visually-hidden">{{
+                $t("inmates.tabs.visits.loading")
+              }}</span>
             </div>
           </div>
           <div v-else-if="recentVisits.length === 0" class="text-center py-5">
@@ -171,7 +180,9 @@
               icon-name="calendar-8"
               icon-class="fs-5x text-gray-400 mb-4"
             />
-            <div class="text-gray-600">No hay visitas registradas</div>
+            <div class="text-gray-600">{{
+              $t("inmates.tabs.visits.recentVisits.noData")
+            }}</div>
           </div>
           <div v-else class="scroll-y" style="max-height: 400px">
             <div
@@ -188,7 +199,8 @@
                     {{ formatDateTime(visit.visit_date) }}
                   </div>
                   <div class="text-gray-600 fs-7">
-                    Duración: {{ visit.duration_minutes }} min
+                    {{ $t("inmates.tabs.visits.recentVisits.duration") }}:
+                    {{ visit.duration_minutes }} min
                   </div>
                   <div class="mt-2">
                     <span
@@ -224,7 +236,7 @@
                         class="menu-link px-3"
                       >
                         <KTIcon icon-name="eye" icon-class="fs-6 me-2" />
-                        Ver Detalles
+                        {{ $t("inmates.tabs.visits.buttons.viewDetails") }}
                       </a>
                     </div>
                     <div
@@ -236,7 +248,7 @@
                         class="menu-link px-3"
                       >
                         <KTIcon icon-name="pencil" icon-class="fs-6 me-2" />
-                        Editar
+                        {{ $t("inmates.tabs.visits.buttons.edit") }}
                       </a>
                     </div>
                     <div
@@ -252,7 +264,7 @@
                         class="menu-link px-3 text-danger"
                       >
                         <KTIcon icon-name="cross" icon-class="fs-6 me-2" />
-                        Cancelar
+                        {{ $t("inmates.tabs.visits.buttons.cancel") }}
                       </a>
                     </div>
                   </div>
@@ -269,18 +281,20 @@
       <div class="card card-flush h-100">
         <div class="card-header pt-7">
           <h3 class="card-title align-items-start flex-column">
-            <span class="card-label fw-bold text-gray-800"
-              >Estadísticas de Visitas</span
-            >
-            <span class="text-gray-600 mt-1 fw-semibold fs-6"
-              >Últimos 30 días</span
-            >
+            <span class="card-label fw-bold text-gray-800">{{
+              $t("inmates.tabs.visits.statistics.title")
+            }}</span>
+            <span class="text-gray-600 mt-1 fw-semibold fs-6">{{
+              $t("inmates.tabs.visits.statistics.last30Days")
+            }}</span>
           </h3>
         </div>
         <div class="card-body pt-0">
           <div v-if="loading.statistics" class="text-center py-5">
             <div class="spinner-border text-primary" role="status">
-              <span class="visually-hidden">Cargando...</span>
+              <span class="visually-hidden">{{
+                $t("inmates.tabs.visits.loading")
+              }}</span>
             </div>
           </div>
           <div v-else>
@@ -297,7 +311,9 @@
                 </div>
               </div>
               <div class="flex-grow-1">
-                <div class="fw-bold text-gray-800 fs-6">Total de Visitas</div>
+                <div class="fw-bold text-gray-800 fs-6">{{
+                  $t("inmates.tabs.visits.statistics.totalVisits")
+                }}</div>
                 <div class="text-gray-600 fs-7">
                   {{ visitStatistics.total_visits_last_30_days || 0 }}
                 </div>
@@ -314,7 +330,9 @@
                 </div>
               </div>
               <div class="flex-grow-1">
-                <div class="fw-bold text-gray-800 fs-6">Visitantes Únicos</div>
+                <div class="fw-bold text-gray-800 fs-6">{{
+                  $t("inmates.tabs.visits.statistics.uniqueVisitors")
+                }}</div>
                 <div class="text-gray-600 fs-7">
                   {{ visitStatistics.unique_visitors_last_30_days || 0 }}
                 </div>
@@ -331,7 +349,9 @@
                 </div>
               </div>
               <div class="flex-grow-1">
-                <div class="fw-bold text-gray-800 fs-6">Duración Promedio</div>
+                <div class="fw-bold text-gray-800 fs-6">{{
+                  $t("inmates.tabs.visits.statistics.averageDuration")
+                }}</div>
                 <div class="text-gray-600 fs-7">
                   {{ visitStatistics.average_duration_minutes || 0 }} min
                 </div>
@@ -351,9 +371,9 @@
                 </div>
               </div>
               <div class="flex-grow-1">
-                <div class="fw-bold text-gray-800 fs-6">
-                  Visitas Programadas
-                </div>
+                <div class="fw-bold text-gray-800 fs-6">{{
+                  $t("inmates.tabs.visits.statistics.scheduledVisits")
+                }}</div>
                 <div class="text-gray-600 fs-7">
                   {{ visitStatistics.scheduled_visits || 0 }}
                 </div>
@@ -362,9 +382,9 @@
 
             <!-- Visit Types Distribution -->
             <div v-if="visitStatistics.visit_types_distribution" class="mt-4">
-              <div class="fw-bold text-gray-800 fs-7 mb-3">
-                Tipos de Visitas
-              </div>
+              <div class="fw-bold text-gray-800 fs-7 mb-3">{{
+                $t("inmates.tabs.visits.statistics.visitTypes")
+              }}</div>
               <div
                 v-for="(
                   count, type
@@ -386,12 +406,12 @@
       <div class="card card-flush">
         <div class="card-header pt-7">
           <h3 class="card-title align-items-start flex-column">
-            <span class="card-label fw-bold text-gray-800"
-              >Control de Acceso Biométrico</span
-            >
-            <span class="text-gray-600 mt-1 fw-semibold fs-6"
-              >Registro de accesos con biometría</span
-            >
+            <span class="card-label fw-bold text-gray-800">{{
+              $t("inmates.tabs.visits.biometric.title")
+            }}</span>
+            <span class="text-gray-600 mt-1 fw-semibold fs-6">{{
+              $t("inmates.tabs.visits.biometric.subtitle")
+            }}</span>
           </h3>
           <div class="card-toolbar">
             <button
@@ -400,18 +420,20 @@
               class="btn btn-sm btn-light-success me-3"
             >
               <KTIcon icon-name="fingerprint-scanning" icon-class="fs-2" />
-              Registrar Biometría
+              {{ $t("inmates.tabs.visits.biometric.registerBiometric") }}
             </button>
             <button @click="refreshBiometricLogs" class="btn btn-sm btn-light">
               <KTIcon icon-name="arrows-circle" icon-class="fs-2" />
-              Actualizar
+              {{ $t("inmates.tabs.visits.biometric.refresh") }}
             </button>
           </div>
         </div>
         <div class="card-body pt-0">
           <div v-if="loading.biometrics" class="text-center py-5">
             <div class="spinner-border text-primary" role="status">
-              <span class="visually-hidden">Cargando...</span>
+              <span class="visually-hidden">{{
+                $t("inmates.tabs.visits.loading")
+              }}</span>
             </div>
           </div>
           <div v-else>
@@ -455,11 +477,7 @@
                               : 'badge-light-danger'
                           "
                         >
-                          {{
-                            device.status === "online"
-                              ? "En Línea"
-                              : "Fuera de Línea"
-                          }}
+                          {{ getDeviceStatusText(device.status) }}
                         </span>
                       </div>
                     </div>
@@ -475,19 +493,19 @@
                   <tr
                     class="fw-semibold fs-6 text-gray-800 border-bottom-2 border-gray-200"
                   >
-                    <th>Fecha/Hora</th>
-                    <th>Visitante</th>
-                    <th>Tipo de Acceso</th>
-                    <th>Dispositivo</th>
-                    <th>Estado</th>
-                    <th>Calidad Biométrica</th>
-                    <th>Acciones</th>
+                    <th>{{ $t("inmates.tabs.visits.biometric.tableHeaders.dateTime") }}</th>
+                    <th>{{ $t("inmates.tabs.visits.biometric.tableHeaders.visitor") }}</th>
+                    <th>{{ $t("inmates.tabs.visits.biometric.tableHeaders.accessType") }}</th>
+                    <th>{{ $t("inmates.tabs.visits.biometric.tableHeaders.device") }}</th>
+                    <th>{{ $t("inmates.tabs.visits.biometric.tableHeaders.status") }}</th>
+                    <th>{{ $t("inmates.tabs.visits.biometric.tableHeaders.biometricQuality") }}</th>
+                    <th>{{ $t("inmates.tabs.visits.biometric.tableHeaders.actions") }}</th>
                   </tr>
                 </thead>
                 <tbody>
                   <tr v-if="biometricLogs.length === 0">
                     <td colspan="7" class="text-center text-gray-600 py-5">
-                      No hay registros biométricos disponibles
+                      {{ $t("inmates.tabs.visits.biometric.noRecords") }}
                     </td>
                   </tr>
                   <tr v-for="log in biometricLogs" :key="log.id">
@@ -507,7 +525,7 @@
                             : 'badge-light-warning'
                         "
                       >
-                        {{ log.access_type === "entry" ? "Ingreso" : "Salida" }}
+                        {{ getAccessTypeText(log.access_type) }}
                       </span>
                     </td>
                     <td>{{ log.device_name }}</td>
@@ -556,7 +574,7 @@
     <div class="modal-dialog modal-lg">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title">Agregar Visitante Autorizado</h5>
+          <h5 class="modal-title">{{ $t("inmates.tabs.visits.modal.addVisitor") }}</h5>
           <button
             type="button"
             class="btn-close"
@@ -567,13 +585,13 @@
           <form @submit.prevent="saveVisitor">
             <div class="row g-3">
               <div class="col-md-6">
-                <label class="form-label required">DPI del Visitante</label>
+                <label class="form-label required">{{ $t("inmates.tabs.visits.modal.visitorDpi") }}</label>
                 <input
                   v-model="visitorForm.visitor_dpi"
                   type="text"
                   class="form-control"
                   :class="{ 'is-invalid': visitorErrors.visitor_dpi }"
-                  placeholder="Ingrese DPI"
+                  :placeholder="$t('inmates.tabs.visits.modal.visitorDpiPlaceholder')"
                   required
                 />
                 <div v-if="visitorErrors.visitor_dpi" class="invalid-feedback">
@@ -581,13 +599,13 @@
                 </div>
               </div>
               <div class="col-md-6">
-                <label class="form-label required">Nombre Completo</label>
+                <label class="form-label required">{{ $t("inmates.tabs.visits.modal.fullName") }}</label>
                 <input
                   v-model="visitorForm.visitor_name"
                   type="text"
                   class="form-control"
                   :class="{ 'is-invalid': visitorErrors.visitor_name }"
-                  placeholder="Nombre completo del visitante"
+                  :placeholder="$t('inmates.tabs.visits.modal.fullNamePlaceholder')"
                   required
                 />
                 <div v-if="visitorErrors.visitor_name" class="invalid-feedback">
@@ -595,14 +613,14 @@
                 </div>
               </div>
               <div class="col-md-6">
-                <label class="form-label required">Tipo de Relación</label>
+                <label class="form-label required">{{ $t("inmates.tabs.visits.modal.relationshipType") }}</label>
                 <select
                   v-model="visitorForm.relationship_type_id"
                   class="form-select"
                   :class="{ 'is-invalid': visitorErrors.relationship_type_id }"
                   required
                 >
-                  <option value="">Seleccione una relación</option>
+                  <option value="">{{ $t("inmates.tabs.visits.modal.selectRelationship") }}</option>
                   <option
                     v-for="type in relationshipTypes"
                     :key="type.id"
@@ -619,23 +637,23 @@
                 </div>
               </div>
               <div class="col-md-6">
-                <label class="form-label">Límite de Visitas por Mes</label>
+                <label class="form-label">{{ $t("inmates.tabs.visits.modal.visitLimitPerMonth") }}</label>
                 <input
                   v-model.number="visitorForm.visit_limit_per_month"
                   type="number"
                   class="form-control"
                   min="1"
                   max="31"
-                  placeholder="Ej: 4"
+                  placeholder="4"
                 />
               </div>
               <div class="col-12">
-                <label class="form-label">Condiciones Especiales</label>
+                <label class="form-label">{{ $t("inmates.tabs.visits.modal.specialConditions") }}</label>
                 <textarea
                   v-model="visitorForm.special_conditions"
                   class="form-control"
                   rows="3"
-                  placeholder="Condiciones especiales para las visitas (opcional)"
+                  :placeholder="$t('inmates.tabs.visits.modal.specialConditionsPlaceholder')"
                 ></textarea>
               </div>
               <div class="col-12">
@@ -647,7 +665,7 @@
                     id="relationshipVerified"
                   />
                   <label class="form-check-label" for="relationshipVerified">
-                    Relación verificada con documentación
+                    {{ $t("inmates.tabs.visits.modal.relationshipVerified") }}
                   </label>
                 </div>
               </div>
@@ -656,7 +674,7 @@
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-light" data-bs-dismiss="modal">
-            Cancelar
+            {{ $t("inmates.tabs.visits.buttons.cancel") }}
           </button>
           <button
             type="button"
@@ -668,7 +686,7 @@
               v-if="loading.saving"
               class="spinner-border spinner-border-sm me-2"
             ></span>
-            {{ editingVisitor ? "Actualizar" : "Guardar" }} Visitante
+            {{ editingVisitor ? $t("inmates.tabs.visits.modal.updateVisitor") : $t("inmates.tabs.visits.modal.saveVisitor") }}
           </button>
         </div>
       </div>
@@ -679,10 +697,13 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from "vue";
 import { useAuthStore } from "@/stores/auth";
+import { useI18n } from "vue-i18n";
 import type { InmateDetail, InmateVisitorRelationship } from "@/types/inmates";
 import Swal from "sweetalert2";
 import KTIcon from "@/core/helpers/kt-icon/KTIcon.vue";
 import CatalogService from "@/core/services/CatalogService";
+
+const { t } = useI18n();
 
 interface Props {
   inmate: InmateDetail;
@@ -999,22 +1020,21 @@ const saveVisitor = async () => {
 
     // Basic validation
     if (!visitorForm.value.visitor_dpi) {
-      visitorErrors.value.visitor_dpi = ["El DPI es requerido"];
+      visitorErrors.value.visitor_dpi = [t("inmates.tabs.visits.swal.dpiRequired")];
       return;
     }
     if (!visitorForm.value.visitor_name) {
-      visitorErrors.value.visitor_name = ["El nombre es requerido"];
+      visitorErrors.value.visitor_name = [t("inmates.tabs.visits.swal.nameRequired")];
       return;
     }
     if (!visitorForm.value.relationship_type_id) {
       visitorErrors.value.relationship_type_id = [
-        "El tipo de relación es requerido",
+        t("inmates.tabs.visits.swal.relationshipRequired"),
       ];
       return;
     }
 
     // Here would call backend API to save visitor
-    console.log("Saving visitor:", visitorForm.value);
 
     // Close modal
     const modal = (window as any).bootstrap.Modal.getInstance(
@@ -1026,16 +1046,16 @@ const saveVisitor = async () => {
     await loadVisitorData();
 
     Swal.fire({
-      title: "Visitante Guardado",
-      text: "El visitante ha sido registrado correctamente.",
+      title: t("inmates.tabs.visits.swal.visitorSaved"),
+      text: t("inmates.tabs.visits.swal.visitorSavedDesc"),
       icon: "success",
       confirmButtonText: "OK",
     });
   } catch (error) {
     console.error("Error saving visitor:", error);
     Swal.fire({
-      title: "Error",
-      text: "No se pudo guardar el visitante.",
+      title: t("inmates.tabs.visits.swal.saveError"),
+      text: t("inmates.tabs.visits.swal.saveErrorDesc"),
       icon: "error",
       confirmButtonText: "OK",
     });
@@ -1058,53 +1078,50 @@ const resetVisitorForm = () => {
 
 const suspendVisitor = async (visitor: InmateVisitorRelationship) => {
   const { value: reason } = await Swal.fire({
-    title: "Suspender Visitante",
-    text: `¿Está seguro de suspender a ${visitor.visitor_name}?`,
+    title: t("inmates.tabs.visits.swal.suspendVisitor"),
+    text: t("inmates.tabs.visits.swal.suspendVisitorConfirm", { name: visitor.visitor_name }),
     input: "textarea",
-    inputPlaceholder: "Motivo de la suspensión",
+    inputPlaceholder: t("inmates.tabs.visits.swal.suspendReason"),
     showCancelButton: true,
-    confirmButtonText: "Suspender",
-    cancelButtonText: "Cancelar",
+    confirmButtonText: t("inmates.tabs.visits.buttons.suspend"),
+    cancelButtonText: t("inmates.tabs.visits.buttons.cancel"),
   });
 
   if (reason) {
     // Call backend API to suspend visitor
-    console.log("Suspending visitor:", visitor.id, "Reason:", reason);
     await loadVisitorData();
   }
 };
 
 const reactivateVisitor = async (visitor: InmateVisitorRelationship) => {
   const result = await Swal.fire({
-    title: "Reactivar Visitante",
-    text: `¿Está seguro de reactivar a ${visitor.visitor_name}?`,
+    title: t("inmates.tabs.visits.swal.reactivateVisitor"),
+    text: t("inmates.tabs.visits.swal.reactivateVisitorConfirm", { name: visitor.visitor_name }),
     showCancelButton: true,
-    confirmButtonText: "Reactivar",
-    cancelButtonText: "Cancelar",
+    confirmButtonText: t("inmates.tabs.visits.buttons.reactivate"),
+    cancelButtonText: t("inmates.tabs.visits.buttons.cancel"),
   });
 
   if (result.isConfirmed) {
     // Call backend API to reactivate visitor
-    console.log("Reactivating visitor:", visitor.id);
     await loadVisitorData();
   }
 };
 
 const revokeVisitor = async (visitor: InmateVisitorRelationship) => {
   const { value: reason } = await Swal.fire({
-    title: "Revocar Autorización",
-    text: `¿Está seguro de revocar permanentemente la autorización de ${visitor.visitor_name}?`,
+    title: t("inmates.tabs.visits.swal.revokeAuthorization"),
+    text: t("inmates.tabs.visits.swal.revokeAuthorizationConfirm", { name: visitor.visitor_name }),
     input: "textarea",
-    inputPlaceholder: "Motivo de la revocación",
+    inputPlaceholder: t("inmates.tabs.visits.swal.revocationReason"),
     showCancelButton: true,
-    confirmButtonText: "Revocar",
-    cancelButtonText: "Cancelar",
+    confirmButtonText: t("inmates.tabs.visits.buttons.revoke"),
+    cancelButtonText: t("inmates.tabs.visits.buttons.cancel"),
     confirmButtonColor: "#d33",
   });
 
   if (reason) {
     // Call backend API to revoke visitor
-    console.log("Revoking visitor:", visitor.id, "Reason:", reason);
     await loadVisitorData();
   }
 };
@@ -1113,8 +1130,8 @@ const revokeVisitor = async (visitor: InmateVisitorRelationship) => {
 const openScheduleVisitModal = () => {
   // This would open a modal to schedule a new visit
   Swal.fire({
-    title: "Agendar Visita",
-    text: "Funcionalidad de agendamiento en desarrollo.",
+    title: t("inmates.tabs.visits.swal.scheduleVisit"),
+    text: t("inmates.tabs.visits.swal.scheduleVisitDesc"),
     icon: "info",
     confirmButtonText: "OK",
   });
@@ -1122,33 +1139,29 @@ const openScheduleVisitModal = () => {
 
 const viewVisitorHistory = (visitor: InmateVisitorRelationship) => {
   // This would show visit history for the visitor
-  console.log("Viewing history for visitor:", visitor.id);
 };
 
 const viewVisitDetails = (visit: Visit) => {
   // This would show detailed visit information
-  console.log("Viewing visit details:", visit.id);
 };
 
 const editVisit = (visit: Visit) => {
   // This would open edit modal for visit
-  console.log("Editing visit:", visit.id);
 };
 
 const cancelVisit = async (visit: Visit) => {
   const { value: reason } = await Swal.fire({
-    title: "Cancelar Visita",
-    text: `¿Está seguro de cancelar la visita de ${visit.visitor_name}?`,
+    title: t("inmates.tabs.visits.swal.cancelVisit"),
+    text: t("inmates.tabs.visits.swal.cancelVisitConfirm", { name: visit.visitor_name }),
     input: "textarea",
-    inputPlaceholder: "Motivo de la cancelación",
+    inputPlaceholder: t("inmates.tabs.visits.swal.cancellationReason"),
     showCancelButton: true,
-    confirmButtonText: "Cancelar Visita",
-    cancelButtonText: "No Cancelar",
+    confirmButtonText: t("inmates.tabs.visits.buttons.cancelVisit"),
+    cancelButtonText: t("inmates.tabs.visits.buttons.dontCancel"),
   });
 
   if (reason) {
     // Call backend API to cancel visit
-    console.log("Cancelling visit:", visit.id, "Reason:", reason);
     await loadVisitorData();
   }
 };
@@ -1156,8 +1169,8 @@ const cancelVisit = async (visit: Visit) => {
 // Biometric methods
 const openBiometricRegistrationModal = () => {
   Swal.fire({
-    title: "Registro Biométrico",
-    text: "Funcionalidad de registro biométrico en desarrollo.",
+    title: t("inmates.tabs.visits.swal.biometricRegistration"),
+    text: t("inmates.tabs.visits.swal.biometricRegistrationDesc"),
     icon: "info",
     confirmButtonText: "OK",
   });
@@ -1168,7 +1181,6 @@ const refreshBiometricLogs = async () => {
 };
 
 const viewBiometricDetails = (log: BiometricLog) => {
-  console.log("Viewing biometric details:", log.id);
 };
 
 // Helper methods
@@ -1182,12 +1194,10 @@ const getVisitorStatusClass = (status: string): string => {
 };
 
 const getVisitorStatusText = (status: string): string => {
-  const texts: Record<string, string> = {
-    active: "Activo",
-    suspended: "Suspendido",
-    revoked: "Revocado",
-  };
-  return texts[status] || status;
+  if (!status) return status;
+  const statusKey = `inmates.tabs.visits.visitorStatuses.${status}`;
+  const translated = t(statusKey);
+  return translated !== statusKey ? translated : status;
 };
 
 const getVisitStatusClass = (status: string): string => {
@@ -1202,14 +1212,10 @@ const getVisitStatusClass = (status: string): string => {
 };
 
 const getVisitStatusText = (status: string): string => {
-  const texts: Record<string, string> = {
-    scheduled: "Programada",
-    in_progress: "En Progreso",
-    completed: "Completada",
-    cancelled: "Cancelada",
-    no_show: "No Asistió",
-  };
-  return texts[status] || status;
+  if (!status) return status;
+  const statusKey = `inmates.tabs.visits.visitStatuses.${status}`;
+  const translated = t(statusKey);
+  return translated !== statusKey ? translated : status;
 };
 
 const getBiometricStatusClass = (status: string): string => {
@@ -1222,12 +1228,24 @@ const getBiometricStatusClass = (status: string): string => {
 };
 
 const getBiometricStatusText = (status: string): string => {
-  const texts: Record<string, string> = {
-    success: "Exitoso",
-    failed: "Fallido",
-    partial: "Parcial",
-  };
-  return texts[status] || status;
+  if (!status) return status;
+  const statusKey = `inmates.tabs.visits.biometric.verificationStatuses.${status}`;
+  const translated = t(statusKey);
+  return translated !== statusKey ? translated : status;
+};
+
+const getDeviceStatusText = (status: string): string => {
+  if (!status) return status;
+  const statusKey = `inmates.tabs.visits.biometric.deviceStatuses.${status}`;
+  const translated = t(statusKey);
+  return translated !== statusKey ? translated : status;
+};
+
+const getAccessTypeText = (accessType: string): string => {
+  if (!accessType) return accessType;
+  const statusKey = `inmates.tabs.visits.biometric.accessTypes.${accessType}`;
+  const translated = t(statusKey);
+  return translated !== statusKey ? translated : accessType;
 };
 
 const getQualityBarClass = (score: number): string => {

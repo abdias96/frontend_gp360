@@ -117,7 +117,6 @@ export const useAuthStore = defineStore("auth", () => {
 
     // Connect WebSocket after successful authentication
     setTimeout(() => {
-      console.log("Connecting to WebSocket after authentication...");
       webSocketService.connect();
     }, 500);
   }
@@ -141,7 +140,6 @@ export const useAuthStore = defineStore("auth", () => {
     ApiService.removeHeader();
     
     // Disconnect WebSocket on logout
-    console.log("Disconnecting WebSocket...");
     webSocketService.disconnect();
   }
 

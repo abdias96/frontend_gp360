@@ -249,7 +249,6 @@ const markAsComplete = async (id: number) => {
 
 const editDeadline = (deadline: any) => {
   // This would open the modal for editing
-  console.log('Edit deadline:', deadline);
 };
 
 const deleteDeadline = async (id: number) => {

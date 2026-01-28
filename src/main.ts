@@ -89,7 +89,6 @@ router.isReady().then(() => {
   // Connect WebSocket if user is authenticated
   const authStore = useAuthStore();
   if (authStore.isAuthenticated) {
-    console.log("Initializing WebSocket connection...");
     webSocketService.connect();
   }
 });

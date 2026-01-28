@@ -5,14 +5,14 @@
       <h1
         class="page-heading d-flex text-dark fw-bold fs-3 flex-column justify-content-center my-0"
       >
-        Gestión de Roles
+        {{ $t('roles.list.title') }}
       </h1>
     </div>
 
     <!-- Tarjeta principal -->
     <div class="card mt-5">
       <div class="card-header">
-        <h3 class="card-title">Lista de Roles</h3>
+        <h3 class="card-title">{{ $t('roles.list.subtitle') }}</h3>
         <div class="card-toolbar">
           <router-link
             v-permission="'roles.create'"
@@ -20,7 +20,7 @@
             class="btn btn-primary"
           >
             <i class="bi bi-plus me-1"></i>
-            Crear Rol
+            {{ $t('roles.list.createRole') }}
           </router-link>
         </div>
       </div>
@@ -29,7 +29,7 @@
         <!-- Loading state -->
         <div v-if="loading" class="d-flex justify-content-center my-5">
           <div class="spinner-border" role="status">
-            <span class="visually-hidden">Cargando...</span>
+            <span class="visually-hidden">{{ $t('roles.list.loading') }}</span>
           </div>
         </div>
 
@@ -38,12 +38,12 @@
           <table class="table table-row-dashed table-row-gray-300 gy-7">
             <thead>
               <tr class="fw-semibold fs-6 text-gray-800">
-                <th>Nombre</th>
-                <th>Slug</th>
-                <th>Descripción</th>
-                <th>Estado</th>
-                <th>Permisos</th>
-                <th v-permission="['roles.edit', 'roles.delete']">Acciones</th>
+                <th>{{ $t('roles.list.table.name') }}</th>
+                <th>{{ $t('roles.list.table.slug') }}</th>
+                <th>{{ $t('roles.list.table.description') }}</th>
+                <th>{{ $t('roles.list.table.status') }}</th>
+                <th>{{ $t('roles.list.table.permissions') }}</th>
+                <th v-permission="['roles.edit', 'roles.delete']">{{ $t('roles.list.table.actions') }}</th>
               </tr>
             </thead>
             <tbody>
@@ -52,7 +52,7 @@
                 <td>
                   <span class="badge badge-light">{{ role.slug }}</span>
                 </td>
-                <td>{{ role.description || "Sin descripción" }}</td>
+                <td>{{ role.description || $t('roles.list.noDescription') }}</td>
                 <td>
                   <span
                     :class="{
@@ -60,12 +60,12 @@
                       'badge badge-danger': !role.active,
                     }"
                   >
-                    {{ role.active ? "Activo" : "Inactivo" }}
+                    {{ role.active ? $t('roles.status.active') : $t('roles.status.inactive') }}
                   </span>
                 </td>
                 <td>
                   <span class="badge badge-primary">
-                    {{ role.permissions_count || 0 }} permisos
+                    {{ $t('roles.list.permissionsCount', { count: role.permissions_count || 0 }) }}
                   </span>
                 </td>
                 <td v-permission="['roles.edit', 'roles.delete']">
@@ -107,15 +107,15 @@
             class="text-center py-5"
           >
             <i class="bi bi-shield-x display-4 text-muted"></i>
-            <h4 class="mt-3">No hay roles disponibles</h4>
-            <p class="text-muted">Cree el primer rol para comenzar.</p>
+            <h4 class="mt-3">{{ $t('roles.list.noRolesAvailable') }}</h4>
+            <p class="text-muted">{{ $t('roles.list.noRolesHint') }}</p>
             <router-link
               v-permission="'roles.create'"
               to="/roles/create"
               class="btn btn-primary"
             >
               <i class="bi bi-plus me-1"></i>
-              Crear Primer Rol
+              {{ $t('roles.list.createFirstRole') }}
             </router-link>
           </div>
         </div>
@@ -132,7 +132,7 @@
       <div class="modal-dialog modal-lg">
         <div class="modal-content">
           <div class="modal-header">
-            <h5 class="modal-title">Permisos para: {{ selectedRole.name }}</h5>
+            <h5 class="modal-title">{{ $t('roles.list.permissionsForRole', { name: selectedRole.name }) }}</h5>
             <button
               type="button"
               class="btn-close"
@@ -142,17 +142,17 @@
           <div class="modal-body">
             <div v-if="loadingPermissions" class="text-center">
               <div class="spinner-border" role="status">
-                <span class="visually-hidden">Cargando permisos...</span>
+                <span class="visually-hidden">{{ $t('roles.list.loadingPermissions') }}</span>
               </div>
             </div>
             <div v-else-if="permissionsByModule.length === 0" class="alert alert-warning">
               <i class="bi bi-exclamation-triangle me-2"></i>
-              No se encontraron permisos disponibles. Por favor, recargue la página.
+              {{ $t('roles.list.noPermissionsFound') }}
             </div>
             <div v-else>
               <div class="alert alert-info mb-3">
                 <i class="bi bi-info-circle me-2"></i>
-                <strong>Permisos seleccionados:</strong> {{ selectedPermissions.length }} de {{ permissions.length }}
+                <strong>{{ $t('roles.list.selectedPermissions') }}</strong> {{ selectedPermissions.length }} de {{ permissions.length }}
               </div>
               <div class="row">
                 <div
@@ -193,7 +193,7 @@
               class="btn btn-secondary"
               @click="selectedRole = null"
             >
-              Cancelar
+              {{ $t('roles.form.buttons.cancel') }}
             </button>
             <button
               type="button"
@@ -206,9 +206,9 @@
                 class="spinner-border spinner-border-sm me-2"
                 role="status"
               >
-                <span class="visually-hidden">Guardando...</span>
+                <span class="visually-hidden">{{ $t('roles.form.buttons.saving') }}</span>
               </div>
-              {{ savingPermissions ? "Guardando..." : "Guardar Permisos" }}
+              {{ savingPermissions ? $t('roles.form.buttons.saving') : $t('roles.form.buttons.savePermissions') }}
             </button>
           </div>
         </div>
@@ -220,9 +220,12 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from "vue";
 import { useRouter } from "vue-router";
+import { useI18n } from "vue-i18n";
 import { usePermissions } from "@/composables/usePermissions";
 import ApiService from "@/core/services/ApiService";
 import Swal from "sweetalert2";
+
+const { t } = useI18n();
 
 // Composables
 const router = useRouter();
@@ -279,7 +282,6 @@ const permissionsByModule = computed(() => {
   });
 
   const result = Object.values(modules);
-  console.log("permissionsByModule computed:", result.length, "modules", result);
   return result;
 });
 
@@ -312,11 +314,11 @@ const loadRoles = async () => {
     }
   } catch (error: any) {
     console.error("Error loading roles:", error);
-    roles.value = []; // Ensure it's always an array even on error
+    roles.value = [];
     Swal.fire({
       icon: 'error',
-      title: 'Error',
-      text: 'Error al cargar los roles'
+      title: t('common.swal.titles.error'),
+      text: t('roles.swal.loadError')
     });
   } finally {
     loading.value = false;
@@ -329,7 +331,6 @@ const loadPermissions = async () => {
     // Use grouped format and include inactive permissions for role management
     const response = await ApiService.get("permissions?grouped=true&include_inactive=true");
 
-    console.log("Permissions API response:", response.data);
 
     const data = response.data?.data;
     const flatPermissions = [];
@@ -351,14 +352,13 @@ const loadPermissions = async () => {
     }
 
     permissions.value = flatPermissions;
-    console.log("Loaded permissions:", permissions.value.length, "permissions");
   } catch (error: any) {
     console.error("Error loading permissions:", error);
-    permissions.value = []; // Ensure it's always an array even on error
+    permissions.value = [];
     Swal.fire({
       icon: 'error',
-      title: 'Error',
-      text: error.response?.data?.message || 'No se pudieron cargar los permisos'
+      title: t('common.swal.titles.error'),
+      text: error.response?.data?.message || t('roles.swal.permissionsLoadError')
     });
   } finally {
     loadingPermissions.value = false;
@@ -367,10 +367,8 @@ const loadPermissions = async () => {
 
 const loadRolePermissions = async (roleId) => {
   try {
-    console.log("Loading permissions for role ID:", roleId);
     // Use the correct endpoint: GET /permissions/by-role/{id}
     const response = await ApiService.get(`permissions/by-role/${roleId}`);
-    console.log("Role permissions response:", response.data);
     const data = response.data?.data;
 
     if (data && data.modules) {
@@ -384,13 +382,11 @@ const loadRolePermissions = async (roleId) => {
         });
       });
       selectedPermissions.value = assignedIds;
-      console.log("Assigned permissions extracted from modules:", assignedIds);
     } else if (Array.isArray(data)) {
       // Fallback: if data is array of permissions
       selectedPermissions.value = data
         .map((p) => p?.id)
         .filter((id) => id !== undefined);
-      console.log("Assigned permissions from array:", selectedPermissions.value);
     } else {
       selectedPermissions.value = [];
       console.warn("No permissions data found:", data);
@@ -400,28 +396,22 @@ const loadRolePermissions = async (roleId) => {
     selectedPermissions.value = [];
     Swal.fire({
       icon: 'error',
-      title: 'Error',
-      text: error.response?.data?.message || 'No se pudieron cargar los permisos del rol'
+      title: t('common.swal.titles.error'),
+      text: error.response?.data?.message || t('roles.swal.rolePermissionsLoadError')
     });
   }
 };
 
 const managePermissions = async (role) => {
-  console.log("=== Managing permissions for role:", role);
   selectedRole.value = role;
   selectedPermissions.value = [];
 
-  console.log("Current permissions count:", permissions.value.length);
   if (permissions.value.length === 0) {
-    console.log("Loading permissions...");
     await loadPermissions();
   } else {
-    console.log("Permissions already loaded, skipping...");
   }
 
-  console.log("Loading role permissions...");
   await loadRolePermissions(role.id);
-  console.log("=== Permissions management setup complete");
 };
 
 const savePermissions = async () => {
@@ -437,20 +427,20 @@ const savePermissions = async () => {
 
     await Swal.fire({
       icon: 'success',
-      title: '¡Éxito!',
-      text: 'Permisos actualizados exitosamente',
+      title: t('common.swal.titles.success'),
+      text: t('roles.swal.permissionsUpdateSuccess'),
       timer: 2000,
       showConfirmButton: false
     });
 
     selectedRole.value = null;
-    await loadRoles(); // Reload to update permissions count
+    await loadRoles();
   } catch (error: any) {
     console.error("Error saving permissions:", error);
     Swal.fire({
       icon: 'error',
-      title: 'Error',
-      text: error.response?.data?.message || 'Error al guardar los permisos'
+      title: t('common.swal.titles.error'),
+      text: error.response?.data?.message || t('roles.swal.permissionsSaveError')
     });
   } finally {
     savingPermissions.value = false;
@@ -461,8 +451,8 @@ const editRole = (role) => {
   if (!canEdit("roles")) {
     Swal.fire({
       icon: 'error',
-      title: 'Acceso Denegado',
-      text: 'No tienes permisos para editar roles'
+      title: t('common.swal.titles.accessDenied'),
+      text: t('roles.swal.noPermissionEdit')
     });
     return;
   }
@@ -474,8 +464,8 @@ const deleteRole = async (role) => {
   if (!canDelete("roles")) {
     Swal.fire({
       icon: 'error',
-      title: 'Acceso Denegado',
-      text: 'No tienes permisos para eliminar roles'
+      title: t('common.swal.titles.accessDenied'),
+      text: t('roles.swal.noPermissionDelete')
     });
     return;
   }
@@ -483,21 +473,21 @@ const deleteRole = async (role) => {
   if (role.slug === "super_admin") {
     Swal.fire({
       icon: 'warning',
-      title: 'Operación no permitida',
-      text: 'No se puede eliminar el rol de Super Administrador'
+      title: t('common.swal.titles.warning'),
+      text: t('roles.swal.cannotDeleteSuperAdmin')
     });
     return;
   }
 
   const result = await Swal.fire({
-    title: '¿Está seguro?',
-    text: `¿Desea eliminar el rol "${role.name}"?`,
+    title: t('roles.swal.deleteConfirmTitle'),
+    text: t('roles.swal.deleteConfirmText', { name: role.name }),
     icon: 'warning',
     showCancelButton: true,
     confirmButtonColor: '#d33',
     cancelButtonColor: '#3085d6',
-    confirmButtonText: 'Sí, eliminar',
-    cancelButtonText: 'Cancelar'
+    confirmButtonText: t('common.swal.buttons.yesDelete'),
+    cancelButtonText: t('common.swal.buttons.cancel')
   });
 
   if (!result.isConfirmed) {
@@ -509,8 +499,8 @@ const deleteRole = async (role) => {
 
     await Swal.fire({
       icon: 'success',
-      title: '¡Éxito!',
-      text: 'Rol eliminado exitosamente',
+      title: t('common.swal.titles.success'),
+      text: t('roles.swal.deleteSuccess'),
       timer: 2000,
       showConfirmButton: false
     });
@@ -520,8 +510,8 @@ const deleteRole = async (role) => {
     console.error("Error deleting role:", error);
     Swal.fire({
       icon: 'error',
-      title: 'Error',
-      text: error.response?.data?.message || 'Error al eliminar el rol'
+      title: t('common.swal.titles.error'),
+      text: error.response?.data?.message || t('roles.swal.deleteError')
     });
   }
 };

@@ -5,9 +5,9 @@
     <div class="row mb-5">
       <div class="col-12">
         <h1 class="page-heading d-flex text-gray-900 fw-bold fs-3 flex-column justify-content-center my-0">
-          Panel de Control - Sistema Penitenciario GP360
+          {{ t('dashboard.prison.title') }}
           <span class="page-desc text-muted fs-7 fw-semibold pt-1">
-            Monitoreo en tiempo real del sistema penitenciario
+            {{ t('dashboard.prison.subtitle') }}
           </span>
         </h1>
       </div>
@@ -18,9 +18,9 @@
       <!-- Población Total -->
       <div class="col-xl-3">
         <StatWidget
-          title="Población Total"
+          :title="t('dashboard.prison.stats.totalPopulation')"
           :value="stats.totalInmates"
-          description="PPL activos en el sistema"
+          :description="t('dashboard.prison.stats.pplActive')"
           icon="profile-user"
           color="primary"
           :percentage="stats.populationChange"
@@ -31,9 +31,9 @@
       <!-- Capacidad del Sistema -->
       <div class="col-xl-3">
         <StatWidget
-          title="Capacidad Total"
+          :title="t('dashboard.prison.stats.totalCapacity')"
           :value="stats.totalCapacity"
-          :description="`${stats.occupancyRate}% de ocupación`"
+          :description="`${stats.occupancyRate}% ${t('dashboard.prison.stats.occupancy')}`"
           icon="home-2"
           color="warning"
           :percentage="stats.occupancyRate"
@@ -44,9 +44,9 @@
       <!-- Ingresos del Día -->
       <div class="col-xl-3">
         <StatWidget
-          title="Ingresos Hoy"
+          :title="t('dashboard.prison.stats.todayAdmissions')"
           :value="stats.todayAdmissions"
-          description="Nuevos PPL ingresados"
+          :description="t('dashboard.prison.stats.newPplAdmitted')"
           icon="entrance-right"
           color="success"
           :badge="stats.admissionsBadge"
@@ -56,9 +56,9 @@
       <!-- Alertas Activas -->
       <div class="col-xl-3">
         <StatWidget
-          title="Alertas Activas"
+          :title="t('dashboard.prison.stats.activeAlerts')"
           :value="stats.activeAlerts"
-          description="Requieren atención inmediata"
+          :description="t('dashboard.prison.stats.requireImmediate')"
           icon="notification-status"
           color="danger"
           :pulse="stats.activeAlerts > 0"
@@ -73,13 +73,13 @@
         <div class="card card-flush h-xl-100">
           <div class="card-header pt-7">
             <h3 class="card-title align-items-start flex-column">
-              <span class="card-label fw-bold text-gray-900">Distribución de Población por Centro Penitenciario</span>
-              <span class="text-gray-500 mt-1 fw-semibold fs-6">Actualizado en tiempo real</span>
+              <span class="card-label fw-bold text-gray-900">{{ t('dashboard.prison.charts.populationByCenter') }}</span>
+              <span class="text-gray-500 mt-1 fw-semibold fs-6">{{ t('dashboard.prison.charts.updatedRealtime') }}</span>
             </h3>
             <div class="card-toolbar">
               <button class="btn btn-sm btn-light-primary" @click="exportData">
                 <KTIcon icon-name="download" icon-class="fs-3" />
-                Exportar
+                {{ t('dashboard.prison.charts.export') }}
               </button>
             </div>
           </div>
@@ -102,7 +102,7 @@
       <div class="col-xl-4">
         <div class="card card-flush h-xl-100">
           <div class="card-header pt-7">
-            <h3 class="card-title fw-bold text-gray-900">Clasificación de Seguridad</h3>
+            <h3 class="card-title fw-bold text-gray-900">{{ t('dashboard.prison.charts.securityClassification') }}</h3>
           </div>
           <div class="card-body d-flex justify-content-center">
             <apexchart
@@ -118,9 +118,9 @@
           </div>
           <div class="card-footer">
             <div class="d-flex justify-content-between">
-              <span class="text-muted">Máxima: <span class="text-danger fw-bold">{{ stats.securityMax }}</span></span>
-              <span class="text-muted">Media: <span class="text-warning fw-bold">{{ stats.securityMed }}</span></span>
-              <span class="text-muted">Mínima: <span class="text-success fw-bold">{{ stats.securityMin }}</span></span>
+              <span class="text-muted">{{ t('dashboard.prison.charts.maximum') }}: <span class="text-danger fw-bold">{{ stats.securityMax }}</span></span>
+              <span class="text-muted">{{ t('dashboard.prison.charts.medium') }}: <span class="text-warning fw-bold">{{ stats.securityMed }}</span></span>
+              <span class="text-muted">{{ t('dashboard.prison.charts.minimum') }}: <span class="text-success fw-bold">{{ stats.securityMin }}</span></span>
             </div>
           </div>
         </div>
@@ -134,8 +134,8 @@
         <div class="card card-flush h-xl-100">
           <div class="card-header pt-7">
             <h3 class="card-title align-items-start flex-column">
-              <span class="card-label fw-bold text-gray-900">Audiencias Programadas Hoy</span>
-              <span class="text-gray-500 mt-1 fw-semibold fs-6">{{ stats.todayHearings || todayHearings.length }} audiencias pendientes</span>
+              <span class="card-label fw-bold text-gray-900">{{ t('dashboard.prison.hearings.title') }}</span>
+              <span class="text-gray-500 mt-1 fw-semibold fs-6">{{ stats.todayHearings || todayHearings.length }} {{ t('dashboard.prison.hearings.pendingCount') }}</span>
             </h3>
           </div>
           <div class="card-body pt-2">
@@ -143,11 +143,11 @@
               <table class="table table-row-dashed table-row-gray-300 align-middle gs-0 gy-4">
                 <thead>
                   <tr class="fw-bold text-muted">
-                    <th class="min-w-150px">PPL</th>
-                    <th class="min-w-100px">Hora</th>
-                    <th class="min-w-150px">Tipo</th>
-                    <th class="min-w-100px">Juzgado</th>
-                    <th class="text-end min-w-100px">Estado</th>
+                    <th class="min-w-150px">{{ t('dashboard.prison.hearings.table.ppl') }}</th>
+                    <th class="min-w-100px">{{ t('dashboard.prison.hearings.table.time') }}</th>
+                    <th class="min-w-150px">{{ t('dashboard.prison.hearings.table.type') }}</th>
+                    <th class="min-w-100px">{{ t('dashboard.prison.hearings.table.court') }}</th>
+                    <th class="text-end min-w-100px">{{ t('dashboard.prison.hearings.table.status') }}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -181,12 +181,12 @@
                 </tbody>
               </table>
               <div v-if="!todayHearings.length" class="text-center py-5">
-                <span class="text-muted">No hay audiencias programadas para hoy</span>
+                <span class="text-muted">{{ t('dashboard.prison.hearings.noHearings') }}</span>
               </div>
             </div>
           </div>
           <div class="card-footer">
-            <a href="/legal/hearings" class="btn btn-sm btn-light-primary">Ver todas las audiencias</a>
+            <a href="/legal/hearings" class="btn btn-sm btn-light-primary">{{ t('dashboard.prison.hearings.viewAll') }}</a>
           </div>
         </div>
       </div>
@@ -196,8 +196,8 @@
         <div class="card card-flush h-xl-100">
           <div class="card-header pt-7">
             <h3 class="card-title align-items-start flex-column">
-              <span class="card-label fw-bold text-gray-900">Incidentes de Seguridad (Últimas 24h)</span>
-              <span class="text-gray-500 mt-1 fw-semibold fs-6">{{ recentIncidents.length }} incidentes registrados</span>
+              <span class="card-label fw-bold text-gray-900">{{ t('dashboard.prison.incidents.title') }}</span>
+              <span class="text-gray-500 mt-1 fw-semibold fs-6">{{ recentIncidents.length }} {{ t('dashboard.prison.incidents.registeredCount') }}</span>
             </h3>
           </div>
           <div class="card-body pt-2">
@@ -220,11 +220,11 @@
               </div>
             </div>
             <div v-else class="text-center py-5">
-              <span class="text-muted">No hay incidentes registrados en las últimas 24 horas</span>
+              <span class="text-muted">{{ t('dashboard.prison.incidents.noIncidents') }}</span>
             </div>
           </div>
           <div class="card-footer">
-            <a href="/security/incidents" class="btn btn-sm btn-light-danger">Ver todos los incidentes</a>
+            <a href="/security/incidents" class="btn btn-sm btn-light-danger">{{ t('dashboard.prison.incidents.viewAll') }}</a>
           </div>
         </div>
       </div>
@@ -237,12 +237,12 @@
         <div class="card bg-primary hoverable">
           <div class="card-body">
             <KTIcon icon-name="bus" icon-class="text-white fs-3x ms-n1" />
-            <div class="text-white fw-bold fs-2 mb-2 mt-5">{{ stats.todayTransfers }} Traslados</div>
-            <div class="fw-semibold text-white">Programados para hoy</div>
+            <div class="text-white fw-bold fs-2 mb-2 mt-5">{{ stats.todayTransfers }} {{ t('dashboard.prison.metrics.transfers') }}</div>
+            <div class="fw-semibold text-white">{{ t('dashboard.prison.metrics.scheduledForToday') }}</div>
             <div class="mt-3">
-              <span class="badge badge-light-primary me-2">{{ stats.transfersHearings }} Audiencias</span>
-              <span class="badge badge-light-warning me-2">{{ stats.transfersMedical }} Médicos</span>
-              <span class="badge badge-light-info">{{ stats.transfersOther }} Otros</span>
+              <span class="badge badge-light-primary me-2">{{ stats.transfersHearings }} {{ t('dashboard.prison.metrics.hearings') }}</span>
+              <span class="badge badge-light-warning me-2">{{ stats.transfersMedical }} {{ t('dashboard.prison.metrics.medical') }}</span>
+              <span class="badge badge-light-info">{{ stats.transfersOther }} {{ t('dashboard.prison.metrics.other') }}</span>
             </div>
           </div>
         </div>
@@ -253,11 +253,11 @@
         <div class="card bg-success hoverable">
           <div class="card-body">
             <KTIcon icon-name="people" icon-class="text-white fs-3x ms-n1" />
-            <div class="text-white fw-bold fs-2 mb-2 mt-5">{{ stats.todayVisits }} Visitas</div>
-            <div class="fw-semibold text-white">Registradas hoy</div>
+            <div class="text-white fw-bold fs-2 mb-2 mt-5">{{ stats.todayVisits }} {{ t('dashboard.prison.metrics.visits') }}</div>
+            <div class="fw-semibold text-white">{{ t('dashboard.prison.metrics.registeredToday') }}</div>
             <div class="mt-3">
-              <span class="badge badge-light-success me-2">{{ stats.visitsFamily }} Familiares</span>
-              <span class="badge badge-light-warning">{{ stats.visitsLawyers }} Abogados</span>
+              <span class="badge badge-light-success me-2">{{ stats.visitsFamily }} {{ t('dashboard.prison.metrics.family') }}</span>
+              <span class="badge badge-light-warning">{{ stats.visitsLawyers }} {{ t('dashboard.prison.metrics.lawyers') }}</span>
             </div>
           </div>
         </div>
@@ -268,11 +268,11 @@
         <div class="card bg-info hoverable">
           <div class="card-body">
             <KTIcon icon-name="shield-tick" icon-class="text-white fs-3x ms-n1" />
-            <div class="text-white fw-bold fs-2 mb-2 mt-5">{{ stats.activePersonnel }} Agentes</div>
-            <div class="fw-semibold text-white">En servicio actualmente</div>
+            <div class="text-white fw-bold fs-2 mb-2 mt-5">{{ stats.activePersonnel }} {{ t('dashboard.prison.metrics.agents') }}</div>
+            <div class="fw-semibold text-white">{{ t('dashboard.prison.metrics.currentlyOnDuty') }}</div>
             <div class="mt-3">
-              <span class="badge badge-light-info me-2">Turno: {{ currentShift }}</span>
-              <span class="badge badge-light-warning">{{ stats.supervisors }} Supervisores</span>
+              <span class="badge badge-light-info me-2">{{ t('dashboard.prison.metrics.shift') }}: {{ currentShift }}</span>
+              <span class="badge badge-light-warning">{{ stats.supervisors }} {{ t('dashboard.prison.metrics.supervisors') }}</span>
             </div>
           </div>
         </div>
@@ -286,8 +286,8 @@
         <div class="card card-flush">
           <div class="card-header pt-7">
             <h3 class="card-title align-items-start flex-column">
-              <span class="card-label fw-bold text-gray-900">Evolución de Población (30 días)</span>
-              <span class="text-gray-500 mt-1 fw-semibold fs-6">Tendencia mensual</span>
+              <span class="card-label fw-bold text-gray-900">{{ t('dashboard.prison.charts.populationEvolution') }}</span>
+              <span class="text-gray-500 mt-1 fw-semibold fs-6">{{ t('dashboard.prison.charts.monthlyTrend') }}</span>
             </h3>
             <div class="card-toolbar">
               <button class="btn btn-sm btn-icon btn-light-primary" @click="refreshTrend">
@@ -315,8 +315,8 @@
         <div class="card card-flush">
           <div class="card-header pt-7">
             <h3 class="card-title align-items-start flex-column">
-              <span class="card-label fw-bold text-gray-900">Distribución Demográfica</span>
-              <span class="text-gray-500 mt-1 fw-semibold fs-6">Por género y grupo etario</span>
+              <span class="card-label fw-bold text-gray-900">{{ t('dashboard.prison.charts.demographicDistribution') }}</span>
+              <span class="text-gray-500 mt-1 fw-semibold fs-6">{{ t('dashboard.prison.charts.byGenderAndAge') }}</span>
             </h3>
           </div>
           <div class="card-body">
@@ -324,15 +324,15 @@
               <!-- Género -->
               <div class="col-6">
                 <div class="d-flex flex-column">
-                  <span class="text-gray-800 fw-bold fs-6 mb-3">Por Género</span>
+                  <span class="text-gray-800 fw-bold fs-6 mb-3">{{ t('dashboard.prison.charts.byGender') }}</span>
                   <div class="d-flex align-items-center mb-2">
                     <span class="bullet bullet-dot bg-primary me-2"></span>
-                    <span class="text-gray-600 flex-grow-1 me-4">Masculino</span>
+                    <span class="text-gray-600 flex-grow-1 me-4">{{ t('dashboard.prison.charts.male') }}</span>
                     <span class="text-gray-900 fw-bold">{{ stats.genderMale }} ({{ stats.genderMalePercent }}%)</span>
                   </div>
                   <div class="d-flex align-items-center">
                     <span class="bullet bullet-dot bg-danger me-2"></span>
-                    <span class="text-gray-600 flex-grow-1 me-4">Femenino</span>
+                    <span class="text-gray-600 flex-grow-1 me-4">{{ t('dashboard.prison.charts.female') }}</span>
                     <span class="text-gray-900 fw-bold">{{ stats.genderFemale }} ({{ stats.genderFemalePercent }}%)</span>
                   </div>
                 </div>
@@ -340,20 +340,20 @@
               <!-- Edad -->
               <div class="col-6">
                 <div class="d-flex flex-column">
-                  <span class="text-gray-800 fw-bold fs-6 mb-3">Por Edad</span>
+                  <span class="text-gray-800 fw-bold fs-6 mb-3">{{ t('dashboard.prison.charts.byAge') }}</span>
                   <div class="d-flex align-items-center mb-2">
                     <span class="bullet bullet-dot bg-success me-2"></span>
-                    <span class="text-gray-600 flex-grow-1 me-4">18-25 años</span>
+                    <span class="text-gray-600 flex-grow-1 me-4">18-25</span>
                     <span class="text-gray-900 fw-bold">{{ stats.age18to25 }} ({{ stats.age18to25Percent }}%)</span>
                   </div>
                   <div class="d-flex align-items-center mb-2">
                     <span class="bullet bullet-dot bg-warning me-2"></span>
-                    <span class="text-gray-600 flex-grow-1 me-4">26-40 años</span>
+                    <span class="text-gray-600 flex-grow-1 me-4">26-40</span>
                     <span class="text-gray-900 fw-bold">{{ stats.age26to40 }} ({{ stats.age26to40Percent }}%)</span>
                   </div>
                   <div class="d-flex align-items-center">
                     <span class="bullet bullet-dot bg-info me-2"></span>
-                    <span class="text-gray-600 flex-grow-1 me-4">40+ años</span>
+                    <span class="text-gray-600 flex-grow-1 me-4">40+</span>
                     <span class="text-gray-900 fw-bold">{{ stats.age40plus }} ({{ stats.age40plusPercent }}%)</span>
                   </div>
                 </div>
@@ -371,8 +371,8 @@
         <div class="card card-flush">
           <div class="card-header pt-7">
             <h3 class="card-title align-items-start flex-column">
-              <span class="card-label fw-bold text-gray-900">Tendencia de Incidentes (14 días)</span>
-              <span class="text-gray-500 mt-1 fw-semibold fs-6">Incidentes de seguridad por día</span>
+              <span class="card-label fw-bold text-gray-900">{{ t('dashboard.prison.charts.incidentTrend') }}</span>
+              <span class="text-gray-500 mt-1 fw-semibold fs-6">{{ t('dashboard.prison.charts.incidentsByDay') }}</span>
             </h3>
           </div>
           <div class="card-body">
@@ -384,7 +384,7 @@
               height="300"
             />
             <div v-else class="d-flex align-items-center justify-content-center h-300px">
-              <span class="text-muted">Sin datos de incidentes</span>
+              <span class="text-muted">{{ t('dashboard.prison.charts.noIncidentData') }}</span>
             </div>
           </div>
         </div>
@@ -395,8 +395,8 @@
         <div class="card card-flush">
           <div class="card-header pt-7">
             <h3 class="card-title align-items-start flex-column">
-              <span class="card-label fw-bold text-gray-900">Tipos de Incidentes Más Frecuentes</span>
-              <span class="text-gray-500 mt-1 fw-semibold fs-6">Últimos 30 días</span>
+              <span class="card-label fw-bold text-gray-900">{{ t('dashboard.prison.charts.topIncidentTypes') }}</span>
+              <span class="text-gray-500 mt-1 fw-semibold fs-6">{{ t('dashboard.prison.charts.last30days') }}</span>
             </h3>
           </div>
           <div class="card-body">
@@ -408,7 +408,7 @@
               height="300"
             />
             <div v-else class="d-flex align-items-center justify-content-center h-300px">
-              <span class="text-muted">Sin datos de tipos de incidentes</span>
+              <span class="text-muted">{{ t('dashboard.prison.charts.noIncidentTypeData') }}</span>
             </div>
           </div>
         </div>
@@ -422,8 +422,8 @@
         <div class="card card-flush">
           <div class="card-header pt-7">
             <h3 class="card-title align-items-start flex-column">
-              <span class="card-label fw-bold text-gray-900">Audiencias por Mes</span>
-              <span class="text-gray-500 mt-1 fw-semibold fs-6">Últimos 6 meses</span>
+              <span class="card-label fw-bold text-gray-900">{{ t('dashboard.prison.charts.hearingsByMonth') }}</span>
+              <span class="text-gray-500 mt-1 fw-semibold fs-6">{{ t('dashboard.prison.charts.last6months') }}</span>
             </h3>
           </div>
           <div class="card-body">
@@ -435,7 +435,7 @@
               height="300"
             />
             <div v-else class="d-flex align-items-center justify-content-center h-300px">
-              <span class="text-muted">Sin datos de audiencias</span>
+              <span class="text-muted">{{ t('dashboard.prison.charts.noHearingData') }}</span>
             </div>
           </div>
         </div>
@@ -446,8 +446,8 @@
         <div class="card card-flush">
           <div class="card-header pt-7">
             <h3 class="card-title align-items-start flex-column">
-              <span class="card-label fw-bold text-gray-900">Flujo de Visitas (30 días)</span>
-              <span class="text-gray-500 mt-1 fw-semibold fs-6">Visitantes registrados por día</span>
+              <span class="card-label fw-bold text-gray-900">{{ t('dashboard.prison.charts.visitorFlow') }}</span>
+              <span class="text-gray-500 mt-1 fw-semibold fs-6">{{ t('dashboard.prison.charts.visitorsPerDay') }}</span>
             </h3>
           </div>
           <div class="card-body">
@@ -459,7 +459,7 @@
               height="300"
             />
             <div v-else class="d-flex align-items-center justify-content-center h-300px">
-              <span class="text-muted">Sin datos de visitas</span>
+              <span class="text-muted">{{ t('dashboard.prison.charts.noVisitorData') }}</span>
             </div>
           </div>
         </div>
@@ -471,12 +471,16 @@
 
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted, computed } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { getCSSVariableValue } from "@/assets/ts/_utils";
 import ApiService from "@/core/services/ApiService";
 import Swal from 'sweetalert2';
 
 // Componente de estadísticas personalizado
 import StatWidget from '@/components/widgets/StatWidget.vue';
+
+// i18n
+const { t } = useI18n();
 
 // Estado reactivo
 const stats = ref<any>({
@@ -1185,19 +1189,17 @@ const getIncidentColor = (severity: string) => {
 
 const exportData = () => {
   Swal.fire({
-    title: 'Exportar Datos',
-    text: 'Seleccione el formato de exportación',
+    title: t('dashboard.prison.exportData.title'),
+    text: t('dashboard.prison.exportData.selectFormat'),
     icon: 'question',
     showCancelButton: true,
-    confirmButtonText: 'Excel',
-    cancelButtonText: 'PDF'
+    confirmButtonText: t('dashboard.prison.exportData.excel'),
+    cancelButtonText: t('dashboard.prison.exportData.pdf')
   }).then((result) => {
     if (result.isConfirmed) {
       // Exportar a Excel
-      console.log('Exportando a Excel...');
     } else if (result.dismiss === Swal.DismissReason.cancel) {
       // Exportar a PDF
-      console.log('Exportando a PDF...');
     }
   });
 };

@@ -5,12 +5,12 @@
       <div class="card card-flush h-100">
         <div class="card-header pt-7">
           <h3 class="card-title align-items-start flex-column">
-            <span class="card-label fw-bold text-gray-800"
-              >Clasificación de Seguridad</span
-            >
-            <span class="text-gray-600 mt-1 fw-semibold fs-6"
-              >Evaluación de riesgo actual</span
-            >
+            <span class="card-label fw-bold text-gray-800">{{
+              $t("inmates.tabs.security.classification.title")
+            }}</span>
+            <span class="text-gray-600 mt-1 fw-semibold fs-6">{{
+              $t("inmates.tabs.security.classification.subtitle")
+            }}</span>
           </h3>
           <div class="card-toolbar">
             <button
@@ -19,49 +19,51 @@
               class="btn btn-sm btn-light-primary"
             >
               <KTIcon icon-name="pencil" icon-class="fs-2" />
-              Actualizar
+              {{ $t("inmates.tabs.security.buttons.update") }}
             </button>
           </div>
         </div>
         <div class="card-body pt-0">
           <div v-if="loading.classification" class="text-center py-5">
             <div class="spinner-border text-primary" role="status">
-              <span class="visually-hidden">Cargando...</span>
+              <span class="visually-hidden">{{
+                $t("inmates.tabs.security.loading")
+              }}</span>
             </div>
           </div>
           <div v-else>
             <!-- Current Classification -->
             <div class="mb-4">
-              <span class="fw-bold text-gray-600 d-block mb-2"
-                >Clasificación Actual</span
-              >
+              <span class="fw-bold text-gray-600 d-block mb-2">{{
+                $t("inmates.tabs.security.classification.currentClassification")
+              }}</span>
               <div class="d-flex align-items-center mb-2">
                 <span
                   class="badge badge-lg me-3"
                   :class="
                     getClassificationClass(
-                      securityClassification?.risk_classification_name || '',
+                      securityClassification?.risk_classification_name || ''
                     )
                   "
                 >
                   {{
                     securityClassification?.risk_classification_name ||
-                    "Sin clasificar"
+                    $t("inmates.tabs.security.classification.unclassified")
                   }}
                 </span>
                 <div>
                   <div class="fw-bold text-gray-800 fs-6">
                     {{
                       getRiskLevelDescription(
-                        securityClassification?.risk_classification_name || "",
+                        securityClassification?.risk_classification_name || ""
                       )
                     }}
                   </div>
                   <div class="text-gray-600 fs-7">
-                    Fecha:
+                    {{ $t("inmates.tabs.security.classification.date") }}:
                     {{
                       formatDate(
-                        securityClassification?.classification_date || "",
+                        securityClassification?.classification_date || ""
                       )
                     }}
                   </div>
@@ -71,53 +73,61 @@
 
             <!-- Classified By -->
             <div class="mb-4">
-              <span class="fw-bold text-gray-600 d-block mb-2"
-                >Clasificado Por</span
-              >
+              <span class="fw-bold text-gray-600 d-block mb-2">{{
+                $t("inmates.tabs.security.classification.classifiedBy")
+              }}</span>
               <span class="text-gray-800">
                 {{
-                  securityClassification?.classifier_name || "No especificado"
+                  securityClassification?.classifier_name ||
+                  $t("inmates.tabs.security.classification.notSpecified")
                 }}
               </span>
             </div>
 
             <!-- Next Review Date -->
             <div class="mb-4">
-              <span class="fw-bold text-gray-600 d-block mb-2"
-                >Próxima Revisión</span
-              >
+              <span class="fw-bold text-gray-600 d-block mb-2">{{
+                $t("inmates.tabs.security.classification.nextReview")
+              }}</span>
               <div class="d-flex align-items-center">
                 <span class="text-gray-800 me-2">
                   {{ formatDate(securityClassification?.review_date || "") }}
                 </span>
                 <span v-if="isReviewOverdue" class="badge badge-light-danger">
                   <KTIcon icon-name="warning-2" icon-class="fs-6 me-1" />
-                  Vencida
+                  {{ $t("inmates.tabs.security.classification.overdue") }}
                 </span>
                 <span
                   v-else-if="isReviewSoon"
                   class="badge badge-light-warning"
                 >
                   <KTIcon icon-name="calendar" icon-class="fs-6 me-1" />
-                  Próxima
+                  {{ $t("inmates.tabs.security.classification.upcoming") }}
                 </span>
               </div>
             </div>
 
             <!-- Special Protection -->
             <div v-if="inmate.requires_special_protection" class="mb-4">
-              <span class="fw-bold text-gray-600 d-block mb-2"
-                >Protección Especial</span
-              >
+              <span class="fw-bold text-gray-600 d-block mb-2">{{
+                $t("inmates.tabs.security.classification.specialProtection")
+              }}</span>
               <div class="d-flex align-items-center">
                 <KTIcon
                   icon-name="shield-tick"
                   icon-class="fs-3 text-warning me-2"
                 />
                 <div>
-                  <div class="text-warning fw-bold">Requiere Protección</div>
+                  <div class="text-warning fw-bold">
+                    {{
+                      $t("inmates.tabs.security.classification.requiresProtection")
+                    }}
+                  </div>
                   <div class="text-gray-600 fs-7">
-                    {{ inmate.protection_reasons || "No especificado" }}
+                    {{
+                      inmate.protection_reasons ||
+                      $t("inmates.tabs.security.classification.notSpecified")
+                    }}
                   </div>
                 </div>
               </div>
@@ -126,7 +136,7 @@
             <!-- Last Update -->
             <div class="text-gray-600 fs-8">
               <KTIcon icon-name="calendar" icon-class="fs-7 me-1" />
-              Última actualización:
+              {{ $t("inmates.tabs.security.classification.lastUpdate") }}:
               {{ formatDate(securityClassification?.updated_at || "") }}
             </div>
           </div>
@@ -139,12 +149,12 @@
       <div class="card card-flush h-100">
         <div class="card-header pt-7">
           <h3 class="card-title align-items-start flex-column">
-            <span class="card-label fw-bold text-gray-800"
-              >Afiliaciones Pandilleriles</span
-            >
-            <span class="text-gray-600 mt-1 fw-semibold fs-6"
-              >Control de inteligencia</span
-            >
+            <span class="card-label fw-bold text-gray-800">{{
+              $t("inmates.tabs.security.gangAffiliations.title")
+            }}</span>
+            <span class="text-gray-600 mt-1 fw-semibold fs-6">{{
+              $t("inmates.tabs.security.gangAffiliations.subtitle")
+            }}</span>
           </h3>
           <div class="card-toolbar">
             <button
@@ -153,22 +163,24 @@
               class="btn btn-sm btn-light-warning"
             >
               <KTIcon icon-name="security-user" icon-class="fs-2" />
-              Gestionar
+              {{ $t("inmates.tabs.security.buttons.manage") }}
             </button>
           </div>
         </div>
         <div class="card-body pt-0">
           <div v-if="loading.gangs" class="text-center py-5">
             <div class="spinner-border text-primary" role="status">
-              <span class="visually-hidden">Cargando...</span>
+              <span class="visually-hidden">{{
+                $t("inmates.tabs.security.loading")
+              }}</span>
             </div>
           </div>
           <div v-else>
             <!-- Gang Status Overview -->
             <div class="mb-4">
-              <span class="fw-bold text-gray-600 d-block mb-2"
-                >Estado General</span
-              >
+              <span class="fw-bold text-gray-600 d-block mb-2">{{
+                $t("inmates.tabs.security.gangAffiliations.generalStatus")
+              }}</span>
               <span
                 class="badge badge-lg"
                 :class="
@@ -183,9 +195,9 @@
 
             <!-- Active Gang Affiliations -->
             <div v-if="gangAffiliations.length > 0" class="mb-4">
-              <span class="fw-bold text-gray-600 d-block mb-3"
-                >Afiliaciones Activas</span
-              >
+              <span class="fw-bold text-gray-600 d-block mb-3">{{
+                $t("inmates.tabs.security.gangAffiliations.activeAffiliations")
+              }}</span>
               <div class="scroll-y" style="max-height: 250px">
                 <div
                   v-for="gang in gangAffiliations"
@@ -202,7 +214,7 @@
                         {{ gang.gang_name }}
                       </div>
                       <div class="text-gray-600 fs-7 mb-2">
-                        Nivel:
+                        {{ $t("inmates.tabs.security.gangAffiliations.level") }}:
                         {{ getAffiliationLevelText(gang.affiliation_level) }}
                       </div>
                       <div class="d-flex gap-2 mb-2">
@@ -210,7 +222,7 @@
                           class="badge badge-sm"
                           :class="getRiskAssessmentClass(gang.risk_assessment)"
                         >
-                          Riesgo:
+                          {{ $t("inmates.tabs.security.gangAffiliations.risk") }}:
                           {{ getRiskAssessmentText(gang.risk_assessment) }}
                         </span>
                         <span
@@ -221,9 +233,11 @@
                         </span>
                       </div>
                       <div v-if="gang.verified_date" class="text-gray-600 fs-8">
-                        Verificado: {{ formatDate(gang.verified_date) }}
+                        {{ $t("inmates.tabs.security.gangAffiliations.verified") }}:
+                        {{ formatDate(gang.verified_date) }}
                         <span v-if="gang.verifier_name">
-                          por {{ gang.verifier_name }}</span
+                          {{ $t("inmates.tabs.security.gangAffiliations.by") }}
+                          {{ gang.verifier_name }}</span
                         >
                       </div>
                       <div
@@ -231,7 +245,7 @@
                         class="text-danger fs-8 mt-1"
                       >
                         <KTIcon icon-name="warning-2" icon-class="fs-7 me-1" />
-                        Conflictos:
+                        {{ $t("inmates.tabs.security.gangAffiliations.conflicts") }}:
                         {{
                           Array.isArray(gang.conflicts_with)
                             ? gang.conflicts_with.join(", ")
@@ -255,7 +269,7 @@
                             class="menu-link px-3"
                           >
                             <KTIcon icon-name="eye" icon-class="fs-6 me-2" />
-                            Ver Detalles
+                            {{ $t("inmates.tabs.security.buttons.viewDetails") }}
                           </a>
                         </div>
                         <div
@@ -267,7 +281,7 @@
                             class="menu-link px-3"
                           >
                             <KTIcon icon-name="pencil" icon-class="fs-6 me-2" />
-                            Editar
+                            {{ $t("inmates.tabs.security.buttons.edit") }}
                           </a>
                         </div>
                         <div
@@ -285,7 +299,7 @@
                             class="menu-link px-3 text-warning"
                           >
                             <KTIcon icon-name="pause" icon-class="fs-6 me-2" />
-                            Desactivar
+                            {{ $t("inmates.tabs.security.buttons.deactivate") }}
                           </a>
                         </div>
                       </div>
@@ -297,9 +311,9 @@
 
             <!-- Intelligence Notes -->
             <div v-if="inmate.gang_intelligence_notes" class="mb-4">
-              <span class="fw-bold text-gray-600 d-block mb-2"
-                >Notas de Inteligencia</span
-              >
+              <span class="fw-bold text-gray-600 d-block mb-2">{{
+                $t("inmates.tabs.security.gangAffiliations.intelligenceNotes")
+              }}</span>
               <div
                 class="border border-warning border-dashed rounded p-3 bg-light-warning"
               >
@@ -326,10 +340,10 @@
                 icon-class="fs-5x text-success mb-4"
               />
               <div class="text-success fw-bold">
-                Sin Afiliaciones Pandilleriles
+                {{ $t("inmates.tabs.security.gangAffiliations.noAffiliations") }}
               </div>
               <div class="text-gray-600">
-                No hay registro de actividad pandilleril
+                {{ $t("inmates.tabs.security.gangAffiliations.noGangActivity") }}
               </div>
             </div>
           </div>
@@ -342,12 +356,12 @@
       <div class="card card-flush h-100">
         <div class="card-header pt-7">
           <h3 class="card-title align-items-start flex-column">
-            <span class="card-label fw-bold text-gray-800"
-              >Medidas de Seguridad</span
-            >
-            <span class="text-gray-600 mt-1 fw-semibold fs-6"
-              >Controles y restricciones</span
-            >
+            <span class="card-label fw-bold text-gray-800">{{
+              $t("inmates.tabs.security.measures.title")
+            }}</span>
+            <span class="text-gray-600 mt-1 fw-semibold fs-6">{{
+              $t("inmates.tabs.security.measures.subtitle")
+            }}</span>
           </h3>
           <div class="card-toolbar">
             <button
@@ -356,14 +370,16 @@
               class="btn btn-sm btn-light-danger"
             >
               <KTIcon icon-name="security-check" icon-class="fs-2" />
-              Gestionar
+              {{ $t("inmates.tabs.security.buttons.manage") }}
             </button>
           </div>
         </div>
         <div class="card-body pt-0">
           <div v-if="loading.measures" class="text-center py-5">
             <div class="spinner-border text-primary" role="status">
-              <span class="visually-hidden">Cargando...</span>
+              <span class="visually-hidden">{{
+                $t("inmates.tabs.security.loading")
+              }}</span>
             </div>
           </div>
           <div v-else>
@@ -389,13 +405,13 @@
                 </div>
                 <div class="flex-grow-1">
                   <div class="fw-bold text-gray-800 fs-6">
-                    Monitoreo de Comunicaciones
+                    {{ $t("inmates.tabs.security.measures.communicationMonitoring") }}
                   </div>
                   <div class="text-gray-600 fs-7">
                     {{
                       inmate.communication_monitoring
-                        ? "Activo - Comunicaciones monitoreadas"
-                        : "No activo"
+                        ? $t("inmates.tabs.security.measures.activeMonitored")
+                        : $t("inmates.tabs.security.measures.notActive")
                     }}
                   </div>
                 </div>
@@ -407,7 +423,11 @@
                       : 'badge-light-success'
                   "
                 >
-                  {{ inmate.communication_monitoring ? "Activo" : "Inactivo" }}
+                  {{
+                    inmate.communication_monitoring
+                      ? $t("inmates.tabs.security.measures.active")
+                      : $t("inmates.tabs.security.measures.inactive")
+                  }}
                 </span>
               </div>
             </div>
@@ -434,13 +454,13 @@
                 </div>
                 <div class="flex-grow-1">
                   <div class="fw-bold text-gray-800 fs-6">
-                    Revisión Especial de Visitantes
+                    {{ $t("inmates.tabs.security.measures.visitorScreening") }}
                   </div>
                   <div class="text-gray-600 fs-7">
                     {{
                       inmate.visitor_screening_required
-                        ? "Requerida - Revisión exhaustiva"
-                        : "Revisión estándar"
+                        ? $t("inmates.tabs.security.measures.requiredExhaustive")
+                        : $t("inmates.tabs.security.measures.standardScreening")
                     }}
                   </div>
                 </div>
@@ -453,7 +473,9 @@
                   "
                 >
                   {{
-                    inmate.visitor_screening_required ? "Requerida" : "Estándar"
+                    inmate.visitor_screening_required
+                      ? $t("inmates.tabs.security.measures.required")
+                      : $t("inmates.tabs.security.measures.standard")
                   }}
                 </span>
               </div>
@@ -481,13 +503,13 @@
                 </div>
                 <div class="flex-grow-1">
                   <div class="fw-bold text-gray-800 fs-6">
-                    Caso de Alto Perfil
+                    {{ $t("inmates.tabs.security.measures.highProfileCase") }}
                   </div>
                   <div class="text-gray-600 fs-7">
                     {{
                       inmate.high_profile_case
-                        ? "Caso mediático - Protocolo especial"
-                        : "Caso regular"
+                        ? $t("inmates.tabs.security.measures.mediaProtocol")
+                        : $t("inmates.tabs.security.measures.regularCase")
                     }}
                   </div>
                 </div>
@@ -499,16 +521,20 @@
                       : 'badge-light-success'
                   "
                 >
-                  {{ inmate.high_profile_case ? "Alto Perfil" : "Regular" }}
+                  {{
+                    inmate.high_profile_case
+                      ? $t("inmates.tabs.security.measures.highProfile")
+                      : $t("inmates.tabs.security.measures.regular")
+                  }}
                 </span>
               </div>
             </div>
 
             <!-- Security Measures List -->
             <div v-if="securityMeasures.length > 0" class="mb-4">
-              <span class="fw-bold text-gray-600 d-block mb-3"
-                >Medidas Adicionales</span
-              >
+              <span class="fw-bold text-gray-600 d-block mb-3">{{
+                $t("inmates.tabs.security.measures.additionalMeasures")
+              }}</span>
               <div
                 v-for="measure in securityMeasures"
                 :key="measure.id"
@@ -530,7 +556,8 @@
                       v-if="measure.expiration_date"
                       class="text-gray-600 fs-8"
                     >
-                      Vence: {{ formatDate(measure.expiration_date) }}
+                      {{ $t("inmates.tabs.security.measures.expires") }}:
+                      {{ formatDate(measure.expiration_date) }}
                     </div>
                   </div>
                 </div>
@@ -539,9 +566,9 @@
 
             <!-- Active Alerts -->
             <div v-if="activeAlerts.length > 0" class="mb-4">
-              <span class="fw-bold text-gray-600 d-block mb-3"
-                >Alertas Activas</span
-              >
+              <span class="fw-bold text-gray-600 d-block mb-3">{{
+                $t("inmates.tabs.security.measures.activeAlerts")
+              }}</span>
               <div
                 v-for="alert in activeAlerts"
                 :key="alert.id"
@@ -560,7 +587,8 @@
                       {{ alert.description }}
                     </div>
                     <div class="text-gray-600 fs-8">
-                      Creada: {{ formatDate(alert.created_date) }}
+                      {{ $t("inmates.tabs.security.measures.created") }}:
+                      {{ formatDate(alert.created_date) }}
                     </div>
                   </div>
                 </div>
@@ -576,12 +604,12 @@
       <div class="card card-flush">
         <div class="card-header pt-7">
           <h3 class="card-title align-items-start flex-column">
-            <span class="card-label fw-bold text-gray-800"
-              >Historial de Seguridad e Incidentes</span
-            >
-            <span class="text-gray-600 mt-1 fw-semibold fs-6"
-              >Registros de eventos de seguridad</span
-            >
+            <span class="card-label fw-bold text-gray-800">{{
+              $t("inmates.tabs.security.history.title")
+            }}</span>
+            <span class="text-gray-600 mt-1 fw-semibold fs-6">{{
+              $t("inmates.tabs.security.history.subtitle")
+            }}</span>
           </h3>
           <div class="card-toolbar">
             <button
@@ -590,21 +618,23 @@
               class="btn btn-sm btn-light-danger me-3"
             >
               <KTIcon icon-name="plus" icon-class="fs-2" />
-              Registrar Incidente
+              {{ $t("inmates.tabs.security.buttons.registerIncident") }}
             </button>
             <button
               @click="refreshSecurityHistory"
               class="btn btn-sm btn-light"
             >
               <KTIcon icon-name="arrows-circle" icon-class="fs-2" />
-              Actualizar
+              {{ $t("inmates.tabs.security.buttons.refresh") }}
             </button>
           </div>
         </div>
         <div class="card-body pt-0">
           <div v-if="loading.history" class="text-center py-5">
             <div class="spinner-border text-primary" role="status">
-              <span class="visually-hidden">Cargando...</span>
+              <span class="visually-hidden">{{
+                $t("inmates.tabs.security.loading")
+              }}</span>
             </div>
           </div>
           <div
@@ -616,7 +646,7 @@
               icon-class="fs-5x text-gray-400 mb-4"
             />
             <div class="text-gray-600">
-              No hay incidentes de seguridad registrados
+              {{ $t("inmates.tabs.security.history.noIncidents") }}
             </div>
           </div>
           <div v-else>
@@ -626,13 +656,13 @@
                   <tr
                     class="fw-semibold fs-6 text-gray-800 border-bottom-2 border-gray-200"
                   >
-                    <th>Fecha</th>
-                    <th>Tipo de Evento</th>
-                    <th>Descripción</th>
-                    <th>Gravedad</th>
-                    <th>Reportado Por</th>
-                    <th>Estado</th>
-                    <th>Acciones</th>
+                    <th>{{ $t("inmates.tabs.security.history.tableHeaders.date") }}</th>
+                    <th>{{ $t("inmates.tabs.security.history.tableHeaders.eventType") }}</th>
+                    <th>{{ $t("inmates.tabs.security.history.tableHeaders.description") }}</th>
+                    <th>{{ $t("inmates.tabs.security.history.tableHeaders.severity") }}</th>
+                    <th>{{ $t("inmates.tabs.security.history.tableHeaders.reportedBy") }}</th>
+                    <th>{{ $t("inmates.tabs.security.history.tableHeaders.status") }}</th>
+                    <th>{{ $t("inmates.tabs.security.history.tableHeaders.actions") }}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -650,7 +680,8 @@
                         v-if="incident.people_involved"
                         class="text-gray-600 fs-7"
                       >
-                        Involucrados: {{ incident.people_involved }}
+                        {{ $t("inmates.tabs.security.history.involved") }}:
+                        {{ incident.people_involved }}
                       </div>
                     </td>
                     <td>
@@ -680,7 +711,7 @@
                         <button
                           @click="viewIncidentDetails(incident)"
                           class="btn btn-sm btn-light btn-active-light-primary"
-                          title="Ver Detalles"
+                          :title="$t('inmates.tabs.security.buttons.viewDetails')"
                         >
                           <KTIcon icon-name="eye" icon-class="fs-7" />
                         </button>
@@ -690,7 +721,7 @@
                           "
                           @click="editIncident(incident)"
                           class="btn btn-sm btn-light btn-active-light-primary"
-                          title="Editar"
+                          :title="$t('inmates.tabs.security.buttons.edit')"
                         >
                           <KTIcon icon-name="pencil" icon-class="fs-7" />
                         </button>
@@ -710,6 +741,7 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from "vue";
 import { useAuthStore } from "@/stores/auth";
+import { useI18n } from "vue-i18n";
 import type {
   InmateDetail,
   InmateSecurityClassification,
@@ -717,6 +749,8 @@ import type {
 } from "@/types/inmates";
 import Swal from "sweetalert2";
 import KTIcon from "@/core/helpers/kt-icon/KTIcon.vue";
+
+const { t } = useI18n();
 
 interface Props {
   inmate: InmateDetail;
@@ -807,9 +841,14 @@ const loadSecurityData = async () => {
   try {
     loading.value.classification = true;
 
-    // Load security classification
-    if (props.inmate.security_classification) {
-      securityClassification.value = props.inmate.security_classification;
+    // Load security classification - check multiple possible field names
+    const classificationData =
+      props.inmate.security_classification ||
+      props.inmate.current_security_classification ||
+      props.inmate.currentSecurityClassification;
+
+    if (classificationData) {
+      securityClassification.value = classificationData;
     }
   } catch (error) {
     console.error("Error loading security data:", error);
@@ -822,11 +861,27 @@ const loadGangData = async () => {
   try {
     loading.value.gangs = true;
 
-    // Load gang affiliations
-    if (props.inmate.gang_affiliations) {
-      gangAffiliations.value = props.inmate.gang_affiliations.filter(
+    // Load gang affiliations - check multiple possible field names
+    // Backend may return array (gang_affiliations) or single object (current_gang_affiliation)
+    let affiliationsData =
+      props.inmate.gang_affiliations ||
+      props.inmate.gangAffiliations;
+
+    // If we have current_gang_affiliation (singular), convert to array
+    const currentAffiliation =
+      props.inmate.current_gang_affiliation ||
+      props.inmate.currentGangAffiliation;
+
+    if (!affiliationsData && currentAffiliation) {
+      affiliationsData = [currentAffiliation];
+    }
+
+    if (affiliationsData && Array.isArray(affiliationsData)) {
+      gangAffiliations.value = affiliationsData.filter(
         (g) => g.status === "active",
       );
+    } else {
+      gangAffiliations.value = [];
     }
   } catch (error) {
     console.error("Error loading gang data:", error);
@@ -898,8 +953,8 @@ const loadSecurityHistory = async () => {
 // Security classification methods
 const openEditClassificationModal = () => {
   Swal.fire({
-    title: "Actualizar Clasificación",
-    text: "Funcionalidad de actualización de clasificación de seguridad en desarrollo.",
+    title: t("inmates.tabs.security.swal.updateClassification"),
+    text: t("inmates.tabs.security.swal.updateClassificationDesc"),
     icon: "info",
     confirmButtonText: "OK",
   });
@@ -908,34 +963,33 @@ const openEditClassificationModal = () => {
 // Gang affiliation methods
 const openManageGangAffiliationModal = () => {
   Swal.fire({
-    title: "Gestionar Afiliaciones",
-    text: "Funcionalidad de gestión de afiliaciones pandilleriles en desarrollo.",
+    title: t("inmates.tabs.security.swal.manageAffiliations"),
+    text: t("inmates.tabs.security.swal.manageAffiliationsDesc"),
     icon: "info",
     confirmButtonText: "OK",
   });
 };
 
 const viewGangDetails = (gang: InmateGangAffiliation) => {
-  console.log("Viewing gang details:", gang.id);
 };
 
 const editGangAffiliation = (gang: InmateGangAffiliation) => {
-  console.log("Editing gang affiliation:", gang.id);
 };
 
 const deactivateGangAffiliation = async (gang: InmateGangAffiliation) => {
   const { value: reason } = await Swal.fire({
-    title: "Desactivar Afiliación",
-    text: `¿Desactivar la afiliación con ${gang.gang_name}?`,
+    title: t("inmates.tabs.security.swal.deactivateAffiliation"),
+    text: t("inmates.tabs.security.swal.deactivateAffiliationConfirm", {
+      gang: gang.gang_name,
+    }),
     input: "textarea",
-    inputPlaceholder: "Motivo de la desactivación",
+    inputPlaceholder: t("inmates.tabs.security.swal.deactivationReason"),
     showCancelButton: true,
-    confirmButtonText: "Desactivar",
-    cancelButtonText: "Cancelar",
+    confirmButtonText: t("inmates.tabs.security.buttons.deactivate"),
+    cancelButtonText: t("inmates.tabs.security.buttons.cancel"),
   });
 
   if (reason) {
-    console.log("Deactivating gang affiliation:", gang.id, "Reason:", reason);
     await loadGangData();
   }
 };
@@ -943,8 +997,8 @@ const deactivateGangAffiliation = async (gang: InmateGangAffiliation) => {
 // Security measures methods
 const openManageSecurityMeasuresModal = () => {
   Swal.fire({
-    title: "Gestionar Medidas",
-    text: "Funcionalidad de gestión de medidas de seguridad en desarrollo.",
+    title: t("inmates.tabs.security.swal.manageMeasures"),
+    text: t("inmates.tabs.security.swal.manageMeasuresDesc"),
     icon: "info",
     confirmButtonText: "OK",
   });
@@ -953,8 +1007,8 @@ const openManageSecurityMeasuresModal = () => {
 // Incident methods
 const openAddIncidentModal = () => {
   Swal.fire({
-    title: "Registrar Incidente",
-    text: "Funcionalidad de registro de incidentes de seguridad en desarrollo.",
+    title: t("inmates.tabs.security.swal.registerIncident"),
+    text: t("inmates.tabs.security.swal.registerIncidentDesc"),
     icon: "info",
     confirmButtonText: "OK",
   });
@@ -965,11 +1019,9 @@ const refreshSecurityHistory = async () => {
 };
 
 const viewIncidentDetails = (incident: SecurityIncident) => {
-  console.log("Viewing incident details:", incident.id);
 };
 
 const editIncident = (incident: SecurityIncident) => {
-  console.log("Editing incident:", incident.id);
 };
 
 // Helper methods
@@ -985,14 +1037,31 @@ const getClassificationClass = (classification: string): string => {
 };
 
 const getRiskLevelDescription = (classification: string): string => {
-  const descriptions: Record<string, string> = {
-    Bajo: "Riesgo mínimo de fuga o violencia",
-    Medio: "Riesgo moderado, requiere supervisión",
-    Alto: "Riesgo elevado, supervisión estricta",
-    Máximo: "Riesgo crítico, máxima seguridad",
-    Protección: "Requiere protección especial",
+  if (!classification) {
+    return t("inmates.tabs.security.riskDescriptions.undefined");
+  }
+
+  // Map classification names to translation keys
+  const classificationMap: Record<string, string> = {
+    Bajo: "low",
+    Medio: "medium",
+    Alto: "high",
+    Máximo: "maximum",
+    Protección: "protection",
+    // Also support English keys
+    Low: "low",
+    Medium: "medium",
+    High: "high",
+    Maximum: "maximum",
+    Protection: "protection",
   };
-  return descriptions[classification] || "Clasificación no definida";
+
+  const key = classificationMap[classification];
+  if (key) {
+    return t(`inmates.tabs.security.riskDescriptions.${key}`);
+  }
+
+  return t("inmates.tabs.security.riskDescriptions.undefined");
 };
 
 const getGangStatusClass = (status: string): string => {
@@ -1008,25 +1077,17 @@ const getGangStatusClass = (status: string): string => {
 };
 
 const getGangStatusText = (status: string): string => {
-  const texts: Record<string, string> = {
-    none: "Sin Afiliación",
-    suspected: "Sospechoso",
-    confirmed: "Confirmado",
-    active: "Activo",
-    inactive: "Inactivo",
-    under_review: "En Revisión",
-  };
-  return texts[status] || status;
+  if (!status) return status;
+  const statusKey = `inmates.tabs.security.gangStatuses.${status}`;
+  const translated = t(statusKey);
+  return translated !== statusKey ? translated : status;
 };
 
 const getAffiliationLevelText = (level: string): string => {
-  const texts: Record<string, string> = {
-    leader: "Líder",
-    active_member: "Miembro Activo",
-    sympathizer: "Simpatizante",
-    ex_member: "Ex-Miembro",
-  };
-  return texts[level] || level;
+  if (!level) return level;
+  const levelKey = `inmates.tabs.security.affiliationLevels.${level}`;
+  const translated = t(levelKey);
+  return translated !== levelKey ? translated : level;
 };
 
 const getRiskAssessmentClass = (risk: string): string => {
@@ -1039,12 +1100,10 @@ const getRiskAssessmentClass = (risk: string): string => {
 };
 
 const getRiskAssessmentText = (risk: string): string => {
-  const texts: Record<string, string> = {
-    low: "Bajo",
-    medium: "Medio",
-    high: "Alto",
-  };
-  return texts[risk] || risk;
+  if (!risk) return risk;
+  const riskKey = `inmates.tabs.security.riskAssessment.${risk}`;
+  const translated = t(riskKey);
+  return translated !== riskKey ? translated : risk;
 };
 
 const getSeverityClass = (severity: string): string => {
@@ -1058,13 +1117,10 @@ const getSeverityClass = (severity: string): string => {
 };
 
 const getSeverityText = (severity: string): string => {
-  const texts: Record<string, string> = {
-    low: "Bajo",
-    medium: "Medio",
-    high: "Alto",
-    critical: "Crítico",
-  };
-  return texts[severity] || severity;
+  if (!severity) return severity;
+  const severityKey = `inmates.tabs.security.severity.${severity}`;
+  const translated = t(severityKey);
+  return translated !== severityKey ? translated : severity;
 };
 
 const getIncidentStatusClass = (status: string): string => {
@@ -1078,13 +1134,10 @@ const getIncidentStatusClass = (status: string): string => {
 };
 
 const getIncidentStatusText = (status: string): string => {
-  const texts: Record<string, string> = {
-    reported: "Reportado",
-    investigating: "Investigando",
-    resolved: "Resuelto",
-    dismissed: "Desestimado",
-  };
-  return texts[status] || status;
+  if (!status) return status;
+  const statusKey = `inmates.tabs.security.incidentStatuses.${status}`;
+  const translated = t(statusKey);
+  return translated !== statusKey ? translated : status;
 };
 
 const formatDate = (date: string): string => {

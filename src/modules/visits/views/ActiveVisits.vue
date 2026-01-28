@@ -453,7 +453,6 @@ const getOccupancyClass = (rate: number) => {
 const handleRefresh = () => {
   lastUpdate.value = new Date().toLocaleTimeString('es-GT')
   // Refresh data
-  console.log('Refreshing active visits')
 }
 
 const handleEmergency = async () => {
@@ -497,7 +496,6 @@ const handleExtendTime = async (visitId: number) => {
   })
 
   if (result.isConfirmed) {
-    console.log('Extend visit', visitId, 'by', result.value, 'minutes')
     Swal.fire({
       title: t('common.success'),
       text: t('visits.activeVisits.extendTimeSuccess'),
@@ -532,7 +530,6 @@ const handleEndVisit = async (visitId: number) => {
 }
 
 const handleViewAllAlerts = () => {
-  console.log('View all alerts')
 }
 
 const handleDismissAlert = (alertId: number) => {

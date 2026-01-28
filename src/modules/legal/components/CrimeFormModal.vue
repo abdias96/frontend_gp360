@@ -597,13 +597,11 @@ const loadLegalProfiles = async (inmateId: string | number) => {
   isLoadingProfiles.value = true;
 
   try {
-    console.log('Loading legal profiles for inmate:', inmateId);
     const response = await ApiService.query('/inmate-legal-profiles', {
       inmate_id: inmateId,
       per_page: 100
     });
 
-    console.log('Legal profiles response:', response.data);
 
     let profiles = [];
     if (response.data && response.data.data) {
@@ -616,15 +614,12 @@ const loadLegalProfiles = async (inmateId: string | number) => {
       profiles = response.data;
     }
 
-    console.log('Total profiles found:', profiles.length);
-    console.log('Profiles:', profiles);
 
     // Filter for active profiles and sort by admission number
     const activeProfiles = profiles
       .filter((profile: any) => profile.profile_status === 'active')
       .sort((a: any, b: any) => b.admission_number - a.admission_number);
 
-    console.log('Active profiles found:', activeProfiles.length);
 
     legalProfilesOptions.value = activeProfiles.map((profile: any) => ({
       value: profile.id,

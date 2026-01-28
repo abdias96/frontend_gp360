@@ -30,10 +30,6 @@ const MainMenuConfig: Array<MenuItem> = [
             heading: "createInmate",
             route: "/inmates/create",
           },
-          {
-            heading: "inmateSearch",
-            route: "/inmates/search",
-          },
         ],
       },
     ],
@@ -358,22 +354,27 @@ const MainMenuConfig: Array<MenuItem> = [
         route: "/documents",
         keenthemesIcon: "document",
         bootstrapIcon: "bi-file-earmark-text",
+        permission: "inmates.documents",
         sub: [
           {
             heading: "digitalFiles",
             route: "/documents/files",
+            permission: "inmates.documents",
           },
           {
             heading: "legalDocuments",
             route: "/documents/legal",
+            permission: "inmates.documents",
           },
           {
             heading: "medicalDocuments",
             route: "/documents/medical",
+            permission: "inmates.documents",
           },
           {
             heading: "correspondence",
             route: "/documents/correspondence",
+            permission: "mail.view",
           },
         ],
       },

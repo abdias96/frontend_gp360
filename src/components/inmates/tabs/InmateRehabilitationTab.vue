@@ -323,17 +323,97 @@ const lastEvaluation = ref<any>(null);
 // Methods
 const fetchRehabilitationData = async () => {
   try {
-    // Simulate fetching data - replace with actual API calls
-    activePrograms.value = [];
-    educationalPrograms.value = [];
-    workPrograms.value = [];
-    therapeuticPrograms.value = [];
-    certificates.value = [];
-    totalHours.value = 0;
-    overallProgress.value = 0;
-    behaviorScore.value = 85;
-    participationRate.value = 92;
-    lastEvaluation.value = null;
+    // Load program enrollments from inmate props
+    const enrollments = props.inmate.program_enrollments ||
+                        props.inmate.programEnrollments ||
+                        props.inmate.rehabilitation_programs || [];
+
+    // Filter active programs
+    activePrograms.value = Array.isArray(enrollments)
+      ? enrollments.filter((p: any) => p.status === 'active' || p.is_active)
+      : [];
+
+    // Categorize programs by type
+    educationalPrograms.value = activePrograms.value
+      .filter((p: any) => p.program?.category === 'educational' || p.program_type === 'educational' || p.category === 'educational')
+      .map((p: any) => ({
+        id: p.id,
+        name: p.program?.name || p.program_name || p.name || 'Programa Educativo',
+        progress: p.progress_percentage || p.progress || 0,
+        schedule: p.schedule || p.program?.schedule || 'Sin horario definido'
+      }));
+
+    workPrograms.value = activePrograms.value
+      .filter((p: any) => p.program?.category === 'work' || p.program_type === 'work' || p.category === 'laboral')
+      .map((p: any) => ({
+        id: p.id,
+        name: p.program?.name || p.program_name || p.name || 'Programa Laboral',
+        position: p.position || p.job_position || 'Sin posición asignada',
+        schedule: p.schedule || p.program?.schedule || 'Sin horario definido'
+      }));
+
+    therapeuticPrograms.value = activePrograms.value
+      .filter((p: any) => p.program?.category === 'therapeutic' || p.program_type === 'therapeutic' || p.category === 'terapeutico')
+      .map((p: any) => ({
+        id: p.id,
+        name: p.program?.name || p.program_name || p.name || 'Programa Terapéutico',
+        therapist: p.therapist_name || p.assigned_therapist || 'Sin terapeuta asignado',
+        sessions_completed: p.sessions_completed || 0,
+        sessions_total: p.sessions_total || p.total_sessions || 0
+      }));
+
+    // Load achievements/certificates
+    const achievementsData = props.inmate.rehabilitation_achievements ||
+                             props.inmate.achievements ||
+                             props.inmate.certificates || [];
+    certificates.value = Array.isArray(achievementsData) ? achievementsData : [];
+
+    // Calculate total hours from attendance records
+    const attendanceRecords = props.inmate.program_attendances ||
+                              props.inmate.programAttendances || [];
+    if (Array.isArray(attendanceRecords)) {
+      totalHours.value = attendanceRecords.reduce((sum: number, record: any) => {
+        return sum + (record.hours_attended || record.hours || 0);
+      }, 0);
+    }
+
+    // Calculate overall progress
+    if (activePrograms.value.length > 0) {
+      const totalProgress = activePrograms.value.reduce((sum: number, p: any) => {
+        return sum + (p.progress_percentage || p.progress || 0);
+      }, 0);
+      overallProgress.value = Math.round(totalProgress / activePrograms.value.length);
+    } else {
+      overallProgress.value = 0;
+    }
+
+    // Load behavior score from inmate data
+    behaviorScore.value = props.inmate.discipline_points || props.inmate.behavior_score || 0;
+
+    // Calculate participation rate from attendance
+    if (Array.isArray(attendanceRecords) && attendanceRecords.length > 0) {
+      const attendedCount = attendanceRecords.filter((r: any) => r.attended || r.status === 'present').length;
+      participationRate.value = Math.round((attendedCount / attendanceRecords.length) * 100);
+    } else {
+      participationRate.value = 0;
+    }
+
+    // Load last evaluation
+    const evaluations = props.inmate.program_evaluations ||
+                        props.inmate.programEvaluations ||
+                        props.inmate.evaluations || [];
+    if (Array.isArray(evaluations) && evaluations.length > 0) {
+      const sortedEvaluations = [...evaluations].sort((a: any, b: any) =>
+        new Date(b.evaluation_date || b.created_at).getTime() -
+        new Date(a.evaluation_date || a.created_at).getTime()
+      );
+      lastEvaluation.value = {
+        date: sortedEvaluations[0].evaluation_date || sortedEvaluations[0].created_at,
+        score: sortedEvaluations[0].score || sortedEvaluations[0].rating
+      };
+    } else {
+      lastEvaluation.value = null;
+    }
   } catch (error) {
     console.error('Error fetching rehabilitation data:', error);
   }

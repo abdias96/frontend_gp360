@@ -389,7 +389,6 @@ const close = () => {
 
 const printTransferOrder = () => {
   // TODO: Implement print functionality
-  console.log('Print transfer order for:', props.transfer);
 };
 
 // Utility functions

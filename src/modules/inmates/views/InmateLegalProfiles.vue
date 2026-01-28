@@ -15,7 +15,7 @@
             v-model="searchTerm"
             @input="handleSearch"
             class="form-control form-control-solid w-300px ps-13"
-            placeholder="Buscar por nombre, caso o expediente..."
+            :placeholder="$t('inmates.legalProfiles.searchPlaceholder')"
           />
         </div>
         <!--end::Search-->
@@ -36,7 +36,7 @@
               <span class="path1"></span>
               <span class="path2"></span>
             </i>
-            Filtros
+            {{ $t('inmates.legalProfiles.filters') }}
           </button>
           <!--end::Filter-->
 
@@ -48,7 +48,7 @@
             @click="createProfile"
           >
             <i class="ki-duotone ki-plus fs-2"></i>
-            Crear Perfil Legal
+            {{ $t('inmates.legalProfiles.createProfile') }}
           </button>
           <!--end::Add-->
         </div>
@@ -63,13 +63,13 @@
       <div class="card-title w-100">
         <div class="row w-100 g-3">
           <div class="col-md-3">
-            <label class="form-label fs-7 fw-bold">Centro</label>
+            <label class="form-label fs-7 fw-bold">{{ $t('inmates.legalProfiles.filterLabels.center') }}</label>
             <select
               v-model="filters.center_id"
               class="form-select form-select-solid"
               @change="handleFilterChange"
             >
-              <option value="">Todos los centros</option>
+              <option value="">{{ $t('inmates.legalProfiles.filterLabels.allCenters') }}</option>
               <option
                 v-for="option in centersOptions"
                 :key="option.value"
@@ -80,13 +80,13 @@
             </select>
           </div>
           <div class="col-md-3">
-            <label class="form-label fs-7 fw-bold">Estado Procesal</label>
+            <label class="form-label fs-7 fw-bold">{{ $t('inmates.legalProfiles.filterLabels.proceduralStatus') }}</label>
             <select
               v-model="filters.procedural_status_id"
               class="form-select form-select-solid"
               @change="handleFilterChange"
             >
-              <option value="">Todos</option>
+              <option value="">{{ $t('inmates.legalProfiles.filterLabels.all') }}</option>
               <option
                 v-for="status in proceduralStatuses"
                 :key="status.id"
@@ -97,15 +97,15 @@
             </select>
           </div>
           <div class="col-md-3">
-            <label class="form-label fs-7 fw-bold">Tipo</label>
+            <label class="form-label fs-7 fw-bold">{{ $t('inmates.legalProfiles.filterLabels.type') }}</label>
             <select
               v-model="filters.profile_type"
               class="form-select form-select-solid"
               @change="handleFilterChange"
             >
-              <option value="">Todos</option>
-              <option value="preventive">Prisión Preventiva</option>
-              <option value="sentenced">Condenados</option>
+              <option value="">{{ $t('inmates.legalProfiles.filterLabels.all') }}</option>
+              <option value="preventive">{{ $t('inmates.legalProfiles.filterLabels.preventive') }}</option>
+              <option value="sentenced">{{ $t('inmates.legalProfiles.filterLabels.sentenced') }}</option>
             </select>
           </div>
           <div class="col-md-3 d-flex align-items-end">
@@ -115,7 +115,7 @@
               @click="clearFilters"
               v-if="hasActiveFilters"
             >
-              Limpiar Filtros
+              {{ $t('inmates.legalProfiles.clearFilters') }}
             </button>
           </div>
         </div>
@@ -128,7 +128,7 @@
       <!--begin::Loading-->
       <div v-if="loading" class="d-flex justify-content-center py-10">
         <div class="spinner-border text-primary" role="status">
-          <span class="visually-hidden">Cargando...</span>
+          <span class="visually-hidden">{{ $t('inmates.legalProfiles.loading') }}</span>
         </div>
       </div>
       <!--end::Loading-->
@@ -145,7 +145,7 @@
           class="btn btn-sm btn-light-danger ms-3"
           @click="loadProfiles"
         >
-          Reintentar
+          {{ $t('inmates.legalProfiles.retry') }}
         </button>
       </div>
       <!--end::Error-->
@@ -168,13 +168,13 @@
                     </div>
                   </div>
                   <div class="flex-grow-1">
-                    <div class="text-muted fw-semibold fs-7">Total</div>
+                    <div class="text-muted fw-semibold fs-7">{{ $t('inmates.legalProfiles.statistics.total') }}</div>
                     <div class="fw-bold fs-3 text-gray-800">
                       {{ statistics.total }}
                     </div>
                   </div>
                 </div>
-                <div class="text-muted fw-semibold fs-6">Perfiles Legales</div>
+                <div class="text-muted fw-semibold fs-6">{{ $t('inmates.legalProfiles.statistics.legalProfiles') }}</div>
               </div>
             </div>
           </div>
@@ -193,13 +193,13 @@
                     </div>
                   </div>
                   <div class="flex-grow-1">
-                    <div class="text-muted fw-semibold fs-7">Preventiva</div>
+                    <div class="text-muted fw-semibold fs-7">{{ $t('inmates.legalProfiles.statistics.preventive') }}</div>
                     <div class="fw-bold fs-3 text-gray-800">
                       {{ statistics.preventive }}
                     </div>
                   </div>
                 </div>
-                <div class="text-muted fw-semibold fs-6">Prisión Preventiva</div>
+                <div class="text-muted fw-semibold fs-6">{{ $t('inmates.legalProfiles.statistics.preventiveDetention') }}</div>
               </div>
             </div>
           </div>
@@ -218,13 +218,13 @@
                     </div>
                   </div>
                   <div class="flex-grow-1">
-                    <div class="text-muted fw-semibold fs-7">Condenados</div>
+                    <div class="text-muted fw-semibold fs-7">{{ $t('inmates.legalProfiles.statistics.sentenced') }}</div>
                     <div class="fw-bold fs-3 text-gray-800">
                       {{ statistics.sentenced }}
                     </div>
                   </div>
                 </div>
-                <div class="text-muted fw-semibold fs-6">Con Sentencia</div>
+                <div class="text-muted fw-semibold fs-6">{{ $t('inmates.legalProfiles.statistics.withSentence') }}</div>
               </div>
             </div>
           </div>
@@ -243,13 +243,13 @@
                     </div>
                   </div>
                   <div class="flex-grow-1">
-                    <div class="text-muted fw-semibold fs-7">Audiencias</div>
+                    <div class="text-muted fw-semibold fs-7">{{ $t('inmates.legalProfiles.statistics.hearings') }}</div>
                     <div class="fw-bold fs-3 text-gray-800">
                       {{ statistics.pendingHearings }}
                     </div>
                   </div>
                 </div>
-                <div class="text-muted fw-semibold fs-6">Pendientes</div>
+                <div class="text-muted fw-semibold fs-6">{{ $t('inmates.legalProfiles.statistics.pending') }}</div>
               </div>
             </div>
           </div>
@@ -262,14 +262,14 @@
             <!--begin::Table head-->
             <thead>
               <tr class="text-start text-muted fw-bold fs-7 text-uppercase gs-0">
-                <th class="min-w-200px">Interno</th>
-                <th class="min-w-125px">Caso</th>
-                <th class="min-w-125px">Tribunal</th>
-                <th class="min-w-100px">Estado</th>
-                <th class="min-w-100px">Audiencias</th>
-                <th class="min-w-100px">Delitos</th>
-                <th class="min-w-100px">Actualización</th>
-                <th class="text-end min-w-100px">Acciones</th>
+                <th class="min-w-200px">{{ $t('inmates.legalProfiles.table.inmate') }}</th>
+                <th class="min-w-125px">{{ $t('inmates.legalProfiles.table.case') }}</th>
+                <th class="min-w-125px">{{ $t('inmates.legalProfiles.table.court') }}</th>
+                <th class="min-w-100px">{{ $t('inmates.legalProfiles.table.status') }}</th>
+                <th class="min-w-100px">{{ $t('inmates.legalProfiles.table.hearings') }}</th>
+                <th class="min-w-100px">{{ $t('inmates.legalProfiles.table.crimes') }}</th>
+                <th class="min-w-100px">{{ $t('inmates.legalProfiles.table.update') }}</th>
+                <th class="text-end min-w-100px">{{ $t('inmates.legalProfiles.table.actions') }}</th>
               </tr>
             </thead>
             <!--end::Table head-->
@@ -285,7 +285,7 @@
                       <img
                         v-if="getInmatePhoto(profile.inmate)"
                         :src="getInmatePhoto(profile.inmate)"
-                        :alt="profile.inmate?.full_name || 'Interno'"
+                        :alt="profile.inmate?.full_name || $t('inmates.legalProfiles.table.inmate')"
                         class="w-100"
                       />
                       <span
@@ -303,7 +303,7 @@
                       :to="`/inmates/${profile.inmate?.id}`"
                       class="text-gray-800 text-hover-primary mb-1"
                     >
-                      {{ profile.inmate?.full_name || 'Sin nombre' }}
+                      {{ profile.inmate?.full_name || $t('inmates.legalProfiles.noName') }}
                     </router-link>
                     <span class="text-muted">{{ profile.inmate?.document_number || 'N/A' }}</span>
                   </div>
@@ -315,7 +315,7 @@
                 <td>
                   <div class="d-flex flex-column">
                     <span class="text-gray-800 mb-1">{{ profile.case_number || 'N/A' }}</span>
-                    <span class="text-muted fs-7">{{ profile.judicial_file_number || 'Sin expediente' }}</span>
+                    <span class="text-muted fs-7">{{ profile.judicial_file_number || $t('inmates.legalProfiles.noFile') }}</span>
                   </div>
                 </td>
                 <!--end::Caso-->
@@ -360,7 +360,7 @@
                       class="btn btn-sm btn-light btn-active-light-primary dropdown-toggle"
                       data-bs-toggle="dropdown"
                     >
-                      Acciones
+                      {{ $t('inmates.legalProfiles.actions.actions') }}
                     </button>
                     <ul class="dropdown-menu">
                       <li>
@@ -369,7 +369,7 @@
                           class="dropdown-item"
                         >
                           <i class="ki-duotone ki-eye fs-6 me-2"></i>
-                          Ver Interno
+                          {{ $t('inmates.legalProfiles.actions.viewInmate') }}
                         </router-link>
                       </li>
                       <li v-if="canEdit">
@@ -379,7 +379,7 @@
                           @click.prevent="editProfile(profile)"
                         >
                           <i class="ki-duotone ki-pencil fs-6 me-2"></i>
-                          Editar Perfil
+                          {{ $t('inmates.legalProfiles.actions.editProfile') }}
                         </a>
                       </li>
                     </ul>
@@ -402,7 +402,7 @@
             </i>
           </div>
           <div class="fs-6 text-gray-600 mb-4">
-            No se encontraron perfiles legales con los criterios especificados.
+            {{ $t('inmates.legalProfiles.emptyState') }}
           </div>
           <button
             v-if="hasActiveFilters"
@@ -410,7 +410,7 @@
             class="btn btn-light-primary"
             @click="clearFilters"
           >
-            Limpiar Filtros
+            {{ $t('inmates.legalProfiles.clearFilters') }}
           </button>
         </div>
         <!--end::Empty state-->
@@ -421,13 +421,13 @@
           class="d-flex flex-stack flex-wrap pt-10"
         >
           <div class="fs-6 fw-semibold text-gray-700">
-            Mostrando
-            {{ (pagination.current_page - 1) * pagination.per_page + 1 }} a
+            {{ $t('inmates.legalProfiles.pagination.showing') }}
+            {{ (pagination.current_page - 1) * pagination.per_page + 1 }} {{ $t('inmates.legalProfiles.pagination.to') }}
             {{ Math.min(pagination.current_page * pagination.per_page, pagination.total) }}
-            de {{ pagination.total }} registros
+            {{ $t('inmates.legalProfiles.pagination.of') }} {{ pagination.total }} {{ $t('inmates.legalProfiles.pagination.records') }}
           </div>
 
-          <nav aria-label="Paginación">
+          <nav :aria-label="$t('inmates.legalProfiles.pagination.previous')">
             <ul class="pagination">
               <li
                 class="page-item"
@@ -438,7 +438,7 @@
                   @click="changePage(pagination.current_page - 1)"
                   :disabled="pagination.current_page === 1"
                 >
-                  Anterior
+                  {{ $t('inmates.legalProfiles.pagination.previous') }}
                 </button>
               </li>
 
@@ -467,7 +467,7 @@
                   @click="changePage(pagination.current_page + 1)"
                   :disabled="pagination.current_page === pagination.last_page"
                 >
-                  Siguiente
+                  {{ $t('inmates.legalProfiles.pagination.next') }}
                 </button>
               </li>
             </ul>
@@ -484,11 +484,13 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue';
 import { useRouter } from 'vue-router';
+import { useI18n } from 'vue-i18n';
 import { useAuthStore } from '@/stores/auth';
 import { useCatalogs } from '@/composables/useCatalogs';
 import ApiService from '@/core/services/ApiService';
 import Swal from 'sweetalert2';
 
+const { t } = useI18n();
 const router = useRouter();
 const authStore = useAuthStore();
 const { centersOptions, loadCatalogs: loadCatalogData } = useCatalogs();
@@ -608,7 +610,7 @@ const loadProfiles = async () => {
     }
   } catch (err: any) {
     console.error('Error loading profiles:', err);
-    error.value = err.response?.data?.message || 'Error al cargar perfiles legales';
+    error.value = err.response?.data?.message || t('inmates.legalProfiles.swal.errorLoading');
   } finally {
     loading.value = false;
   }
@@ -665,23 +667,35 @@ const changePage = (page: number) => {
 };
 
 const createProfile = async () => {
+  // Pre-fetch translations for Swal HTML content
+  const swalText = {
+    title: t('inmates.legalProfiles.swal.createTitle'),
+    instructions: t('inmates.legalProfiles.swal.createInstructions'),
+    step1: t('inmates.legalProfiles.swal.step1'),
+    step2: t('inmates.legalProfiles.swal.step2'),
+    step3: t('inmates.legalProfiles.swal.step3'),
+    step4: t('inmates.legalProfiles.swal.step4'),
+    goToList: t('inmates.legalProfiles.swal.goToList'),
+    cancel: t('inmates.legalProfiles.swal.cancel'),
+  };
+
   const result = await Swal.fire({
-    title: 'Crear Perfil Legal',
+    title: swalText.title,
     html: `
       <div class="text-start">
-        <p class="mb-3">Para crear un nuevo perfil legal, primero seleccione el interno:</p>
+        <p class="mb-3">${swalText.instructions}</p>
         <ol class="text-muted fs-7">
-          <li>Busque el interno en el listado de internos</li>
-          <li>Haga clic en "Ver Detalle" del interno</li>
-          <li>Vaya a la pestaña "Legal"</li>
-          <li>Use el botón "Nuevo Perfil Legal"</li>
+          <li>${swalText.step1}</li>
+          <li>${swalText.step2}</li>
+          <li>${swalText.step3}</li>
+          <li>${swalText.step4}</li>
         </ol>
       </div>
     `,
     icon: 'info',
     showCancelButton: true,
-    confirmButtonText: 'Ir a Listado de Internos',
-    cancelButtonText: 'Cancelar'
+    confirmButtonText: swalText.goToList,
+    cancelButtonText: swalText.cancel
   });
 
   if (result.isConfirmed) {
@@ -728,12 +742,12 @@ const getStatusBadgeClass = (profile: any) => {
 
 const getStatusLabel = (profile: any) => {
   if (profile.sentence_start_date) {
-    return 'Condenado';
+    return t('inmates.legalProfiles.statuses.sentenced');
   }
   if (profile.in_preventive_detention) {
-    return 'Prisión Preventiva';
+    return t('inmates.legalProfiles.statuses.preventiveDetention');
   }
-  return 'En Proceso';
+  return t('inmates.legalProfiles.statuses.inProcess');
 };
 
 const formatDate = (date: string) => {

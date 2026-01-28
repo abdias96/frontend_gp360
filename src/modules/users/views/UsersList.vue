@@ -14,7 +14,7 @@
             type="text"
             v-model="searchTerm"
             class="form-control form-control-solid w-250px ps-13"
-            placeholder="Buscar usuarios..."
+            :placeholder="$t('users.list.search')"
             @input="handleSearchInput"
           />
         </div>
@@ -33,7 +33,7 @@
             @click="openCreateModal"
           >
             <i class="ki-duotone ki-plus fs-2"></i>
-            Agregar Usuario
+            {{ $t('users.list.addUser') }}
           </button>
           <!--end::Add user-->
         </div>
@@ -51,11 +51,11 @@
           <!--begin::Table head-->
           <thead>
             <tr class="text-start text-muted fw-bold fs-7 text-uppercase gs-0">
-              <th class="min-w-125px">Usuario</th>
-              <th class="min-w-125px">Rol</th>
-              <th class="min-w-125px">Estado</th>
-              <th class="min-w-125px">Último acceso</th>
-              <th class="text-end min-w-100px">Acciones</th>
+              <th class="min-w-125px">{{ $t('users.list.table.user') }}</th>
+              <th class="min-w-125px">{{ $t('users.list.table.role') }}</th>
+              <th class="min-w-125px">{{ $t('users.list.table.status') }}</th>
+              <th class="min-w-125px">{{ $t('users.list.table.lastLogin') }}</th>
+              <th class="text-end min-w-100px">{{ $t('users.list.table.actions') }}</th>
             </tr>
           </thead>
           <!--end::Table head-->
@@ -66,15 +66,15 @@
             <tr v-if="loading">
               <td colspan="5" class="text-center py-10">
                 <div class="spinner-border text-primary" role="status">
-                  <span class="visually-hidden">Cargando...</span>
+                  <span class="visually-hidden">{{ $t('users.list.loading') }}</span>
                 </div>
-                <p class="text-muted mt-3">Cargando usuarios...</p>
+                <p class="text-muted mt-3">{{ $t('users.list.loadingUsers') }}</p>
               </td>
             </tr>
             <!-- Empty state -->
             <tr v-else-if="users.length === 0">
               <td colspan="5" class="text-center py-10">
-                <p class="text-muted">No se encontraron usuarios</p>
+                <p class="text-muted">{{ $t('users.list.noUsersFound') }}</p>
               </td>
             </tr>
             <!-- Users list -->
@@ -157,10 +157,10 @@
       <div v-if="!loading && users.length > 0" class="card-footer d-flex justify-content-between align-items-center">
         <div class="d-flex align-items-center gap-3">
           <div class="text-muted">
-            Mostrando {{ pagination.from }} a {{ pagination.to }} de {{ pagination.total }} registros
+            {{ $t('users.list.pagination.showing', { from: pagination.from, to: pagination.to, total: pagination.total }) }}
           </div>
           <div class="d-flex align-items-center gap-2">
-            <label class="form-label mb-0 me-2">Por página:</label>
+            <label class="form-label mb-0 me-2">{{ $t('users.list.pagination.perPage') }}</label>
             <select
               v-model.number="pagination.perPage"
               class="form-select form-select-sm"
@@ -249,7 +249,7 @@
     <div class="modal-dialog modal-dialog-centered modal-xl modal-dialog-scrollable">
       <div class="modal-content">
         <div class="modal-header">
-          <h2 class="fw-bold">Agregar Usuario</h2>
+          <h2 class="fw-bold">{{ $t('users.list.create.title') }}</h2>
           <div
             class="btn btn-icon btn-sm btn-active-icon-primary"
             @click="closeCreateModal"
@@ -264,17 +264,17 @@
           <div class="modal-body scroll-y mx-5 mx-xl-15 my-7">
             <!-- Información Personal -->
             <div class="mb-10">
-              <h5 class="fw-bold text-primary mb-5">Información Personal</h5>
+              <h5 class="fw-bold text-primary mb-5">{{ $t('users.form.sections.personalInfo') }}</h5>
 
               <div class="row g-5">
                 <div class="col-md-6">
-                  <label class="form-label required">DPI</label>
+                  <label class="form-label required">{{ $t('users.form.fields.dpi') }}</label>
                   <input
                     v-model="newUserForm.dpi"
                     type="text"
                     class="form-control"
                     :class="{ 'is-invalid': formErrors.dpi }"
-                    placeholder="Ingrese el DPI"
+                    :placeholder="$t('users.form.placeholders.dpi')"
                     required
                   />
                   <div v-if="formErrors.dpi" class="invalid-feedback">
@@ -283,13 +283,13 @@
                 </div>
 
                 <div class="col-md-6">
-                  <label class="form-label required">Email</label>
+                  <label class="form-label required">{{ $t('users.form.fields.email') }}</label>
                   <input
                     v-model="newUserForm.email"
                     type="email"
                     class="form-control"
                     :class="{ 'is-invalid': formErrors.email }"
-                    placeholder="correo@ejemplo.com"
+                    :placeholder="$t('users.form.placeholders.email')"
                     required
                   />
                   <div v-if="formErrors.email" class="invalid-feedback">
@@ -298,13 +298,13 @@
                 </div>
 
                 <div class="col-md-6">
-                  <label class="form-label required">Primer Nombre</label>
+                  <label class="form-label required">{{ $t('users.form.fields.firstName') }}</label>
                   <input
                     v-model="newUserForm.first_name"
                     type="text"
                     class="form-control"
                     :class="{ 'is-invalid': formErrors.first_name }"
-                    placeholder="Primer nombre"
+                    :placeholder="$t('users.form.placeholders.firstName')"
                     required
                     @input="generateUsername"
                   />
@@ -314,23 +314,23 @@
                 </div>
 
                 <div class="col-md-6">
-                  <label class="form-label">Segundo Nombre</label>
+                  <label class="form-label">{{ $t('users.form.fields.middleName') }}</label>
                   <input
                     v-model="newUserForm.middle_name"
                     type="text"
                     class="form-control"
-                    placeholder="Segundo nombre (opcional)"
+                    :placeholder="$t('users.form.placeholders.middleName')"
                   />
                 </div>
 
                 <div class="col-md-6">
-                  <label class="form-label required">Primer Apellido</label>
+                  <label class="form-label required">{{ $t('users.form.fields.lastName') }}</label>
                   <input
                     v-model="newUserForm.last_name"
                     type="text"
                     class="form-control"
                     :class="{ 'is-invalid': formErrors.last_name }"
-                    placeholder="Primer apellido"
+                    :placeholder="$t('users.form.placeholders.lastName')"
                     required
                     @input="generateUsername"
                   />
@@ -340,12 +340,12 @@
                 </div>
 
                 <div class="col-md-6">
-                  <label class="form-label">Segundo Apellido</label>
+                  <label class="form-label">{{ $t('users.form.fields.secondLastName') }}</label>
                   <input
                     v-model="newUserForm.second_last_name"
                     type="text"
                     class="form-control"
-                    placeholder="Segundo apellido (opcional)"
+                    :placeholder="$t('users.form.placeholders.secondLastName')"
                     @input="generateUsername"
                   />
                 </div>
@@ -354,20 +354,20 @@
 
             <!-- Información de Cuenta -->
             <div class="mb-10">
-              <h5 class="fw-bold text-primary mb-5">Información de Cuenta</h5>
+              <h5 class="fw-bold text-primary mb-5">{{ $t('users.form.sections.accountInfo') }}</h5>
 
               <div class="row g-5">
                 <div class="col-md-6">
-                  <label class="form-label required">Nombre de Usuario</label>
+                  <label class="form-label required">{{ $t('users.form.fields.username') }}</label>
                   <div class="input-group">
                     <input
                       v-model="newUserForm.username"
                       type="text"
                       class="form-control"
                       :class="{ 'is-invalid': formErrors.username }"
-                      placeholder="Generado automáticamente"
+                      :placeholder="$t('users.form.placeholders.username')"
                       disabled
-                      title="El nombre de usuario se genera automáticamente"
+                      :title="$t('users.form.hints.usernameNotEditable')"
                     />
                     <span v-if="checkingUsername" class="input-group-text">
                       <span class="spinner-border spinner-border-sm"></span>
@@ -381,19 +381,19 @@
                   </div>
                   <small class="form-text text-muted">
                     <i class="bi bi-info-circle me-1"></i>
-                    Se genera automáticamente: primera letra del nombre + apellido + primera letra del segundo apellido
+                    {{ $t('users.form.hints.usernameGeneration') }}
                   </small>
                 </div>
 
                 <div class="col-md-6">
-                  <label class="form-label required">Rol</label>
+                  <label class="form-label required">{{ $t('users.form.fields.role') }}</label>
                   <select
                     v-model="newUserForm.role_id"
                     class="form-select"
                     :class="{ 'is-invalid': formErrors.role_id }"
                     required
                   >
-                    <option value="">Seleccione un rol</option>
+                    <option value="">{{ $t('users.form.placeholders.selectRole') }}</option>
                     <option v-for="role in roles" :key="role.id" :value="role.id">
                       {{ role.name }}
                     </option>
@@ -404,29 +404,29 @@
                 </div>
 
                 <div class="col-md-6">
-                  <label class="form-label required">Contraseña</label>
+                  <label class="form-label required">{{ $t('users.form.fields.password') }}</label>
                   <input
                     v-model="newUserForm.password"
                     type="password"
                     class="form-control"
                     :class="{ 'is-invalid': formErrors.password }"
-                    placeholder="Mínimo 8 caracteres"
+                    :placeholder="$t('users.form.placeholders.password')"
                     required
                   />
                   <div v-if="formErrors.password" class="invalid-feedback">
                     {{ formErrors.password }}
                   </div>
-                  <small class="form-text text-muted">Mínimo 8 caracteres</small>
+                  <small class="form-text text-muted">{{ $t('users.form.hints.minPassword') }}</small>
                 </div>
 
                 <div class="col-md-6">
-                  <label class="form-label required">Confirmar Contraseña</label>
+                  <label class="form-label required">{{ $t('users.form.fields.confirmPassword') }}</label>
                   <input
                     v-model="newUserForm.password_confirmation"
                     type="password"
                     class="form-control"
                     :class="{ 'is-invalid': formErrors.password_confirmation }"
-                    placeholder="Repita la contraseña"
+                    :placeholder="$t('users.form.placeholders.confirmPassword')"
                     required
                   />
                   <div v-if="formErrors.password_confirmation" class="invalid-feedback">
@@ -438,7 +438,7 @@
 
             <!-- Estado -->
             <div>
-              <h5 class="fw-bold text-primary mb-5">Estado</h5>
+              <h5 class="fw-bold text-primary mb-5">{{ $t('users.form.sections.status') }}</h5>
               <div class="form-check form-switch">
                 <input
                   v-model="newUserForm.active"
@@ -447,7 +447,7 @@
                   id="newUserActive"
                 />
                 <label class="form-check-label" for="newUserActive">
-                  Usuario activo
+                  {{ $t('users.form.fields.active') }}
                 </label>
               </div>
             </div>
@@ -460,7 +460,7 @@
               @click="closeCreateModal"
               :disabled="creatingUser"
             >
-              Cancelar
+              {{ $t('users.form.buttons.cancel') }}
             </button>
             <button
               type="submit"
@@ -468,7 +468,7 @@
               :disabled="creatingUser"
             >
               <span v-if="creatingUser" class="spinner-border spinner-border-sm me-2"></span>
-              {{ creatingUser ? 'Creando...' : 'Crear Usuario' }}
+              {{ creatingUser ? $t('users.form.buttons.creating') : $t('users.form.buttons.create') }}
             </button>
           </div>
         </form>
@@ -480,8 +480,11 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from "vue";
 import { useRouter } from "vue-router";
+import { useI18n } from "vue-i18n";
 import ApiService from "@/core/services/ApiService";
 import Swal from "sweetalert2";
+
+const { t } = useI18n();
 
 const router = useRouter();
 
@@ -578,8 +581,8 @@ const loadUsers = async () => {
     console.error("Error loading users:", error);
     Swal.fire({
       icon: 'error',
-      title: 'Error',
-      text: 'No se pudieron cargar los usuarios'
+      title: t('common.swal.titles.error'),
+      text: t('users.swal.loadError')
     });
   } finally {
     loading.value = false;
@@ -683,31 +686,31 @@ const editUser = (user: User) => {
 
 const deleteUser = async (userId: number) => {
   const result = await Swal.fire({
-    title: '¿Estás seguro?',
-    text: "Esta acción no se puede revertir",
+    title: t('users.swal.deleteConfirmTitle'),
+    text: t('users.swal.deleteConfirmText'),
     icon: 'warning',
     showCancelButton: true,
     confirmButtonColor: '#d33',
     cancelButtonColor: '#3085d6',
-    confirmButtonText: 'Sí, eliminar',
-    cancelButtonText: 'Cancelar'
+    confirmButtonText: t('common.swal.buttons.yesDelete'),
+    cancelButtonText: t('common.swal.buttons.cancel')
   });
 
   if (result.isConfirmed) {
     try {
       await ApiService.delete(`/users/${userId}`);
-      await loadUsers(); // Reload the list
+      await loadUsers();
       Swal.fire({
         icon: 'success',
-        title: 'Usuario eliminado',
+        title: t('users.swal.deleteSuccess'),
         timer: 2000,
         showConfirmButton: false
       });
     } catch (error) {
       Swal.fire({
         icon: 'error',
-        title: 'Error',
-        text: 'No se pudo eliminar el usuario'
+        title: t('common.swal.titles.error'),
+        text: t('users.swal.deleteError')
       });
     }
   }
@@ -858,8 +861,8 @@ const handleCreateUser = async () => {
   if (!newUserForm.value.username) {
     Swal.fire({
       icon: 'error',
-      title: 'Error',
-      text: 'Debe completar el nombre y apellidos para generar el nombre de usuario'
+      title: t('common.swal.titles.error'),
+      text: t('users.swal.usernameRequired')
     });
     return;
   }
@@ -868,21 +871,21 @@ const handleCreateUser = async () => {
   if (checkingUsername.value) {
     Swal.fire({
       icon: 'info',
-      title: 'Espere un momento',
-      text: 'Verificando disponibilidad del nombre de usuario...'
+      title: t('common.swal.titles.pleaseWait'),
+      text: t('users.swal.checkingUsername')
     });
     return;
   }
 
   // Validate passwords match
   if (newUserForm.value.password !== newUserForm.value.password_confirmation) {
-    formErrors.value.password_confirmation = "Las contraseñas no coinciden";
+    formErrors.value.password_confirmation = t('users.swal.passwordMismatch');
     return;
   }
 
   // Validate password length
   if (newUserForm.value.password.length < 8) {
-    formErrors.value.password = "La contraseña debe tener al menos 8 caracteres";
+    formErrors.value.password = t('users.swal.passwordTooShort');
     return;
   }
 
@@ -893,25 +896,24 @@ const handleCreateUser = async () => {
 
     await Swal.fire({
       icon: 'success',
-      title: '¡Éxito!',
-      text: 'Usuario creado exitosamente',
+      title: t('common.swal.titles.success'),
+      text: t('users.swal.createSuccess'),
       timer: 2000,
       showConfirmButton: false
     });
 
     closeCreateModal();
-    await loadUsers(); // Reload the list
+    await loadUsers();
   } catch (error: any) {
     console.error("Error creating user:", error);
 
     if (error.response?.data?.errors) {
-      // Laravel validation errors
       formErrors.value = error.response.data.errors;
     } else {
       Swal.fire({
         icon: 'error',
-        title: 'Error',
-        text: error.response?.data?.message || 'No se pudo crear el usuario'
+        title: t('common.swal.titles.error'),
+        text: error.response?.data?.message || t('users.swal.createError')
       });
     }
   } finally {

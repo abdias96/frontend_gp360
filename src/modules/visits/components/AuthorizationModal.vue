@@ -599,16 +599,6 @@ const loadRelationshipData = () => {
     const expiryDate = new Date(props.relationship.authorization_expiry_date)
     form.authorization_expiry_date = expiryDate.toISOString().split('T')[0]
   }
-
-  console.log('Loaded relationship data:', {
-    authorization_date: form.authorization_date,
-    authorization_expiry_date: form.authorization_expiry_date,
-    visit_frequency_limit: form.visit_frequency_limit,
-    visit_duration_limit: form.visit_duration_limit,
-    allowed_visit_days: form.allowed_visit_days,
-    allowed_visit_hours_start: form.allowed_visit_hours_start,
-    allowed_visit_hours_end: form.allowed_visit_hours_end
-  })
 }
 
 // Lifecycle

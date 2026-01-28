@@ -639,7 +639,6 @@ const getDeviceStatusClass = (status: string) => {
 }
 
 const handleDeviceStatus = () => {
-  console.log('Show device status')
 }
 
 const handleNewRegistration = () => {
@@ -732,12 +731,10 @@ const handleDenyAccess = () => {
 }
 
 const handleRegisterBiometric = (visitorId: number) => {
-  console.log('Register biometric for visitor:', visitorId)
   // Open biometric registration modal
 }
 
 const handleConfigureDevice = (deviceId: number) => {
-  console.log('Configure device:', deviceId)
 }
 
 const handleRestartDevice = async (deviceId: number) => {
@@ -814,7 +811,6 @@ const handleVisitorSearch = async () => {
         ? visitorData
         : (visitorData.data || [])
 
-      console.log('Search results:', searchResults.value)
     } catch (error) {
       console.error('Error searching visitors:', error)
       searchResults.value = []
@@ -825,7 +821,6 @@ const handleVisitorSearch = async () => {
 }
 
 const selectVisitor = (visitor: Visitor) => {
-  console.log('Selected visitor:', visitor)
 
   // Set as current scan
   currentScan.value = {
