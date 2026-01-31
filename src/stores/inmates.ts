@@ -86,7 +86,7 @@ export const useInmatesStore = defineStore("inmates", {
           status: this.filters.status || undefined,
           gender: this.filters.gender || undefined,
           nationality_id: this.filters.nationality_id || undefined,
-          with_photos: true, // Include photos for the inmates list
+          with_photos: true, // Keep photos for the inmates list display
         };
 
         // Remove undefined values

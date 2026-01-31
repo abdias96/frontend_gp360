@@ -42,16 +42,17 @@
             <div class="row g-6 mb-6">
               <div class="col-md-6">
                 <label class="form-label required">Tribunal</label>
-                <select v-model="form.court_id" class="form-select" required>
-                  <option value="">Seleccionar tribunal...</option>
-                  <option 
-                    v-for="court in courtsOptions" 
-                    :key="court.value" 
-                    :value="court.value"
-                  >
-                    {{ court.label }}
-                  </option>
-                </select>
+                <Multiselect
+                  v-model="form.court_id"
+                  :options="courtsOptions"
+                  :searchable="true"
+                  placeholder="Buscar tribunal..."
+                  noOptionsText="No hay opciones disponibles"
+                  noResultsText="No se encontraron resultados"
+                  label="label"
+                  valueProp="value"
+                  :canClear="true"
+                />
               </div>
               <div class="col-md-6">
                 <label class="form-label">Estado Procesal</label>
@@ -317,6 +318,7 @@ import ApiService from '@/core/services/ApiService';
 import { Modal } from 'bootstrap';
 import Swal from 'sweetalert2';
 import { formatDateForInput } from '@/core/helpers/date-formatters';
+import Multiselect from '@vueform/multiselect';
 
 // Props
 interface Props {

@@ -51,10 +51,9 @@ class ApiService {
           delete config.headers["Content-Type"];
         }
 
-        // Add timestamp to prevent caching
-        if (config.method?.toLowerCase() === "get") {
-          config.params = { ...config.params, _t: Date.now() };
-        }
+        // NOTE: Cache busting removed - was causing ALL GET requests to bypass browser cache
+        // If you need cache busting for specific endpoints, add ?_t=timestamp in the calling code
+        // This improves performance significantly for catalog data, static resources, etc.
 
         return config;
       },

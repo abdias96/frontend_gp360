@@ -17,16 +17,17 @@
             <div class="row g-6 mb-6">
               <div class="col-md-8">
                 <label class="form-label required">Delito</label>
-                <select v-model="form.crime_id" class="form-select" required>
-                  <option value="">Seleccionar delito...</option>
-                  <option 
-                    v-for="crime in crimesOptions" 
-                    :key="crime.value" 
-                    :value="crime.value"
-                  >
-                    {{ crime.label }}
-                  </option>
-                </select>
+                <Multiselect
+                  v-model="form.crime_id"
+                  :options="crimesOptions"
+                  :searchable="true"
+                  placeholder="Buscar delito..."
+                  noOptionsText="No hay opciones disponibles"
+                  noResultsText="No se encontraron resultados"
+                  label="label"
+                  valueProp="value"
+                  :canClear="true"
+                />
               </div>
               <div class="col-md-4">
                 <label class="form-label required">Clasificación</label>
@@ -156,6 +157,7 @@ import { ref, onMounted } from 'vue';
 import { useCatalogs } from '@/composables/useCatalogs';
 import ApiService from '@/core/services/ApiService';
 import Swal from 'sweetalert2';
+import Multiselect from '@vueform/multiselect';
 
 // Props
 interface Props {
