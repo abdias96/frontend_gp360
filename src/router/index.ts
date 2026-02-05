@@ -1279,6 +1279,16 @@ const routes: Array<RouteRecordRaw> = [
           permissions: "security.reports",
         },
       },
+      {
+        path: "/security/renap-verification",
+        name: "security-renap-verification",
+        component: () => import("@/modules/security/views/RenapPhotoVerification.vue"),
+        meta: {
+          pageTitle: "Verificación RENAP",
+          breadcrumbs: ["Seguridad", "Verificación RENAP"],
+          permissions: "security.renap_verification",
+        },
+      },
       // Medical Module routes
       {
         path: "/medical",
