@@ -146,11 +146,11 @@
                 >
                   <div class="position-relative">
                     <img
-                      :src="photo.url"
+                      :src="photo.photo_data || photo.url"
                       :alt="photo.type"
                       class="img-fluid rounded cursor-pointer"
                       style="max-height: 150px; object-fit: cover; width: 100%;"
-                      @click="openPhotoModal(photo.url)"
+                      @click="openPhotoModal(photo.photo_data || photo.url)"
                     />
                     <span
                       v-if="photo.is_current"
