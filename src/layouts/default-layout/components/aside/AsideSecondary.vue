@@ -511,6 +511,17 @@
                         <span class="menu-title">{{ $t("menu.physicalProfiles") }}</span>
                       </router-link>
                     </div>
+                    <div
+                      class="menu-item"
+                      v-if="isSuperAdmin || hasPermission('security.renap_verification')"
+                    >
+                      <router-link to="/security/renap-verification" class="menu-link">
+                        <span class="menu-bullet"
+                          ><span class="bullet bullet-dot"></span
+                        ></span>
+                        <span class="menu-title">{{ $t("menu.renapVerification") }}</span>
+                      </router-link>
+                    </div>
                   </div>
                 </div>
 
