@@ -134,6 +134,19 @@ const securityRoutes: RouteRecordRaw[] = [
           pageTitle: 'Reportes de Seguridad',
           breadcrumb: 'Reportes'
         }
+      },
+
+      // RENAP Photo Verification
+      {
+        path: 'renap-verification',
+        name: 'security-renap-verification',
+        component: () => import('./views/RenapPhotoVerification.vue'),
+        meta: {
+          requiresAuth: true,
+          permission: 'security.renap_verification',
+          pageTitle: 'Verificacion RENAP',
+          breadcrumb: 'Verificacion RENAP'
+        }
       }
     ]
   }

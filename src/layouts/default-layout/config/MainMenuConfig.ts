@@ -180,6 +180,11 @@ const MainMenuConfig: Array<MenuItem> = [
             route: "/security/physical-profiles",
             permission: "security.physical",
           },
+          {
+            heading: "renapVerification",
+            route: "/security/renap-verification",
+            permission: "security.renap_verification",
+          },
         ],
       },
     ],

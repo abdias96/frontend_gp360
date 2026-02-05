@@ -159,6 +159,7 @@ export const menuTranslations = {
       gangs: "Gangs",
       alerts: "Alerts",
       biometricIdentification: "Biometric Identification",
+      renapVerification: "RENAP Verification",
       
       // Rehabilitation Module
       rehabilitation: "Rehabilitation",
@@ -399,6 +400,7 @@ export const menuTranslations = {
       gangs: "Pandillas",
       alerts: "Alertas",
       biometricIdentification: "Identificación biométrica",
+      renapVerification: "Verificación RENAP",
 
       // Rehabilitation Module
       rehabilitation: "Rehabilitación",
