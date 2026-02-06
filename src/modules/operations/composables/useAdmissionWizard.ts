@@ -1543,14 +1543,26 @@ export function useAdmissionWizard() {
           if (!started) return;
         }
 
-        await saveIdentification();
-        try {
-          await saveSecurityAssessment();
-        } catch (error: any) {
-          if (!error.response?.data?.error?.includes('Duplicate entry')) {
-            throw error;
-          }
+        const identSaved = await saveIdentification();
+        if (!identSaved) {
+          await Swal.fire({
+            title: 'Error en Identificaci\u00f3n',
+            text: 'No se pudo guardar la informaci\u00f3n de identificaci\u00f3n. Corrija los errores antes de completar la admisi\u00f3n.',
+            icon: 'error'
+          });
+          return;
         }
+
+        const securitySaved = await saveSecurityAssessment();
+        if (!securitySaved) {
+          await Swal.fire({
+            title: 'Error en Seguridad',
+            text: 'No se pudo guardar la evaluaci\u00f3n de seguridad. Corrija los errores antes de completar la admisi\u00f3n.',
+            icon: 'error'
+          });
+          return;
+        }
+
         await savePhysicalCharacteristics();
         await saveBelongings();
         await saveMedicalEvaluation();
