@@ -55,7 +55,7 @@
                 />
               </div>
               <div class="col-md-6">
-                <label class="form-label">Estado Procesal</label>
+                <label class="form-label required">Estado Procesal</label>
                 <select v-model="form.procedural_status_id" class="form-select">
                   <option value="">Seleccionar estado...</option>
                   <option 
@@ -427,6 +427,15 @@ const loadExistingData = () => {
 };
 
 const submitForm = async () => {
+  if (!form.value.procedural_status_id) {
+    await Swal.fire({
+      title: 'Campo requerido',
+      text: 'Debe seleccionar el Estado Procesal',
+      icon: 'warning'
+    });
+    return;
+  }
+
   try {
     loading.value = true;
 

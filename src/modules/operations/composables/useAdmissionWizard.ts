@@ -1195,6 +1195,29 @@ export function useAdmissionWizard() {
         return true;
       }
 
+      // Validar que procedural_status_id esté seleccionado
+      if (!firstProfile.procedural_status_id) {
+        await Swal.fire({
+          title: 'Campo requerido',
+          text: 'Debe seleccionar el Estado Procesal antes de continuar',
+          icon: 'warning'
+        });
+        return false;
+      }
+
+      // Validar que cada delito tenga crime_id seleccionado
+      if (firstProfile.crimes && firstProfile.crimes.length > 0) {
+        const crimesWithoutId = firstProfile.crimes.filter((c: any) => !c.crime_id);
+        if (crimesWithoutId.length > 0) {
+          await Swal.fire({
+            title: 'Campo requerido',
+            text: 'Cada delito debe tener un tipo de delito seleccionado',
+            icon: 'warning'
+          });
+          return false;
+        }
+      }
+
       const legalProfileData = {
         case_number: firstProfile.case_number,
         court_id: firstProfile.court_id,

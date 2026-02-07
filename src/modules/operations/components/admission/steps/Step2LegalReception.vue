@@ -171,7 +171,7 @@
               />
             </div>
             <div class="col-md-6">
-              <label class="form-label">{{ t('admissions.wizard.fields.proceduralStatus') }}</label>
+              <label class="form-label required">{{ t('admissions.wizard.fields.proceduralStatus') }}</label>
               <select v-model="profile.procedural_status_id" class="form-select form-select-sm">
                 <option value="">{{ t('admissions.wizard.fields.select') }}</option>
                 <option v-for="status in proceduralStatuses" :key="status.id" :value="status.id">
