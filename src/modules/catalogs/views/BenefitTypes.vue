@@ -61,6 +61,22 @@ const modalFields: ModalField[] = [
     placeholder: "Código único del tipo de beneficio",
   },
   {
+    key: "category",
+    label: "Categoría",
+    type: "select",
+    required: true,
+    options: [
+      { value: "libertad_condicional", label: "Libertad Condicional" },
+      { value: "libertad_anticipada", label: "Libertad Anticipada" },
+      { value: "prelibertad", label: "Prelibertad" },
+      { value: "reduccion_pena", label: "Reducción de Pena" },
+      { value: "trabajo_extramuros", label: "Trabajo Extramuros" },
+      { value: "estudio_extramuros", label: "Estudio Extramuros" },
+      { value: "permisos_especiales", label: "Permisos Especiales" },
+      { value: "otros", label: "Otros" },
+    ],
+  },
+  {
     key: "description",
     label: "Descripción",
     type: "textarea",

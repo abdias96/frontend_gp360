@@ -567,6 +567,11 @@ const MainMenuConfig: Array<MenuItem> = [
             route: "/catalogs/rehabilitation-programs",
             permission: "catalogs.rehabilitation_programs",
           },
+          {
+            heading: "admissionReasons",
+            route: "/catalogs/admission-reasons",
+            permission: "catalogs.admission_reasons",
+          },
         ],
       },
       {
@@ -624,6 +629,45 @@ const MainMenuConfig: Array<MenuItem> = [
             heading: "visitTypes",
             route: "/catalogs/visit-types",
             permission: "catalogs.visit_types",
+          },
+          {
+            heading: "relationshipTypes",
+            route: "/catalogs/relationship-types",
+            permission: "catalogs.relationship_types",
+          },
+        ],
+      },
+      {
+        sectionTitle: "operational",
+        route: "/catalogs",
+        keenthemesIcon: "setting-3",
+        bootstrapIcon: "bi-gear-wide-connected",
+        permission: "catalogs.view",
+        sub: [
+          {
+            heading: "emergencyTypes",
+            route: "/catalogs/emergency-types",
+            permission: "catalogs.emergency_types",
+          },
+          {
+            heading: "countProcedureTypes",
+            route: "/catalogs/count-procedure-types",
+            permission: "catalogs.count_procedure_types",
+          },
+          {
+            heading: "grievanceTypes",
+            route: "/catalogs/grievance-types",
+            permission: "catalogs.grievance_types",
+          },
+          {
+            heading: "mailTypes",
+            route: "/catalogs/mail-types",
+            permission: "catalogs.mail_types",
+          },
+          {
+            heading: "transportTypes",
+            route: "/catalogs/transport-types",
+            permission: "catalogs.transport_types",
           },
         ],
       },

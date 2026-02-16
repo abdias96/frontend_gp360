@@ -61,6 +61,17 @@ const modalFields: ModalField[] = [
     placeholder: "Código único de la clasificación de delito",
   },
   {
+    key: "severity",
+    label: "Gravedad",
+    type: "select",
+    required: true,
+    options: [
+      { value: "leve", label: "Leve" },
+      { value: "grave", label: "Grave" },
+      { value: "muy_grave", label: "Muy Grave" },
+    ],
+  },
+  {
     key: "description",
     label: "Descripción",
     type: "textarea",

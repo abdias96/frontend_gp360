@@ -1859,6 +1859,181 @@
                   </div>
                 </div>
 
+                <!-- Operational Catalogs -->
+                <div
+                  class="menu-item menu-accordion"
+                  :class="{ show: operationalCatMenuOpen }"
+                  v-if="isSuperAdmin || canAccess('catalogs')"
+                >
+                  <span class="menu-link" @click="toggleOperationalCatMenu">
+                    <span class="menu-icon">
+                      <KTIcon icon-name="setting-3" icon-class="fs-2" />
+                    </span>
+                    <span class="menu-title">{{ $t("menu.operational") }}</span>
+                    <span
+                      class="menu-arrow"
+                      :class="{ rotate: operationalCatMenuOpen }"
+                    ></span>
+                  </span>
+                  <div
+                    class="menu-sub menu-sub-accordion"
+                    v-show="operationalCatMenuOpen"
+                  >
+                    <div
+                      class="menu-item"
+                      v-if="
+                        isSuperAdmin ||
+                        hasPermission('catalogs.emergency_types')
+                      "
+                    >
+                      <router-link
+                        to="/catalogs/emergency-types"
+                        class="menu-link"
+                      >
+                        <span class="menu-bullet"
+                          ><span class="bullet bullet-dot"></span
+                        ></span>
+                        <span class="menu-title">{{
+                          $t("menu.emergencyTypes")
+                        }}</span>
+                      </router-link>
+                    </div>
+                    <div
+                      class="menu-item"
+                      v-if="
+                        isSuperAdmin ||
+                        hasPermission('catalogs.admission_reasons')
+                      "
+                    >
+                      <router-link
+                        to="/catalogs/admission-reasons"
+                        class="menu-link"
+                      >
+                        <span class="menu-bullet"
+                          ><span class="bullet bullet-dot"></span
+                        ></span>
+                        <span class="menu-title">{{
+                          $t("menu.admissionReasons")
+                        }}</span>
+                      </router-link>
+                    </div>
+                    <div
+                      class="menu-item"
+                      v-if="
+                        isSuperAdmin ||
+                        hasPermission('catalogs.relationship_types')
+                      "
+                    >
+                      <router-link
+                        to="/catalogs/relationship-types"
+                        class="menu-link"
+                      >
+                        <span class="menu-bullet"
+                          ><span class="bullet bullet-dot"></span
+                        ></span>
+                        <span class="menu-title">{{
+                          $t("menu.relationshipTypes")
+                        }}</span>
+                      </router-link>
+                    </div>
+                    <div
+                      class="menu-item"
+                      v-if="
+                        isSuperAdmin ||
+                        hasPermission('catalogs.count_procedure_types')
+                      "
+                    >
+                      <router-link
+                        to="/catalogs/count-procedure-types"
+                        class="menu-link"
+                      >
+                        <span class="menu-bullet"
+                          ><span class="bullet bullet-dot"></span
+                        ></span>
+                        <span class="menu-title">{{
+                          $t("menu.countProcedureTypes")
+                        }}</span>
+                      </router-link>
+                    </div>
+                    <div
+                      class="menu-item"
+                      v-if="
+                        isSuperAdmin ||
+                        hasPermission('catalogs.grievance_types')
+                      "
+                    >
+                      <router-link
+                        to="/catalogs/grievance-types"
+                        class="menu-link"
+                      >
+                        <span class="menu-bullet"
+                          ><span class="bullet bullet-dot"></span
+                        ></span>
+                        <span class="menu-title">{{
+                          $t("menu.grievanceTypes")
+                        }}</span>
+                      </router-link>
+                    </div>
+                    <div
+                      class="menu-item"
+                      v-if="
+                        isSuperAdmin ||
+                        hasPermission('catalogs.mail_types')
+                      "
+                    >
+                      <router-link
+                        to="/catalogs/mail-types"
+                        class="menu-link"
+                      >
+                        <span class="menu-bullet"
+                          ><span class="bullet bullet-dot"></span
+                        ></span>
+                        <span class="menu-title">{{
+                          $t("menu.mailTypes")
+                        }}</span>
+                      </router-link>
+                    </div>
+                    <div
+                      class="menu-item"
+                      v-if="
+                        isSuperAdmin ||
+                        hasPermission('catalogs.transport_types')
+                      "
+                    >
+                      <router-link
+                        to="/catalogs/transport-types"
+                        class="menu-link"
+                      >
+                        <span class="menu-bullet"
+                          ><span class="bullet bullet-dot"></span
+                        ></span>
+                        <span class="menu-title">{{
+                          $t("menu.transportTypes")
+                        }}</span>
+                      </router-link>
+                    </div>
+                    <div
+                      class="menu-item"
+                      v-if="
+                        isSuperAdmin ||
+                        hasPermission('catalogs.visit_types')
+                      "
+                    >
+                      <router-link
+                        to="/catalogs/visit-types"
+                        class="menu-link"
+                      >
+                        <span class="menu-bullet"
+                          ><span class="bullet bullet-dot"></span
+                        ></span>
+                        <span class="menu-title">{{
+                          $t("menu.visitTypes")
+                        }}</span>
+                      </router-link>
+                    </div>
+                  </div>
+                </div>
+
                 <!-- Reports Section -->
                 <div
                   class="menu-item"
@@ -2292,6 +2467,7 @@ export default defineComponent({
     const legalMenuOpen = ref(false);
     const penitentiaryMenuOpen = ref(false);
     const healthMenuOpen = ref(false);
+    const operationalCatMenuOpen = ref(false);
     const reportsMenuOpen = ref(false);
     const monitoringMenuOpen = ref(false);
     const settingsMenuOpen = ref(false);
@@ -2470,6 +2646,11 @@ export default defineComponent({
       resetAutoCollapseTimer();
     };
 
+    const toggleOperationalCatMenu = () => {
+      operationalCatMenuOpen.value = !operationalCatMenuOpen.value;
+      resetAutoCollapseTimer();
+    };
+
     const toggleReportsMenu = () => {
       reportsMenuOpen.value = !reportsMenuOpen.value;
       resetAutoCollapseTimer();
@@ -2618,6 +2799,7 @@ export default defineComponent({
       legalMenuOpen,
       penitentiaryMenuOpen,
       healthMenuOpen,
+      operationalCatMenuOpen,
       reportsMenuOpen,
       monitoringMenuOpen,
       settingsMenuOpen,
@@ -2633,6 +2815,7 @@ export default defineComponent({
       toggleLegalMenu,
       togglePenitentiaryMenu,
       toggleHealthMenu,
+      toggleOperationalCatMenu,
       toggleReportsMenu,
       toggleMonitoringMenu,
       toggleSettingsMenu,

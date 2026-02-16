@@ -17,6 +17,7 @@ import { rolesTranslations } from "./modules/roles";
 import { inmatesTranslations } from "./modules/inmates";
 import { documentsTranslations } from "./modules/documents";
 import { renapTranslations } from "./modules/renap";
+import { emergencyTranslations } from "./modules/emergency";
 import operationsEs from "./es/operations";
 import operationsEn from "./en/operations";
 import visitsEs from "./es/visits";
@@ -62,7 +63,9 @@ const enTranslations = deepMerge(
                                 deepMerge(inmatesTranslations.en,
                                   deepMerge(documentsTranslations.en,
                                     deepMerge(renapTranslations.en,
-                                      deepMerge(operationsEn, visitsEn)
+                                      deepMerge(emergencyTranslations.en,
+                                        deepMerge(operationsEn, visitsEn)
+                                      )
                                     )
                                   )
                                 )
@@ -104,7 +107,9 @@ const esTranslations = deepMerge(
                                 deepMerge(inmatesTranslations.es,
                                   deepMerge(documentsTranslations.es,
                                     deepMerge(renapTranslations.es,
-                                      deepMerge(operationsEs, visitsEs)
+                                      deepMerge(emergencyTranslations.es,
+                                        deepMerge(operationsEs, visitsEs)
+                                      )
                                     )
                                   )
                                 )

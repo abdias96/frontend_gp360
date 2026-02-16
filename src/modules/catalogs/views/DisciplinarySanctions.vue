@@ -61,6 +61,32 @@ const modalFields: ModalField[] = [
     placeholder: "Código único de la sanción disciplinaria",
   },
   {
+    key: "severity",
+    label: "Gravedad",
+    type: "select",
+    required: true,
+    options: [
+      { value: "leve", label: "Leve" },
+      { value: "moderada", label: "Moderada" },
+      { value: "grave", label: "Grave" },
+      { value: "muy_grave", label: "Muy Grave" },
+    ],
+  },
+  {
+    key: "min_days",
+    label: "Días Mínimos",
+    type: "number",
+    required: true,
+    placeholder: "0",
+  },
+  {
+    key: "max_days",
+    label: "Días Máximos",
+    type: "number",
+    required: true,
+    placeholder: "0",
+  },
+  {
     key: "description",
     label: "Descripción",
     type: "textarea",

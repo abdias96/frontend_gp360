@@ -61,6 +61,13 @@ const modalFields: ModalField[] = [
     placeholder: "Código único de la fase progresiva",
   },
   {
+    key: "order",
+    label: "Orden",
+    type: "number",
+    required: true,
+    placeholder: "0",
+  },
+  {
     key: "description",
     label: "Descripción",
     type: "textarea",

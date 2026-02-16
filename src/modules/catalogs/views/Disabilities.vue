@@ -61,6 +61,19 @@ const modalFields: ModalField[] = [
     placeholder: "Código único de la discapacidad",
   },
   {
+    key: "type",
+    label: "Tipo",
+    type: "select",
+    required: true,
+    options: [
+      { value: "fisica", label: "Física" },
+      { value: "sensorial", label: "Sensorial" },
+      { value: "intelectual", label: "Intelectual" },
+      { value: "psicosocial", label: "Psicosocial" },
+      { value: "multiple", label: "Múltiple" },
+    ],
+  },
+  {
     key: "description",
     label: "Descripción",
     type: "textarea",

@@ -61,6 +61,20 @@ const modalFields: ModalField[] = [
     placeholder: "Código único de la enfermedad crónica",
   },
   {
+    key: "category",
+    label: "Categoría",
+    type: "select",
+    required: true,
+    options: [
+      { value: "cardiovascular", label: "Cardiovascular" },
+      { value: "respiratoria", label: "Respiratoria" },
+      { value: "metabolica", label: "Metabólica" },
+      { value: "mental", label: "Mental" },
+      { value: "infecciosa", label: "Infecciosa" },
+      { value: "otra", label: "Otra" },
+    ],
+  },
+  {
     key: "description",
     label: "Descripción",
     type: "textarea",

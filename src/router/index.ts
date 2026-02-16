@@ -1029,6 +1029,76 @@ const routes: Array<RouteRecordRaw> = [
         },
       },
       {
+        path: "/catalogs/emergency-types",
+        name: "catalogs-emergency-types",
+        component: () => import("@/modules/catalogs/views/EmergencyTypes.vue"),
+        meta: {
+          pageTitle: "Tipos de emergencia",
+          breadcrumbs: ["Catálogos", "Tipos de emergencia"],
+          permissions: "catalogs.emergency_types",
+        },
+      },
+      {
+        path: "/catalogs/admission-reasons",
+        name: "catalogs-admission-reasons",
+        component: () => import("@/modules/catalogs/views/AdmissionReasons.vue"),
+        meta: {
+          pageTitle: "Motivos de ingreso",
+          breadcrumbs: ["Catálogos", "Motivos de ingreso"],
+          permissions: "catalogs.admission_reasons",
+        },
+      },
+      {
+        path: "/catalogs/relationship-types",
+        name: "catalogs-relationship-types",
+        component: () => import("@/modules/catalogs/views/RelationshipTypes.vue"),
+        meta: {
+          pageTitle: "Tipos de parentesco",
+          breadcrumbs: ["Catálogos", "Tipos de parentesco"],
+          permissions: "catalogs.relationship_types",
+        },
+      },
+      {
+        path: "/catalogs/count-procedure-types",
+        name: "catalogs-count-procedure-types",
+        component: () => import("@/modules/catalogs/views/CountProcedureTypes.vue"),
+        meta: {
+          pageTitle: "Tipos de procedimiento de conteo",
+          breadcrumbs: ["Catálogos", "Tipos de procedimiento de conteo"],
+          permissions: "catalogs.count_procedure_types",
+        },
+      },
+      {
+        path: "/catalogs/grievance-types",
+        name: "catalogs-grievance-types",
+        component: () => import("@/modules/catalogs/views/GrievanceTypes.vue"),
+        meta: {
+          pageTitle: "Tipos de queja",
+          breadcrumbs: ["Catálogos", "Tipos de queja"],
+          permissions: "catalogs.grievance_types",
+        },
+      },
+      {
+        path: "/catalogs/mail-types",
+        name: "catalogs-mail-types",
+        component: () => import("@/modules/catalogs/views/MailTypes.vue"),
+        meta: {
+          pageTitle: "Tipos de correspondencia",
+          breadcrumbs: ["Catálogos", "Tipos de correspondencia"],
+          permissions: "catalogs.mail_types",
+        },
+      },
+      {
+        path: "/catalogs/transport-types",
+        name: "catalogs-transport-types",
+        component: () => import("@/modules/catalogs/views/TransportTypes.vue"),
+        meta: {
+          pageTitle: "Tipos de transporte",
+          breadcrumbs: ["Catálogos", "Tipos de transporte"],
+          permissions: "catalogs.transport_types",
+        },
+      },
+      {
         path: "/quick-access",
         name: "quick-access",
         component: () => import("@/views/QuickAccess.vue"),

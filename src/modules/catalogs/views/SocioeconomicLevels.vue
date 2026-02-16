@@ -61,6 +61,20 @@ const modalFields: ModalField[] = [
     placeholder: "Código único del nivel socioeconómico",
   },
   {
+    key: "level",
+    label: "Nivel",
+    type: "select",
+    required: true,
+    options: [
+      { value: "muy_bajo", label: "Muy Bajo" },
+      { value: "bajo", label: "Bajo" },
+      { value: "medio_bajo", label: "Medio Bajo" },
+      { value: "medio", label: "Medio" },
+      { value: "medio_alto", label: "Medio Alto" },
+      { value: "alto", label: "Alto" },
+    ],
+  },
+  {
     key: "description",
     label: "Descripción",
     type: "textarea",

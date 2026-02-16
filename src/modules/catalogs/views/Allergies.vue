@@ -77,7 +77,7 @@ const modalFields: ModalField[] = [
     key: "severity",
     label: "Severidad",
     type: "select",
-    required: false,
+    required: true,
     options: [
       { value: "leve", label: "Leve" },
       { value: "moderada", label: "Moderada" },

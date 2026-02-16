@@ -61,6 +61,19 @@ const modalFields: ModalField[] = [
     placeholder: "Código único del tipo de documento",
   },
   {
+    key: "category",
+    label: "Categoría",
+    type: "select",
+    required: true,
+    options: [
+      { value: "identificacion", label: "Identificación" },
+      { value: "judicial", label: "Judicial" },
+      { value: "medico", label: "Médico" },
+      { value: "administrativo", label: "Administrativo" },
+      { value: "otro", label: "Otro" },
+    ],
+  },
+  {
     key: "description",
     label: "Descripción",
     type: "textarea",

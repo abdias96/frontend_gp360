@@ -6,12 +6,12 @@
       <h1
         class="page-heading d-flex text-dark fw-bold fs-3 flex-column justify-content-center my-0"
       >
-        Tipos de Medida
+        Tipos de Correspondencia
       </h1>
     </div>
 
     <CatalogList
-      catalog-name="Tipo de Medida"
+      catalog-name="Tipo de Correspondencia"
       :items="items"
       :loading="loading"
       :modal-fields="modalFields"
@@ -51,33 +51,21 @@ const modalFields: ModalField[] = [
     label: "Nombre",
     type: "text",
     required: true,
-    placeholder: "Ingrese el nombre del tipo de medida",
+    placeholder: "Ingrese el nombre del tipo de correspondencia",
   },
   {
     key: "code",
     label: "Código",
     type: "text",
     required: true,
-    placeholder: "Código único del tipo de medida",
-  },
-  {
-    key: "category",
-    label: "Categoría",
-    type: "select",
-    required: true,
-    options: [
-      { value: "cautelar", label: "Cautelar" },
-      { value: "seguridad", label: "Seguridad" },
-      { value: "proteccion", label: "Protección" },
-      { value: "coercion", label: "Coerción" },
-    ],
+    placeholder: "Código único del tipo de correspondencia",
   },
   {
     key: "description",
     label: "Descripción",
     type: "textarea",
     required: false,
-    placeholder: "Descripción del tipo de medida",
+    placeholder: "Descripción del tipo de correspondencia",
   },
   {
     key: "active",
@@ -102,7 +90,10 @@ const loadItems = async (page = 1, search = "") => {
       params.search = search;
     }
 
-    const response = await ApiService.query("/catalogs/measure-types", params);
+    const response = await ApiService.query(
+      "/catalogs/mail-types",
+      params,
+    );
 
     if (response.data.success) {
       items.value = response.data.data.data || [];
@@ -115,7 +106,7 @@ const loadItems = async (page = 1, search = "") => {
       };
     }
   } catch (error) {
-    console.error("Error loading measure types:", error);
+    console.error("Error loading mail types:", error);
   } finally {
     loading.value = false;
   }
@@ -124,26 +115,8 @@ const loadItems = async (page = 1, search = "") => {
 const createItem = async (formData: any) => {
   try {
     modalSuccess.value = false;
-    const response = await ApiService.post("/catalogs/measure-types", formData);
-
-    if (response.data.success) {
-      await loadItems(currentPage.value, searchTerm.value);
-      modalSuccess.value = true;
-
-      setTimeout(() => {
-        modalSuccess.value = false;
-      }, 100);
-    }
-  } catch (error) {
-    console.error("Error creating measure type:", error);
-  }
-};
-
-const editItem = async (id: number, formData: any) => {
-  try {
-    modalSuccess.value = false;
-    const response = await ApiService.put(
-      `/catalogs/measure-types/${id}`,
+    const response = await ApiService.post(
+      "/catalogs/mail-types",
       formData,
     );
 
@@ -156,19 +129,42 @@ const editItem = async (id: number, formData: any) => {
       }, 100);
     }
   } catch (error) {
-    console.error("Error updating measure type:", error);
+    console.error("Error creating mail type:", error);
+  }
+};
+
+const editItem = async (id: number, formData: any) => {
+  try {
+    modalSuccess.value = false;
+    const response = await ApiService.put(
+      `/catalogs/mail-types/${id}`,
+      formData,
+    );
+
+    if (response.data.success) {
+      await loadItems(currentPage.value, searchTerm.value);
+      modalSuccess.value = true;
+
+      setTimeout(() => {
+        modalSuccess.value = false;
+      }, 100);
+    }
+  } catch (error) {
+    console.error("Error updating mail type:", error);
   }
 };
 
 const deleteItem = async (id: number) => {
   try {
-    const response = await ApiService.delete(`/catalogs/measure-types/${id}`);
+    const response = await ApiService.delete(
+      `/catalogs/mail-types/${id}`,
+    );
 
     if (response.data.success) {
       await loadItems(currentPage.value, searchTerm.value);
     }
   } catch (error) {
-    console.error("Error deleting measure type:", error);
+    console.error("Error deleting mail type:", error);
   }
 };
 

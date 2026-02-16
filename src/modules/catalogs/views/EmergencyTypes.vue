@@ -6,12 +6,12 @@
       <h1
         class="page-heading d-flex text-dark fw-bold fs-3 flex-column justify-content-center my-0"
       >
-        Estados Procesales
+        Tipos de Emergencia
       </h1>
     </div>
 
     <CatalogList
-      catalog-name="Estado Procesal"
+      catalog-name="Tipo de Emergencia"
       :items="items"
       :loading="loading"
       :modal-fields="modalFields"
@@ -49,25 +49,57 @@ const modalSuccess = ref(false);
 // Configuration
 const additionalColumns: AdditionalColumn[] = [
   {
-    key: "stage",
-    label: "Etapa",
+    key: "category",
+    label: "Categoría",
     class: "min-w-120px",
     type: "badge",
     badgeMapping: {
-      investigacion: "badge-light-info",
-      instruccion: "badge-light-warning",
-      juicio: "badge-light-primary",
-      sentencia: "badge-light-success",
-      apelacion: "badge-light-secondary",
-      casacion: "badge-light-dark",
+      security: "badge-light-danger",
+      medical: "badge-light-info",
+      natural_disaster: "badge-light-warning",
+      fire: "badge-light-danger",
+      structural: "badge-light-secondary",
+      utility_failure: "badge-light-dark",
+      riot_disturbance: "badge-light-danger",
+      escape: "badge-light-danger",
+      hostage: "badge-light-danger",
+      external_threat: "badge-light-warning",
+      chemical_hazard: "badge-light-warning",
+      other: "badge-light-secondary",
     },
     displayMapping: {
-      investigacion: "Investigación",
-      instruccion: "Instrucción",
-      juicio: "Juicio",
-      sentencia: "Sentencia",
-      apelacion: "Apelación",
-      casacion: "Casación",
+      security: "Seguridad",
+      medical: "Médica",
+      natural_disaster: "Desastre Natural",
+      fire: "Incendio",
+      structural: "Estructural",
+      utility_failure: "Falla de Servicios",
+      riot_disturbance: "Motín/Disturbio",
+      escape: "Fuga",
+      hostage: "Rehenes",
+      external_threat: "Amenaza Externa",
+      chemical_hazard: "Riesgo Químico",
+      other: "Otro",
+    },
+  },
+  {
+    key: "severity_level",
+    label: "Severidad",
+    class: "min-w-100px",
+    type: "badge",
+    badgeMapping: {
+      minor: "badge-light-success",
+      moderate: "badge-light-info",
+      major: "badge-light-warning",
+      critical: "badge-light-danger",
+      catastrophic: "badge-danger",
+    },
+    displayMapping: {
+      minor: "Menor",
+      moderate: "Moderada",
+      major: "Mayor",
+      critical: "Crítica",
+      catastrophic: "Catastrófica",
     },
   },
 ];
@@ -78,27 +110,46 @@ const modalFields: ModalField[] = [
     label: "Nombre",
     type: "text",
     required: true,
-    placeholder: "Ingrese el nombre del estado procesal",
+    placeholder: "Ingrese el nombre del tipo de emergencia",
   },
   {
     key: "code",
     label: "Código",
     type: "text",
     required: true,
-    placeholder: "Código único del estado procesal",
+    placeholder: "Código único del tipo de emergencia",
   },
   {
-    key: "stage",
-    label: "Etapa Procesal",
+    key: "category",
+    label: "Categoría",
     type: "select",
     required: true,
     options: [
-      { value: "investigacion", label: "Investigación" },
-      { value: "instruccion", label: "Instrucción" },
-      { value: "juicio", label: "Juicio" },
-      { value: "sentencia", label: "Sentencia" },
-      { value: "apelacion", label: "Apelación" },
-      { value: "casacion", label: "Casación" },
+      { value: "security", label: "Seguridad" },
+      { value: "medical", label: "Médica" },
+      { value: "natural_disaster", label: "Desastre Natural" },
+      { value: "fire", label: "Incendio" },
+      { value: "structural", label: "Estructural" },
+      { value: "utility_failure", label: "Falla de Servicios" },
+      { value: "riot_disturbance", label: "Motín/Disturbio" },
+      { value: "escape", label: "Fuga" },
+      { value: "hostage", label: "Rehenes" },
+      { value: "external_threat", label: "Amenaza Externa" },
+      { value: "chemical_hazard", label: "Riesgo Químico" },
+      { value: "other", label: "Otro" },
+    ],
+  },
+  {
+    key: "severity_level",
+    label: "Severidad",
+    type: "select",
+    required: false,
+    options: [
+      { value: "minor", label: "Menor" },
+      { value: "moderate", label: "Moderada" },
+      { value: "major", label: "Mayor" },
+      { value: "critical", label: "Crítica" },
+      { value: "catastrophic", label: "Catastrófica" },
     ],
   },
   {
@@ -106,7 +157,7 @@ const modalFields: ModalField[] = [
     label: "Descripción",
     type: "textarea",
     required: false,
-    placeholder: "Descripción del estado procesal",
+    placeholder: "Descripción del tipo de emergencia",
   },
   {
     key: "active",
@@ -115,6 +166,23 @@ const modalFields: ModalField[] = [
     required: true,
   },
 ];
+
+// Transform API data (is_active boolean → active Y/N for CatalogList)
+const transformFromApi = (data: any[]): CatalogItem[] => {
+  return data.map((item: any) => ({
+    ...item,
+    active: item.is_active ? "Y" : "N",
+  }));
+};
+
+// Transform form data (active Y/N → is_active boolean for API)
+const prepareData = (formData: any) => {
+  const { active, ...rest } = formData;
+  return {
+    ...rest,
+    is_active: active === "Y",
+  };
+};
 
 // Methods
 const loadItems = async (page = 1, search = "") => {
@@ -132,12 +200,12 @@ const loadItems = async (page = 1, search = "") => {
     }
 
     const response = await ApiService.query(
-      "/catalogs/procedural-statuses",
+      "/catalogs/emergency-types",
       params,
     );
 
     if (response.data.success) {
-      items.value = response.data.data.data || [];
+      items.value = transformFromApi(response.data.data.data || []);
       pagination.value = {
         current_page: response.data.data.current_page,
         last_page: response.data.data.last_page,
@@ -147,7 +215,7 @@ const loadItems = async (page = 1, search = "") => {
       };
     }
   } catch (error) {
-    console.error("Error loading procedural statuses:", error);
+    console.error("Error loading emergency types:", error);
   } finally {
     loading.value = false;
   }
@@ -157,8 +225,8 @@ const createItem = async (formData: any) => {
   try {
     modalSuccess.value = false;
     const response = await ApiService.post(
-      "/catalogs/procedural-statuses",
-      formData,
+      "/catalogs/emergency-types",
+      prepareData(formData),
     );
 
     if (response.data.success) {
@@ -170,7 +238,7 @@ const createItem = async (formData: any) => {
       }, 100);
     }
   } catch (error) {
-    console.error("Error creating procedural status:", error);
+    console.error("Error creating emergency type:", error);
   }
 };
 
@@ -178,8 +246,8 @@ const editItem = async (id: number, formData: any) => {
   try {
     modalSuccess.value = false;
     const response = await ApiService.put(
-      `/catalogs/procedural-statuses/${id}`,
-      formData,
+      `/catalogs/emergency-types/${id}`,
+      prepareData(formData),
     );
 
     if (response.data.success) {
@@ -191,21 +259,21 @@ const editItem = async (id: number, formData: any) => {
       }, 100);
     }
   } catch (error) {
-    console.error("Error updating procedural status:", error);
+    console.error("Error updating emergency type:", error);
   }
 };
 
 const deleteItem = async (id: number) => {
   try {
     const response = await ApiService.delete(
-      `/catalogs/procedural-statuses/${id}`,
+      `/catalogs/emergency-types/${id}`,
     );
 
     if (response.data.success) {
       await loadItems(currentPage.value, searchTerm.value);
     }
   } catch (error) {
-    console.error("Error deleting procedural status:", error);
+    console.error("Error deleting emergency type:", error);
   }
 };
 

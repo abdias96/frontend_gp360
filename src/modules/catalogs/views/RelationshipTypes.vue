@@ -6,17 +6,18 @@
       <h1
         class="page-heading d-flex text-dark fw-bold fs-3 flex-column justify-content-center my-0"
       >
-        Tipos de Medida
+        Tipos de Parentesco
       </h1>
     </div>
 
     <CatalogList
-      catalog-name="Tipo de Medida"
+      catalog-name="Tipo de Parentesco"
       :items="items"
       :loading="loading"
       :modal-fields="modalFields"
       :pagination="pagination"
       :modal-success="modalSuccess"
+      :additional-columns="additionalColumns"
       @create="createItem"
       @edit="editItem"
       @delete="deleteItem"
@@ -33,6 +34,7 @@ import type {
   CatalogItem,
   ModalField,
   PaginationInfo,
+  AdditionalColumn,
 } from "../components/CatalogList.vue";
 import ApiService from "../../../core/services/ApiService";
 
@@ -44,46 +46,65 @@ const currentPage = ref(1);
 const searchTerm = ref("");
 const modalSuccess = ref(false);
 
-// Configuration
+// Additional columns for relationship types
+const additionalColumns: AdditionalColumn[] = [
+  {
+    key: "category",
+    label: "Categoría",
+  },
+  {
+    key: "sort_order",
+    label: "Orden",
+  },
+];
+
+// Configuration - RelationshipTypes uses is_active (boolean) instead of active (Y/N)
 const modalFields: ModalField[] = [
   {
     key: "name",
     label: "Nombre",
     type: "text",
     required: true,
-    placeholder: "Ingrese el nombre del tipo de medida",
+    placeholder: "Ingrese el nombre del tipo de parentesco",
   },
   {
     key: "code",
     label: "Código",
     type: "text",
     required: true,
-    placeholder: "Código único del tipo de medida",
+    placeholder: "Código único del tipo de parentesco",
   },
   {
     key: "category",
     label: "Categoría",
     type: "select",
-    required: true,
+    required: false,
     options: [
-      { value: "cautelar", label: "Cautelar" },
-      { value: "seguridad", label: "Seguridad" },
-      { value: "proteccion", label: "Protección" },
-      { value: "coercion", label: "Coerción" },
+      { value: "family", label: "Familia" },
+      { value: "friend", label: "Amigo" },
+      { value: "legal", label: "Legal" },
+      { value: "other", label: "Otro" },
     ],
+  },
+  {
+    key: "sort_order",
+    label: "Orden",
+    type: "number",
+    required: false,
+    placeholder: "Orden de visualización",
   },
   {
     key: "description",
     label: "Descripción",
     type: "textarea",
     required: false,
-    placeholder: "Descripción del tipo de medida",
+    placeholder: "Descripción del tipo de parentesco",
   },
   {
-    key: "active",
+    key: "is_active",
     label: "Activo",
     type: "checkbox",
-    required: true,
+    required: false,
   },
 ];
 
@@ -94,7 +115,7 @@ const loadItems = async (page = 1, search = "") => {
     const params: any = {
       page,
       per_page: 15,
-      sort_by: "name",
+      sort_by: "sort_order",
       sort_direction: "asc",
     };
 
@@ -102,10 +123,18 @@ const loadItems = async (page = 1, search = "") => {
       params.search = search;
     }
 
-    const response = await ApiService.query("/catalogs/measure-types", params);
+    const response = await ApiService.query(
+      "/catalogs/relationship-types",
+      params,
+    );
 
     if (response.data.success) {
-      items.value = response.data.data.data || [];
+      // Map is_active to active for CatalogList compatibility
+      const data = (response.data.data.data || []).map((item: any) => ({
+        ...item,
+        active: item.is_active ? "Y" : "N",
+      }));
+      items.value = data;
       pagination.value = {
         current_page: response.data.data.current_page,
         last_page: response.data.data.last_page,
@@ -115,7 +144,7 @@ const loadItems = async (page = 1, search = "") => {
       };
     }
   } catch (error) {
-    console.error("Error loading measure types:", error);
+    console.error("Error loading relationship types:", error);
   } finally {
     loading.value = false;
   }
@@ -124,27 +153,16 @@ const loadItems = async (page = 1, search = "") => {
 const createItem = async (formData: any) => {
   try {
     modalSuccess.value = false;
-    const response = await ApiService.post("/catalogs/measure-types", formData);
+    // Convert is_active checkbox value to boolean
+    const payload = {
+      ...formData,
+      is_active: formData.is_active === "Y" || formData.is_active === true,
+    };
+    delete payload.active;
 
-    if (response.data.success) {
-      await loadItems(currentPage.value, searchTerm.value);
-      modalSuccess.value = true;
-
-      setTimeout(() => {
-        modalSuccess.value = false;
-      }, 100);
-    }
-  } catch (error) {
-    console.error("Error creating measure type:", error);
-  }
-};
-
-const editItem = async (id: number, formData: any) => {
-  try {
-    modalSuccess.value = false;
-    const response = await ApiService.put(
-      `/catalogs/measure-types/${id}`,
-      formData,
+    const response = await ApiService.post(
+      "/catalogs/relationship-types",
+      payload,
     );
 
     if (response.data.success) {
@@ -156,19 +174,48 @@ const editItem = async (id: number, formData: any) => {
       }, 100);
     }
   } catch (error) {
-    console.error("Error updating measure type:", error);
+    console.error("Error creating relationship type:", error);
+  }
+};
+
+const editItem = async (id: number, formData: any) => {
+  try {
+    modalSuccess.value = false;
+    const payload = {
+      ...formData,
+      is_active: formData.is_active === "Y" || formData.is_active === true,
+    };
+    delete payload.active;
+
+    const response = await ApiService.put(
+      `/catalogs/relationship-types/${id}`,
+      payload,
+    );
+
+    if (response.data.success) {
+      await loadItems(currentPage.value, searchTerm.value);
+      modalSuccess.value = true;
+
+      setTimeout(() => {
+        modalSuccess.value = false;
+      }, 100);
+    }
+  } catch (error) {
+    console.error("Error updating relationship type:", error);
   }
 };
 
 const deleteItem = async (id: number) => {
   try {
-    const response = await ApiService.delete(`/catalogs/measure-types/${id}`);
+    const response = await ApiService.delete(
+      `/catalogs/relationship-types/${id}`,
+    );
 
     if (response.data.success) {
       await loadItems(currentPage.value, searchTerm.value);
     }
   } catch (error) {
-    console.error("Error deleting measure type:", error);
+    console.error("Error deleting relationship type:", error);
   }
 };
 

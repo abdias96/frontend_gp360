@@ -61,6 +61,21 @@ const modalFields: ModalField[] = [
     placeholder: "Código único del programa de rehabilitación",
   },
   {
+    key: "program_type",
+    label: "Tipo de Programa",
+    type: "select",
+    required: true,
+    options: [
+      { value: "educativo", label: "Educativo" },
+      { value: "laboral", label: "Laboral" },
+      { value: "psicologico", label: "Psicológico" },
+      { value: "social", label: "Social" },
+      { value: "deportivo", label: "Deportivo" },
+      { value: "cultural", label: "Cultural" },
+      { value: "religioso", label: "Religioso" },
+    ],
+  },
+  {
     key: "description",
     label: "Descripción",
     type: "textarea",

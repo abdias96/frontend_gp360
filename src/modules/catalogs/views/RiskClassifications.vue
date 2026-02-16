@@ -61,6 +61,18 @@ const modalFields: ModalField[] = [
     placeholder: "Código único de la clasificación de riesgo",
   },
   {
+    key: "level",
+    label: "Nivel",
+    type: "select",
+    required: true,
+    options: [
+      { value: "bajo", label: "Bajo" },
+      { value: "medio", label: "Medio" },
+      { value: "alto", label: "Alto" },
+      { value: "muy_alto", label: "Muy Alto" },
+    ],
+  },
+  {
     key: "description",
     label: "Descripción",
     type: "textarea",

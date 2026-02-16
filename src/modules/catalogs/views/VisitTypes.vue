@@ -61,6 +61,12 @@ const modalFields: ModalField[] = [
     placeholder: "Código único del tipo de visita",
   },
   {
+    key: "requires_authorization",
+    label: "Requiere autorización",
+    type: "checkbox",
+    required: true,
+  },
+  {
     key: "description",
     label: "Descripción",
     type: "textarea",
@@ -93,7 +99,10 @@ const loadItems = async (page = 1, search = "") => {
     const response = await ApiService.query("/catalogs/visit-types", params);
 
     if (response.data.success) {
-      items.value = response.data.data.data || [];
+      items.value = (response.data.data.data || []).map((item: any) => ({
+        ...item,
+        requires_authorization: item.requires_authorization ? "Y" : "N",
+      }));
       pagination.value = {
         current_page: response.data.data.current_page,
         last_page: response.data.data.last_page,
@@ -109,10 +118,17 @@ const loadItems = async (page = 1, search = "") => {
   }
 };
 
+const prepareData = (formData: any) => {
+  return {
+    ...formData,
+    requires_authorization: formData.requires_authorization === "Y",
+  };
+};
+
 const createItem = async (formData: any) => {
   try {
     modalSuccess.value = false;
-    const response = await ApiService.post("/catalogs/visit-types", formData);
+    const response = await ApiService.post("/catalogs/visit-types", prepareData(formData));
 
     if (response.data.success) {
       await loadItems(currentPage.value, searchTerm.value);
@@ -132,7 +148,7 @@ const editItem = async (id: number, formData: any) => {
     modalSuccess.value = false;
     const response = await ApiService.put(
       `/catalogs/visit-types/${id}`,
-      formData,
+      prepareData(formData),
     );
 
     if (response.data.success) {

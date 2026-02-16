@@ -68,25 +68,48 @@ const modalFields = ref<ModalField[]>([
     placeholder: "Artículo del código penal (ej: Art. 123)",
   },
   {
-    key: "classification_id",
+    key: "crime_classification_id",
     label: "Clasificación",
     type: "select",
     required: false,
     options: [],
   },
   {
-    key: "min_penalty",
+    key: "severity",
+    label: "Gravedad",
+    type: "select",
+    required: false,
+    options: [
+      { value: "leve", label: "Leve" },
+      { value: "menos_grave", label: "Menos Grave" },
+      { value: "grave", label: "Grave" },
+    ],
+  },
+  {
+    key: "min_sentence_months",
     label: "Pena Mínima (meses)",
     type: "number",
     required: false,
     placeholder: "0",
   },
   {
-    key: "max_penalty",
+    key: "max_sentence_months",
     label: "Pena Máxima (meses)",
     type: "number",
     required: false,
     placeholder: "0",
+  },
+  {
+    key: "allows_bail",
+    label: "Permite fianza",
+    type: "checkbox",
+    required: false,
+  },
+  {
+    key: "allows_parole",
+    label: "Permite libertad condicional",
+    type: "checkbox",
+    required: false,
   },
   {
     key: "description",
@@ -121,7 +144,12 @@ const loadCrimes = async (page = 1, search = "") => {
     const response = await ApiService.query("/catalogs/crimes", params);
 
     if (response.data.success) {
-      items.value = response.data.data.data || [];
+      // Map boolean fields to Y/N for CatalogModal checkbox compatibility
+      items.value = (response.data.data.data || []).map((item: any) => ({
+        ...item,
+        allows_bail: item.allows_bail ? "Y" : "N",
+        allows_parole: item.allows_parole ? "Y" : "N",
+      }));
       pagination.value = {
         current_page: response.data.data.current_page,
         last_page: response.data.data.last_page,
@@ -137,10 +165,19 @@ const loadCrimes = async (page = 1, search = "") => {
   }
 };
 
+// Convert Y/N checkbox values to booleans for backend
+const prepareCrimeData = (formData: any) => {
+  return {
+    ...formData,
+    allows_bail: formData.allows_bail === "Y",
+    allows_parole: formData.allows_parole === "Y",
+  };
+};
+
 const createItem = async (formData: any) => {
   try {
     modalSuccess.value = false;
-    const response = await ApiService.post("/catalogs/crimes", formData);
+    const response = await ApiService.post("/catalogs/crimes", prepareCrimeData(formData));
 
     if (response.data.success) {
       await loadCrimes(currentPage.value, searchTerm.value);
@@ -158,7 +195,7 @@ const createItem = async (formData: any) => {
 const editItem = async (id: number, formData: any) => {
   try {
     modalSuccess.value = false;
-    const response = await ApiService.put(`/catalogs/crimes/${id}`, formData);
+    const response = await ApiService.put(`/catalogs/crimes/${id}`, prepareCrimeData(formData));
 
     if (response.data.success) {
       await loadCrimes(currentPage.value, searchTerm.value);
@@ -213,7 +250,7 @@ const loadClassifications = async () => {
       );
 
       const classificationField = modalFields.value.find(
-        (field) => field.key === "classification_id",
+        (field) => field.key === "crime_classification_id",
       );
       if (classificationField) {
         classificationField.options = classificationOptions;

@@ -61,6 +61,20 @@ const modalFields: ModalField[] = [
     placeholder: "Código único del motivo de egreso",
   },
   {
+    key: "type",
+    label: "Tipo",
+    type: "select",
+    required: true,
+    options: [
+      { value: "libertad_total", label: "Libertad Total" },
+      { value: "libertad_condicional", label: "Libertad Condicional" },
+      { value: "muerte", label: "Muerte" },
+      { value: "fuga", label: "Fuga" },
+      { value: "traslado", label: "Traslado" },
+      { value: "otros", label: "Otros" },
+    ],
+  },
+  {
     key: "description",
     label: "Descripción",
     type: "textarea",

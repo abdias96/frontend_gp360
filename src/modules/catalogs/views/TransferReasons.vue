@@ -61,6 +61,20 @@ const modalFields: ModalField[] = [
     placeholder: "Código único del motivo de traslado",
   },
   {
+    key: "type",
+    label: "Tipo",
+    type: "select",
+    required: true,
+    options: [
+      { value: "seguridad", label: "Seguridad" },
+      { value: "salud", label: "Salud" },
+      { value: "judicial", label: "Judicial" },
+      { value: "administrativa", label: "Administrativa" },
+      { value: "disciplinaria", label: "Disciplinaria" },
+      { value: "otros", label: "Otros" },
+    ],
+  },
+  {
     key: "description",
     label: "Descripción",
     type: "textarea",

@@ -111,6 +111,11 @@ export function useCatalogs() {
     catalogsStore.getCatalogAsOptions("sectors"),
   );
 
+  const emergencyTypes = computed(() => catalogsStore.getCatalog("emergency-types"));
+  const emergencyTypesOptions = computed(() =>
+    catalogsStore.getCatalogAsOptions("emergency-types"),
+  );
+
   // Legal catalogs
   const courts = computed(() => catalogsStore.getCatalog("courts"));
   const courtsOptions = computed(() =>
@@ -176,8 +181,11 @@ export function useCatalogs() {
     return catalogsStore.fetchMultipleCatalogs(catalogNames);
   };
 
-  // Legacy function name for compatibility
-  const loadCatalogs = async () => {
+  // Load catalogs by name or fallback to legal catalogs for compatibility
+  const loadCatalogs = async (catalogNames?: string[]) => {
+    if (catalogNames) {
+      return catalogsStore.fetchMultipleCatalogs(catalogNames);
+    }
     return loadLegalCatalogs();
   };
 
@@ -232,6 +240,8 @@ export function useCatalogs() {
     relationshipTypesOptions,
     sectors,
     sectorsOptions,
+    emergencyTypes,
+    emergencyTypesOptions,
 
     // Legal catalogs
     courts,
