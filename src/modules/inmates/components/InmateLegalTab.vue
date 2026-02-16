@@ -148,32 +148,7 @@
                 }}</span>
               </div>
 
-              <div v-if="legalProfile.preventive_detention_max_end" class="mb-4">
-                <span class="fw-bold text-gray-600 d-block mb-2"
-                  >Límite Prisión Preventiva</span
-                >
-                <div class="d-flex align-items-center">
-                  <span class="text-gray-800 me-2">{{
-                    formatDate(legalProfile.preventive_detention_max_end)
-                  }}</span>
-                  <span
-                    v-if="legalProfile.preventive_detention_expired"
-                    class="badge badge-light-danger"
-                  >
-                    VENCIDA
-                  </span>
-                  <span
-                    v-else-if="
-                      legalProfile.preventive_detention_days_remaining &&
-                      legalProfile.preventive_detention_days_remaining <= 30
-                    "
-                    class="badge badge-light-warning"
-                  >
-                    {{ legalProfile.preventive_detention_days_remaining }} días
-                    restantes
-                  </span>
-                </div>
-              </div>
+              <!-- No time limit on preventive detention -->
             </div>
           </div>
         </div>

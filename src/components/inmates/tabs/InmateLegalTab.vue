@@ -213,9 +213,6 @@
                         <div class="fw-bold">Prisión Preventiva</div>
                         <div class="fs-7">
                           Inicio: {{ formatDate(profile.preventive_detention_start) }}
-                          <span v-if="profile.preventive_detention_days_remaining">
-                            • {{ profile.preventive_detention_days_remaining }} días restantes
-                          </span>
                         </div>
                       </div>
                     </div>
@@ -834,21 +831,6 @@ const completedProfilesCount = computed(() => {
 const updateLegalAlerts = () => {
   const alerts = [];
   
-  // Check for preventive detention limit (164 days in Guatemala)
-  if (legalProfile.value?.in_preventive_detention) {
-    const detentionDays = calculateDaysInDetention();
-    if (detentionDays > 140) {
-      alerts.push({
-        id: 'detention_limit',
-        severity: detentionDays > 164 ? 'danger' : 'warning',
-        icon: 'time',
-        title: 'Límite de Prisión Preventiva',
-        description: `${detentionDays} días en prisión preventiva`,
-        deadline: calculateDeadline(164 - detentionDays)
-      });
-    }
-  }
-  
   // Check for upcoming hearings
   const nextHearing = upcomingHearings.value[0];
   if (nextHearing && getDaysRemaining(nextHearing.scheduled_at) <= 7) {
@@ -1191,7 +1173,7 @@ const updatePreventiveDetentionAlerts = (status: any) => {
       severity,
       icon: 'time',
       title: 'Prisión Preventiva',
-      description: `${status.days_elapsed} días cumplidos de 164 días máximo`,
+      description: `${status.days_elapsed} días en prisión preventiva`,
       deadline: status.max_end_date
     });
   }

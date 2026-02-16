@@ -351,8 +351,8 @@ const buildTimelineEvents = () => {
       type: 'preventive',
       date: profile.value.preventive_detention_start,
       title: t('legal.profiles.timeline.preventiveDetentionStart'),
-      description: `Máximo 164 días (hasta ${formatDate(profile.value.preventive_detention_max_end)})`,
-      notes: profile.value.preventive_detention_expired ? 'EXPIRADO' : null,
+      description: `Inicio: ${formatDate(profile.value.preventive_detention_start)}`,
+      notes: null,
       hasDetails: false
     });
   }

@@ -700,11 +700,11 @@ const preventiveDetentionDaysElapsed = computed(() => {
 });
 
 const preventiveDetentionDaysRemaining = computed(() => {
-  return Math.max(0, 164 - preventiveDetentionDaysElapsed.value);
+  return null; // No time limit on preventive detention
 });
 
 const preventiveDetentionExpired = computed(() => {
-  return preventiveDetentionDaysElapsed.value > 164;
+  return false; // No time limit on preventive detention
 });
 
 const totalReductionDays = computed(() => {
@@ -715,12 +715,7 @@ const totalReductionDays = computed(() => {
 
 // Watchers
 watch(() => formData.value.preventive_detention_start, (newVal) => {
-  if (newVal && formData.value.in_preventive_detention) {
-    const start = new Date(newVal);
-    const maxEnd = new Date(start);
-    maxEnd.setDate(maxEnd.getDate() + 164);
-    formData.value.preventive_detention_max_end = maxEnd.toISOString().split('T')[0];
-  }
+  // No time limit on preventive detention - do not auto-calculate max_end
 });
 
 // Methods
