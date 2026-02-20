@@ -143,8 +143,8 @@ export interface InmateCreate {
   last_name: string;
   gender: "M" | "F";
   birth_date: string;
-  current_center_id: number;
-  current_sector_id: number;
+  current_center_id?: number;
+  current_sector_id?: number;
   admission_date: string;
   legal_status: string;
   nationality_id: number;
