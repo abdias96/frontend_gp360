@@ -295,7 +295,20 @@
               Visitas en Curso
               <span class="badge badge-light-primary ms-2">{{ activeVisits.length }}</span>
             </h3>
-            <div class="card-toolbar">
+            <div class="card-toolbar d-flex align-items-center gap-3">
+              <div style="min-width: 250px;">
+                <Multiselect
+                  v-model="filterCenter"
+                  :options="centersOptions"
+                  :searchable="true"
+                  placeholder="Todos los centros"
+                  noOptionsText="No hay opciones disponibles"
+                  noResultsText="Sin resultados"
+                  :canClear="true"
+                  :canDeselect="true"
+                  @change="onCenterFilterChange"
+                />
+              </div>
               <span v-if="overdueVisitsCount > 0" class="badge badge-light-danger">
                 <i class="fas fa-exclamation-triangle me-1"></i>
                 {{ overdueVisitsCount }} fuera de tiempo
@@ -563,12 +576,17 @@ import { useRoute } from 'vue-router'
 import ApiService from '@/core/services/ApiService'
 import Swal from 'sweetalert2'
 import { useAuthStore } from '@/stores/auth'
+import { useCatalogs } from '@/composables/useCatalogs'
+import Multiselect from '@vueform/multiselect'
 
 // Route
 const route = useRoute()
 
 // Auth Store
 const authStore = useAuthStore()
+
+// Catalogs
+const { centersOptions, loadCatalogs } = useCatalogs()
 
 // Permissions
 const canView = computed(() => authStore.isSuperAdmin || authStore.hasPermission('visits.control_view'))
@@ -583,6 +601,7 @@ const visitorNameFromQuery = computed(() => route.query.visitor_name as string |
 const apiUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'
 
 // Refs
+const filterCenter = ref<number | null>(null)
 const loading = ref(false)
 const visitorDpi = ref('')
 const visitorSearched = ref(false)
@@ -789,7 +808,11 @@ const registerEntry = async () => {
 
 const refreshActiveVisits = async () => {
   try {
-    const response = await ApiService.get('/visit-logs/active')
+    const params: Record<string, any> = {}
+    if (filterCenter.value) {
+      params.center_id = filterCenter.value
+    }
+    const response = await ApiService.query('/visit-logs/active', params)
 
     if (response.data.success) {
       activeVisits.value = response.data.data.active_visits || []
@@ -797,6 +820,10 @@ const refreshActiveVisits = async () => {
   } catch (error) {
     console.error('Error fetching active visits:', error)
   }
+}
+
+const onCenterFilterChange = () => {
+  refreshActiveVisits()
 }
 
 const showExitModal = (visit: any) => {
@@ -991,6 +1018,7 @@ onMounted(async () => {
   } else {
     // Load normal visit control mode
     await Promise.all([
+      loadCatalogs(['centers']),
       fetchVisitTypes(),
       refreshActiveVisits(),
       fetchStatistics()
@@ -1014,6 +1042,7 @@ onUnmounted(() => {
 })
 </script>
 
+<style src="@vueform/multiselect/themes/default.css"></style>
 <style scoped>
 .cursor-pointer {
   cursor: pointer;
