@@ -13,62 +13,60 @@
       </div>
     </div>
 
-    <!-- Row 1: Estadísticas Principales -->
+    <!-- Row 1: 4 Stat Cards principales -->
     <div class="row g-5 g-xl-8 mb-5">
       <!-- Población Total -->
       <div class="col-xl-3">
         <StatWidget
           :title="t('dashboard.prison.stats.totalPopulation')"
-          :value="stats.totalInmates"
+          :value="formatNumber(stats.totalInmates)"
           :description="t('dashboard.prison.stats.pplActive')"
           icon="profile-user"
           color="primary"
-          :percentage="stats.populationChange"
-          :trend="stats.populationTrend"
         />
       </div>
 
-      <!-- Capacidad del Sistema -->
+      <!-- Situación Jurídica: Preventiva / Sentenciados -->
       <div class="col-xl-3">
         <StatWidget
-          :title="t('dashboard.prison.stats.totalCapacity')"
-          :value="stats.totalCapacity"
-          :description="`${stats.occupancyRate}% ${t('dashboard.prison.stats.occupancy')}`"
-          icon="home-2"
+          :title="t('dashboard.prison.stats.legalStatus')"
+          :value="formatNumber(stats.preventiveDetention)"
+          :description="`${t('dashboard.prison.stats.preventive')} / ${formatNumber(stats.sentenced)} ${t('dashboard.prison.stats.sentenced')}`"
+          icon="courthouse"
           color="warning"
-          :percentage="stats.occupancyRate"
+        />
+      </div>
+
+      <!-- Cobertura Biométrica -->
+      <div class="col-xl-3">
+        <StatWidget
+          :title="t('dashboard.prison.stats.biometricCoverage')"
+          :value="formatNumber(stats.totalWithBiometrics)"
+          :description="`${stats.biometricPercentage}% ${t('dashboard.prison.stats.enrolled')}`"
+          icon="fingerprint-scanning"
+          color="info"
+          :percentage="stats.biometricPercentage"
           :showProgressBar="true"
         />
       </div>
 
-      <!-- Ingresos del Día -->
+      <!-- Verificación RENAP -->
       <div class="col-xl-3">
         <StatWidget
-          :title="t('dashboard.prison.stats.todayAdmissions')"
-          :value="stats.todayAdmissions"
-          :description="t('dashboard.prison.stats.newPplAdmitted')"
-          icon="entrance-right"
+          :title="t('dashboard.prison.stats.renapVerification')"
+          :value="formatNumber(stats.renapVerified)"
+          :description="`${stats.renapPercentage}% ${t('dashboard.prison.stats.verified')} (${formatNumber(stats.renapProcessed)} ${t('dashboard.prison.stats.processed')})`"
+          icon="shield-tick"
           color="success"
-          :badge="stats.admissionsBadge"
-        />
-      </div>
-
-      <!-- Alertas Activas -->
-      <div class="col-xl-3">
-        <StatWidget
-          :title="t('dashboard.prison.stats.activeAlerts')"
-          :value="stats.activeAlerts"
-          :description="t('dashboard.prison.stats.requireImmediate')"
-          icon="notification-status"
-          color="danger"
-          :pulse="stats.activeAlerts > 0"
+          :percentage="stats.renapPercentage"
+          :showProgressBar="true"
         />
       </div>
     </div>
 
-    <!-- Row 2: Gráficas y Distribuciones -->
+    <!-- Row 2: Población por Centro + Pandillas por Centro (8+4) -->
     <div class="row g-5 g-xl-8 mb-5">
-      <!-- Gráfica de Población por Centro -->
+      <!-- Población por Centro -->
       <div class="col-xl-8">
         <div class="card card-flush h-xl-100">
           <div class="card-header pt-7">
@@ -77,10 +75,18 @@
               <span class="text-gray-500 mt-1 fw-semibold fs-6">{{ t('dashboard.prison.charts.updatedRealtime') }}</span>
             </h3>
             <div class="card-toolbar">
-              <button class="btn btn-sm btn-light-primary" @click="exportData">
-                <KTIcon icon-name="download" icon-class="fs-3" />
-                {{ t('dashboard.prison.charts.export') }}
-              </button>
+              <div class="btn-group btn-group-sm" role="group">
+                <button
+                  v-for="opt in centerFilterOptions"
+                  :key="opt.value"
+                  type="button"
+                  class="btn"
+                  :class="centerFilter === opt.value ? 'btn-primary' : 'btn-light-primary'"
+                  @click="setCenterFilter(opt.value)"
+                >
+                  {{ opt.label }}
+                </button>
+              </div>
             </div>
           </div>
           <div class="card-body pt-5">
@@ -89,7 +95,7 @@
               type="bar"
               :options="populationChartOptions"
               :series="populationChartSeries"
-              height="350"
+              height="380"
             />
             <div v-else class="d-flex align-items-center justify-content-center h-300px">
               <span class="spinner-border text-primary"></span>
@@ -98,202 +104,241 @@
         </div>
       </div>
 
-      <!-- Clasificación de Seguridad -->
+      <!-- Pandillas por Centro -->
       <div class="col-xl-4">
         <div class="card card-flush h-xl-100">
           <div class="card-header pt-7">
-            <h3 class="card-title fw-bold text-gray-900">{{ t('dashboard.prison.charts.securityClassification') }}</h3>
+            <h3 class="card-title align-items-start flex-column">
+              <span class="card-label fw-bold text-gray-900">{{ t('dashboard.prison.charts.gangDistribution') }}</span>
+              <span class="text-gray-500 mt-1 fw-semibold fs-6">{{ t('dashboard.prison.charts.byCenter') }}</span>
+            </h3>
           </div>
-          <div class="card-body d-flex justify-content-center">
+          <div class="card-body pt-5">
             <apexchart
-              v-if="securityChartSeries.length"
+              v-if="gangChartSeries.length"
+              type="bar"
+              :options="gangChartOptions"
+              :series="gangChartSeries"
+              height="380"
+            />
+            <div v-else class="d-flex align-items-center justify-content-center h-300px">
+              <span class="text-muted">{{ t('dashboard.prison.charts.noGangData') }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Row 3: Top 10 Delitos + Severidad (8+4) -->
+    <div class="row g-5 g-xl-8 mb-5">
+      <!-- Top 10 Delitos -->
+      <div class="col-xl-8">
+        <div class="card card-flush h-xl-100">
+          <div class="card-header pt-7">
+            <h3 class="card-title align-items-start flex-column">
+              <span class="card-label fw-bold text-gray-900">{{ t('dashboard.prison.charts.topCrimes') }}</span>
+              <span class="text-gray-500 mt-1 fw-semibold fs-6">{{ t('dashboard.prison.charts.mostFrequent') }}</span>
+            </h3>
+          </div>
+          <div class="card-body pt-5">
+            <apexchart
+              v-if="topCrimesSeries.length"
+              type="bar"
+              :options="topCrimesOptions"
+              :series="topCrimesSeries"
+              height="380"
+            />
+            <div v-else class="d-flex align-items-center justify-content-center h-300px">
+              <span class="text-muted">{{ t('dashboard.prison.charts.noCrimeData') }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Severidad de Delitos -->
+      <div class="col-xl-4">
+        <div class="card card-flush h-xl-100">
+          <div class="card-header pt-7">
+            <h3 class="card-title align-items-start flex-column">
+              <span class="card-label fw-bold text-gray-900">{{ t('dashboard.prison.charts.crimeSeverity') }}</span>
+              <span class="text-gray-500 mt-1 fw-semibold fs-6">{{ t('dashboard.prison.charts.byClassification') }}</span>
+            </h3>
+          </div>
+          <div class="card-body d-flex flex-column align-items-center justify-content-center">
+            <apexchart
+              v-if="severityChartSeries.length"
               type="donut"
-              :options="securityChartOptions"
-              :series="securityChartSeries"
+              :options="severityChartOptions"
+              :series="severityChartSeries"
+              height="250"
+            />
+            <div v-else class="d-flex align-items-center justify-content-center h-300px">
+              <span class="text-muted">{{ t('dashboard.prison.charts.noCrimeData') }}</span>
+            </div>
+            <!-- Leyenda manual debajo del donut -->
+            <div v-if="severityChartSeries.length" class="d-flex justify-content-around w-100 mt-4">
+              <div v-for="(item, idx) in severityLegend" :key="idx" class="text-center">
+                <span class="d-block fw-bold fs-4" :style="`color: ${item.color}`">{{ formatNumber(item.count) }}</span>
+                <span class="text-muted fs-7">{{ item.label }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Row 4: Etapa Procesal + Demografía (6+6) -->
+    <div class="row g-5 g-xl-8 mb-5">
+      <!-- Etapa Procesal -->
+      <div class="col-xl-6">
+        <div class="card card-flush h-xl-100">
+          <div class="card-header pt-7">
+            <h3 class="card-title align-items-start flex-column">
+              <span class="card-label fw-bold text-gray-900">{{ t('dashboard.prison.charts.proceduralStage') }}</span>
+              <span class="text-gray-500 mt-1 fw-semibold fs-6">{{ t('dashboard.prison.charts.activeCases') }}</span>
+            </h3>
+          </div>
+          <div class="card-body pt-5">
+            <apexchart
+              v-if="proceduralStageSeries.length"
+              type="bar"
+              :options="proceduralStageOptions"
+              :series="proceduralStageSeries"
               height="300"
             />
             <div v-else class="d-flex align-items-center justify-content-center h-300px">
-              <span class="spinner-border text-primary"></span>
-            </div>
-          </div>
-          <div class="card-footer">
-            <div class="d-flex justify-content-between">
-              <span class="text-muted">{{ t('dashboard.prison.charts.maximum') }}: <span class="text-danger fw-bold">{{ stats.securityMax }}</span></span>
-              <span class="text-muted">{{ t('dashboard.prison.charts.medium') }}: <span class="text-warning fw-bold">{{ stats.securityMed }}</span></span>
-              <span class="text-muted">{{ t('dashboard.prison.charts.minimum') }}: <span class="text-success fw-bold">{{ stats.securityMin }}</span></span>
+              <span class="text-muted">{{ t('dashboard.prison.charts.noLegalData') }}</span>
             </div>
           </div>
         </div>
       </div>
-    </div>
 
-    <!-- Row 3: Tablas y Listas -->
-    <div class="row g-5 g-xl-8 mb-5">
-      <!-- Audiencias Programadas -->
+      <!-- Demografía: Género + Edad -->
       <div class="col-xl-6">
         <div class="card card-flush h-xl-100">
           <div class="card-header pt-7">
             <h3 class="card-title align-items-start flex-column">
-              <span class="card-label fw-bold text-gray-900">{{ t('dashboard.prison.hearings.title') }}</span>
-              <span class="text-gray-500 mt-1 fw-semibold fs-6">{{ stats.todayHearings || todayHearings.length }} {{ t('dashboard.prison.hearings.pendingCount') }}</span>
+              <span class="card-label fw-bold text-gray-900">{{ t('dashboard.prison.charts.demographicDistribution') }}</span>
+              <span class="text-gray-500 mt-1 fw-semibold fs-6">{{ t('dashboard.prison.charts.byGenderAndAge') }}</span>
             </h3>
           </div>
-          <div class="card-body pt-2">
-            <div class="table-responsive">
-              <table class="table table-row-dashed table-row-gray-300 align-middle gs-0 gy-4">
-                <thead>
-                  <tr class="fw-bold text-muted">
-                    <th class="min-w-150px">{{ t('dashboard.prison.hearings.table.ppl') }}</th>
-                    <th class="min-w-100px">{{ t('dashboard.prison.hearings.table.time') }}</th>
-                    <th class="min-w-150px">{{ t('dashboard.prison.hearings.table.type') }}</th>
-                    <th class="min-w-100px">{{ t('dashboard.prison.hearings.table.court') }}</th>
-                    <th class="text-end min-w-100px">{{ t('dashboard.prison.hearings.table.status') }}</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr v-for="hearing in todayHearings.slice(0, 5)" :key="hearing.id">
-                    <td>
-                      <div class="d-flex align-items-center">
-                        <div class="symbol symbol-45px me-3">
-                          <span class="symbol-label bg-light-primary">
-                            {{ getInitials(hearing.inmate_name) }}
-                          </span>
-                        </div>
-                        <div class="d-flex justify-content-start flex-column">
-                          <span class="text-gray-900 fw-bold fs-6">{{ hearing.inmate_name }}</span>
-                          <span class="text-muted fw-semibold fs-7">Exp. #{{ hearing.case_number }}</span>
-                        </div>
-                      </div>
-                    </td>
-                    <td>
-                      <span class="text-gray-900 fw-bold d-block fs-6">{{ formatTime(hearing.time) }}</span>
-                    </td>
-                    <td>
-                      <span :class="getHearingTypeBadge(hearing.type)">{{ hearing.type_name }}</span>
-                    </td>
-                    <td>
-                      <span class="text-gray-900 fw-semibold">{{ hearing.court_name }}</span>
-                    </td>
-                    <td class="text-end">
-                      <span :class="getStatusBadge(hearing.status)">{{ hearing.status_name }}</span>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-              <div v-if="!todayHearings.length" class="text-center py-5">
-                <span class="text-muted">{{ t('dashboard.prison.hearings.noHearings') }}</span>
+          <div class="card-body">
+            <div class="row">
+              <!-- Género -->
+              <div class="col-6">
+                <div class="d-flex flex-column">
+                  <span class="text-gray-800 fw-bold fs-6 mb-3">{{ t('dashboard.prison.charts.byGender') }}</span>
+                  <div class="d-flex align-items-center mb-2">
+                    <span class="bullet bullet-dot bg-primary me-2"></span>
+                    <span class="text-gray-600 flex-grow-1 me-4">{{ t('dashboard.prison.charts.male') }}</span>
+                    <span class="text-gray-900 fw-bold">{{ formatNumber(stats.genderMale) }} ({{ stats.genderMalePercent }}%)</span>
+                  </div>
+                  <div class="d-flex align-items-center mb-4">
+                    <span class="bullet bullet-dot bg-danger me-2"></span>
+                    <span class="text-gray-600 flex-grow-1 me-4">{{ t('dashboard.prison.charts.female') }}</span>
+                    <span class="text-gray-900 fw-bold">{{ formatNumber(stats.genderFemale) }} ({{ stats.genderFemalePercent }}%)</span>
+                  </div>
+                  <span class="text-gray-800 fw-bold fs-6 mb-3">{{ t('dashboard.prison.charts.recidivism') }}</span>
+                  <div class="d-flex align-items-center">
+                    <span class="bullet bullet-dot bg-warning me-2"></span>
+                    <span class="text-gray-600 flex-grow-1 me-4">{{ t('dashboard.prison.charts.reentries') }}</span>
+                    <span class="text-gray-900 fw-bold">{{ formatNumber(stats.reentries) }}</span>
+                  </div>
+                </div>
+              </div>
+              <!-- Edad 4 grupos -->
+              <div class="col-6">
+                <div class="d-flex flex-column">
+                  <span class="text-gray-800 fw-bold fs-6 mb-3">{{ t('dashboard.prison.charts.byAge') }}</span>
+                  <div class="d-flex align-items-center mb-2">
+                    <span class="bullet bullet-dot bg-success me-2"></span>
+                    <span class="text-gray-600 flex-grow-1 me-4">18-25</span>
+                    <span class="text-gray-900 fw-bold">{{ formatNumber(stats.age18to25) }} ({{ stats.age18to25Percent }}%)</span>
+                  </div>
+                  <div class="d-flex align-items-center mb-2">
+                    <span class="bullet bullet-dot bg-warning me-2"></span>
+                    <span class="text-gray-600 flex-grow-1 me-4">26-40</span>
+                    <span class="text-gray-900 fw-bold">{{ formatNumber(stats.age26to40) }} ({{ stats.age26to40Percent }}%)</span>
+                  </div>
+                  <div class="d-flex align-items-center mb-2">
+                    <span class="bullet bullet-dot bg-info me-2"></span>
+                    <span class="text-gray-600 flex-grow-1 me-4">41-60</span>
+                    <span class="text-gray-900 fw-bold">{{ formatNumber(stats.age41to60) }} ({{ stats.age41to60Percent }}%)</span>
+                  </div>
+                  <div class="d-flex align-items-center">
+                    <span class="bullet bullet-dot bg-dark me-2"></span>
+                    <span class="text-gray-600 flex-grow-1 me-4">60+</span>
+                    <span class="text-gray-900 fw-bold">{{ formatNumber(stats.age60plus) }} ({{ stats.age60plusPercent }}%)</span>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
-          <div class="card-footer">
-            <a href="/legal/hearings" class="btn btn-sm btn-light-primary">{{ t('dashboard.prison.hearings.viewAll') }}</a>
-          </div>
         </div>
       </div>
+    </div>
 
-      <!-- Incidentes Recientes -->
+    <!-- Row 5: Ingresos/Salidas + Verificación RENAP (6+6) -->
+    <div class="row g-5 g-xl-8 mb-5">
+      <!-- Ingresos y Salidas 30 días -->
       <div class="col-xl-6">
         <div class="card card-flush h-xl-100">
           <div class="card-header pt-7">
             <h3 class="card-title align-items-start flex-column">
-              <span class="card-label fw-bold text-gray-900">{{ t('dashboard.prison.incidents.title') }}</span>
-              <span class="text-gray-500 mt-1 fw-semibold fs-6">{{ recentIncidents.length }} {{ t('dashboard.prison.incidents.registeredCount') }}</span>
+              <span class="card-label fw-bold text-gray-900">{{ t('dashboard.prison.charts.admissionsAndReleases') }}</span>
+              <span class="text-gray-500 mt-1 fw-semibold fs-6">{{ t('dashboard.prison.charts.last30days') }}</span>
             </h3>
           </div>
-          <div class="card-body pt-2">
-            <div v-if="recentIncidents.length > 0" class="timeline">
-              <div
-                v-for="incident in recentIncidents.slice(0, 5)"
-                :key="incident.id"
-                class="timeline-item"
-              >
-                <div class="timeline-label fw-bold text-gray-800 fs-7">
-                  {{ formatTime(incident.time) }}
-                </div>
-                <div class="timeline-badge">
-                  <i :class="`fa fa-circle text-${getIncidentColor(incident.severity)} fs-6`"></i>
-                </div>
-                <div class="timeline-content">
-                  <div class="fw-bold text-gray-800">{{ incident.title }}</div>
-                  <div class="text-muted fs-7 mt-1">{{ incident.description }}</div>
-                </div>
-              </div>
-            </div>
-            <div v-else class="text-center py-5">
-              <span class="text-muted">{{ t('dashboard.prison.incidents.noIncidents') }}</span>
-            </div>
-          </div>
-          <div class="card-footer">
-            <a href="/security/incidents" class="btn btn-sm btn-light-danger">{{ t('dashboard.prison.incidents.viewAll') }}</a>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Row 4: Métricas Adicionales -->
-    <div class="row g-5 g-xl-8 mb-5">
-      <!-- Traslados del Día -->
-      <div class="col-xl-4">
-        <div class="card bg-primary hoverable">
-          <div class="card-body">
-            <KTIcon icon-name="bus" icon-class="text-white fs-3x ms-n1" />
-            <div class="text-white fw-bold fs-2 mb-2 mt-5">{{ stats.todayTransfers }} {{ t('dashboard.prison.metrics.transfers') }}</div>
-            <div class="fw-semibold text-white">{{ t('dashboard.prison.metrics.scheduledForToday') }}</div>
-            <div class="mt-3">
-              <span class="badge badge-light-primary me-2">{{ stats.transfersHearings }} {{ t('dashboard.prison.metrics.hearings') }}</span>
-              <span class="badge badge-light-warning me-2">{{ stats.transfersMedical }} {{ t('dashboard.prison.metrics.medical') }}</span>
-              <span class="badge badge-light-info">{{ stats.transfersOther }} {{ t('dashboard.prison.metrics.other') }}</span>
+          <div class="card-body pt-5">
+            <apexchart
+              v-if="admissionsReleasesSeries.length"
+              type="area"
+              :options="admissionsReleasesOptions"
+              :series="admissionsReleasesSeries"
+              height="300"
+            />
+            <div v-else class="d-flex align-items-center justify-content-center h-300px">
+              <span class="text-muted">{{ t('dashboard.prison.charts.noAdmissionsData') }}</span>
             </div>
           </div>
         </div>
       </div>
 
-      <!-- Visitas del Día -->
-      <div class="col-xl-4">
-        <div class="card bg-success hoverable">
-          <div class="card-body">
-            <KTIcon icon-name="people" icon-class="text-white fs-3x ms-n1" />
-            <div class="text-white fw-bold fs-2 mb-2 mt-5">{{ stats.todayVisits }} {{ t('dashboard.prison.metrics.visits') }}</div>
-            <div class="fw-semibold text-white">{{ t('dashboard.prison.metrics.registeredToday') }}</div>
-            <div class="mt-3">
-              <span class="badge badge-light-success me-2">{{ stats.visitsFamily }} {{ t('dashboard.prison.metrics.family') }}</span>
-              <span class="badge badge-light-warning">{{ stats.visitsLawyers }} {{ t('dashboard.prison.metrics.lawyers') }}</span>
-            </div>
+      <!-- Verificación RENAP desglose -->
+      <div class="col-xl-6">
+        <div class="card card-flush h-xl-100">
+          <div class="card-header pt-7">
+            <h3 class="card-title align-items-start flex-column">
+              <span class="card-label fw-bold text-gray-900">{{ t('dashboard.prison.charts.renapBreakdown') }}</span>
+              <span class="text-gray-500 mt-1 fw-semibold fs-6">{{ formatNumber(stats.renapTotalLoaded) }} {{ t('dashboard.prison.charts.totalRecords') }}</span>
+            </h3>
           </div>
-        </div>
-      </div>
-
-      <!-- Personal en Servicio -->
-      <div class="col-xl-4">
-        <div class="card bg-info hoverable">
-          <div class="card-body">
-            <KTIcon icon-name="shield-tick" icon-class="text-white fs-3x ms-n1" />
-            <div class="text-white fw-bold fs-2 mb-2 mt-5">{{ stats.activePersonnel }} {{ t('dashboard.prison.metrics.agents') }}</div>
-            <div class="fw-semibold text-white">{{ t('dashboard.prison.metrics.currentlyOnDuty') }}</div>
-            <div class="mt-3">
-              <span class="badge badge-light-info me-2">{{ t('dashboard.prison.metrics.shift') }}: {{ currentShift }}</span>
-              <span class="badge badge-light-warning">{{ stats.supervisors }} {{ t('dashboard.prison.metrics.supervisors') }}</span>
+          <div class="card-body pt-5">
+            <apexchart
+              v-if="renapChartSeries.length"
+              type="bar"
+              :options="renapChartOptions"
+              :series="renapChartSeries"
+              height="300"
+            />
+            <div v-else class="d-flex align-items-center justify-content-center h-300px">
+              <span class="text-muted">{{ t('dashboard.prison.charts.noRenapData') }}</span>
             </div>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- Row 5: Gráficas de Tendencias -->
+    <!-- Row 6: Evolución Población + Flujo Visitantes (6+6) -->
     <div class="row g-5 g-xl-8 mb-5">
-      <!-- Evolución de Población -->
+      <!-- Evolución de Población 30 días -->
       <div class="col-xl-6">
         <div class="card card-flush">
           <div class="card-header pt-7">
             <h3 class="card-title align-items-start flex-column">
               <span class="card-label fw-bold text-gray-900">{{ t('dashboard.prison.charts.populationEvolution') }}</span>
-              <span class="text-gray-500 mt-1 fw-semibold fs-6">{{ t('dashboard.prison.charts.monthlyTrend') }}</span>
+              <span class="text-gray-500 mt-1 fw-semibold fs-6">{{ t('dashboard.prison.charts.last30days') }}</span>
             </h3>
-            <div class="card-toolbar">
-              <button class="btn btn-sm btn-icon btn-light-primary" @click="refreshTrend">
-                <KTIcon icon-name="arrows-circle" icon-class="fs-3" />
-              </button>
-            </div>
           </div>
           <div class="card-body">
             <apexchart
@@ -310,138 +355,7 @@
         </div>
       </div>
 
-      <!-- Estadísticas por Género y Edad -->
-      <div class="col-xl-6">
-        <div class="card card-flush">
-          <div class="card-header pt-7">
-            <h3 class="card-title align-items-start flex-column">
-              <span class="card-label fw-bold text-gray-900">{{ t('dashboard.prison.charts.demographicDistribution') }}</span>
-              <span class="text-gray-500 mt-1 fw-semibold fs-6">{{ t('dashboard.prison.charts.byGenderAndAge') }}</span>
-            </h3>
-          </div>
-          <div class="card-body">
-            <div class="row">
-              <!-- Género -->
-              <div class="col-6">
-                <div class="d-flex flex-column">
-                  <span class="text-gray-800 fw-bold fs-6 mb-3">{{ t('dashboard.prison.charts.byGender') }}</span>
-                  <div class="d-flex align-items-center mb-2">
-                    <span class="bullet bullet-dot bg-primary me-2"></span>
-                    <span class="text-gray-600 flex-grow-1 me-4">{{ t('dashboard.prison.charts.male') }}</span>
-                    <span class="text-gray-900 fw-bold">{{ stats.genderMale }} ({{ stats.genderMalePercent }}%)</span>
-                  </div>
-                  <div class="d-flex align-items-center">
-                    <span class="bullet bullet-dot bg-danger me-2"></span>
-                    <span class="text-gray-600 flex-grow-1 me-4">{{ t('dashboard.prison.charts.female') }}</span>
-                    <span class="text-gray-900 fw-bold">{{ stats.genderFemale }} ({{ stats.genderFemalePercent }}%)</span>
-                  </div>
-                </div>
-              </div>
-              <!-- Edad -->
-              <div class="col-6">
-                <div class="d-flex flex-column">
-                  <span class="text-gray-800 fw-bold fs-6 mb-3">{{ t('dashboard.prison.charts.byAge') }}</span>
-                  <div class="d-flex align-items-center mb-2">
-                    <span class="bullet bullet-dot bg-success me-2"></span>
-                    <span class="text-gray-600 flex-grow-1 me-4">18-25</span>
-                    <span class="text-gray-900 fw-bold">{{ stats.age18to25 }} ({{ stats.age18to25Percent }}%)</span>
-                  </div>
-                  <div class="d-flex align-items-center mb-2">
-                    <span class="bullet bullet-dot bg-warning me-2"></span>
-                    <span class="text-gray-600 flex-grow-1 me-4">26-40</span>
-                    <span class="text-gray-900 fw-bold">{{ stats.age26to40 }} ({{ stats.age26to40Percent }}%)</span>
-                  </div>
-                  <div class="d-flex align-items-center">
-                    <span class="bullet bullet-dot bg-info me-2"></span>
-                    <span class="text-gray-600 flex-grow-1 me-4">40+</span>
-                    <span class="text-gray-900 fw-bold">{{ stats.age40plus }} ({{ stats.age40plusPercent }}%)</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Row 6: Gráficas Adicionales del Sistema Penitenciario -->
-    <div class="row g-5 g-xl-8 mb-5">
-      <!-- Tendencia de Incidentes -->
-      <div class="col-xl-6">
-        <div class="card card-flush">
-          <div class="card-header pt-7">
-            <h3 class="card-title align-items-start flex-column">
-              <span class="card-label fw-bold text-gray-900">{{ t('dashboard.prison.charts.incidentTrend') }}</span>
-              <span class="text-gray-500 mt-1 fw-semibold fs-6">{{ t('dashboard.prison.charts.incidentsByDay') }}</span>
-            </h3>
-          </div>
-          <div class="card-body">
-            <apexchart
-              v-if="incidentTrendSeries.length"
-              type="line"
-              :options="incidentTrendOptions"
-              :series="incidentTrendSeries"
-              height="300"
-            />
-            <div v-else class="d-flex align-items-center justify-content-center h-300px">
-              <span class="text-muted">{{ t('dashboard.prison.charts.noIncidentData') }}</span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Top Tipos de Incidentes -->
-      <div class="col-xl-6">
-        <div class="card card-flush">
-          <div class="card-header pt-7">
-            <h3 class="card-title align-items-start flex-column">
-              <span class="card-label fw-bold text-gray-900">{{ t('dashboard.prison.charts.topIncidentTypes') }}</span>
-              <span class="text-gray-500 mt-1 fw-semibold fs-6">{{ t('dashboard.prison.charts.last30days') }}</span>
-            </h3>
-          </div>
-          <div class="card-body">
-            <apexchart
-              v-if="incidentTypesSeries.length"
-              type="bar"
-              :options="incidentTypesOptions"
-              :series="incidentTypesSeries"
-              height="300"
-            />
-            <div v-else class="d-flex align-items-center justify-content-center h-300px">
-              <span class="text-muted">{{ t('dashboard.prison.charts.noIncidentTypeData') }}</span>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Row 7: Estadísticas de Audiencias y Operaciones -->
-    <div class="row g-5 g-xl-8">
-      <!-- Audiencias por Mes -->
-      <div class="col-xl-6">
-        <div class="card card-flush">
-          <div class="card-header pt-7">
-            <h3 class="card-title align-items-start flex-column">
-              <span class="card-label fw-bold text-gray-900">{{ t('dashboard.prison.charts.hearingsByMonth') }}</span>
-              <span class="text-gray-500 mt-1 fw-semibold fs-6">{{ t('dashboard.prison.charts.last6months') }}</span>
-            </h3>
-          </div>
-          <div class="card-body">
-            <apexchart
-              v-if="hearingsTrendSeries.length"
-              type="bar"
-              :options="hearingsTrendOptions"
-              :series="hearingsTrendSeries"
-              height="300"
-            />
-            <div v-else class="d-flex align-items-center justify-content-center h-300px">
-              <span class="text-muted">{{ t('dashboard.prison.charts.noHearingData') }}</span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Distribución de Visitas -->
+      <!-- Flujo de Visitantes 30 días -->
       <div class="col-xl-6">
         <div class="card card-flush">
           <div class="card-header pt-7">
@@ -465,45 +379,83 @@
         </div>
       </div>
     </div>
+
+    <!-- Row 7: Visitas por Centro + Biometría (6+6) -->
+    <div class="row g-5 g-xl-8">
+      <!-- Visitas por Centro 30 días -->
+      <div class="col-xl-6">
+        <div class="card card-flush">
+          <div class="card-header pt-7">
+            <h3 class="card-title align-items-start flex-column">
+              <span class="card-label fw-bold text-gray-900">{{ t('dashboard.prison.charts.visitsByCenter') }}</span>
+              <span class="text-gray-500 mt-1 fw-semibold fs-6">{{ t('dashboard.prison.charts.last30days') }}</span>
+            </h3>
+          </div>
+          <div class="card-body">
+            <apexchart
+              v-if="visitsByCenterSeries.length"
+              type="bar"
+              :options="visitsByCenterOptions"
+              :series="visitsByCenterSeries"
+              height="300"
+            />
+            <div v-else class="d-flex align-items-center justify-content-center h-300px">
+              <span class="text-muted">{{ t('dashboard.prison.charts.noVisitorData') }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Enrolamiento Biométrico por Día -->
+      <div class="col-xl-6">
+        <div class="card card-flush">
+          <div class="card-header pt-7">
+            <h3 class="card-title align-items-start flex-column">
+              <span class="card-label fw-bold text-gray-900">{{ t('dashboard.prison.charts.biometricEnrollment') }}</span>
+              <span class="text-gray-500 mt-1 fw-semibold fs-6">{{ t('dashboard.prison.charts.last30days') }}</span>
+            </h3>
+          </div>
+          <div class="card-body">
+            <apexchart
+              v-if="biometricChartSeries.length"
+              type="bar"
+              :options="biometricChartOptions"
+              :series="biometricChartSeries"
+              height="300"
+            />
+            <div v-else class="d-flex align-items-center justify-content-center h-300px">
+              <span class="text-muted">{{ t('dashboard.prison.charts.noBiometricData') }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
   <!--end::Dashboard Penitenciario GP360-->
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted, computed } from 'vue';
+import { ref, onMounted, onUnmounted } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { getCSSVariableValue } from "@/assets/ts/_utils";
 import ApiService from "@/core/services/ApiService";
-import Swal from 'sweetalert2';
 
-// Componente de estadísticas personalizado
 import StatWidget from '@/components/widgets/StatWidget.vue';
 
-// i18n
 const { t } = useI18n();
 
-// Estado reactivo
-const stats = ref<any>({
+// --- State ---
+const stats = ref({
   totalInmates: 0,
-  totalCapacity: 0,
-  occupancyRate: 0,
-  populationChange: 0,
-  populationTrend: 'up' as 'up' | 'down',
-  todayAdmissions: 0,
-  admissionsBadge: '',
-  activeAlerts: 0,
-  securityMax: 0,
-  securityMed: 0,
-  securityMin: 0,
-  todayTransfers: 0,
-  transfersHearings: 0,
-  transfersMedical: 0,
-  transfersOther: 0,
-  todayVisits: 0,
-  visitsFamily: 0,
-  visitsLawyers: 0,
-  activePersonnel: 0,
-  supervisors: 0,
+  activeTransfers: 0,
+  todayVisitors: 0,
+  totalWithBiometrics: 0,
+  biometricPercentage: 0,
+  // Legal
+  preventiveDetention: 0,
+  sentenced: 0,
+  reentries: 0,
+  // Demographics
   genderMale: 0,
   genderMalePercent: 0,
   genderFemale: 0,
@@ -512,795 +464,468 @@ const stats = ref<any>({
   age18to25Percent: 0,
   age26to40: 0,
   age26to40Percent: 0,
-  age40plus: 0,
-  age40plusPercent: 0,
-  todayHearings: 0
+  age41to60: 0,
+  age41to60Percent: 0,
+  age60plus: 0,
+  age60plusPercent: 0,
+  // RENAP
+  renapVerified: 0,
+  renapProcessed: 0,
+  renapPercentage: 0,
+  renapTotalLoaded: 0,
 });
 
-const todayHearings = ref<any[]>([]);
-const recentIncidents = ref<any[]>([]);
+// Center filter
+const centerFilter = ref<number>(10);
+const centerFilterOptions = [
+  { value: 10, label: 'Top 10' },
+  { value: 15, label: 'Top 15' },
+  { value: 0, label: 'Todos' },
+];
+let allCenterData: any[] = [];
 
-// Datos para gráficas
+// Chart series & options
 const populationChartSeries = ref<any[]>([]);
-const populationChartOptions = ref({});
+const populationChartOptions = ref<any>({});
 
-const securityChartSeries = ref<number[]>([]);
-const securityChartOptions = ref({});
+const gangChartSeries = ref<any[]>([]);
+const gangChartOptions = ref<any>({});
+
+const topCrimesSeries = ref<any[]>([]);
+const topCrimesOptions = ref<any>({});
+
+const severityChartSeries = ref<number[]>([]);
+const severityChartOptions = ref<any>({});
+const severityLegend = ref<{ label: string; count: number; color: string }[]>([]);
+
+const proceduralStageSeries = ref<any[]>([]);
+const proceduralStageOptions = ref<any>({});
+
+const admissionsReleasesSeries = ref<any[]>([]);
+const admissionsReleasesOptions = ref<any>({});
+
+const renapChartSeries = ref<any[]>([]);
+const renapChartOptions = ref<any>({});
 
 const trendChartSeries = ref<any[]>([]);
-const trendChartOptions = ref({});
-
-// Nuevas series de gráficas para el sistema penitenciario
-const incidentTrendSeries = ref<any[]>([]);
-const incidentTrendOptions = ref({});
-
-const incidentTypesSeries = ref<any[]>([]);
-const incidentTypesOptions = ref({});
-
-const hearingsTrendSeries = ref<any[]>([]);
-const hearingsTrendOptions = ref({});
+const trendChartOptions = ref<any>({});
 
 const visitorTrendSeries = ref<any[]>([]);
-const visitorTrendOptions = ref({});
+const visitorTrendOptions = ref<any>({});
 
-// Computed
-const currentShift = computed(() => {
-  const hour = new Date().getHours();
-  if (hour >= 6 && hour < 14) return '06:00 - 14:00';
-  if (hour >= 14 && hour < 22) return '14:00 - 22:00';
-  return '22:00 - 06:00';
-});
+const visitsByCenterSeries = ref<any[]>([]);
+const visitsByCenterOptions = ref<any>({});
 
-// Métodos
+const biometricChartSeries = ref<any[]>([]);
+const biometricChartOptions = ref<any>({});
+
+// --- Helpers ---
+const formatNumber = (n: number) => {
+  return n?.toLocaleString('es-GT') ?? '0';
+};
+
+const setCenterFilter = (value: number) => {
+  centerFilter.value = value;
+  applyCenterFilter();
+};
+
+const applyCenterFilter = () => {
+  const data = centerFilter.value > 0
+    ? allCenterData.slice(0, centerFilter.value)
+    : allCenterData;
+
+  const categories = data.map((c: any) => c.code || c.name);
+  const populations = data.map((c: any) => c.current_population || 0);
+
+  populationChartOptions.value = {
+    ...populationChartOptions.value,
+    xaxis: { ...populationChartOptions.value.xaxis, categories },
+  };
+  populationChartSeries.value = [{
+    name: t('dashboard.prison.charts.currentPopulation'),
+    data: populations,
+  }];
+};
+
+const fillDays = (data: any[], days: number = 30) => {
+  const map = new Map<string, number>();
+  data.forEach((item: any) => { map.set(item.date, item.count); });
+
+  const result: { date: string; count: number }[] = [];
+  const now = new Date();
+  for (let i = days - 1; i >= 0; i--) {
+    const d = new Date(now);
+    d.setDate(d.getDate() - i);
+    const key = d.toISOString().slice(0, 10);
+    result.push({ date: key, count: map.get(key) || 0 });
+  }
+  return result;
+};
+
+const proceduralStageLabels: Record<string, string> = {
+  investigation: 'Investigación',
+  intermediate_phase: 'Fase Intermedia',
+  oral_trial: 'Juicio Oral',
+  sentence_execution: 'Ejecución',
+  appeal_process: 'Apelación',
+  cassation: 'Casación',
+  constitutional_appeal: 'Amparo',
+  review_process: 'Revisión',
+};
+
+const severityLabels: Record<string, string> = {
+  grave: 'Grave',
+  menos_grave: 'Menos Grave',
+  leve: 'Leve',
+};
+
+const severityColors: Record<string, string> = {
+  grave: '#e74c3c',
+  menos_grave: '#f39c12',
+  leve: '#2ecc71',
+};
+
+const renapStatusLabels: Record<string, string> = {
+  hit_verified: 'HIT Verificado',
+  hit_mismatch: 'HIT Discrepancia',
+  no_hit: 'Sin Coincidencia',
+  cui_verified: 'CUI Verificado',
+  cui_mismatch: 'CUI Discrepancia',
+  no_biometrics: 'Sin Biometría',
+  not_found_gp360: 'No encontrado',
+  pending: 'Pendiente',
+  error: 'Error',
+};
+
+const renapStatusColors: Record<string, string> = {
+  hit_verified: '#27ae60',
+  hit_mismatch: '#e67e22',
+  no_hit: '#e74c3c',
+  cui_verified: '#2ecc71',
+  cui_mismatch: '#f39c12',
+  no_biometrics: '#95a5a6',
+  not_found_gp360: '#7f8c8d',
+  pending: '#3498db',
+  error: '#c0392b',
+};
+
+// --- Load dashboard data ---
 const loadDashboardData = async () => {
   try {
-    // Cargar datos del nuevo endpoint unificado
     const response = await ApiService.get('/dashboard/prison-stats');
+    if (!response?.data?.success) return;
 
-    if (response?.data?.success) {
-      const data = response.data.data;
+    const data = response.data.data;
 
-      // Actualizar estadísticas principales
-      stats.value.totalInmates = data.summary?.total_inmates || 0;
-      stats.value.totalCapacity = data.summary?.total_capacity || 0;
-      stats.value.occupancyRate = data.summary?.occupancy_rate || 0;
-      stats.value.todayAdmissions = 0; // Por ahora
-      stats.value.activeAlerts = data.summary?.critical_alerts || 0;
+    // Summary
+    stats.value.totalInmates = data.summary?.total_inmates || 0;
+    stats.value.activeTransfers = data.summary?.active_transfers || 0;
+    stats.value.todayVisitors = data.summary?.today_visitors || 0;
+    stats.value.totalWithBiometrics = data.summary?.total_with_biometrics || 0;
+    stats.value.biometricPercentage = data.summary?.biometric_percentage || 0;
 
-      // Traslados, visitas y audiencias
-      stats.value.todayTransfers = data.summary?.active_transfers || 0;
-      stats.value.todayVisits = data.summary?.today_visitors || 0;
-      // Note: todayHearings es un ref array, no un valor simple
-      // Este valor se usa para mostrar el contador en el encabezado
+    // Legal
+    if (data.legal) {
+      stats.value.preventiveDetention = data.legal.preventive_detention || 0;
+      stats.value.sentenced = data.legal.sentenced || 0;
+      stats.value.reentries = data.legal.reentries || 0;
+    }
 
-      // Actualizar clasificaciones de seguridad
-      if (data.security?.classification_distribution) {
-        stats.value.securityMax = data.security.classification_distribution['maximum'] || 0;
-        stats.value.securityMed = data.security.classification_distribution['medium'] || 0;
-        stats.value.securityMin = data.security.classification_distribution['minimum'] || 0;
+    // RENAP
+    if (data.renap) {
+      stats.value.renapVerified = data.renap.total_verified || 0;
+      stats.value.renapProcessed = data.renap.total_processed || 0;
+      stats.value.renapPercentage = data.renap.verification_percentage || 0;
+      stats.value.renapTotalLoaded = data.renap.total_loaded || 0;
+    }
+
+    // Demographics
+    if (data.demographics) {
+      const g = data.demographics.gender || {};
+      stats.value.genderMale = g.M || 0;
+      stats.value.genderFemale = g.F || 0;
+      const gTotal = g.total || (stats.value.genderMale + stats.value.genderFemale);
+      if (gTotal > 0) {
+        stats.value.genderMalePercent = Math.round((stats.value.genderMale / gTotal) * 100);
+        stats.value.genderFemalePercent = Math.round((stats.value.genderFemale / gTotal) * 100);
       }
 
-      // Actualizar audiencias próximas
-      if (data.legal?.upcoming_hearings) {
-        todayHearings.value = data.legal.upcoming_hearings.map((hearing: any) => ({
-          id: Math.random(),
-          inmate_name: `${hearing.first_name} ${hearing.last_name}`,
-          case_number: hearing.inmate_number,
-          time: new Date(hearing.hearing_date).toLocaleTimeString('es-GT', { hour: '2-digit', minute: '2-digit' }),
-          type: hearing.hearing_type,
-          type_name: getHearingTypeName(hearing.hearing_type),
-          court_name: 'Juzgado Penal',
-          status: 'scheduled',
-          status_name: 'Programada'
-        }));
-      }
-
-      // Actualizar incidentes recientes
-      if (data.security?.incidents_by_type) {
-        recentIncidents.value = data.security.incidents_by_type.map((inc: any, index: number) => ({
-          id: index,
-          time: new Date().toLocaleTimeString('es-GT', { hour: '2-digit', minute: '2-digit' }),
-          severity: index === 0 ? 'high' : (index === 1 ? 'medium' : 'low'),
-          title: getIncidentTypeName(inc.incident_type),
-          description: `${inc.count} incidentes de este tipo en los últimos 30 días`
-        }));
-      }
-
-      // Actualizar datos de gráficas
-      await loadChartData(data.charts);
-
-      // Actualizar las alertas del sistema
-      if (data.alerts) {
-        updateAlerts(data.alerts);
+      const ag = data.demographics.age_groups || {};
+      stats.value.age18to25 = ag['18-25'] || 0;
+      stats.value.age26to40 = ag['26-40'] || 0;
+      stats.value.age41to60 = ag['41-60'] || 0;
+      stats.value.age60plus = ag['60+'] || 0;
+      const ageTotal = stats.value.age18to25 + stats.value.age26to40 + stats.value.age41to60 + stats.value.age60plus;
+      if (ageTotal > 0) {
+        stats.value.age18to25Percent = Math.round((stats.value.age18to25 / ageTotal) * 100);
+        stats.value.age26to40Percent = Math.round((stats.value.age26to40 / ageTotal) * 100);
+        stats.value.age41to60Percent = Math.round((stats.value.age41to60 / ageTotal) * 100);
+        stats.value.age60plusPercent = Math.round((stats.value.age60plus / ageTotal) * 100);
       }
     }
+
+    // Charts
+    loadCharts(data);
 
   } catch (error) {
     console.error('Error loading dashboard data:', error);
   }
 };
 
-const getHearingTypeName = (type: string): string => {
-  const types: Record<string, string> = {
-    'first_declaration': 'Primera Declaración',
-    'review': 'Revisión',
-    'sentence': 'Sentencia',
-    'appeal': 'Apelación',
-    'hearing': 'Audiencia General'
+const loadCharts = (data: any) => {
+  const charts = data.charts || {};
+  const primaryColor = getCSSVariableValue('--bs-primary');
+  const successColor = getCSSVariableValue('--bs-success');
+  const dangerColor = getCSSVariableValue('--bs-danger');
+  const infoColor = getCSSVariableValue('--bs-info');
+  const warningColor = getCSSVariableValue('--bs-warning');
+
+  // --- Population by center (horizontal bar) ---
+  allCenterData = charts.center_population || [];
+  populationChartOptions.value = {
+    chart: { type: 'bar', toolbar: { show: false } },
+    plotOptions: { bar: { horizontal: true, borderRadius: 4, barHeight: '60%' } },
+    dataLabels: { enabled: true, style: { fontSize: '11px' } },
+    xaxis: { categories: [], title: { text: 'PPL' } },
+    colors: [primaryColor],
+    tooltip: { y: { formatter: (val: number) => val + ' PPL' } },
   };
-  return types[type] || type;
-};
+  applyCenterFilter();
 
-const getIncidentTypeName = (type: string): string => {
-  const types: Record<string, string> = {
-    'violence_against_inmate': 'Violencia contra interno',
-    'violence_against_staff': 'Violencia contra personal',
-    'gang_activity': 'Actividad de pandillas',
-    'contraband_possession': 'Posesión de contrabando',
-    'escape_attempt': 'Intento de fuga',
-    'drug_possession': 'Posesión de drogas',
-    'weapon_possession': 'Posesión de armas',
-    'property_damage': 'Daño a propiedad',
-    'rule_violation': 'Violación de reglas'
-  };
-  return types[type] || type;
-};
-
-const updateAlerts = (alerts: any[]) => {
-  // Procesar alertas del sistema
-  stats.value.activeAlerts = alerts.filter(a => a.requires_action).length;
-};
-
-const updateInmateStats = (data: any) => {
-  stats.value.totalInmates = data.total || 0;
-  stats.value.genderMale = data.by_gender?.M || 0;
-  stats.value.genderFemale = data.by_gender?.F || 0;
-
-  const total = stats.value.totalInmates;
-  if (total > 0) {
-    stats.value.genderMalePercent = Math.round((stats.value.genderMale / total) * 100);
-    stats.value.genderFemalePercent = Math.round((stats.value.genderFemale / total) * 100);
+  // --- Gang distribution (stacked bar, top 10) ---
+  const gangData = (data.gangs?.by_center || []).slice(0, 10);
+  if (gangData.length > 0) {
+    gangChartOptions.value = {
+      chart: { type: 'bar', stacked: true, toolbar: { show: false } },
+      plotOptions: { bar: { horizontal: true, borderRadius: 3, barHeight: '65%' } },
+      dataLabels: { enabled: false },
+      xaxis: { categories: gangData.map((c: any) => c.code) },
+      colors: ['#e74c3c', '#3498db', '#95a5a6'],
+      legend: { position: 'bottom' },
+      tooltip: { y: { formatter: (val: number) => val + ' PPL' } },
+    };
+    gangChartSeries.value = [
+      { name: 'MS-13', data: gangData.map((c: any) => c.ms13) },
+      { name: 'Barrio 18', data: gangData.map((c: any) => c.barrio18) },
+      { name: t('dashboard.prison.charts.otherGangs'), data: gangData.map((c: any) => c.other) },
+    ];
   }
 
-  // Actualizar estadísticas por edad si están disponibles
-  if (data.by_age) {
-    stats.value.age18to25 = data.by_age['18-25'] || 0;
-    stats.value.age26to40 = data.by_age['26-40'] || 0;
-    stats.value.age40plus = data.by_age['40+'] || 0;
-
-    if (total > 0) {
-      stats.value.age18to25Percent = Math.round((stats.value.age18to25 / total) * 100);
-      stats.value.age26to40Percent = Math.round((stats.value.age26to40 / total) * 100);
-      stats.value.age40plusPercent = Math.round((stats.value.age40plus / total) * 100);
-    }
+  // --- Top 10 crimes (horizontal bar) ---
+  const topCrimes = data.crimes?.top_crimes || [];
+  if (topCrimes.length > 0) {
+    topCrimesOptions.value = {
+      chart: { type: 'bar', toolbar: { show: false } },
+      plotOptions: { bar: { horizontal: true, borderRadius: 4, barHeight: '60%' } },
+      dataLabels: { enabled: true, style: { fontSize: '11px' } },
+      xaxis: { categories: topCrimes.map((c: any) => c.name) },
+      colors: [dangerColor],
+      tooltip: { y: { formatter: (val: number) => val + ' PPL' } },
+    };
+    topCrimesSeries.value = [{
+      name: 'PPL',
+      data: topCrimes.map((c: any) => c.count),
+    }];
   }
 
-  // Actualizar clasificación de seguridad si está disponible
-  if (data.by_security_level) {
-    stats.value.securityMax = data.by_security_level.max || 0;
-    stats.value.securityMed = data.by_security_level.medium || 0;
-    stats.value.securityMin = data.by_security_level.min || 0;
-  }
-};
+  // --- Crime severity (donut) ---
+  const bySeverity = data.crimes?.by_severity || {};
+  const sevKeys = Object.keys(bySeverity);
+  if (sevKeys.length > 0) {
+    const labels = sevKeys.map(k => severityLabels[k] || k);
+    const values = sevKeys.map(k => bySeverity[k]);
+    const colors = sevKeys.map(k => severityColors[k] || '#6c757d');
 
-const loadChartData = async (chartsData: any) => {
-  try {
-    // Usar datos de gráficas del servidor
-
-    // Configurar gráfica de población por centro
-    populationChartOptions.value = {
-      chart: {
-        type: 'bar',
-        toolbar: { show: false },
-        height: 350
-      },
+    severityChartOptions.value = {
+      chart: { type: 'donut' },
+      labels,
+      colors,
       plotOptions: {
-        bar: {
-          horizontal: false,
-          columnWidth: '55%',
-          borderRadius: 5
-        }
+        pie: { donut: { size: '65%', labels: { show: true, total: { show: true, label: 'Total', formatter: () => values.reduce((a: number, b: number) => a + b, 0).toLocaleString('es-GT') } } } },
       },
       dataLabels: { enabled: false },
-      stroke: {
-        show: true,
-        width: 2,
-        colors: ['transparent']
-      },
-      xaxis: {
-        categories: [],
-        labels: {
-          rotate: -45,
-          style: { fontSize: '11px' }
-        }
-      },
-      yaxis: {
-        title: { text: 'Número de PPL' }
-      },
-      fill: {
-        opacity: 1,
-        colors: [getCSSVariableValue('--bs-primary')]
-      },
-      tooltip: {
-        y: {
-          formatter: function (val: number) {
-            return val + " PPL"
-          }
-        }
-      },
-      colors: [getCSSVariableValue('--bs-primary')]
+      legend: { show: false },
     };
-
-    // Datos de población por centro - usar datos reales del servidor
-    if (chartsData?.security_classification && Array.isArray(chartsData.security_classification)) {
-      // Actualizar gráfica de distribución por centros (si hay datos)
-      const centerOccupancy = chartsData.center_occupancy || [];
-      if (centerOccupancy.length > 0) {
-        const categories = centerOccupancy.map((c: any) => c.name || c.code);
-        const populations = centerOccupancy.map((c: any) => c.current_population || 0);
-        const capacities = centerOccupancy.map((c: any) => c.capacity || 0);
-
-        populationChartOptions.value.xaxis.categories = categories;
-        populationChartSeries.value = [
-          {
-            name: 'Población Actual',
-            data: populations
-          },
-          {
-            name: 'Capacidad',
-            data: capacities
-          }
-        ];
-      }
-    }
-  } catch (error) {
-    console.error('Error loading chart data:', error);
-    populationChartSeries.value = [];
+    severityChartSeries.value = values;
+    severityLegend.value = sevKeys.map((k, i) => ({
+      label: labels[i],
+      count: values[i],
+      color: colors[i],
+    }));
   }
 
-  // Configurar gráfica de clasificación de seguridad
-  securityChartOptions.value = {
-    chart: {
-      type: 'donut',
-      height: 300
-    },
-    labels: ['Máxima', 'Media', 'Mínima'],
-    colors: [
-      getCSSVariableValue('--bs-danger'),
-      getCSSVariableValue('--bs-warning'),
-      getCSSVariableValue('--bs-success')
-    ],
-    plotOptions: {
-      pie: {
-        donut: {
-          size: '70%',
-          labels: {
-            show: true,
-            total: {
-              show: true,
-              label: 'Total PPL',
-              formatter: function () {
-                return stats.value.totalInmates.toString();
-              }
-            }
-          }
-        }
-      }
-    },
-    dataLabels: { enabled: false },
-    legend: { show: false },
-    responsive: [{
-      breakpoint: 480,
-      options: {
-        chart: { width: 200 }
-      }
-    }]
-  };
+  // --- Procedural stage (horizontal bar) ---
+  const byStage = data.legal?.by_procedural_stage || {};
+  const stageKeys = Object.keys(byStage);
+  if (stageKeys.length > 0) {
+    const stageLabels = stageKeys.map(k => proceduralStageLabels[k] || k);
+    const stageValues = stageKeys.map(k => byStage[k]);
 
-  // Datos de clasificación de seguridad - usar datos reales del servidor
-  if (chartsData?.security_classification && Array.isArray(chartsData.security_classification)) {
-    const securityData = chartsData.security_classification;
-    if (securityData.length > 0) {
-      // Actualizar labels y colores según los datos reales
-      const labels = securityData.map((item: any) => item.level);
-      const values = securityData.map((item: any) => item.count);
-      const colors = securityData.map((item: any) => item.color);
-
-      securityChartOptions.value.labels = labels;
-      securityChartOptions.value.colors = colors;
-      securityChartSeries.value = values;
-
-      // Actualizar estadísticas manuales
-      securityData.forEach((item: any) => {
-        if (item.level.toLowerCase().includes('máxima')) {
-          stats.value.securityMax = item.count;
-        } else if (item.level.toLowerCase().includes('media')) {
-          stats.value.securityMed = item.count;
-        } else if (item.level.toLowerCase().includes('mínima')) {
-          stats.value.securityMin = item.count;
-        }
-      });
-    }
-  } else {
-    // Si no hay datos en el nuevo formato, intentar usar los stats directos
-    const hasSecurityData = stats.value.securityMax > 0 || stats.value.securityMed > 0 || stats.value.securityMin > 0;
-    if (hasSecurityData) {
-      securityChartSeries.value = [
-        stats.value.securityMax,
-        stats.value.securityMed,
-        stats.value.securityMin
-      ];
-    } else {
-      securityChartSeries.value = [];
-    }
+    proceduralStageOptions.value = {
+      chart: { type: 'bar', toolbar: { show: false } },
+      plotOptions: { bar: { horizontal: true, borderRadius: 4, barHeight: '55%' } },
+      dataLabels: { enabled: true, style: { fontSize: '11px' } },
+      xaxis: { categories: stageLabels },
+      colors: [infoColor],
+      tooltip: { y: { formatter: (val: number) => val + ' casos' } },
+    };
+    proceduralStageSeries.value = [{
+      name: 'Casos',
+      data: stageValues,
+    }];
   }
 
-  // Configurar gráfica de tendencias
-  trendChartOptions.value = {
-    chart: {
-      type: 'area',
-      toolbar: { show: false },
-      height: 300,
-      sparkline: { enabled: false }
-    },
-    dataLabels: { enabled: false },
-    stroke: {
-      curve: 'smooth',
-      width: 3,
-      colors: [getCSSVariableValue('--bs-info')]
-    },
-    fill: {
-      type: 'gradient',
-      gradient: {
-        shadeIntensity: 1,
-        opacityFrom: 0.4,
-        opacityTo: 0.2,
-        stops: [0, 90, 100]
+  // --- Admissions & Releases (dual area) ---
+  const admFilled = fillDays(charts.admissions_trend || []);
+  const relFilled = fillDays(charts.releases_trend || []);
+
+  if (admFilled.length > 0) {
+    admissionsReleasesOptions.value = {
+      chart: { type: 'area', toolbar: { show: false }, height: 300 },
+      dataLabels: { enabled: false },
+      stroke: { curve: 'smooth', width: 2 },
+      xaxis: { type: 'datetime', categories: admFilled.map(i => i.date) },
+      yaxis: { title: { text: 'PPL' } },
+      colors: [successColor, dangerColor],
+      fill: {
+        type: 'gradient',
+        gradient: { shadeIntensity: 1, opacityFrom: 0.4, opacityTo: 0.1, stops: [0, 90, 100] },
       },
-      colors: [getCSSVariableValue('--bs-info')]
-    },
-    xaxis: {
-      type: 'datetime',
-      categories: Array.from({length: 30}, (_, i) => {
-        const date = new Date();
-        date.setDate(date.getDate() - (29 - i));
-        return date.toISOString();
-      })
-    },
-    yaxis: {
-      title: { text: 'PPL' }
-    },
-    tooltip: {
-      x: { format: 'dd/MM/yy' }
-    }
-  };
-
-  // Cargar datos de tendencia del servidor
-  if (chartsData?.population_trend && Array.isArray(chartsData.population_trend)) {
-    const trendData = chartsData.population_trend;
-    if (trendData.length > 0) {
-      const dates = trendData.map((item: any) => item.date);
-      const counts = trendData.map((item: any) => item.count);
-
-      trendChartOptions.value.xaxis.categories = dates;
-      trendChartSeries.value = [{
-        name: 'Población',
-        data: counts
-      }];
-    }
-  } else {
-    // Si no hay datos de tendencia, usar solo el valor actual
-    const currentTotal = stats.value.totalInmates || 0;
-    trendChartSeries.value = currentTotal > 0 ? [{
-      name: 'Población',
-      data: Array(30).fill(currentTotal)
-    }] : [];
+      legend: { position: 'top' },
+      tooltip: { x: { format: 'dd/MM/yyyy' } },
+    };
+    admissionsReleasesSeries.value = [
+      { name: t('dashboard.prison.charts.admissions'), data: admFilled.map(i => i.count) },
+      { name: t('dashboard.prison.charts.releases'), data: relFilled.map(i => i.count) },
+    ];
   }
 
-  // Actualizar datos de género si están disponibles
-  if (chartsData?.gender_distribution) {
-    const genderData = chartsData.gender_distribution;
-    genderData.forEach((item: any) => {
-      if (item.gender === 'M') {
-        stats.value.genderMale = item.count;
-      } else if (item.gender === 'F') {
-        stats.value.genderFemale = item.count;
-      }
-    });
+  // --- RENAP breakdown (horizontal bar) ---
+  const renapByStatus = data.renap?.by_status || {};
+  const renapKeys = Object.keys(renapByStatus).filter(k => k !== 'pending');
+  if (renapKeys.length > 0) {
+    const rLabels = renapKeys.map(k => renapStatusLabels[k] || k);
+    const rValues = renapKeys.map(k => renapByStatus[k]);
+    const rColors = renapKeys.map(k => renapStatusColors[k] || '#6c757d');
 
-    const total = stats.value.genderMale + stats.value.genderFemale;
-    if (total > 0) {
-      stats.value.genderMalePercent = Math.round((stats.value.genderMale / total) * 100);
-      stats.value.genderFemalePercent = Math.round((stats.value.genderFemale / total) * 100);
-    }
+    renapChartOptions.value = {
+      chart: { type: 'bar', toolbar: { show: false } },
+      plotOptions: { bar: { horizontal: true, borderRadius: 4, barHeight: '55%', distributed: true } },
+      dataLabels: { enabled: true, style: { fontSize: '11px' } },
+      xaxis: { categories: rLabels },
+      colors: rColors,
+      legend: { show: false },
+      tooltip: { y: { formatter: (val: number) => formatNumber(val) + ' registros' } },
+    };
+    renapChartSeries.value = [{
+      name: 'Registros',
+      data: rValues,
+    }];
   }
 
-  // Configurar gráfica de tendencia de incidentes
-  if (chartsData?.incidents_by_day && Array.isArray(chartsData.incidents_by_day)) {
-    const incidentData = chartsData.incidents_by_day;
-    if (incidentData.length > 0) {
-      incidentTrendOptions.value = {
-        chart: {
-          type: 'line',
-          toolbar: { show: false },
-          height: 300
-        },
-        stroke: {
-          curve: 'smooth',
-          width: 3,
-          colors: [getCSSVariableValue('--bs-danger')]
-        },
-        markers: {
-          size: 4,
-          colors: [getCSSVariableValue('--bs-danger')],
-          strokeColors: '#fff',
-          strokeWidth: 2,
-          hover: { size: 7 }
-        },
-        dataLabels: { enabled: false },
-        xaxis: {
-          type: 'datetime',
-          categories: incidentData.map((item: any) => item.date)
-        },
-        yaxis: {
-          title: { text: 'Número de Incidentes' }
-        },
-        tooltip: {
-          x: { format: 'dd/MM/yyyy' }
-        }
-      };
-
-      incidentTrendSeries.value = [{
-        name: 'Incidentes',
-        data: incidentData.map((item: any) => item.count)
-      }];
-    }
+  // --- Population trend (area) ---
+  const popTrend = charts.population_trend || [];
+  if (popTrend.length > 0) {
+    trendChartOptions.value = {
+      chart: { type: 'area', toolbar: { show: false }, height: 300 },
+      dataLabels: { enabled: false },
+      stroke: { curve: 'smooth', width: 3, colors: [infoColor] },
+      fill: {
+        type: 'gradient',
+        gradient: { shadeIntensity: 1, opacityFrom: 0.4, opacityTo: 0.2, stops: [0, 90, 100] },
+        colors: [infoColor],
+      },
+      xaxis: { type: 'datetime', categories: popTrend.map((i: any) => i.date) },
+      yaxis: { title: { text: 'PPL' } },
+      tooltip: { x: { format: 'dd/MM/yy' } },
+    };
+    trendChartSeries.value = [{
+      name: t('dashboard.prison.charts.population'),
+      data: popTrend.map((i: any) => i.count),
+    }];
   }
 
-  // Configurar gráfica de tipos de incidentes
-  if (chartsData?.top_incident_types && Array.isArray(chartsData.top_incident_types)) {
-    const typesData = chartsData.top_incident_types;
-    if (typesData.length > 0) {
-      incidentTypesOptions.value = {
-        chart: {
-          type: 'bar',
-          toolbar: { show: false },
-          height: 300
-        },
-        plotOptions: {
-          bar: {
-            horizontal: true,
-            borderRadius: 5,
-            dataLabels: {
-              position: 'top'
-            }
-          }
-        },
-        dataLabels: {
-          enabled: true,
-          offsetX: -6,
-          style: {
-            fontSize: '12px',
-            colors: ['#fff']
-          }
-        },
-        xaxis: {
-          categories: typesData.map((item: any) => item.type)
-        },
-        yaxis: {
-          title: { text: 'Tipo de Incidente' }
-        },
-        colors: [
-          getCSSVariableValue('--bs-danger'),
-          getCSSVariableValue('--bs-warning'),
-          getCSSVariableValue('--bs-info'),
-          getCSSVariableValue('--bs-success'),
-          getCSSVariableValue('--bs-primary')
-        ],
-        tooltip: {
-          y: {
-            formatter: function (val: number) {
-              return val + " incidentes"
-            }
-          }
-        }
-      };
-
-      incidentTypesSeries.value = [{
-        name: 'Incidentes',
-        data: typesData.map((item: any) => item.count)
-      }];
-    }
+  // --- Visitor trend (area) ---
+  const visFilled = fillDays(charts.visitor_trend || []);
+  if (visFilled.length > 0) {
+    visitorTrendOptions.value = {
+      chart: { type: 'area', toolbar: { show: false }, height: 300 },
+      dataLabels: { enabled: false },
+      stroke: { curve: 'smooth', width: 2, colors: [successColor] },
+      fill: {
+        type: 'gradient',
+        gradient: { shadeIntensity: 1, opacityFrom: 0.4, opacityTo: 0.1, stops: [0, 90, 100] },
+        colors: [successColor],
+      },
+      xaxis: { type: 'datetime', categories: visFilled.map(i => i.date) },
+      yaxis: { title: { text: t('dashboard.prison.charts.numberOfVisitors') } },
+      tooltip: {
+        x: { format: 'dd/MM/yyyy' },
+        y: { formatter: (val: number) => val + ` ${t('dashboard.prison.charts.visitors')}` },
+      },
+    };
+    visitorTrendSeries.value = [{
+      name: t('dashboard.prison.charts.visitors'),
+      data: visFilled.map(i => i.count),
+    }];
   }
 
-  // Configurar gráfica de audiencias por mes
-  if (chartsData?.hearings_by_month && Array.isArray(chartsData.hearings_by_month)) {
-    const hearingsData = chartsData.hearings_by_month;
-    if (hearingsData.length > 0) {
-      hearingsTrendOptions.value = {
-        chart: {
-          type: 'bar',
-          toolbar: { show: false },
-          height: 300
-        },
-        plotOptions: {
-          bar: {
-            borderRadius: 5,
-            dataLabels: {
-              position: 'top'
-            }
-          }
-        },
-        dataLabels: {
-          enabled: true,
-          formatter: function (val: number) {
-            return val;
-          },
-          offsetY: -20,
-          style: {
-            fontSize: '12px',
-            colors: [getCSSVariableValue('--bs-gray-700')]
-          }
-        },
-        xaxis: {
-          categories: hearingsData.map((item: any) => item.month),
-          position: 'bottom',
-          axisBorder: { show: false },
-          axisTicks: { show: false },
-          crosshairs: {
-            fill: {
-              type: 'gradient',
-              gradient: {
-                colorFrom: '#D8E3F0',
-                colorTo: '#BED1E6',
-                stops: [0, 100],
-                opacityFrom: 0.4,
-                opacityTo: 0.5
-              }
-            }
-          }
-        },
-        yaxis: {
-          title: { text: 'Número de Audiencias' }
-        },
-        fill: {
-          gradient: {
-            shade: 'light',
-            type: 'horizontal',
-            shadeIntensity: 0.25,
-            gradientToColors: undefined,
-            inverseColors: true,
-            opacityFrom: 0.85,
-            opacityTo: 0.85,
-            stops: [50, 0, 100]
-          }
-        },
-        colors: [getCSSVariableValue('--bs-primary')],
-        tooltip: {
-          y: {
-            formatter: function (val: number) {
-              return val + " audiencias"
-            }
-          }
-        }
-      };
-
-      hearingsTrendSeries.value = [{
-        name: 'Audiencias',
-        data: hearingsData.map((item: any) => item.count)
-      }];
-    }
+  // --- Visits by center (horizontal bar) ---
+  const vbcData = charts.visits_by_center || [];
+  if (vbcData.length > 0) {
+    visitsByCenterOptions.value = {
+      chart: { type: 'bar', toolbar: { show: false } },
+      plotOptions: { bar: { horizontal: true, borderRadius: 4, barHeight: '55%' } },
+      dataLabels: { enabled: true, style: { fontSize: '11px' } },
+      xaxis: { categories: vbcData.map((c: any) => c.code || c.center_name) },
+      colors: [warningColor],
+      tooltip: { y: { formatter: (val: number) => val + ` ${t('dashboard.prison.charts.visits')}` } },
+    };
+    visitsByCenterSeries.value = [{
+      name: t('dashboard.prison.charts.visits'),
+      data: vbcData.map((c: any) => c.visit_count),
+    }];
   }
 
-  // Configurar gráfica de flujo de visitas
-  if (chartsData?.visitor_trend) {
-    // Este dato vendría de operations.visitor_trend del controlador
-    const visitorData = chartsData.visitor_trend || [];
-    if (visitorData.length > 0) {
-      visitorTrendOptions.value = {
-        chart: {
-          type: 'area',
-          toolbar: { show: false },
-          height: 300,
-          stacked: false
-        },
-        dataLabels: { enabled: false },
-        stroke: {
-          curve: 'smooth',
-          width: 2,
-          colors: [getCSSVariableValue('--bs-success')]
-        },
-        fill: {
-          type: 'gradient',
-          gradient: {
-            shadeIntensity: 1,
-            opacityFrom: 0.4,
-            opacityTo: 0.1,
-            stops: [0, 90, 100]
-          },
-          colors: [getCSSVariableValue('--bs-success')]
-        },
-        xaxis: {
-          type: 'datetime',
-          categories: visitorData.map((item: any) => item.date)
-        },
-        yaxis: {
-          title: { text: 'Número de Visitantes' }
-        },
-        tooltip: {
-          x: { format: 'dd/MM/yyyy' },
-          y: {
-            formatter: function (val: number) {
-              return val + " visitantes"
-            }
-          }
-        }
-      };
-
-      visitorTrendSeries.value = [{
-        name: 'Visitantes',
-        data: visitorData.map((item: any) => item.count)
-      }];
-    }
+  // --- Biometric enrollment by day (vertical bar) ---
+  const bioData = data.biometrics?.enrollment_by_day || [];
+  const bioFilled = fillDays(bioData.map((i: any) => ({ date: i.date, count: i.inmates_enrolled })));
+  if (bioFilled.length > 0) {
+    biometricChartOptions.value = {
+      chart: { type: 'bar', toolbar: { show: false } },
+      plotOptions: { bar: { borderRadius: 3, columnWidth: '60%' } },
+      dataLabels: { enabled: false },
+      xaxis: { type: 'datetime', categories: bioFilled.map(i => i.date) },
+      yaxis: { title: { text: 'PPL' } },
+      colors: [infoColor],
+      tooltip: {
+        x: { format: 'dd/MM/yyyy' },
+        y: { formatter: (val: number) => val + ' PPL' },
+      },
+    };
+    biometricChartSeries.value = [{
+      name: t('dashboard.prison.charts.enrolled'),
+      data: bioFilled.map(i => i.count),
+    }];
   }
 };
 
-
-// Métodos auxiliares
-const getInitials = (name: string) => {
-  return name
-    .split(' ')
-    .map(n => n[0])
-    .join('')
-    .toUpperCase()
-    .slice(0, 2);
-};
-
-const formatTime = (time: string) => {
-  return time;
-};
-
-const getHearingTypeBadge = (type: string) => {
-  const badges: Record<string, string> = {
-    'first_declaration': 'badge badge-light-primary',
-    'review': 'badge badge-light-success',
-    'sentence': 'badge badge-light-danger'
-  };
-  return badges[type] || 'badge badge-light-secondary';
-};
-
-const getStatusBadge = (status: string) => {
-  const badges: Record<string, string> = {
-    'in_transfer': 'badge badge-light-warning',
-    'scheduled': 'badge badge-light-info',
-    'completed': 'badge badge-light-success'
-  };
-  return badges[status] || 'badge badge-light-secondary';
-};
-
-const getIncidentColor = (severity: string) => {
-  const colors: Record<string, string> = {
-    'high': 'danger',
-    'medium': 'warning',
-    'low': 'success'
-  };
-  return colors[severity] || 'info';
-};
-
-const exportData = () => {
-  Swal.fire({
-    title: t('dashboard.prison.exportData.title'),
-    text: t('dashboard.prison.exportData.selectFormat'),
-    icon: 'question',
-    showCancelButton: true,
-    confirmButtonText: t('dashboard.prison.exportData.excel'),
-    cancelButtonText: t('dashboard.prison.exportData.pdf')
-  }).then((result) => {
-    if (result.isConfirmed) {
-      // Exportar a Excel
-    } else if (result.dismiss === Swal.DismissReason.cancel) {
-      // Exportar a PDF
-    }
-  });
-};
-
-const refreshTrend = () => {
-  loadChartData();
-};
-
-// Lifecycle
-let refreshInterval: NodeJS.Timeout | null = null;
+// --- Lifecycle ---
+let refreshInterval: ReturnType<typeof setInterval> | null = null;
 
 onMounted(() => {
   loadDashboardData();
-
-  // Actualizar datos cada 30 segundos
-  refreshInterval = setInterval(() => {
-    loadDashboardData();
-  }, 30000);
+  refreshInterval = setInterval(loadDashboardData, 300000);
 });
 
-// Limpiar el intervalo cuando se desmonte el componente
 onUnmounted(() => {
-  if (refreshInterval) {
-    clearInterval(refreshInterval);
-  }
+  if (refreshInterval) clearInterval(refreshInterval);
 });
 </script>
 
 <style scoped>
 .dashboard-container {
   padding: 0;
-}
-
-.hoverable {
-  transition: transform 0.2s;
-  cursor: pointer;
-}
-
-.hoverable:hover {
-  transform: translateY(-5px);
-}
-
-.timeline {
-  position: relative;
-  padding: 0;
-}
-
-.timeline-item {
-  position: relative;
-  display: flex;
-  align-items: flex-start;
-  padding-bottom: 1.5rem;
-  margin-left: 15px;
-}
-
-.timeline-item::before {
-  content: '';
-  position: absolute;
-  left: 7px;
-  top: 20px;
-  bottom: 0;
-  width: 1px;
-  background: #e4e6ef;
-}
-
-.timeline-item:last-child::before {
-  display: none;
-}
-
-.timeline-item:last-child {
-  padding-bottom: 0;
-}
-
-.timeline-badge {
-  position: absolute;
-  left: 0;
-  top: 2px;
-  width: 15px;
-  height: 15px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1;
-  background: white;
-}
-
-.timeline-badge i {
-  font-size: 10px !important;
-}
-
-.timeline-label {
-  min-width: 65px;
-  margin-left: 25px;
-  margin-right: 15px;
-  flex-shrink: 0;
-  color: #7e8299;
-}
-
-.timeline-content {
-  flex-grow: 1;
-  padding-right: 10px;
 }
 
 .h-300px {
