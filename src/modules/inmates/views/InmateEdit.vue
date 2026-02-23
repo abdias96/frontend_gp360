@@ -332,69 +332,63 @@
               <!--begin::Birth Location-->
               <div class="col-md-4">
                 <label class="form-label required">{{ $t('inmates.edit.fields.birthCountry') }}</label>
-                <select
+                <Multiselect
                   v-model="form.birth_country_id"
-                  class="form-select"
+                  :options="countryOptions"
+                  :searchable="true"
+                  :placeholder="$t('inmates.edit.fields.selectCountry')"
+                  noOptionsText="No hay opciones disponibles"
+                  noResultsText="No se encontraron resultados"
+                  label="label"
+                  valueProp="value"
+                  :canClear="true"
                   :class="{ 'is-invalid': errors.birth_country_id }"
-                  @change="onBirthCountryChange"
-                  required
-                >
-                  <option value="">{{ $t('inmates.edit.fields.selectCountry') }}</option>
-                  <option
-                    v-for="country in countries"
-                    :key="country.id"
-                    :value="country.id"
-                  >
-                    {{ country.name }}
-                  </option>
-                </select>
-                <div v-if="errors.birth_country_id" class="invalid-feedback">
+                  @select="onBirthCountryChange"
+                  @clear="onBirthCountryChange"
+                />
+                <div v-if="errors.birth_country_id" class="invalid-feedback d-block">
                   {{ errors.birth_country_id[0] }}
                 </div>
               </div>
 
               <div class="col-md-4">
                 <label class="form-label required">{{ $t('inmates.edit.fields.birthDepartment') }}</label>
-                <select
+                <Multiselect
                   v-model="form.birth_department_id"
-                  class="form-select"
-                  :class="{ 'is-invalid': errors.birth_department_id }"
-                  @change="onBirthDepartmentChange"
+                  :options="birthDepartmentOptions"
+                  :searchable="true"
+                  :placeholder="$t('inmates.edit.fields.selectDepartment')"
+                  noOptionsText="No hay opciones disponibles"
+                  noResultsText="No se encontraron resultados"
+                  label="label"
+                  valueProp="value"
+                  :canClear="true"
                   :disabled="!form.birth_country_id"
-                  required
-                >
-                  <option value="">{{ $t('inmates.edit.fields.selectDepartment') }}</option>
-                  <option
-                    v-for="department in birthDepartments"
-                    :key="department?.id || Math.random()"
-                    :value="department?.id"
-                  >
-                    {{ department?.name || $t('inmates.edit.fields.noName') }}
-                  </option>
-                </select>
-                <div v-if="errors.birth_department_id" class="invalid-feedback">
+                  :class="{ 'is-invalid': errors.birth_department_id }"
+                  @select="onBirthDepartmentChange"
+                  @clear="onBirthDepartmentChange"
+                />
+                <div v-if="errors.birth_department_id" class="invalid-feedback d-block">
                   {{ errors.birth_department_id[0] }}
                 </div>
               </div>
 
               <div class="col-md-4">
                 <label class="form-label">{{ $t('inmates.edit.fields.birthMunicipality') }}</label>
-                <select
+                <Multiselect
                   v-model="form.birth_municipality_id"
-                  class="form-select"
-                  :class="{ 'is-invalid': errors.birth_municipality_id }"
+                  :options="birthMunicipalityOptions"
+                  :searchable="true"
+                  :placeholder="$t('inmates.edit.fields.selectMunicipality')"
+                  noOptionsText="No hay opciones disponibles"
+                  noResultsText="No se encontraron resultados"
+                  label="label"
+                  valueProp="value"
+                  :canClear="true"
                   :disabled="!form.birth_department_id"
-                >
-                  <option value="">{{ $t('inmates.edit.fields.selectMunicipality') }}</option>
-                  <option
-                    v-for="municipality in birthMunicipalities"
-                    :key="municipality?.id || Math.random()"
-                    :value="municipality?.id"
-                  >
-                    {{ municipality?.name || $t('inmates.edit.fields.noName') }}
-                  </option>
-                </select>
-                <div v-if="errors.birth_municipality_id" class="invalid-feedback">
+                  :class="{ 'is-invalid': errors.birth_municipality_id }"
+                />
+                <div v-if="errors.birth_municipality_id" class="invalid-feedback d-block">
                   {{ errors.birth_municipality_id[0] }}
                 </div>
               </div>
@@ -415,69 +409,63 @@
             <div class="row g-6">
               <div class="col-md-4">
                 <label class="form-label required">{{ $t('inmates.edit.fields.residenceCountry') }}</label>
-                <select
+                <Multiselect
                   v-model="form.country_id"
-                  class="form-select"
+                  :options="countryOptions"
+                  :searchable="true"
+                  :placeholder="$t('inmates.edit.fields.selectCountry')"
+                  noOptionsText="No hay opciones disponibles"
+                  noResultsText="No se encontraron resultados"
+                  label="label"
+                  valueProp="value"
+                  :canClear="true"
                   :class="{ 'is-invalid': errors.country_id }"
-                  required
-                  @change="onCountryChange"
-                >
-                  <option value="">{{ $t('inmates.edit.fields.selectCountry') }}</option>
-                  <option
-                    v-for="country in countries"
-                    :key="country.id"
-                    :value="country.id"
-                  >
-                    {{ country.name }}
-                  </option>
-                </select>
-                <div v-if="errors.country_id" class="invalid-feedback">
+                  @select="onCountryChange"
+                  @clear="onCountryChange"
+                />
+                <div v-if="errors.country_id" class="invalid-feedback d-block">
                   {{ errors.country_id[0] }}
                 </div>
               </div>
 
               <div class="col-md-4">
                 <label class="form-label required">{{ $t('inmates.edit.fields.department') }}</label>
-                <select
+                <Multiselect
                   v-model="form.department_id"
-                  class="form-select"
-                  :class="{ 'is-invalid': errors.department_id }"
+                  :options="departmentOptions"
+                  :searchable="true"
+                  :placeholder="$t('inmates.edit.fields.selectDepartment')"
+                  noOptionsText="No hay opciones disponibles"
+                  noResultsText="No se encontraron resultados"
+                  label="label"
+                  valueProp="value"
+                  :canClear="true"
                   :disabled="!form.country_id"
-                  required
-                  @change="onDepartmentChange"
-                >
-                  <option value="">{{ $t('inmates.edit.fields.selectDepartment') }}</option>
-                  <option
-                    v-for="department in departments"
-                    :key="department?.id || Math.random()"
-                    :value="department?.id"
-                  >
-                    {{ department?.name || $t('inmates.edit.fields.noName') }}
-                  </option>
-                </select>
-                <div v-if="errors.department_id" class="invalid-feedback">
+                  :class="{ 'is-invalid': errors.department_id }"
+                  @select="onDepartmentChange"
+                  @clear="onDepartmentChange"
+                />
+                <div v-if="errors.department_id" class="invalid-feedback d-block">
                   {{ errors.department_id[0] }}
                 </div>
               </div>
 
               <div class="col-md-4">
                 <label class="form-label">{{ $t('inmates.edit.fields.municipality') }}</label>
-                <select
+                <Multiselect
                   v-model="form.municipality_id"
-                  class="form-select"
-                  :class="{ 'is-invalid': errors.municipality_id }"
+                  :options="municipalityOptions"
+                  :searchable="true"
+                  :placeholder="$t('inmates.edit.fields.selectMunicipality')"
+                  noOptionsText="No hay opciones disponibles"
+                  noResultsText="No se encontraron resultados"
+                  label="label"
+                  valueProp="value"
+                  :canClear="true"
                   :disabled="!form.department_id"
-                >
-                  <option value="">{{ $t('inmates.edit.fields.selectMunicipality') }}</option>
-                  <option
-                    v-for="municipality in municipalities"
-                    :key="municipality?.id || Math.random()"
-                    :value="municipality?.id"
-                  >
-                    {{ municipality?.name || $t('inmates.edit.fields.noName') }}
-                  </option>
-                </select>
-                <div v-if="errors.municipality_id" class="invalid-feedback">
+                  :class="{ 'is-invalid': errors.municipality_id }"
+                />
+                <div v-if="errors.municipality_id" class="invalid-feedback d-block">
                   {{ errors.municipality_id[0] }}
                 </div>
               </div>
@@ -528,22 +516,19 @@
 
               <div class="col-md-6">
                 <label class="form-label required">{{ $t('inmates.edit.fields.primaryLanguage') }}</label>
-                <select
+                <Multiselect
                   v-model="form.primary_language_id"
-                  class="form-select"
+                  :options="languageOptions"
+                  :searchable="true"
+                  :placeholder="$t('inmates.edit.fields.selectLanguage')"
+                  noOptionsText="No hay opciones disponibles"
+                  noResultsText="No se encontraron resultados"
+                  label="label"
+                  valueProp="value"
+                  :canClear="true"
                   :class="{ 'is-invalid': errors.primary_language_id }"
-                  required
-                >
-                  <option value="">{{ $t('inmates.edit.fields.selectLanguage') }}</option>
-                  <option
-                    v-for="language in languages"
-                    :key="language?.id"
-                    :value="language?.id"
-                  >
-                    {{ language?.name || language }}
-                  </option>
-                </select>
-                <div v-if="errors.primary_language_id" class="invalid-feedback">
+                />
+                <div v-if="errors.primary_language_id" class="invalid-feedback d-block">
                   {{ errors.primary_language_id[0] }}
                 </div>
               </div>
@@ -585,22 +570,19 @@
             <div class="row g-6">
               <div class="col-md-4">
                 <label class="form-label required">{{ $t('inmates.edit.fields.nationality') }}</label>
-                <select
+                <Multiselect
                   v-model="form.nationality_id"
-                  class="form-select"
+                  :options="nationalityOptions"
+                  :searchable="true"
+                  :placeholder="$t('inmates.edit.fields.selectNationality')"
+                  noOptionsText="No hay opciones disponibles"
+                  noResultsText="No se encontraron resultados"
+                  label="label"
+                  valueProp="value"
+                  :canClear="true"
                   :class="{ 'is-invalid': errors.nationality_id }"
-                  required
-                >
-                  <option value="">{{ $t('inmates.edit.fields.selectNationality') }}</option>
-                  <option
-                    v-for="nationality in nationalities"
-                    :key="nationality.id"
-                    :value="nationality.id"
-                  >
-                    {{ nationality.name }}
-                  </option>
-                </select>
-                <div v-if="errors.nationality_id" class="invalid-feedback">
+                />
+                <div v-if="errors.nationality_id" class="invalid-feedback d-block">
                   {{ errors.nationality_id[0] }}
                 </div>
               </div>
@@ -649,16 +631,17 @@
 
               <div class="col-md-4">
                 <label class="form-label">{{ $t('inmates.edit.fields.occupation') }}</label>
-                <select v-model="form.occupation_id" class="form-select">
-                  <option value="">{{ $t('inmates.edit.fields.selectOccupation') }}</option>
-                  <option
-                    v-for="occupation in occupations"
-                    :key="occupation.id"
-                    :value="occupation.id"
-                  >
-                    {{ occupation.name }}
-                  </option>
-                </select>
+                <Multiselect
+                  v-model="form.occupation_id"
+                  :options="occupationOptions"
+                  :searchable="true"
+                  :placeholder="$t('inmates.edit.fields.selectOccupation')"
+                  noOptionsText="No hay opciones disponibles"
+                  noResultsText="No se encontraron resultados"
+                  label="label"
+                  valueProp="value"
+                  :canClear="true"
+                />
               </div>
 
               <div class="col-md-4">
@@ -822,19 +805,17 @@
 
             <div class="col-md-4">
               <label class="form-label">{{ $t('inmates.edit.fields.contactLanguage') }}</label>
-              <select
+              <Multiselect
                 v-model="form.emergency_contact_language_id"
-                class="form-select"
-              >
-                <option value="">{{ $t('inmates.edit.fields.selectContactLanguage') }}</option>
-                <option
-                  v-for="language in languages"
-                  :key="language?.id"
-                  :value="language?.id"
-                >
-                  {{ language?.name || language }}
-                </option>
-              </select>
+                :options="languageOptions"
+                :searchable="true"
+                :placeholder="$t('inmates.edit.fields.selectContactLanguage')"
+                noOptionsText="No hay opciones disponibles"
+                noResultsText="No se encontraron resultados"
+                label="label"
+                valueProp="value"
+                :canClear="true"
+              />
             </div>
 
             </div>
@@ -880,6 +861,7 @@ import { useCatalogs } from "@/composables/useCatalogs";
 import ApiService from "@/core/services/ApiService";
 import Swal from "sweetalert2";
 import { formatDateForInput } from "@/core/helpers/date-formatters";
+import Multiselect from "@vueform/multiselect";
 
 // i18n
 const { t } = useI18n();
@@ -997,6 +979,32 @@ const riskClassifications = computed(() => catalogsStore.getCatalog("risk-classi
 const proceduralStatuses = computed(() => catalogsStore.getCatalog("procedural-statuses"));
 const languages = computed(() => catalogsStore.getCatalog("languages"));
 
+// Multiselect options for large catalogs (values as strings to match form data)
+const countryOptions = computed(() =>
+  countries.value.map((c: any) => ({ value: String(c.id), label: c.name }))
+);
+const birthDepartmentOptions = computed(() =>
+  birthDepartments.value.map((d: any) => ({ value: String(d.id), label: d.name }))
+);
+const birthMunicipalityOptions = computed(() =>
+  birthMunicipalities.value.map((m: any) => ({ value: String(m.id), label: m.name }))
+);
+const departmentOptions = computed(() =>
+  departments.value.map((d: any) => ({ value: String(d.id), label: d.name }))
+);
+const municipalityOptions = computed(() =>
+  municipalities.value.map((m: any) => ({ value: String(m.id), label: m.name }))
+);
+const nationalityOptions = computed(() =>
+  nationalities.value.map((n: any) => ({ value: String(n.id), label: n.name }))
+);
+const occupationOptions = computed(() =>
+  occupations.value.map((o: any) => ({ value: String(o.id), label: o.name }))
+);
+const languageOptions = computed(() =>
+  languages.value.map((l: any) => ({ value: String(l.id), label: l.name || l }))
+);
+
 // Methods
 const loadInmate = async () => {
   try {
@@ -1103,38 +1111,40 @@ const onBirthCountryChange = async () => {
   birthDepartments.value = [];
   birthMunicipalities.value = [];
 
-  if (form.value.birth_country_id) {
-    try {
-      // Load all departments
-      await catalogsStore.fetchDepartments();
-      const allDepartments = catalogsStore.getCatalog("departments");
+  // Normalize null to empty string (Multiselect sets null on clear)
+  if (!form.value.birth_country_id) {
+    form.value.birth_country_id = "";
+    return;
+  }
 
-      // Filter departments by selected country
-      birthDepartments.value = allDepartments.filter(
-        (d: any) => d.country_id === Number(form.value.birth_country_id)
-      );
-    } catch (error) {
-      console.error("Error loading birth departments:", error);
-    }
+  try {
+    await catalogsStore.fetchDepartments();
+    const allDepartments = catalogsStore.getCatalog("departments");
+    birthDepartments.value = allDepartments.filter(
+      (d: any) => d.country_id === Number(form.value.birth_country_id)
+    );
+  } catch (error) {
+    console.error("Error loading birth departments:", error);
   }
 };
 
 const onBirthDepartmentChange = async () => {
   form.value.birth_municipality_id = "";
   birthMunicipalities.value = [];
-  
-  if (form.value.birth_department_id) {
-    try {
-      // Load all municipalities and filter by department
-      await catalogsStore.fetchMunicipalities();
-      const allMunicipalities = catalogsStore.getCatalog("municipalities");
-      
-      birthMunicipalities.value = allMunicipalities.filter(
-        (m: any) => m.department_id === Number(form.value.birth_department_id)
-      );
-    } catch (error) {
-      console.error("Error loading birth municipalities:", error);
-    }
+
+  if (!form.value.birth_department_id) {
+    form.value.birth_department_id = "";
+    return;
+  }
+
+  try {
+    await catalogsStore.fetchMunicipalities();
+    const allMunicipalities = catalogsStore.getCatalog("municipalities");
+    birthMunicipalities.value = allMunicipalities.filter(
+      (m: any) => m.department_id === Number(form.value.birth_department_id)
+    );
+  } catch (error) {
+    console.error("Error loading birth municipalities:", error);
   }
 };
 
@@ -1144,38 +1154,39 @@ const onCountryChange = async () => {
   departments.value = [];
   municipalities.value = [];
 
-  if (form.value.country_id) {
-    try {
-      // Load all departments
-      await catalogsStore.fetchDepartments();
-      const allDepartments = catalogsStore.getCatalog("departments");
+  if (!form.value.country_id) {
+    form.value.country_id = "";
+    return;
+  }
 
-      // Filter departments by selected country
-      departments.value = allDepartments.filter(
-        (d: any) => d.country_id === Number(form.value.country_id)
-      );
-    } catch (error) {
-      console.error("Error loading departments:", error);
-    }
+  try {
+    await catalogsStore.fetchDepartments();
+    const allDepartments = catalogsStore.getCatalog("departments");
+    departments.value = allDepartments.filter(
+      (d: any) => d.country_id === Number(form.value.country_id)
+    );
+  } catch (error) {
+    console.error("Error loading departments:", error);
   }
 };
 
 const onDepartmentChange = async () => {
   form.value.municipality_id = "";
   municipalities.value = [];
-  
-  if (form.value.department_id) {
-    try {
-      // Load all municipalities and filter by department
-      await catalogsStore.fetchMunicipalities();
-      const allMunicipalities = catalogsStore.getCatalog("municipalities");
-      
-      municipalities.value = allMunicipalities.filter(
-        (m: any) => m.department_id === Number(form.value.department_id)
-      );
-    } catch (error) {
-      console.error("Error loading municipalities:", error);
-    }
+
+  if (!form.value.department_id) {
+    form.value.department_id = "";
+    return;
+  }
+
+  try {
+    await catalogsStore.fetchMunicipalities();
+    const allMunicipalities = catalogsStore.getCatalog("municipalities");
+    municipalities.value = allMunicipalities.filter(
+      (m: any) => m.department_id === Number(form.value.department_id)
+    );
+  } catch (error) {
+    console.error("Error loading municipalities:", error);
   }
 };
 

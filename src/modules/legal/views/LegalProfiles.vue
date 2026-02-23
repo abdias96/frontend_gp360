@@ -26,39 +26,37 @@
               </div>
               
               <!-- Filter by center -->
-              <div class="me-3">
-                <select
+              <div class="me-3" style="min-width: 250px;">
+                <Multiselect
                   v-model="selectedCenter"
-                  @change="handleFilter"
-                  class="form-select form-select-solid"
-                >
-                  <option value="">{{ t('legal.profiles.allCenters') }}</option>
-                  <option
-                    v-for="center in centersOptions"
-                    :key="center.value"
-                    :value="center.value"
-                  >
-                    {{ center.label }}
-                  </option>
-                </select>
+                  :options="centersOptions"
+                  :searchable="true"
+                  :placeholder="t('legal.profiles.allCenters')"
+                  noOptionsText="No hay opciones disponibles"
+                  noResultsText="No se encontraron resultados"
+                  label="label"
+                  valueProp="value"
+                  :canClear="true"
+                  @select="handleFilter"
+                  @clear="handleFilter"
+                />
               </div>
 
               <!-- Filter by status -->
-              <div class="me-3">
-                <select
+              <div class="me-3" style="min-width: 250px;">
+                <Multiselect
                   v-model="selectedStatus"
-                  @change="handleFilter"
-                  class="form-select form-select-solid"
-                >
-                  <option value="">{{ t('legal.profiles.allStatuses') }}</option>
-                  <option
-                    v-for="status in proceduralStatusesOptions"
-                    :key="status.value"
-                    :value="status.value"
-                  >
-                    {{ status.label }}
-                  </option>
-                </select>
+                  :options="proceduralStatusesOptions"
+                  :searchable="true"
+                  :placeholder="t('legal.profiles.allStatuses')"
+                  noOptionsText="No hay opciones disponibles"
+                  noResultsText="No se encontraron resultados"
+                  label="label"
+                  valueProp="value"
+                  :canClear="true"
+                  @select="handleFilter"
+                  @clear="handleFilter"
+                />
               </div>
               
               <!-- Actions -->
@@ -382,6 +380,7 @@ import { useCatalogsStore } from '@/stores/catalogs';
 import { useAuthStore } from '@/stores/auth';
 import ApiService from '@/core/services/ApiService';
 import Swal from 'sweetalert2';
+import Multiselect from '@vueform/multiselect';
 import * as XLSX from 'xlsx';
 import jsPDF from 'jspdf';
 

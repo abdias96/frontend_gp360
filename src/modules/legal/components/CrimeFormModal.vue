@@ -97,22 +97,19 @@
                   </div>
                   <div class="col-md-6">
                     <label class="form-label required">{{ t('legal.crimes.form.crime') }}</label>
-                    <select
+                    <Multiselect
                       v-model="formData.crime_id"
-                      class="form-select"
+                      :options="crimesOptions"
+                      :searchable="true"
+                      :placeholder="t('common.select')"
+                      noOptionsText="No hay opciones disponibles"
+                      noResultsText="No se encontraron resultados"
+                      label="label"
+                      valueProp="value"
+                      :canClear="true"
                       :class="{ 'is-invalid': errors.crime_id }"
-                      required
-                    >
-                      <option value="">{{ t('common.select') }}</option>
-                      <option
-                        v-for="crime in crimesOptions"
-                        :key="crime.value"
-                        :value="crime.value"
-                      >
-                        {{ crime.label }}
-                      </option>
-                    </select>
-                    <div v-if="errors.crime_id" class="invalid-feedback">
+                    />
+                    <div v-if="errors.crime_id" class="invalid-feedback d-block">
                       {{ errors.crime_id }}
                     </div>
                   </div>

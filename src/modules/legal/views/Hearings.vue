@@ -275,20 +275,17 @@
               <div class="row g-3">
                 <div class="col-md-6">
                   <label class="form-label required">PPL</label>
-                  <select
+                  <Multiselect
                     v-model="hearingForm.inmate_id"
-                    class="form-select"
-                    required
-                  >
-                    <option value="">Seleccionar PPL</option>
-                    <option
-                      v-for="inmate in inmatesOptions"
-                      :key="inmate.value"
-                      :value="inmate.value"
-                    >
-                      {{ inmate.label }}
-                    </option>
-                  </select>
+                    :options="inmatesOptions"
+                    :searchable="true"
+                    placeholder="Buscar PPL..."
+                    noOptionsText="No hay opciones disponibles"
+                    noResultsText="No se encontraron resultados"
+                    label="label"
+                    valueProp="value"
+                    :canClear="true"
+                  />
                 </div>
                 <div class="col-md-6">
                   <label class="form-label required">Fecha</label>
@@ -328,20 +325,17 @@
                 </div>
                 <div class="col-md-6">
                   <label class="form-label required">Juzgado</label>
-                  <select
+                  <Multiselect
                     v-model="hearingForm.court_id"
-                    class="form-select"
-                    required
-                  >
-                    <option value="">Seleccionar Juzgado</option>
-                    <option
-                      v-for="court in courtsOptions"
-                      :key="court.value"
-                      :value="court.value"
-                    >
-                      {{ court.label }}
-                    </option>
-                  </select>
+                    :options="courtsOptions"
+                    :searchable="true"
+                    placeholder="Buscar juzgado..."
+                    noOptionsText="No hay opciones disponibles"
+                    noResultsText="No se encontraron resultados"
+                    label="label"
+                    valueProp="value"
+                    :canClear="true"
+                  />
                 </div>
                 <div class="col-md-6">
                   <label class="form-label">Juez</label>
@@ -421,6 +415,7 @@ import { useCatalogs } from '@/composables/useCatalogs';
 import { useAuthStore } from '@/stores/auth';
 import ApiService from '@/core/services/ApiService';
 import Swal from 'sweetalert2';
+import Multiselect from '@vueform/multiselect';
 import { Modal } from 'bootstrap';
 import type { Hearing } from '../types/legal';
 import { Calendar } from '@fullcalendar/core';

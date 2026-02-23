@@ -186,22 +186,19 @@
                 <!-- Court -->
                 <div class="mb-5">
                   <label class="form-label required">{{ t('legal.profiles.edit.court') }}</label>
-                  <select
-                    class="form-select"
+                  <Multiselect
                     v-model="formData.court_id"
+                    :options="courtsOptions"
+                    :searchable="true"
+                    :placeholder="t('common.select')"
+                    noOptionsText="No hay opciones disponibles"
+                    noResultsText="No se encontraron resultados"
+                    label="label"
+                    valueProp="value"
+                    :canClear="true"
                     :class="{ 'is-invalid': errors.court_id }"
-                    required
-                  >
-                    <option value="">{{ t('common.select') }}</option>
-                    <option
-                      v-for="court in courtsOptions"
-                      :key="court.value"
-                      :value="court.value"
-                    >
-                      {{ court.label }}
-                    </option>
-                  </select>
-                  <div v-if="errors.court_id" class="invalid-feedback">
+                  />
+                  <div v-if="errors.court_id" class="invalid-feedback d-block">
                     {{ errors.court_id }}
                   </div>
                 </div>
@@ -628,6 +625,7 @@ import { useI18n } from 'vue-i18n';
 import { useCatalogs } from '@/composables/useCatalogs';
 import ApiService from '@/core/services/ApiService';
 import Swal from 'sweetalert2';
+import Multiselect from '@vueform/multiselect';
 import { formatDateForInput } from '@/core/helpers/date-formatters';
 
 const { t } = useI18n();

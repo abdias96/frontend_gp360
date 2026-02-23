@@ -26,39 +26,37 @@
               </div>
               
               <!-- Filter by inmate -->
-              <div class="me-3">
-                <select
+              <div class="me-3" style="min-width: 250px;">
+                <Multiselect
                   v-model="selectedInmate"
-                  @change="handleFilter"
-                  class="form-select form-select-solid"
-                >
-                  <option value="">{{ t('legal.crimes.allInmates') }}</option>
-                  <option
-                    v-for="inmate in inmatesOptions"
-                    :key="inmate.value"
-                    :value="inmate.value"
-                  >
-                    {{ inmate.label }}
-                  </option>
-                </select>
+                  :options="inmatesOptions"
+                  :searchable="true"
+                  :placeholder="t('legal.crimes.allInmates')"
+                  noOptionsText="No hay opciones disponibles"
+                  noResultsText="No se encontraron resultados"
+                  label="label"
+                  valueProp="value"
+                  :canClear="true"
+                  @select="handleFilter"
+                  @clear="handleFilter"
+                />
               </div>
 
               <!-- Filter by crime type -->
-              <div class="me-3">
-                <select
+              <div class="me-3" style="min-width: 250px;">
+                <Multiselect
                   v-model="selectedCrimeType"
-                  @change="handleFilter"
-                  class="form-select form-select-solid"
-                >
-                  <option value="">{{ t('legal.crimes.allCrimeTypes') }}</option>
-                  <option
-                    v-for="crime in crimesOptions"
-                    :key="crime.value"
-                    :value="crime.value"
-                  >
-                    {{ crime.label }}
-                  </option>
-                </select>
+                  :options="crimesOptions"
+                  :searchable="true"
+                  :placeholder="t('legal.crimes.allCrimeTypes')"
+                  noOptionsText="No hay opciones disponibles"
+                  noResultsText="No se encontraron resultados"
+                  label="label"
+                  valueProp="value"
+                  :canClear="true"
+                  @select="handleFilter"
+                  @clear="handleFilter"
+                />
               </div>
 
               <!-- Filter by violence level -->
@@ -361,6 +359,7 @@ import { useCatalogs } from '@/composables/useCatalogs';
 import { useCatalogsStore } from '@/stores/catalogs';
 import ApiService from '@/core/services/ApiService';
 import Swal from 'sweetalert2';
+import Multiselect from '@vueform/multiselect';
 import CrimeDetailModal from '../components/CrimeDetailModal.vue';
 import CrimeFormModal from '../components/CrimeFormModal.vue';
 

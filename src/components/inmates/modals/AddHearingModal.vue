@@ -33,16 +33,17 @@
               </div>
               <div class="col-md-6">
                 <label class="form-label required">Tribunal</label>
-                <select v-model="form.court_id" class="form-select" required>
-                  <option value="">Seleccionar tribunal...</option>
-                  <option 
-                    v-for="court in courtsOptions" 
-                    :key="court.value" 
-                    :value="court.value"
-                  >
-                    {{ court.label }}
-                  </option>
-                </select>
+                <Multiselect
+                  v-model="form.court_id"
+                  :options="courtsOptions"
+                  :searchable="true"
+                  placeholder="Buscar tribunal..."
+                  noOptionsText="No hay opciones disponibles"
+                  noResultsText="No se encontraron resultados"
+                  label="label"
+                  valueProp="value"
+                  :canClear="true"
+                />
               </div>
             </div>
 
@@ -274,6 +275,7 @@ import { ref, onMounted, watch } from 'vue';
 import { useCatalogs } from '@/composables/useCatalogs';
 import ApiService from '@/core/services/ApiService';
 import Swal from 'sweetalert2';
+import Multiselect from '@vueform/multiselect';
 
 // Props
 interface Props {
