@@ -306,7 +306,6 @@
                   noResultsText="Sin resultados"
                   :canClear="true"
                   :canDeselect="true"
-                  @change="onCenterFilterChange"
                 />
               </div>
               <span v-if="overdueVisitsCount > 0" class="badge badge-light-danger">
@@ -571,7 +570,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
 import { useRoute } from 'vue-router'
 import ApiService from '@/core/services/ApiService'
 import Swal from 'sweetalert2'
@@ -641,6 +640,11 @@ let exitModal: any = null
 // Computed
 const overdueVisitsCount = computed(() => {
   return activeVisits.value.filter(v => v.is_overdue).length
+})
+
+// Watch center filter - refetch when changed
+watch(filterCenter, () => {
+  refreshActiveVisits()
 })
 
 // Methods
@@ -820,10 +824,6 @@ const refreshActiveVisits = async () => {
   } catch (error) {
     console.error('Error fetching active visits:', error)
   }
-}
-
-const onCenterFilterChange = () => {
-  refreshActiveVisits()
 }
 
 const showExitModal = (visit: any) => {
@@ -1056,5 +1056,50 @@ onUnmounted(() => {
 .rating .fa-star {
   font-size: 1.5rem;
   margin: 0 0.2rem;
+}
+</style>
+
+<style>
+/* Dark mode support for Multiselect in VisitMonitoring */
+html[data-bs-theme="dark"] .multiselect {
+  --ms-bg: #1e1e2d;
+  --ms-border-color: #2b2b40;
+  --ms-ring-color: rgba(62, 151, 255, 0.3);
+  --ms-placeholder-color: #565674;
+  --ms-spinner-color: #3e97ff;
+  --ms-caret-color: #565674;
+  --ms-clear-color: #565674;
+  --ms-clear-color-hover: #f1416c;
+  --ms-tag-bg: #212e48;
+  --ms-tag-color: #3e97ff;
+  --ms-tag-remove-bg: transparent;
+  --ms-tag-remove-color: #3e97ff;
+  --ms-tag-remove-color-hover: #f1416c;
+  --ms-dropdown-bg: #1e1e2d;
+  --ms-dropdown-border-color: #2b2b40;
+  --ms-group-label-bg: #1b1b29;
+  --ms-group-label-color: #92929f;
+  --ms-option-bg-pointed: #212e48;
+  --ms-option-color-pointed: #cdcdde;
+  --ms-option-bg-selected: #212e48;
+  --ms-option-color-selected: #3e97ff;
+  --ms-option-bg-selected-pointed: #1b2838;
+  --ms-option-color-selected-pointed: #3e97ff;
+  --ms-empty-color: #565674;
+  color: #cdcdde;
+}
+
+html[data-bs-theme="dark"] .multiselect-input {
+  background-color: #1e1e2d;
+  color: #cdcdde;
+}
+
+html[data-bs-theme="dark"] .multiselect-search input {
+  background-color: transparent;
+  color: #cdcdde;
+}
+
+html[data-bs-theme="dark"] .multiselect-single-label {
+  color: #cdcdde;
 }
 </style>
