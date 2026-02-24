@@ -534,7 +534,7 @@ const applyCenterFilter = () => {
     ? allCenterData.slice(0, centerFilter.value)
     : allCenterData;
 
-  const categories = data.map((c: any) => c.code || c.name);
+  const categories = data.map((c: any) => c.short_name || c.name || c.code);
   const populations = data.map((c: any) => c.current_population || 0);
 
   populationChartOptions.value = {
@@ -699,7 +699,7 @@ const loadCharts = (data: any) => {
       chart: { type: 'bar', stacked: true, toolbar: { show: false } },
       plotOptions: { bar: { horizontal: true, borderRadius: 3, barHeight: '65%' } },
       dataLabels: { enabled: false },
-      xaxis: { categories: gangData.map((c: any) => c.code) },
+      xaxis: { categories: gangData.map((c: any) => c.short_name || c.center_name || c.code) },
       colors: ['#e74c3c', '#3498db', '#95a5a6'],
       legend: { position: 'bottom' },
       tooltip: { y: { formatter: (val: number) => val + ' PPL' } },
@@ -877,7 +877,7 @@ const loadCharts = (data: any) => {
       chart: { type: 'bar', toolbar: { show: false } },
       plotOptions: { bar: { horizontal: true, borderRadius: 4, barHeight: '55%' } },
       dataLabels: { enabled: true, style: { fontSize: '11px' } },
-      xaxis: { categories: vbcData.map((c: any) => c.code || c.center_name) },
+      xaxis: { categories: vbcData.map((c: any) => c.short_name || c.center_name || c.code) },
       colors: [warningColor],
       tooltip: { y: { formatter: (val: number) => val + ` ${t('dashboard.prison.charts.visits')}` } },
     };
