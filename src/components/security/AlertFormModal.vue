@@ -151,7 +151,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from 'vue';
+import { ref } from 'vue';
 import ApiService from '@/core/services/ApiService';
 import Swal from 'sweetalert2';
 import { Modal } from 'bootstrap';
@@ -200,7 +200,8 @@ const defaultForm = () => ({
 
 const form = ref(defaultForm());
 
-watch(() => props.alert, (val) => {
+const populateForm = () => {
+  const val = props.alert;
   if (val && props.isEditing) {
     form.value = {
       alert_type: val.alert_type || '',
@@ -221,7 +222,7 @@ watch(() => props.alert, (val) => {
     form.value = defaultForm();
     selectedInmate.value = null;
   }
-}, { immediate: true });
+};
 
 const validate = () => {
   errors.value = {};
@@ -260,6 +261,7 @@ const submitForm = async () => {
 };
 
 const open = () => {
+  populateForm();
   if (modalRef.value && !modalInstance) modalInstance = new Modal(modalRef.value);
   modalInstance?.show();
 };

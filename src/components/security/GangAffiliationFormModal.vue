@@ -209,7 +209,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from 'vue';
+import { ref } from 'vue';
 import ApiService from '@/core/services/ApiService';
 import Swal from 'sweetalert2';
 import { Modal } from 'bootstrap';
@@ -250,7 +250,8 @@ const defaultForm = () => ({
 
 const form = ref(defaultForm());
 
-watch(() => props.affiliation, (val) => {
+const populateForm = () => {
+  const val = props.affiliation;
   if (val && props.isEditing) {
     form.value = {
       gang_type: val.gang_type || '',
@@ -261,17 +262,17 @@ watch(() => props.affiliation, (val) => {
       affiliation_level: val.affiliation_level || '',
       join_date: val.join_date ? val.join_date.substring(0, 10) : '',
       confirmation_date: val.confirmation_date ? val.confirmation_date.substring(0, 10) : '',
-      criminal_activities: val.criminal_activities || '',
+      criminal_activities: Array.isArray(val.criminal_activities) ? val.criminal_activities.join(', ') : (val.criminal_activities || ''),
       active_in_extortion: val.active_in_extortion || false,
       orders_from_prison: val.orders_from_prison || false,
       receives_orders: val.receives_orders || false,
       communication_methods: val.communication_methods || '',
       intelligence_notes: val.intelligence_notes || '',
-      known_associates: val.known_associates || '',
-      rival_gangs: val.rival_gangs || '',
+      known_associates: Array.isArray(val.known_associates) ? val.known_associates.join(', ') : (val.known_associates || ''),
+      rival_gangs: Array.isArray(val.rival_gangs) ? val.rival_gangs.join(', ') : (val.rival_gangs || ''),
       threat_assessment: val.threat_assessment || '',
       intelligence_level: val.intelligence_level || 'medium',
-      must_separate_from: val.must_separate_from || '',
+      must_separate_from: Array.isArray(val.must_separate_from) ? val.must_separate_from.join(', ') : (val.must_separate_from || ''),
       separation_reasons: val.separation_reasons || '',
       is_current: val.is_current ?? true,
     };
@@ -280,7 +281,7 @@ watch(() => props.affiliation, (val) => {
     form.value = defaultForm();
     selectedInmate.value = null;
   }
-}, { immediate: true });
+};
 
 const validate = () => {
   errors.value = {};
@@ -319,6 +320,7 @@ const submitForm = async () => {
 };
 
 const open = () => {
+  populateForm();
   if (modalRef.value && !modalInstance) modalInstance = new Modal(modalRef.value);
   modalInstance?.show();
 };

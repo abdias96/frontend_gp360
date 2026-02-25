@@ -197,7 +197,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from 'vue';
+import { ref } from 'vue';
 import ApiService from '@/core/services/ApiService';
 import Swal from 'sweetalert2';
 import { Modal } from 'bootstrap';
@@ -254,19 +254,20 @@ const defaultForm = () => ({
 
 const form = ref(defaultForm());
 
-watch(() => props.incident, (val) => {
+const populateForm = () => {
+  const val = props.incident;
   if (val && props.isEditing) {
     form.value = {
       incident_type: val.incident_type || '',
-      severity_level: val.severity_level || val.severity || '',
+      severity_level: val.severity_level || '',
       incident_date: val.incident_date ? val.incident_date.substring(0, 16) : '',
       location: val.location || '',
-      incident_description: val.incident_description || val.description || '',
+      incident_description: val.incident_description || '',
       circumstances: val.circumstances || '',
       evidence_collected: val.evidence_collected || '',
       staff_statements: val.staff_statements || '',
       inmate_statement: val.inmate_statement || '',
-      resolution_status: val.resolution_status || val.status || 'pending',
+      resolution_status: val.resolution_status || 'pending',
       resolution_details: val.resolution_details || '',
       sanctions_applied: val.sanctions_applied || '',
       resolution_date: val.resolution_date ? val.resolution_date.substring(0, 10) : '',
@@ -281,7 +282,7 @@ watch(() => props.incident, (val) => {
     form.value = defaultForm();
     selectedInmate.value = null;
   }
-}, { immediate: true });
+};
 
 const validate = () => {
   errors.value = {};
@@ -326,6 +327,7 @@ const submitForm = async () => {
 };
 
 const open = () => {
+  populateForm();
   if (modalRef.value && !modalInstance) modalInstance = new Modal(modalRef.value);
   modalInstance?.show();
 };
