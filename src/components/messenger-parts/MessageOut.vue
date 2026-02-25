@@ -57,7 +57,7 @@
               class="btn btn-sm btn-icon btn-light-primary"
               title="Descargar"
             >
-              <i class="ki-duotone ki-cloud-download fs-3"></i>
+              <i class="ki-duotone ki-cloud-download fs-3"><span class="path1"></span><span class="path2"></span></i>
             </a>
           </div>
         </div>

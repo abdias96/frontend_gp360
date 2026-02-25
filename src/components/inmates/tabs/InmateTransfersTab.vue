@@ -83,7 +83,7 @@
         </div>
         <div class="card-toolbar">
           <button class="btn btn-sm btn-primary" @click="requestTransfer">
-            <i class="ki-duotone ki-delivery fs-2"></i>
+            <i class="ki-duotone ki-delivery fs-2"><span class="path1"></span><span class="path2"></span><span class="path3"></span><span class="path4"></span><span class="path5"></span></i>
             Solicitar Traslado
           </button>
         </div>
@@ -187,7 +187,7 @@
         </div>
         <div class="card-toolbar">
           <button class="btn btn-sm btn-light-warning" @click="manageRequests">
-            <i class="ki-duotone ki-setting-2 fs-2"></i>
+            <i class="ki-duotone ki-setting-2 fs-2"><span class="path1"></span><span class="path2"></span></i>
             Gestionar
           </button>
         </div>
@@ -232,15 +232,15 @@
                 <td class="text-end">
                   <button class="btn btn-sm btn-light-primary me-2"
                     @click="viewRequestDetails(request)">
-                    <i class="ki-duotone ki-eye fs-5"></i>
+                    <i class="ki-duotone ki-eye fs-5"><span class="path1"></span><span class="path2"></span><span class="path3"></span></i>
                   </button>
                   <button class="btn btn-sm btn-light-success me-2"
                     @click="approveRequest(request.id)">
-                    <i class="ki-duotone ki-check fs-5"></i>
+                    <i class="ki-duotone ki-check fs-5"><span class="path1"></span></i>
                   </button>
                   <button class="btn btn-sm btn-light-danger"
                     @click="rejectRequest(request.id)">
-                    <i class="ki-duotone ki-cross fs-5"></i>
+                    <i class="ki-duotone ki-cross fs-5"><span class="path1"></span><span class="path2"></span></i>
                   </button>
                 </td>
               </tr>
@@ -258,7 +258,7 @@
         </div>
         <div class="card-toolbar">
           <button class="btn btn-sm btn-light-info" @click="viewFullHistory">
-            <i class="ki-duotone ki-chart-simple fs-2"></i>
+            <i class="ki-duotone ki-chart-simple fs-2"><span class="path1"></span><span class="path2"></span><span class="path3"></span><span class="path4"></span></i>
             Ver Completo
           </button>
         </div>
@@ -311,7 +311,7 @@
                       </span>
                     </div>
                     <div v-if="location.transfer_reason" class="text-muted mt-1">
-                      <i class="ki-duotone ki-information fs-6 me-1"></i>
+                      <i class="ki-duotone ki-information fs-6 me-1"><span class="path1"></span><span class="path2"></span><span class="path3"></span></i>
                       {{ location.transfer_reason }}
                     </div>
                   </div>
@@ -336,7 +336,7 @@
         </div>
         <div class="card-toolbar">
           <button class="btn btn-sm btn-light-primary" @click="scheduleTransport">
-            <i class="ki-duotone ki-truck fs-2"></i>
+            <i class="ki-duotone ki-truck fs-2"><span class="path1"></span><span class="path2"></span><span class="path3"></span><span class="path4"></span><span class="path5"></span></i>
             Programar Transporte
           </button>
         </div>

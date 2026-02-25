@@ -368,7 +368,7 @@
                           :to="`/inmates/${profile.inmate?.id}`"
                           class="dropdown-item"
                         >
-                          <i class="ki-duotone ki-eye fs-6 me-2"></i>
+                          <i class="ki-duotone ki-eye fs-6 me-2"><span class="path1"></span><span class="path2"></span><span class="path3"></span></i>
                           {{ $t('inmates.legalProfiles.actions.viewInmate') }}
                         </router-link>
                       </li>
@@ -378,7 +378,7 @@
                           class="dropdown-item"
                           @click.prevent="editProfile(profile)"
                         >
-                          <i class="ki-duotone ki-pencil fs-6 me-2"></i>
+                          <i class="ki-duotone ki-pencil fs-6 me-2"><span class="path1"></span><span class="path2"></span></i>
                           {{ $t('inmates.legalProfiles.actions.editProfile') }}
                         </a>
                       </li>

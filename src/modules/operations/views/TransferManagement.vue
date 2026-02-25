@@ -356,7 +356,7 @@
                           class="dropdown-item"
                           @click.prevent="viewTransfer(transfer)"
                         >
-                          <i class="ki-duotone ki-eye fs-6 me-2"></i>
+                          <i class="ki-duotone ki-eye fs-6 me-2"><span class="path1"></span><span class="path2"></span><span class="path3"></span></i>
                           Ver Detalle
                         </a>
                       </li>
@@ -369,7 +369,7 @@
                             class="dropdown-item text-success"
                             @click.prevent="approveTransfer(transfer)"
                           >
-                            <i class="ki-duotone ki-check fs-6 me-2"></i>
+                            <i class="ki-duotone ki-check fs-6 me-2"><span class="path1"></span></i>
                             Aprobar
                           </a>
                         </li>
@@ -379,7 +379,7 @@
                             class="dropdown-item text-danger"
                             @click.prevent="rejectTransfer(transfer)"
                           >
-                            <i class="ki-duotone ki-cross fs-6 me-2"></i>
+                            <i class="ki-duotone ki-cross fs-6 me-2"><span class="path1"></span><span class="path2"></span></i>
                             Rechazar
                           </a>
                         </li>
@@ -393,7 +393,7 @@
                             class="dropdown-item text-primary"
                             @click.prevent="initiateTransfer(transfer)"
                           >
-                            <i class="ki-duotone ki-send fs-6 me-2"></i>
+                            <i class="ki-duotone ki-send fs-6 me-2"><span class="path1"></span><span class="path2"></span></i>
                             Iniciar Traslado
                           </a>
                         </li>
@@ -407,7 +407,7 @@
                             class="dropdown-item text-success"
                             @click.prevent="completeTransfer(transfer)"
                           >
-                            <i class="ki-duotone ki-check-circle fs-6 me-2"></i>
+                            <i class="ki-duotone ki-check-circle fs-6 me-2"><span class="path1"></span><span class="path2"></span></i>
                             Completar Traslado
                           </a>
                         </li>
@@ -420,7 +420,7 @@
                           class="dropdown-item text-warning"
                           @click.prevent="cancelTransfer(transfer)"
                         >
-                          <i class="ki-duotone ki-cross-circle fs-6 me-2"></i>
+                          <i class="ki-duotone ki-cross-circle fs-6 me-2"><span class="path1"></span><span class="path2"></span></i>
                           Cancelar
                         </a>
                       </li>

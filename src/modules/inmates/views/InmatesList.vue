@@ -573,7 +573,7 @@
                           :to="`/inmates/${inmate?.id}`"
                           class="dropdown-item"
                         >
-                          <i class="ki-duotone ki-eye fs-6 me-2"></i>
+                          <i class="ki-duotone ki-eye fs-6 me-2"><span class="path1"></span><span class="path2"></span><span class="path3"></span></i>
                           {{ $t('inmates.list.actions.viewDetail') }}
                         </router-link>
                       </li>
@@ -582,7 +582,7 @@
                           :to="`/inmates/${inmate?.id}/edit`"
                           class="dropdown-item"
                         >
-                          <i class="ki-duotone ki-pencil fs-6 me-2"></i>
+                          <i class="ki-duotone ki-pencil fs-6 me-2"><span class="path1"></span><span class="path2"></span></i>
                           {{ $t('inmates.list.actions.edit') }}
                         </router-link>
                       </li>
@@ -592,7 +592,7 @@
                           class="dropdown-item"
                           @click.prevent="initiateTransfer(inmate)"
                         >
-                          <i class="ki-duotone ki-switch fs-6 me-2"></i>
+                          <i class="ki-duotone ki-switch fs-6 me-2"><span class="path1"></span><span class="path2"></span></i>
                           {{ $t('inmates.list.actions.transfer') }}
                         </a>
                       </li>
@@ -602,7 +602,7 @@
                           class="dropdown-item"
                           @click.prevent="changeStatus(inmate)"
                         >
-                          <i class="ki-duotone ki-status fs-6 me-2"></i>
+                          <i class="ki-duotone ki-status fs-6 me-2"><span class="path1"></span><span class="path2"></span><span class="path3"></span></i>
                           {{ $t('inmates.list.actions.changeStatus') }}
                         </a>
                       </li>
@@ -755,7 +755,7 @@
           class="btn btn-sm btn-light"
           @click="cancelSelection"
         >
-          <i class="ki-duotone ki-cross fs-4"></i>
+          <i class="ki-duotone ki-cross fs-4"><span class="path1"></span><span class="path2"></span></i>
         </button>
       </div>
     </div>

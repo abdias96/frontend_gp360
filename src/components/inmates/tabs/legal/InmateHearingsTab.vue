@@ -73,14 +73,14 @@
                       class="btn btn-sm btn-light-primary me-2"
                       @click="viewHearing(hearing)"
                     >
-                      <i class="ki-duotone ki-eye fs-4"></i>
+                      <i class="ki-duotone ki-eye fs-4"><span class="path1"></span><span class="path2"></span><span class="path3"></span></i>
                     </button>
                     <button 
                       v-if="canSchedule"
                       class="btn btn-sm btn-light-warning"
                       @click="editHearing(hearing)"
                     >
-                      <i class="ki-duotone ki-pencil fs-4"></i>
+                      <i class="ki-duotone ki-pencil fs-4"><span class="path1"></span><span class="path2"></span></i>
                     </button>
                   </td>
                 </tr>

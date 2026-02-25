@@ -65,7 +65,11 @@
             data-bs-toggle="dropdown"
             aria-expanded="false"
           >
-            <i class="ki-duotone ki-dots-horizontal fs-2"></i>
+            <i class="ki-duotone ki-dots-horizontal fs-2">
+              <span class="path1"></span>
+              <span class="path2"></span>
+              <span class="path3"></span>
+            </i>
           </button>
           <ul
             class="dropdown-menu menu menu-sub menu-sub-dropdown menu-column menu-rounded menu-gray-600 menu-state-bg-light-primary fw-semibold fs-7 w-200px py-4"

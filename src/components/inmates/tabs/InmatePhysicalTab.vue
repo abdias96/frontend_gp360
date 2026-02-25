@@ -254,10 +254,10 @@
                     <span class="text-gray-300 fs-7">{{ formatDate(photo.created_at) }}</span>
                     <div class="mt-3">
                       <button class="btn btn-sm btn-light-primary me-2" @click="viewPhoto(photo)">
-                        <i class="ki-duotone ki-eye fs-5"></i>
+                        <i class="ki-duotone ki-eye fs-5"><span class="path1"></span><span class="path2"></span><span class="path3"></span></i>
                       </button>
                       <button v-if="canEdit" class="btn btn-sm btn-light-danger" @click="deletePhoto(photo)">
-                        <i class="ki-duotone ki-trash fs-5"></i>
+                        <i class="ki-duotone ki-trash fs-5"><span class="path1"></span><span class="path2"></span><span class="path3"></span><span class="path4"></span><span class="path5"></span></i>
                       </button>
                     </div>
                   </div>
