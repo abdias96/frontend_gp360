@@ -1,8 +1,8 @@
 <template>
-  <div 
-    id="securityClassificationDetailModal" 
-    class="modal fade" 
-    tabindex="-1" 
+  <div
+    id="securityClassificationDetailModal"
+    class="modal fade"
+    tabindex="-1"
     aria-hidden="true"
     ref="modalRef"
   >
@@ -12,8 +12,7 @@
           <h2 class="fw-bold">Detalles de Clasificación de Seguridad</h2>
           <div class="btn btn-icon btn-sm btn-active-icon-primary" @click="close">
             <i class="ki-duotone ki-cross fs-1">
-              <span class="path1"></span>
-              <span class="path2"></span>
+              <span class="path1"></span><span class="path2"></span>
             </i>
           </div>
         </div>
@@ -40,15 +39,13 @@
                     </div>
                     <div class="col-md-3">
                       <div class="fw-semibold text-gray-600">Nivel de Seguridad:</div>
-                      <span class="badge" :class="getSecurityLevelBadgeClass(classification.classification_level)">
-                        {{ getSecurityLevelLabel(classification.classification_level) }}
+                      <span class="badge" :class="getSecurityLevelBadgeClass(classification.security_level)">
+                        {{ getSecurityLevelLabel(classification.security_level) }}
                       </span>
                     </div>
                     <div class="col-md-3">
-                      <div class="fw-semibold text-gray-600">Riesgo General:</div>
-                      <span class="badge" :class="getRiskBadgeClass(classification.overall_risk_level)">
-                        {{ getRiskLabel(classification.overall_risk_level) }}
-                      </span>
+                      <div class="fw-semibold text-gray-600">Riesgo Total:</div>
+                      <span class="fw-bold fs-4">{{ classification.overall_risk_score || 0 }}/50</span>
                     </div>
                     <div class="col-md-3">
                       <div class="fw-semibold text-gray-600">Estado:</div>
@@ -69,22 +66,14 @@
                 </div>
                 <div class="card-body">
                   <div class="mb-4">
-                    <div class="fw-semibold text-gray-600 mb-1">Tipo de Clasificación:</div>
-                    <div class="fs-6">{{ getClassificationTypeLabel(classification.classification_type) }}</div>
-                  </div>
-                  <div class="mb-4">
                     <div class="fw-semibold text-gray-600 mb-1">Fecha de Clasificación:</div>
                     <div class="fs-6">{{ formatDate(classification.classification_date) }}</div>
-                  </div>
-                  <div class="mb-4">
-                    <div class="fw-semibold text-gray-600 mb-1">Fecha de Vigencia:</div>
-                    <div class="fs-6">{{ formatDate(classification.effective_date) }}</div>
                   </div>
                   <div class="mb-4">
                     <div class="fw-semibold text-gray-600 mb-1">Próxima Revisión:</div>
                     <div class="fs-6">
                       <span>{{ formatDate(classification.next_review_date) }}</span>
-                      <span 
+                      <span
                         class="fs-7 ms-2"
                         :class="getReviewStatusClass(classification.next_review_date)"
                       >
@@ -92,9 +81,9 @@
                       </span>
                     </div>
                   </div>
-                  <div class="mb-4">
-                    <div class="fw-semibold text-gray-600 mb-1">Nivel de Supervisión:</div>
-                    <div class="fs-6">{{ getSupervisionLevelLabel(classification.supervision_level) }}</div>
+                  <div v-if="classification.risk_classification" class="mb-4">
+                    <div class="fw-semibold text-gray-600 mb-1">Clasificación de Riesgo:</div>
+                    <div class="fs-6">{{ classification.risk_classification?.name || 'N/A' }}</div>
                   </div>
                 </div>
               </div>
@@ -110,152 +99,105 @@
                   <div class="row mb-3">
                     <div class="col-6">
                       <div class="fw-semibold text-gray-600 mb-1">Violencia:</div>
-                      <span class="badge" :class="getRiskBadgeClass(classification.violence_risk_level)">
-                        {{ getRiskLabel(classification.violence_risk_level) }}
-                      </span>
+                      <div class="fs-6 fw-bold" :class="getScoreColor(classification.violence_risk_score)">
+                        {{ classification.violence_risk_score ?? 'N/A' }}/10
+                      </div>
                     </div>
                     <div class="col-6">
                       <div class="fw-semibold text-gray-600 mb-1">Fuga:</div>
-                      <span class="badge" :class="getRiskBadgeClass(classification.escape_risk_level)">
-                        {{ getRiskLabel(classification.escape_risk_level) }}
-                      </span>
+                      <div class="fs-6 fw-bold" :class="getScoreColor(classification.escape_risk_score)">
+                        {{ classification.escape_risk_score ?? 'N/A' }}/10
+                      </div>
                     </div>
                   </div>
                   <div class="row mb-3">
                     <div class="col-6">
-                      <div class="fw-semibold text-gray-600 mb-1">Pandillas:</div>
-                      <span class="badge" :class="getRiskBadgeClass(classification.gang_affiliation_risk)">
-                        {{ getRiskLabel(classification.gang_affiliation_risk) }}
-                      </span>
+                      <div class="fw-semibold text-gray-600 mb-1">Influencia Pandillera:</div>
+                      <div class="fs-6 fw-bold" :class="getScoreColor(classification.gang_influence_score)">
+                        {{ classification.gang_influence_score ?? 'N/A' }}/10
+                      </div>
                     </div>
                     <div class="col-6">
-                      <div class="fw-semibold text-gray-600 mb-1">Institucional:</div>
-                      <span class="badge" :class="getRiskBadgeClass(classification.institutional_risk_level)">
-                        {{ getRiskLabel(classification.institutional_risk_level) }}
-                      </span>
+                      <div class="fw-semibold text-gray-600 mb-1">Amenaza a Víctimas:</div>
+                      <div class="fs-6 fw-bold" :class="getScoreColor(classification.victim_threat_score)">
+                        {{ classification.victim_threat_score ?? 'N/A' }}/10
+                      </div>
                     </div>
                   </div>
                   <div class="row mb-3">
                     <div class="col-6">
-                      <div class="fw-semibold text-gray-600 mb-1">Externo:</div>
-                      <span class="badge" :class="getRiskBadgeClass(classification.external_risk_level)">
-                        {{ getRiskLabel(classification.external_risk_level) }}
-                      </span>
+                      <div class="fw-semibold text-gray-600 mb-1">Corrupción:</div>
+                      <div class="fs-6 fw-bold" :class="getScoreColor(classification.corruption_risk_score)">
+                        {{ classification.corruption_risk_score ?? 'N/A' }}/10
+                      </div>
                     </div>
-                    <div class="col-6" v-if="classification.risk_score">
-                      <div class="fw-semibold text-gray-600 mb-1">Puntuación:</div>
-                      <div class="fs-6">{{ classification.risk_score }}/100</div>
+                    <div class="col-6">
+                      <div class="fw-semibold text-gray-600 mb-1">Riesgo Total:</div>
+                      <div class="fs-5 fw-bolder">{{ classification.overall_risk_score ?? 'N/A' }}/50</div>
                     </div>
                   </div>
                 </div>
               </div>
             </div>
 
-            <!-- Special Status -->
+            <!-- Restrictions -->
             <div class="col-12">
               <div class="card">
                 <div class="card-header">
-                  <h3 class="card-title">Estados Especiales</h3>
+                  <h3 class="card-title">Restricciones</h3>
                 </div>
                 <div class="card-body">
                   <div class="row">
-                    <div class="col-md-3" v-if="classification.protective_custody_indicator">
+                    <div class="col-md-3" v-if="classification.requires_single_cell">
                       <div class="d-flex align-items-center mb-3">
-                        <i class="ki-duotone ki-shield-tick fs-2 text-info me-3">
-                          <span class="path1"></span>
-                          <span class="path2"></span>
-                          <span class="path3"></span>
-                        </i>
-                        <div>
-                          <div class="fw-bold">Custodia Protectiva</div>
-                          <div class="text-muted fs-7">Activa</div>
-                        </div>
+                        <i class="ki-duotone ki-security-user fs-2 text-warning me-3"><span class="path1"></span><span class="path2"></span></i>
+                        <div><div class="fw-bold">Celda Individual</div></div>
                       </div>
                     </div>
-                    <div class="col-md-3" v-if="classification.administrative_segregation">
+                    <div class="col-md-3" v-if="classification.limited_recreation_time">
                       <div class="d-flex align-items-center mb-3">
-                        <i class="ki-duotone ki-security-user fs-2 text-warning me-3">
-                          <span class="path1"></span>
-                          <span class="path2"></span>
-                        </i>
-                        <div>
-                          <div class="fw-bold">Segregación Admin.</div>
-                          <div class="text-muted fs-7">Activa</div>
-                        </div>
+                        <i class="ki-duotone ki-time fs-2 text-info me-3"><span class="path1"></span><span class="path2"></span></i>
+                        <div><div class="fw-bold">Recreación Limitada</div></div>
                       </div>
                     </div>
-                    <div class="col-md-3" v-if="classification.disciplinary_segregation">
+                    <div class="col-md-3" v-if="classification.restricted_visits">
                       <div class="d-flex align-items-center mb-3">
-                        <i class="ki-duotone ki-shield-cross fs-2 text-danger me-3">
-                          <span class="path1"></span>
-                          <span class="path2"></span>
-                        </i>
-                        <div>
-                          <div class="fw-bold">Segregación Disc.</div>
-                          <div class="text-muted fs-7">Activa</div>
-                        </div>
+                        <i class="ki-duotone ki-people fs-2 text-danger me-3"><span class="path1"></span><span class="path2"></span></i>
+                        <div><div class="fw-bold">Visitas Restringidas</div></div>
+                      </div>
+                    </div>
+                    <div class="col-md-3" v-if="classification.monitored_communications">
+                      <div class="d-flex align-items-center mb-3">
+                        <i class="ki-duotone ki-eye fs-2 text-primary me-3"><span class="path1"></span><span class="path2"></span><span class="path3"></span></i>
+                        <div><div class="fw-bold">Comunicaciones Monitoreadas</div></div>
+                      </div>
+                    </div>
+                    <div class="col-md-3" v-if="classification.escort_required">
+                      <div class="d-flex align-items-center mb-3">
+                        <i class="ki-duotone ki-shield-tick fs-2 text-success me-3"><span class="path1"></span><span class="path2"></span><span class="path3"></span></i>
+                        <div><div class="fw-bold">Escolta Requerida</div></div>
+                      </div>
+                    </div>
+                    <div class="col-md-3" v-if="classification.restricted_work_assignments">
+                      <div class="d-flex align-items-center mb-3">
+                        <i class="ki-duotone ki-briefcase fs-2 text-warning me-3"><span class="path1"></span><span class="path2"></span></i>
+                        <div><div class="fw-bold">Trabajo Restringido</div></div>
                       </div>
                     </div>
                     <div class="col-md-3" v-if="classification.medical_isolation">
                       <div class="d-flex align-items-center mb-3">
-                        <i class="ki-duotone ki-hospital fs-2 text-primary me-3">
-                          <span class="path1"></span>
-                          <span class="path2"></span>
-                        </i>
-                        <div>
-                          <div class="fw-bold">Aislamiento Médico</div>
-                          <div class="text-muted fs-7">Activo</div>
-                        </div>
-                      </div>
-                    </div>
-                    <div class="col-md-3" v-if="classification.mental_health_designation">
-                      <div class="d-flex align-items-center mb-3">
-                        <i class="ki-duotone ki-heart fs-2 text-success me-3">
-                          <span class="path1"></span>
-                          <span class="path2"></span>
-                          <span class="path3"></span>
-                        </i>
-                        <div>
-                          <div class="fw-bold">Salud Mental</div>
-                          <div class="text-muted fs-7">Designación</div>
-                        </div>
-                      </div>
-                    </div>
-                    <div class="col-md-3" v-if="classification.suicide_watch">
-                      <div class="d-flex align-items-center mb-3">
-                        <i class="ki-duotone ki-emergency fs-2 text-danger me-3">
-                          <span class="path1"></span>
-                          <span class="path2"></span>
-                        </i>
-                        <div>
-                          <div class="fw-bold">Vigilancia Suicidio</div>
-                          <div class="text-muted fs-7">Activa</div>
-                        </div>
+                        <i class="ki-duotone ki-hospital fs-2 text-primary me-3"><span class="path1"></span><span class="path2"></span></i>
+                        <div><div class="fw-bold">Aislamiento Médico</div></div>
                       </div>
                     </div>
                   </div>
-                  
-                  <!-- No special status message -->
-                  <div v-if="!hasAnySpecialStatus" class="text-center text-muted py-4">
-                    <i class="ki-duotone ki-information fs-2x mb-3">
-                      <span class="path1"></span>
-                      <span class="path2"></span>
-                      <span class="path3"></span>
-                    </i>
-                    <div>No hay estados especiales asignados</div>
+                  <div v-if="!hasAnyRestriction" class="text-center text-muted py-4">
+                    <div>No hay restricciones asignadas</div>
                   </div>
-                </div>
-              </div>
-            </div>
-
-            <!-- Protective Custody Reason -->
-            <div v-if="classification.protective_custody_indicator && classification.protective_custody_reason" class="col-12">
-              <div class="card">
-                <div class="card-header">
-                  <h3 class="card-title">Razón de Custodia Protectiva</h3>
-                </div>
-                <div class="card-body">
-                  <div class="bg-light-info p-4 rounded">{{ classification.protective_custody_reason }}</div>
+                  <div v-if="classification.specific_restrictions" class="mt-3">
+                    <div class="fw-semibold text-gray-600 mb-2">Restricciones Específicas:</div>
+                    <div class="bg-light p-4 rounded">{{ classification.specific_restrictions }}</div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -264,22 +206,22 @@
             <div class="col-12">
               <div class="card">
                 <div class="card-header">
-                  <h3 class="card-title">Razón y Notas de Clasificación</h3>
+                  <h3 class="card-title">Razones y Notas</h3>
                 </div>
                 <div class="card-body">
                   <div class="mb-4">
-                    <div class="fw-semibold text-gray-600 mb-2">Razón de Clasificación:</div>
-                    <div class="bg-light p-4 rounded">{{ classification.classification_reason }}</div>
+                    <div class="fw-semibold text-gray-600 mb-2">Razones de Clasificación:</div>
+                    <div class="bg-light p-4 rounded">{{ classification.classification_reasons || 'N/A' }}</div>
                   </div>
-                  <div v-if="classification.classification_notes">
-                    <div class="fw-semibold text-gray-600 mb-2">Notas Adicionales:</div>
-                    <div class="bg-light p-4 rounded">{{ classification.classification_notes }}</div>
+                  <div v-if="classification.compatibility_notes">
+                    <div class="fw-semibold text-gray-600 mb-2">Notas de Compatibilidad:</div>
+                    <div class="bg-light p-4 rounded">{{ classification.compatibility_notes }}</div>
                   </div>
                 </div>
               </div>
             </div>
 
-            <!-- Assessment Team -->
+            <!-- Process Info -->
             <div class="col-12">
               <div class="card">
                 <div class="card-header">
@@ -287,9 +229,9 @@
                 </div>
                 <div class="card-body">
                   <div class="row">
-                    <div class="col-md-4">
-                      <div class="fw-semibold text-gray-600 mb-1">Evaluado por:</div>
-                      <div class="fs-6">{{ classification.assessed_by?.first_name }} {{ classification.assessed_by?.last_name }}</div>
+                    <div class="col-md-4" v-if="classification.classified_by">
+                      <div class="fw-semibold text-gray-600 mb-1">Clasificado por:</div>
+                      <div class="fs-6">{{ classification.classified_by?.first_name }} {{ classification.classified_by?.last_name }}</div>
                     </div>
                     <div class="col-md-4" v-if="classification.approved_by">
                       <div class="fw-semibold text-gray-600 mb-1">Aprobado por:</div>
@@ -300,12 +242,6 @@
                       <div class="fs-6">{{ formatDateTime(classification.created_at) }}</div>
                     </div>
                   </div>
-                  <div v-if="classification.updated_at !== classification.created_at" class="row mt-3">
-                    <div class="col-md-4">
-                      <div class="fw-semibold text-gray-600 mb-1">Última Actualización:</div>
-                      <div class="fs-6">{{ formatDateTime(classification.updated_at) }}</div>
-                    </div>
-                  </div>
                 </div>
               </div>
             </div>
@@ -313,21 +249,15 @@
         </div>
 
         <div class="modal-footer">
-          <button type="button" class="btn btn-light" @click="close">
-            Cerrar
-          </button>
-          <button 
+          <button type="button" class="btn btn-light" @click="close">Cerrar</button>
+          <button
             v-if="classification?.is_current"
-            type="button" 
+            type="button"
             class="btn btn-info"
             @click="printClassification"
           >
-            <i class="ki-duotone ki-printer fs-2">
-              <span class="path1"></span>
-              <span class="path2"></span>
-              <span class="path3"></span>
-            </i>
-            Imprimir Clasificación
+            <i class="ki-duotone ki-printer fs-2"><span class="path1"></span><span class="path2"></span><span class="path3"></span></i>
+            Imprimir
           </button>
         </div>
       </div>
@@ -339,36 +269,28 @@
 import { ref, computed, watch, onMounted, nextTick } from 'vue';
 import { Modal } from 'bootstrap';
 
-// Props
 interface Props {
   classification?: any;
   show: boolean;
 }
 
 const props = defineProps<Props>();
+const emit = defineEmits<{ close: [] }>();
 
-// Emits
-const emit = defineEmits<{
-  close: [];
-}>();
-
-// State
 const modalRef = ref<HTMLElement>();
 const modal = ref<Modal>();
 
-// Computed
-const hasAnySpecialStatus = computed(() => {
+const hasAnyRestriction = computed(() => {
   if (!props.classification) return false;
-  
-  return props.classification.protective_custody_indicator ||
-         props.classification.administrative_segregation ||
-         props.classification.disciplinary_segregation ||
-         props.classification.medical_isolation ||
-         props.classification.mental_health_designation ||
-         props.classification.suicide_watch;
+  return props.classification.requires_single_cell ||
+    props.classification.limited_recreation_time ||
+    props.classification.restricted_visits ||
+    props.classification.monitored_communications ||
+    props.classification.escort_required ||
+    props.classification.restricted_work_assignments ||
+    props.classification.medical_isolation;
 });
 
-// Watchers
 watch(() => props.show, async (show) => {
   if (show) {
     await nextTick();
@@ -381,147 +303,64 @@ watch(() => props.show, async (show) => {
   }
 });
 
-// Methods
-const close = () => {
-  modal.value?.hide();
-  emit('close');
-};
+const close = () => { modal.value?.hide(); emit('close'); };
+const printClassification = () => { /* TODO */ };
 
-const printClassification = () => {
-  // TODO: Implement print functionality
-};
-
-// Utility functions
 const formatDate = (date: string) => {
   if (!date) return 'N/A';
-  return new Date(date).toLocaleDateString('es-GT', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric'
-  });
+  return new Date(date).toLocaleDateString('es-GT', { year: 'numeric', month: 'long', day: 'numeric' });
 };
 
 const formatDateTime = (date: string) => {
   if (!date) return 'N/A';
-  return new Date(date).toLocaleDateString('es-GT', {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit'
-  });
+  return new Date(date).toLocaleDateString('es-GT', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
 };
 
 const getInmateName = (inmate: any) => {
   if (!inmate) return 'N/A';
-  return `${inmate.first_name} ${inmate.last_name}`;
+  return [inmate.first_name, inmate.last_name, inmate.second_last_name].filter(Boolean).join(' ');
 };
 
 const getInitials = (inmate: any) => {
   if (!inmate) return '??';
-  const first = inmate.first_name?.[0] || '';
-  const last = inmate.last_name?.[0] || '';
-  return `${first}${last}`.toUpperCase();
+  return `${inmate.first_name?.[0] || ''}${inmate.last_name?.[0] || ''}`.toUpperCase();
 };
 
 const getSecurityLevelBadgeClass = (level: string) => {
-  const classes: { [key: string]: string } = {
-    minimum: 'badge-light-success',
-    low: 'badge-light-info',
-    medium: 'badge-light-primary',
-    high: 'badge-light-warning',
-    maximum: 'badge-light-danger',
-    super_maximum: 'badge-dark'
-  };
-  return classes[level] || 'badge-light-secondary';
+  return { minimum: 'badge-light-success', medium: 'badge-light-primary', maximum: 'badge-light-danger', super_maximum: 'badge-dark' }[level] || 'badge-light-secondary';
 };
 
 const getSecurityLevelLabel = (level: string) => {
-  const labels: { [key: string]: string } = {
-    minimum: 'Mínimo',
-    low: 'Bajo',
-    medium: 'Medio',
-    high: 'Alto',
-    maximum: 'Máximo',
-    super_maximum: 'Super Máximo'
-  };
-  return labels[level] || level;
+  return { minimum: 'Mínimo', medium: 'Medio', maximum: 'Máximo', super_maximum: 'Super Máximo' }[level] || level;
 };
 
-const getRiskBadgeClass = (risk: string) => {
-  const classes: { [key: string]: string } = {
-    low: 'badge-light-success',
-    medium: 'badge-light-warning',
-    high: 'badge-light-danger',
-    extreme: 'badge-dark'
-  };
-  return classes[risk] || 'badge-light-secondary';
-};
-
-const getRiskLabel = (risk: string) => {
-  const labels: { [key: string]: string } = {
-    low: 'Bajo',
-    medium: 'Medio',
-    high: 'Alto',
-    extreme: 'Extremo'
-  };
-  return labels[risk] || risk;
-};
-
-const getClassificationTypeLabel = (type: string) => {
-  const labels: { [key: string]: string } = {
-    initial: 'Inicial',
-    review: 'Revisión',
-    incident_based: 'Basada en Incidente',
-    appeal_result: 'Resultado de Apelación',
-    medical_reclassification: 'Reclasificación Médica'
-  };
-  return labels[type] || type;
-};
-
-const getSupervisionLevelLabel = (level: string) => {
-  const labels: { [key: string]: string } = {
-    minimum: 'Mínimo',
-    low: 'Bajo',
-    medium: 'Medio',
-    high: 'Alto',
-    maximum: 'Máximo'
-  };
-  return labels[level] || level;
+const getScoreColor = (score: number | null) => {
+  if (score === null || score === undefined) return '';
+  if (score <= 3) return 'text-success';
+  if (score <= 6) return 'text-warning';
+  return 'text-danger';
 };
 
 const getReviewStatus = (reviewDate: string) => {
   if (!reviewDate) return 'Sin programar';
-  
-  const now = new Date();
-  const review = new Date(reviewDate);
-  const diffDays = Math.ceil((review.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
-  
+  const diffDays = Math.ceil((new Date(reviewDate).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24));
   if (diffDays < 0) return `Vencida ${Math.abs(diffDays)} días`;
   if (diffDays === 0) return 'Hoy';
-  if (diffDays <= 7) return `En ${diffDays} días`;
   return `En ${diffDays} días`;
 };
 
 const getReviewStatusClass = (reviewDate: string) => {
   if (!reviewDate) return 'text-muted';
-  
-  const now = new Date();
-  const review = new Date(reviewDate);
-  const diffDays = Math.ceil((review.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
-  
+  const diffDays = Math.ceil((new Date(reviewDate).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24));
   if (diffDays < 0) return 'text-danger fw-bold';
   if (diffDays <= 7) return 'text-warning fw-bold';
   if (diffDays <= 30) return 'text-info';
   return 'text-muted';
 };
 
-// Setup modal event listeners
 onMounted(() => {
   if (modalRef.value) {
-    modalRef.value.addEventListener('hidden.bs.modal', () => {
-      emit('close');
-    });
+    modalRef.value.addEventListener('hidden.bs.modal', () => { emit('close'); });
   }
 });
 </script>

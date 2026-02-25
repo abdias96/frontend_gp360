@@ -162,7 +162,7 @@ const MainMenuConfig: Array<MenuItem> = [
           },
           {
             heading: "gangs",
-            route: "/security/gangs",
+            route: "/security/gang-affiliations",
             permission: "security.gangs",
           },
           {

@@ -1,8 +1,8 @@
 <template>
-  <div 
-    id="securityClassificationFormModal" 
-    class="modal fade" 
-    tabindex="-1" 
+  <div
+    id="securityClassificationFormModal"
+    class="modal fade"
+    tabindex="-1"
     aria-hidden="true"
     ref="modalRef"
   >
@@ -14,224 +14,45 @@
           </h2>
           <div class="btn btn-icon btn-sm btn-active-icon-primary" @click="close">
             <i class="ki-duotone ki-cross fs-1">
-              <span class="path1"></span>
-              <span class="path2"></span>
+              <span class="path1"></span><span class="path2"></span>
             </i>
           </div>
         </div>
 
         <div class="modal-body py-10 px-lg-17">
-          <!-- Loading -->
-          <div v-if="loading" class="text-center py-10">
-            <div class="spinner-border spinner-border-lg text-primary" role="status">
-              <span class="visually-hidden">Cargando...</span>
-            </div>
-          </div>
-
-          <!-- Form -->
-          <form v-else @submit.prevent="submitForm" ref="formRef">
-            <!-- Inmate Selection -->
+          <form @submit.prevent="submitForm">
+            <!-- Section 1: Interno -->
             <div v-if="!isEditing" class="row mb-7">
               <div class="col-12">
-                <label class="required fs-6 fw-semibold mb-2">Interno a Clasificar</label>
-                <select
-                  v-model="form.inmate_id"
-                  class="form-select"
-                  :class="{ 'is-invalid': errors.inmate_id }"
-                  @change="onInmateChange"
-                >
-                  <option value="">Seleccionar interno...</option>
-                  <option v-for="inmate in inmates" :key="inmate.id" :value="inmate.id">
-                    {{ inmate.full_name }} - {{ inmate.inmate_number }}
-                  </option>
-                </select>
-                <div v-if="errors.inmate_id" class="invalid-feedback">{{ errors.inmate_id }}</div>
+                <InmateSearchInput
+                  v-model="selectedInmate"
+                  label="Interno a Clasificar"
+                  :required="true"
+                  :error="errors.inmate_id"
+                />
               </div>
             </div>
 
-            <!-- Current Inmate Info (Read-only) -->
-            <div v-if="selectedInmate" class="row mb-7">
-              <div class="col-12">
-                <label class="fs-6 fw-semibold mb-2">Interno Seleccionado</label>
-                <div class="card border border-dashed border-primary">
-                  <div class="card-body p-4">
-                    <div class="row">
-                      <div class="col-md-3">
-                        <strong>Nombre:</strong><br>
-                        <span class="text-muted">{{ getInmateName(selectedInmate) }}</span>
-                      </div>
-                      <div class="col-md-3">
-                        <strong>Número:</strong><br>
-                        <span class="text-muted">{{ selectedInmate.inmate_number }}</span>
-                      </div>
-                      <div class="col-md-3">
-                        <strong>Centro:</strong><br>
-                        <span class="text-muted">{{ selectedInmate.current_center?.name || 'N/A' }}</span>
-                      </div>
-                      <div class="col-md-3">
-                        <strong>Sector:</strong><br>
-                        <span class="text-muted">{{ selectedInmate.current_sector?.name || 'N/A' }}</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
+            <!-- Section 2: Clasificación -->
+            <div class="mb-4">
+              <h4 class="fs-6 fw-bold text-gray-800">Clasificación</h4>
             </div>
-
-            <!-- Classification Basic Info -->
             <div class="row mb-7">
               <div class="col-md-4">
-                <label class="required fs-6 fw-semibold mb-2">Nivel de Clasificación</label>
+                <label class="required fs-6 fw-semibold mb-2">Nivel de Seguridad</label>
                 <select
-                  v-model="form.classification_level"
+                  v-model="form.security_level"
                   class="form-select"
-                  :class="{ 'is-invalid': errors.classification_level }"
+                  :class="{ 'is-invalid': errors.security_level }"
                 >
                   <option value="">Seleccionar nivel...</option>
                   <option value="minimum">Mínimo</option>
-                  <option value="low">Bajo</option>
                   <option value="medium">Medio</option>
-                  <option value="high">Alto</option>
                   <option value="maximum">Máximo</option>
                   <option value="super_maximum">Super Máximo</option>
                 </select>
-                <div v-if="errors.classification_level" class="invalid-feedback">{{ errors.classification_level }}</div>
+                <div v-if="errors.security_level" class="invalid-feedback">{{ errors.security_level }}</div>
               </div>
-              <div class="col-md-4">
-                <label class="required fs-6 fw-semibold mb-2">Tipo de Clasificación</label>
-                <select
-                  v-model="form.classification_type"
-                  class="form-select"
-                  :class="{ 'is-invalid': errors.classification_type }"
-                >
-                  <option value="">Seleccionar tipo...</option>
-                  <option value="initial">Inicial</option>
-                  <option value="review">Revisión</option>
-                  <option value="incident_based">Basada en Incidente</option>
-                  <option value="appeal_result">Resultado de Apelación</option>
-                  <option value="medical_reclassification">Reclasificación Médica</option>
-                </select>
-                <div v-if="errors.classification_type" class="invalid-feedback">{{ errors.classification_type }}</div>
-              </div>
-              <div class="col-md-4">
-                <label class="required fs-6 fw-semibold mb-2">Nivel de Supervisión</label>
-                <select
-                  v-model="form.supervision_level"
-                  class="form-select"
-                  :class="{ 'is-invalid': errors.supervision_level }"
-                >
-                  <option value="">Seleccionar supervisión...</option>
-                  <option value="minimum">Mínimo</option>
-                  <option value="low">Bajo</option>
-                  <option value="medium">Medio</option>
-                  <option value="high">Alto</option>
-                  <option value="maximum">Máximo</option>
-                </select>
-                <div v-if="errors.supervision_level" class="invalid-feedback">{{ errors.supervision_level }}</div>
-              </div>
-            </div>
-
-            <!-- Risk Levels -->
-            <div class="row mb-7">
-              <div class="col-12 mb-4">
-                <h4 class="fs-6 fw-bold text-gray-800">Niveles de Riesgo</h4>
-              </div>
-              <div class="col-md-3">
-                <label class="required fs-6 fw-semibold mb-2">Riesgo de Violencia</label>
-                <select
-                  v-model="form.violence_risk_level"
-                  class="form-select"
-                  :class="{ 'is-invalid': errors.violence_risk_level }"
-                >
-                  <option value="">Seleccionar...</option>
-                  <option value="low">Bajo</option>
-                  <option value="medium">Medio</option>
-                  <option value="high">Alto</option>
-                  <option value="extreme">Extremo</option>
-                </select>
-                <div v-if="errors.violence_risk_level" class="invalid-feedback">{{ errors.violence_risk_level }}</div>
-              </div>
-              <div class="col-md-3">
-                <label class="required fs-6 fw-semibold mb-2">Riesgo de Fuga</label>
-                <select
-                  v-model="form.escape_risk_level"
-                  class="form-select"
-                  :class="{ 'is-invalid': errors.escape_risk_level }"
-                >
-                  <option value="">Seleccionar...</option>
-                  <option value="low">Bajo</option>
-                  <option value="medium">Medio</option>
-                  <option value="high">Alto</option>
-                  <option value="extreme">Extremo</option>
-                </select>
-                <div v-if="errors.escape_risk_level" class="invalid-feedback">{{ errors.escape_risk_level }}</div>
-              </div>
-              <div class="col-md-3">
-                <label class="required fs-6 fw-semibold mb-2">Riesgo de Pandillas</label>
-                <select
-                  v-model="form.gang_affiliation_risk"
-                  class="form-select"
-                  :class="{ 'is-invalid': errors.gang_affiliation_risk }"
-                >
-                  <option value="">Seleccionar...</option>
-                  <option value="low">Bajo</option>
-                  <option value="medium">Medio</option>
-                  <option value="high">Alto</option>
-                  <option value="extreme">Extremo</option>
-                </select>
-                <div v-if="errors.gang_affiliation_risk" class="invalid-feedback">{{ errors.gang_affiliation_risk }}</div>
-              </div>
-              <div class="col-md-3">
-                <label class="fs-6 fw-semibold mb-2">Puntuación de Riesgo</label>
-                <input
-                  v-model.number="form.risk_score"
-                  type="number"
-                  class="form-control"
-                  :class="{ 'is-invalid': errors.risk_score }"
-                  min="0"
-                  max="100"
-                  placeholder="0-100"
-                />
-                <div v-if="errors.risk_score" class="invalid-feedback">{{ errors.risk_score }}</div>
-              </div>
-            </div>
-
-            <!-- Additional Risk Levels -->
-            <div class="row mb-7">
-              <div class="col-md-6">
-                <label class="required fs-6 fw-semibold mb-2">Riesgo Institucional</label>
-                <select
-                  v-model="form.institutional_risk_level"
-                  class="form-select"
-                  :class="{ 'is-invalid': errors.institutional_risk_level }"
-                >
-                  <option value="">Seleccionar...</option>
-                  <option value="low">Bajo</option>
-                  <option value="medium">Medio</option>
-                  <option value="high">Alto</option>
-                  <option value="extreme">Extremo</option>
-                </select>
-                <div v-if="errors.institutional_risk_level" class="invalid-feedback">{{ errors.institutional_risk_level }}</div>
-              </div>
-              <div class="col-md-6">
-                <label class="required fs-6 fw-semibold mb-2">Riesgo Externo</label>
-                <select
-                  v-model="form.external_risk_level"
-                  class="form-select"
-                  :class="{ 'is-invalid': errors.external_risk_level }"
-                >
-                  <option value="">Seleccionar...</option>
-                  <option value="low">Bajo</option>
-                  <option value="medium">Medio</option>
-                  <option value="high">Alto</option>
-                  <option value="extreme">Extremo</option>
-                </select>
-                <div v-if="errors.external_risk_level" class="invalid-feedback">{{ errors.external_risk_level }}</div>
-              </div>
-            </div>
-
-            <!-- Dates -->
-            <div class="row mb-7">
               <div class="col-md-4">
                 <label class="required fs-6 fw-semibold mb-2">Fecha de Clasificación</label>
                 <input
@@ -243,171 +64,203 @@
                 <div v-if="errors.classification_date" class="invalid-feedback">{{ errors.classification_date }}</div>
               </div>
               <div class="col-md-4">
-                <label class="required fs-6 fw-semibold mb-2">Fecha de Vigencia</label>
+                <label class="required fs-6 fw-semibold mb-2">Próxima Revisión</label>
                 <input
-                  v-model="form.effective_date"
+                  v-model="form.next_review_date"
                   type="date"
                   class="form-control"
-                  :class="{ 'is-invalid': errors.effective_date }"
+                  :class="{ 'is-invalid': errors.next_review_date }"
                 />
-                <div v-if="errors.effective_date" class="invalid-feedback">{{ errors.effective_date }}</div>
+                <div v-if="errors.next_review_date" class="invalid-feedback">{{ errors.next_review_date }}</div>
               </div>
+            </div>
+
+            <div class="row mb-7">
+              <div class="col-12">
+                <label class="required fs-6 fw-semibold mb-2">Razones de Clasificación</label>
+                <textarea
+                  v-model="form.classification_reasons"
+                  class="form-control"
+                  :class="{ 'is-invalid': errors.classification_reasons }"
+                  rows="3"
+                  placeholder="Describa las razones para esta clasificación..."
+                ></textarea>
+                <div v-if="errors.classification_reasons" class="invalid-feedback">{{ errors.classification_reasons }}</div>
+              </div>
+            </div>
+
+            <!-- Section 3: Evaluación de Riesgo -->
+            <div class="mb-4">
+              <h4 class="fs-6 fw-bold text-gray-800">Evaluación de Riesgo</h4>
+            </div>
+            <div class="row mb-5">
               <div class="col-md-4">
-                <label class="fs-6 fw-semibold mb-2">Fecha de Revisión</label>
+                <label class="required fs-6 fw-semibold mb-2">Riesgo de Violencia (0-10)</label>
                 <input
-                  v-model="form.review_date"
-                  type="date"
+                  v-model.number="form.violence_risk_score"
+                  type="number"
                   class="form-control"
-                  :class="{ 'is-invalid': errors.review_date }"
+                  :class="{ 'is-invalid': errors.violence_risk_score }"
+                  min="0" max="10"
                 />
-                <div v-if="errors.review_date" class="invalid-feedback">{{ errors.review_date }}</div>
-              </div>
-            </div>
-
-            <!-- Special Status Indicators -->
-            <div class="row mb-7">
-              <div class="col-12 mb-4">
-                <h4 class="fs-6 fw-bold text-gray-800">Estados Especiales</h4>
-              </div>
-              <div class="col-md-3">
-                <div class="form-check form-check-custom form-check-solid">
-                  <input
-                    v-model="form.protective_custody_indicator"
-                    class="form-check-input"
-                    type="checkbox"
-                    id="protective_custody"
-                  />
-                  <label class="form-check-label" for="protective_custody">
-                    Custodia Protectiva
-                  </label>
-                </div>
-              </div>
-              <div class="col-md-3">
-                <div class="form-check form-check-custom form-check-solid">
-                  <input
-                    v-model="form.administrative_segregation"
-                    class="form-check-input"
-                    type="checkbox"
-                    id="admin_segregation"
-                  />
-                  <label class="form-check-label" for="admin_segregation">
-                    Segregación Administrativa
-                  </label>
-                </div>
-              </div>
-              <div class="col-md-3">
-                <div class="form-check form-check-custom form-check-solid">
-                  <input
-                    v-model="form.disciplinary_segregation"
-                    class="form-check-input"
-                    type="checkbox"
-                    id="disc_segregation"
-                  />
-                  <label class="form-check-label" for="disc_segregation">
-                    Segregación Disciplinaria
-                  </label>
-                </div>
-              </div>
-              <div class="col-md-3">
-                <div class="form-check form-check-custom form-check-solid">
-                  <input
-                    v-model="form.medical_isolation"
-                    class="form-check-input"
-                    type="checkbox"
-                    id="medical_isolation"
-                  />
-                  <label class="form-check-label" for="medical_isolation">
-                    Aislamiento Médico
-                  </label>
-                </div>
-              </div>
-            </div>
-
-            <!-- Additional Special Status -->
-            <div class="row mb-7">
-              <div class="col-md-4">
-                <div class="form-check form-check-custom form-check-solid">
-                  <input
-                    v-model="form.mental_health_designation"
-                    class="form-check-input"
-                    type="checkbox"
-                    id="mental_health"
-                  />
-                  <label class="form-check-label" for="mental_health">
-                    Designación de Salud Mental
-                  </label>
-                </div>
+                <div v-if="errors.violence_risk_score" class="invalid-feedback">{{ errors.violence_risk_score }}</div>
               </div>
               <div class="col-md-4">
-                <div class="form-check form-check-custom form-check-solid">
-                  <input
-                    v-model="form.suicide_watch"
-                    class="form-check-input"
-                    type="checkbox"
-                    id="suicide_watch"
-                  />
-                  <label class="form-check-label" for="suicide_watch">
-                    Vigilancia Suicidio
-                  </label>
+                <label class="required fs-6 fw-semibold mb-2">Riesgo de Fuga (0-10)</label>
+                <input
+                  v-model.number="form.escape_risk_score"
+                  type="number"
+                  class="form-control"
+                  :class="{ 'is-invalid': errors.escape_risk_score }"
+                  min="0" max="10"
+                />
+                <div v-if="errors.escape_risk_score" class="invalid-feedback">{{ errors.escape_risk_score }}</div>
+              </div>
+              <div class="col-md-4">
+                <label class="required fs-6 fw-semibold mb-2">Influencia Pandillera (0-10)</label>
+                <input
+                  v-model.number="form.gang_influence_score"
+                  type="number"
+                  class="form-control"
+                  :class="{ 'is-invalid': errors.gang_influence_score }"
+                  min="0" max="10"
+                />
+                <div v-if="errors.gang_influence_score" class="invalid-feedback">{{ errors.gang_influence_score }}</div>
+              </div>
+            </div>
+            <div class="row mb-5">
+              <div class="col-md-4">
+                <label class="required fs-6 fw-semibold mb-2">Amenaza a Víctimas (0-10)</label>
+                <input
+                  v-model.number="form.victim_threat_score"
+                  type="number"
+                  class="form-control"
+                  :class="{ 'is-invalid': errors.victim_threat_score }"
+                  min="0" max="10"
+                />
+                <div v-if="errors.victim_threat_score" class="invalid-feedback">{{ errors.victim_threat_score }}</div>
+              </div>
+              <div class="col-md-4">
+                <label class="required fs-6 fw-semibold mb-2">Riesgo de Corrupción (0-10)</label>
+                <input
+                  v-model.number="form.corruption_risk_score"
+                  type="number"
+                  class="form-control"
+                  :class="{ 'is-invalid': errors.corruption_risk_score }"
+                  min="0" max="10"
+                />
+                <div v-if="errors.corruption_risk_score" class="invalid-feedback">{{ errors.corruption_risk_score }}</div>
+              </div>
+              <div class="col-md-4">
+                <label class="fs-6 fw-semibold mb-2">Riesgo Total (0-50)</label>
+                <input
+                  :value="overallRiskScore"
+                  type="number"
+                  class="form-control bg-light"
+                  disabled
+                />
+                <div class="text-muted fs-7 mt-1">Auto-calculado</div>
+              </div>
+            </div>
+
+            <div class="row mb-7">
+              <div class="col-md-6">
+                <label class="fs-6 fw-semibold mb-2">Clasificación de Riesgo</label>
+                <select v-model="form.risk_classification_id" class="form-select">
+                  <option :value="null">Ninguna</option>
+                  <option
+                    v-for="rc in riskClassifications"
+                    :key="rc.id"
+                    :value="rc.id"
+                  >{{ rc.name }}</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Section 4: Restricciones -->
+            <div class="mb-4">
+              <h4 class="fs-6 fw-bold text-gray-800">Restricciones</h4>
+            </div>
+            <div class="row mb-7">
+              <div class="col-md-3">
+                <div class="form-check form-check-custom form-check-solid mb-3">
+                  <input v-model="form.requires_single_cell" class="form-check-input" type="checkbox" id="singleCell" />
+                  <label class="form-check-label" for="singleCell">Celda Individual</label>
+                </div>
+              </div>
+              <div class="col-md-3">
+                <div class="form-check form-check-custom form-check-solid mb-3">
+                  <input v-model="form.limited_recreation_time" class="form-check-input" type="checkbox" id="limitedRec" />
+                  <label class="form-check-label" for="limitedRec">Recreación Limitada</label>
+                </div>
+              </div>
+              <div class="col-md-3">
+                <div class="form-check form-check-custom form-check-solid mb-3">
+                  <input v-model="form.restricted_visits" class="form-check-input" type="checkbox" id="restrictVisits" />
+                  <label class="form-check-label" for="restrictVisits">Visitas Restringidas</label>
+                </div>
+              </div>
+              <div class="col-md-3">
+                <div class="form-check form-check-custom form-check-solid mb-3">
+                  <input v-model="form.monitored_communications" class="form-check-input" type="checkbox" id="monComms" />
+                  <label class="form-check-label" for="monComms">Comunicaciones Monitoreadas</label>
+                </div>
+              </div>
+            </div>
+            <div class="row mb-7">
+              <div class="col-md-3">
+                <div class="form-check form-check-custom form-check-solid mb-3">
+                  <input v-model="form.escort_required" class="form-check-input" type="checkbox" id="escortReq" />
+                  <label class="form-check-label" for="escortReq">Escolta Requerida</label>
+                </div>
+              </div>
+              <div class="col-md-3">
+                <div class="form-check form-check-custom form-check-solid mb-3">
+                  <input v-model="form.restricted_work_assignments" class="form-check-input" type="checkbox" id="restrictWork" />
+                  <label class="form-check-label" for="restrictWork">Trabajo Restringido</label>
+                </div>
+              </div>
+              <div class="col-md-3">
+                <div class="form-check form-check-custom form-check-solid mb-3">
+                  <input v-model="form.medical_isolation" class="form-check-input" type="checkbox" id="medIsolation" />
+                  <label class="form-check-label" for="medIsolation">Aislamiento Médico</label>
                 </div>
               </div>
             </div>
 
-            <!-- Protective Custody Reason -->
-            <div v-if="form.protective_custody_indicator" class="row mb-7">
+            <div class="row mb-7">
               <div class="col-12">
-                <label class="fs-6 fw-semibold mb-2">Razón de Custodia Protectiva</label>
+                <label class="fs-6 fw-semibold mb-2">Restricciones Específicas</label>
                 <textarea
-                  v-model="form.protective_custody_reason"
+                  v-model="form.specific_restrictions"
                   class="form-control"
-                  rows="3"
-                  placeholder="Describa la razón para la custodia protectiva..."
+                  rows="2"
+                  placeholder="Restricciones adicionales en formato libre..."
                 ></textarea>
               </div>
             </div>
 
-            <!-- Reason and Notes -->
+            <!-- Section 5: Notas -->
             <div class="row mb-7">
               <div class="col-12">
-                <label class="required fs-6 fw-semibold mb-2">Razón de Clasificación</label>
+                <label class="fs-6 fw-semibold mb-2">Notas de Compatibilidad</label>
                 <textarea
-                  v-model="form.classification_reason"
+                  v-model="form.compatibility_notes"
                   class="form-control"
-                  :class="{ 'is-invalid': errors.classification_reason }"
                   rows="3"
-                  placeholder="Describa la razón para esta clasificación..."
+                  placeholder="Notas sobre compatibilidad con otros internos..."
                 ></textarea>
-                <div v-if="errors.classification_reason" class="invalid-feedback">{{ errors.classification_reason }}</div>
               </div>
             </div>
 
-            <div class="row mb-7">
-              <div class="col-12">
-                <label class="fs-6 fw-semibold mb-2">Notas de Clasificación</label>
-                <textarea
-                  v-model="form.classification_notes"
-                  class="form-control"
-                  rows="4"
-                  placeholder="Observaciones adicionales sobre la clasificación..."
-                ></textarea>
-              </div>
+            <div class="text-center pt-5">
+              <button type="button" class="btn btn-light me-3" @click="close">Cancelar</button>
+              <button type="submit" class="btn btn-primary" :disabled="saving">
+                <span v-if="saving" class="spinner-border spinner-border-sm me-2"></span>
+                {{ isEditing ? 'Actualizar Clasificación' : 'Crear Clasificación' }}
+              </button>
             </div>
           </form>
-        </div>
-
-        <div class="modal-footer">
-          <button type="button" class="btn btn-light" @click="close">
-            Cancelar
-          </button>
-          <button 
-            type="button" 
-            class="btn btn-primary" 
-            @click="submitForm"
-            :disabled="saving"
-          >
-            <span v-if="saving" class="spinner-border spinner-border-sm me-2" role="status"></span>
-            {{ isEditing ? 'Actualizar Clasificación' : 'Crear Clasificación' }}
-          </button>
         </div>
       </div>
     </div>
@@ -419,8 +272,8 @@ import { ref, computed, watch, onMounted, nextTick } from 'vue';
 import { Modal } from 'bootstrap';
 import ApiService from '@/core/services/ApiService';
 import Swal from 'sweetalert2';
+import InmateSearchInput from '@/components/shared/InmateSearchInput.vue';
 
-// Props
 interface Props {
   classification?: any;
   inmate?: any;
@@ -429,64 +282,61 @@ interface Props {
 
 const props = defineProps<Props>();
 
-// Emits
 const emit = defineEmits<{
   close: [];
   saved: [classification: any];
 }>();
 
-// State
 const modalRef = ref<HTMLElement>();
-const formRef = ref<HTMLFormElement>();
-const loading = ref(false);
-const saving = ref(false);
 const modal = ref<Modal>();
-
-// Data
-const inmates = ref<any[]>([]);
+const saving = ref(false);
 const selectedInmate = ref<any>(null);
+const riskClassifications = ref<any[]>([]);
+const errors = ref<Record<string, string>>({});
 
-// Form data
-const form = ref({
-  inmate_id: '',
-  classification_level: '',
-  classification_type: 'initial',
-  risk_score: 0,
-  violence_risk_level: '',
-  escape_risk_level: '',
-  gang_affiliation_risk: '',
-  institutional_risk_level: '',
-  external_risk_level: '',
-  classification_date: '',
-  effective_date: '',
-  review_date: '',
-  classification_reason: '',
-  supervision_level: '',
-  protective_custody_indicator: false,
-  protective_custody_reason: '',
-  administrative_segregation: false,
-  disciplinary_segregation: false,
-  medical_isolation: false,
-  mental_health_designation: false,
-  suicide_watch: false,
-  classification_notes: ''
-});
-
-// Errors
-const errors = ref<{ [key: string]: string }>({});
-
-// Computed
 const isEditing = computed(() => !!props.classification);
 
-// Watchers
+const defaultForm = () => ({
+  security_level: '',
+  classification_date: new Date().toISOString().split('T')[0],
+  next_review_date: new Date(new Date().setMonth(new Date().getMonth() + 6)).toISOString().split('T')[0],
+  classification_reasons: '',
+  violence_risk_score: 0,
+  escape_risk_score: 0,
+  gang_influence_score: 0,
+  victim_threat_score: 0,
+  corruption_risk_score: 0,
+  overall_risk_score: 0,
+  risk_classification_id: null as number | null,
+  requires_single_cell: false,
+  limited_recreation_time: false,
+  restricted_visits: false,
+  monitored_communications: false,
+  escort_required: false,
+  restricted_work_assignments: false,
+  medical_isolation: false,
+  specific_restrictions: '',
+  compatibility_notes: '',
+});
+
+const form = ref(defaultForm());
+
+const overallRiskScore = computed(() => {
+  return (form.value.violence_risk_score || 0)
+    + (form.value.escape_risk_score || 0)
+    + (form.value.gang_influence_score || 0)
+    + (form.value.victim_threat_score || 0)
+    + (form.value.corruption_risk_score || 0);
+});
+
 watch(() => props.show, async (show) => {
   if (show) {
     await nextTick();
     if (modalRef.value) {
       modal.value = new Modal(modalRef.value);
       modal.value.show();
-      await loadInitialData();
-      
+      await loadCatalogs();
+
       if (props.classification) {
         populateForm();
       } else {
@@ -501,191 +351,122 @@ watch(() => props.show, async (show) => {
 watch(() => props.inmate, (inmate) => {
   if (inmate) {
     selectedInmate.value = inmate;
-    form.value.inmate_id = inmate.id;
   }
 });
 
-// Methods
-const loadInitialData = async () => {
+const loadCatalogs = async () => {
   try {
-    loading.value = true;
-    
-    if (!isEditing.value) {
-      const response = await ApiService.get('/inmates?per_page=1000&status=active');
-      inmates.value = response.data.data.data || response.data.data;
-    }
-    
-  } catch (error) {
-    console.error('Error loading initial data:', error);
-    await Swal.fire({
-      title: 'Error',
-      text: 'Error al cargar los datos iniciales',
-      icon: 'error'
-    });
-  } finally {
-    loading.value = false;
-  }
-};
-
-const onInmateChange = () => {
-  if (form.value.inmate_id) {
-    selectedInmate.value = inmates.value.find(i => i.id.toString() === form.value.inmate_id.toString());
-  } else {
-    selectedInmate.value = null;
+    const res = await ApiService.get('/catalogs/risk-classifications?simple=true');
+    riskClassifications.value = res.data?.data || [];
+  } catch (e) {
+    console.error('Error loading catalogs:', e);
   }
 };
 
 const populateForm = () => {
-  if (props.classification) {
-    Object.assign(form.value, {
-      inmate_id: props.classification.inmate_id,
-      classification_level: props.classification.classification_level,
-      classification_type: props.classification.classification_type,
-      risk_score: props.classification.risk_score || 0,
-      violence_risk_level: props.classification.violence_risk_level,
-      escape_risk_level: props.classification.escape_risk_level,
-      gang_affiliation_risk: props.classification.gang_affiliation_risk,
-      institutional_risk_level: props.classification.institutional_risk_level,
-      external_risk_level: props.classification.external_risk_level,
-      classification_date: props.classification.classification_date,
-      effective_date: props.classification.effective_date,
-      review_date: props.classification.review_date || '',
-      classification_reason: props.classification.classification_reason,
-      supervision_level: props.classification.supervision_level,
-      protective_custody_indicator: props.classification.protective_custody_indicator || false,
-      protective_custody_reason: props.classification.protective_custody_reason || '',
-      administrative_segregation: props.classification.administrative_segregation || false,
-      disciplinary_segregation: props.classification.disciplinary_segregation || false,
-      medical_isolation: props.classification.medical_isolation || false,
-      mental_health_designation: props.classification.mental_health_designation || false,
-      suicide_watch: props.classification.suicide_watch || false,
-      classification_notes: props.classification.classification_notes || ''
-    });
-    
-    selectedInmate.value = props.classification.inmate;
-  }
+  if (!props.classification) return;
+  const c = props.classification;
+  form.value = {
+    security_level: c.security_level || '',
+    classification_date: c.classification_date ? c.classification_date.substring(0, 10) : '',
+    next_review_date: c.next_review_date ? c.next_review_date.substring(0, 10) : '',
+    classification_reasons: c.classification_reasons || '',
+    violence_risk_score: c.violence_risk_score || 0,
+    escape_risk_score: c.escape_risk_score || 0,
+    gang_influence_score: c.gang_influence_score || 0,
+    victim_threat_score: c.victim_threat_score || 0,
+    corruption_risk_score: c.corruption_risk_score || 0,
+    overall_risk_score: c.overall_risk_score || 0,
+    risk_classification_id: c.risk_classification_id || null,
+    requires_single_cell: c.requires_single_cell || false,
+    limited_recreation_time: c.limited_recreation_time || false,
+    restricted_visits: c.restricted_visits || false,
+    monitored_communications: c.monitored_communications || false,
+    escort_required: c.escort_required || false,
+    restricted_work_assignments: c.restricted_work_assignments || false,
+    medical_isolation: c.medical_isolation || false,
+    specific_restrictions: c.specific_restrictions || '',
+    compatibility_notes: c.compatibility_notes || '',
+  };
+  selectedInmate.value = c.inmate || null;
 };
 
 const resetForm = () => {
-  Object.assign(form.value, {
-    inmate_id: props.inmate?.id || '',
-    classification_level: '',
-    classification_type: 'initial',
-    risk_score: 0,
-    violence_risk_level: '',
-    escape_risk_level: '',
-    gang_affiliation_risk: '',
-    institutional_risk_level: '',
-    external_risk_level: '',
-    classification_date: new Date().toISOString().split('T')[0],
-    effective_date: new Date().toISOString().split('T')[0],
-    review_date: '',
-    classification_reason: '',
-    supervision_level: '',
-    protective_custody_indicator: false,
-    protective_custody_reason: '',
-    administrative_segregation: false,
-    disciplinary_segregation: false,
-    medical_isolation: false,
-    mental_health_designation: false,
-    suicide_watch: false,
-    classification_notes: ''
-  });
-  
+  form.value = defaultForm();
   errors.value = {};
   selectedInmate.value = props.inmate || null;
 };
 
-const validateForm = () => {
+const validate = () => {
   errors.value = {};
-  
-  if (!form.value.inmate_id) {
+
+  if (!isEditing.value && !selectedInmate.value) {
     errors.value.inmate_id = 'El interno es requerido';
   }
-  
-  if (!form.value.classification_level) {
-    errors.value.classification_level = 'El nivel de clasificación es requerido';
+  if (!form.value.security_level) errors.value.security_level = 'El nivel de seguridad es requerido';
+  if (!form.value.classification_date) errors.value.classification_date = 'La fecha de clasificación es requerida';
+  if (!form.value.next_review_date) errors.value.next_review_date = 'La fecha de revisión es requerida';
+  if (!form.value.classification_reasons) errors.value.classification_reasons = 'Las razones son requeridas';
+
+  const scoreFields = ['violence_risk_score', 'escape_risk_score', 'gang_influence_score', 'victim_threat_score', 'corruption_risk_score'] as const;
+  for (const field of scoreFields) {
+    const val = form.value[field];
+    if (val === null || val === undefined || val === '' as any) {
+      errors.value[field] = 'Este campo es requerido';
+    } else if (val < 0 || val > 10) {
+      errors.value[field] = 'Debe ser entre 0 y 10';
+    }
   }
-  
-  if (!form.value.classification_type) {
-    errors.value.classification_type = 'El tipo de clasificación es requerido';
-  }
-  
-  if (!form.value.violence_risk_level) {
-    errors.value.violence_risk_level = 'El riesgo de violencia es requerido';
-  }
-  
-  if (!form.value.escape_risk_level) {
-    errors.value.escape_risk_level = 'El riesgo de fuga es requerido';
-  }
-  
-  if (!form.value.gang_affiliation_risk) {
-    errors.value.gang_affiliation_risk = 'El riesgo de pandillas es requerido';
-  }
-  
-  if (!form.value.institutional_risk_level) {
-    errors.value.institutional_risk_level = 'El riesgo institucional es requerido';
-  }
-  
-  if (!form.value.external_risk_level) {
-    errors.value.external_risk_level = 'El riesgo externo es requerido';
-  }
-  
-  if (!form.value.classification_date) {
-    errors.value.classification_date = 'La fecha de clasificación es requerida';
-  }
-  
-  if (!form.value.effective_date) {
-    errors.value.effective_date = 'La fecha de vigencia es requerida';
-  }
-  
-  if (!form.value.classification_reason) {
-    errors.value.classification_reason = 'La razón de clasificación es requerida';
-  }
-  
-  if (!form.value.supervision_level) {
-    errors.value.supervision_level = 'El nivel de supervisión es requerido';
-  }
-  
+
   return Object.keys(errors.value).length === 0;
 };
 
 const submitForm = async () => {
-  if (!validateForm()) {
-    return;
-  }
-  
+  if (!validate()) return;
+
+  saving.value = true;
   try {
-    saving.value = true;
-    
-    const url = isEditing.value ? `/inmate-security-classifications/${props.classification.id}` : '/inmate-security-classifications';
+    const payload: any = {
+      ...form.value,
+      overall_risk_score: overallRiskScore.value,
+    };
+
+    if (!isEditing.value) {
+      payload.inmate_id = selectedInmate.value.id;
+    }
+
+    if (!payload.risk_classification_id) delete payload.risk_classification_id;
+    if (payload.specific_restrictions) {
+      payload.specific_restrictions = payload.specific_restrictions.split(',').map((s: string) => s.trim()).filter(Boolean);
+    } else {
+      delete payload.specific_restrictions;
+    }
+    if (!payload.compatibility_notes) delete payload.compatibility_notes;
+
+    const url = isEditing.value
+      ? `/inmate-security-classifications/${props.classification.id}`
+      : '/inmate-security-classifications';
     const method = isEditing.value ? 'put' : 'post';
-    
-    const response = await ApiService[method](url, form.value);
-    
+
+    const response = await ApiService[method](url, payload);
+
     if (response.data.success) {
       await Swal.fire({
-        title: '¡Éxito!',
-        text: isEditing.value 
-          ? 'La clasificación de seguridad ha sido actualizada correctamente'
-          : 'La clasificación de seguridad ha sido creada correctamente',
+        title: 'Clasificación guardada',
         icon: 'success',
-        timer: 2000
+        timer: 2000,
+        showConfirmButton: false,
       });
-      
       emit('saved', response.data.data);
     }
   } catch (error: any) {
-    console.error('Error saving classification:', error);
-    
     if (error.response?.status === 422) {
       errors.value = error.response.data.errors || {};
     }
-    
     await Swal.fire({
       title: 'Error',
-      text: error.response?.data?.message || 'Error al guardar la clasificación de seguridad',
-      icon: 'error'
+      text: error.response?.data?.message || 'Error al guardar la clasificación',
+      icon: 'error',
     });
   } finally {
     saving.value = false;
@@ -697,13 +478,6 @@ const close = () => {
   emit('close');
 };
 
-// Utility functions
-const getInmateName = (inmate: any) => {
-  if (!inmate) return 'N/A';
-  return `${inmate.first_name} ${inmate.last_name}`;
-};
-
-// Setup modal event listeners
 onMounted(() => {
   if (modalRef.value) {
     modalRef.value.addEventListener('hidden.bs.modal', () => {
