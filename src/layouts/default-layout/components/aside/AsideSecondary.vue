@@ -471,7 +471,7 @@
                       class="menu-item"
                       v-if="isSuperAdmin || hasPermission('security.gangs')"
                     >
-                      <router-link to="/security/gangs" class="menu-link">
+                      <router-link to="/security/gang-affiliations" class="menu-link">
                         <span class="menu-bullet"
                           ><span class="bullet bullet-dot"></span
                         ></span>
