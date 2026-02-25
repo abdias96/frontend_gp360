@@ -294,7 +294,7 @@ function getPrintStyles(watermark?: string): string {
 /**
  * Generates the 2-page HTML content (without <html>/<head> wrappers) for a single inmate.
  */
-export function generateInmatePages(inmate: any): string {
+export function generateInmatePages(inmate: any, operatorName?: string): string {
   const photoUrl = getPrimaryPhotoUrl(inmate) || NO_PHOTO_PLACEHOLDER;
   const physical = inmate.physical_profile || {};
   const legalProfiles = inmate.legal_profiles || [];
@@ -341,6 +341,24 @@ export function generateInmatePages(inmate: any): string {
   const leftHandFingers = ['left_thumb', 'left_index', 'left_middle', 'left_ring', 'left_pinky'];
   const rightHandPrints = rightHandFingers.map((f) => fingerprintMap[f] || '');
   const leftHandPrints = leftHandFingers.map((f) => fingerprintMap[f] || '');
+
+  // Extract fichador (who captured fingerprints/photos)
+  let fichadorName = '';
+  if (biometricData && Array.isArray(biometricData) && biometricData.length > 0) {
+    const capturer = biometricData[0]?.captured_by_user || biometricData[0]?.capturedBy || biometricData[0]?.captured_by;
+    if (capturer && typeof capturer === 'object') {
+      fichadorName = `${capturer.first_name || ''} ${capturer.last_name || ''}`.trim().toUpperCase();
+    }
+  }
+  if (!fichadorName && inmate.photos?.length > 0) {
+    const photographer = inmate.photos[0]?.taken_by_user || inmate.photos[0]?.takenBy || inmate.photos[0]?.taken_by;
+    if (photographer && typeof photographer === 'object') {
+      fichadorName = `${photographer.first_name || ''} ${photographer.last_name || ''}`.trim().toUpperCase();
+    }
+  }
+
+  const operadorLabel = operatorName ? operatorName.toUpperCase() : '';
+  const fichadorLabel = fichadorName || '';
 
   const now = new Date();
   const dateStr = now.toLocaleDateString('es-GT');
@@ -565,11 +583,15 @@ export function generateInmatePages(inmate: any): string {
       <div class="signatures">
         <div class="signature-box">
           <div class="signature-line">(F) _______________________</div>
-          <div style="font-weight: bold; margin-top: 5px; font-size: 9pt;">OPERADOR RESPONSABLE</div>
+          ${operadorLabel ? `<div style="font-size: 8pt; margin-top: 3px;">${operadorLabel}</div>` : ''}
+          <div style="font-weight: bold; margin-top: 3px; font-size: 9pt;">OPERADOR RESPONSABLE</div>
+          <div style="font-size: 7pt; color: #666;">Impresi&oacute;n de ficha</div>
         </div>
         <div class="signature-box">
           <div class="signature-line">(F) _______________________</div>
-          <div style="font-weight: bold; margin-top: 5px; font-size: 9pt;">FICHADOR RESPONSABLE</div>
+          ${fichadorLabel ? `<div style="font-size: 8pt; margin-top: 3px;">${fichadorLabel}</div>` : ''}
+          <div style="font-weight: bold; margin-top: 3px; font-size: 9pt;">FICHADOR RESPONSABLE</div>
+          <div style="font-size: 7pt; color: #666;">Captura de huellas y fotograf&iacute;a</div>
         </div>
       </div>
     </div>`;
@@ -581,6 +603,7 @@ export function generateInmatePages(inmate: any): string {
 
 export interface BatchPrintOptions {
   watermark?: string; // e.g. "CONFIDENCIAL"
+  operatorName?: string; // Authenticated user printing the profiles
 }
 
 /**
@@ -596,7 +619,7 @@ export function generateBatchPrintHTML(
       ? `FICHA DEL INTERNO - ${firstInmate?.full_name || ''}`
       : `FICHAS DE INTERNOS (${inmates.length})`;
 
-  const allPages = inmates.map((inmate) => generateInmatePages(inmate)).join('\n');
+  const allPages = inmates.map((inmate) => generateInmatePages(inmate, options.operatorName)).join('\n');
 
   return `<!DOCTYPE html>
 <html>

@@ -646,7 +646,9 @@ const printProfile = () => {
     return;
   }
 
-  const html = generateBatchPrintHTML([inmate.value]);
+  const user = authStore.user;
+  const operatorName = user?.full_name || `${user?.first_name || ''} ${user?.last_name || ''}`.trim() || '';
+  const html = generateBatchPrintHTML([inmate.value], { operatorName: operatorName || undefined });
   printWindow.document.write(html);
   printWindow.document.close();
   printWindow.focus();

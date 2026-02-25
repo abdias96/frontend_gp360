@@ -1374,9 +1374,11 @@ const printSelectedProfiles = async () => {
     }
 
     const inmatesData = response.data.data;
+    const operatorName = response.data.operator?.full_name || '';
 
     const html = generateBatchPrintHTML(inmatesData, {
       watermark: watermarkText.value || undefined,
+      operatorName: operatorName || undefined,
     });
 
     const printWindow = window.open('', '_blank');
