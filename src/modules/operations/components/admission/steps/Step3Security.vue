@@ -85,8 +85,10 @@
               <option value="none">{{ t('admissions.wizard.fields.noAffiliation') }}</option>
               <option value="suspected_ms13">{{ t('admissions.wizard.fields.suspectedMS13') }}</option>
               <option value="confirmed_ms13">{{ t('admissions.wizard.fields.confirmedMS13') }}</option>
+              <option value="ex_ms13">{{ t('admissions.wizard.fields.exMS13') }}</option>
               <option value="suspected_barrio18">{{ t('admissions.wizard.fields.suspectedBarrio18') }}</option>
               <option value="confirmed_barrio18">{{ t('admissions.wizard.fields.confirmedBarrio18') }}</option>
+              <option value="ex_barrio18">{{ t('admissions.wizard.fields.exBarrio18') }}</option>
               <option value="other_gang">{{ t('admissions.wizard.fields.otherGang') }}</option>
               <option value="gang_leader">{{ t('admissions.wizard.fields.gangLeader') }}</option>
               <option value="protected_witness">{{ t('admissions.wizard.fields.protectedWitness') }}</option>

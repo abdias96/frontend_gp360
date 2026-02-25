@@ -31,8 +31,20 @@
               }}</span>
             </div>
           </div>
+          <div v-else-if="!securityClassification" class="text-center py-5">
+            <KTIcon
+              icon-name="shield-cross"
+              icon-class="fs-5x text-gray-400 mb-4"
+            />
+            <div class="text-gray-600 fw-bold">
+              {{ $t("inmates.tabs.security.classification.unclassified") }}
+            </div>
+            <div class="text-gray-500 fs-7 mt-2">
+              No se ha registrado una clasificación de seguridad
+            </div>
+          </div>
           <div v-else>
-            <!-- Current Classification -->
+            <!-- Current Classification Level -->
             <div class="mb-4">
               <span class="fw-bold text-gray-600 d-block mb-2">{{
                 $t("inmates.tabs.security.classification.currentClassification")
@@ -40,34 +52,56 @@
               <div class="d-flex align-items-center mb-2">
                 <span
                   class="badge badge-lg me-3"
-                  :class="
-                    getClassificationClass(
-                      securityClassification?.risk_classification_name || ''
-                    )
-                  "
+                  :class="getSecurityLevelBadge(securityClassification.security_level)"
                 >
-                  {{
-                    securityClassification?.risk_classification_name ||
-                    $t("inmates.tabs.security.classification.unclassified")
-                  }}
+                  {{ securityClassification.security_level_name || getLevelLabel(securityClassification.security_level) }}
                 </span>
                 <div>
                   <div class="fw-bold text-gray-800 fs-6">
-                    {{
-                      getRiskLevelDescription(
-                        securityClassification?.risk_classification_name || ""
-                      )
-                    }}
+                    {{ getLevelDescription(securityClassification.security_level) }}
                   </div>
                   <div class="text-gray-600 fs-7">
                     {{ $t("inmates.tabs.security.classification.date") }}:
-                    {{
-                      formatDate(
-                        securityClassification?.classification_date || ""
-                      )
-                    }}
+                    {{ formatDate(securityClassification.classification_date) }}
                   </div>
                 </div>
+              </div>
+            </div>
+
+            <!-- Risk Scores -->
+            <div class="mb-4">
+              <span class="fw-bold text-gray-600 d-block mb-2">Evaluación de Riesgo</span>
+              <div class="d-flex align-items-center mb-2">
+                <span
+                  class="badge badge-lg me-2"
+                  :class="getOverallRiskBadge(securityClassification.overall_risk_level)"
+                >
+                  Riesgo: {{ getOverallRiskLabel(securityClassification.overall_risk_level) }}
+                </span>
+                <span class="text-gray-600 fs-7">
+                  ({{ securityClassification.overall_risk_score ?? 0 }}/50)
+                </span>
+              </div>
+              <div class="d-flex flex-wrap gap-1 mt-2">
+                <span class="badge badge-light fs-8" title="Violencia">V: {{ securityClassification.violence_risk_score ?? '-' }}/10</span>
+                <span class="badge badge-light fs-8" title="Fuga">F: {{ securityClassification.escape_risk_score ?? '-' }}/10</span>
+                <span class="badge badge-light fs-8" title="Pandillas">P: {{ securityClassification.gang_influence_score ?? '-' }}/10</span>
+                <span class="badge badge-light fs-8" title="Víctimas">Vi: {{ securityClassification.victim_threat_score ?? '-' }}/10</span>
+                <span class="badge badge-light fs-8" title="Corrupción">C: {{ securityClassification.corruption_risk_score ?? '-' }}/10</span>
+              </div>
+            </div>
+
+            <!-- Restrictions -->
+            <div v-if="securityClassification.restrictions_summary && securityClassification.restrictions_summary !== 'Sin restricciones'" class="mb-4">
+              <span class="fw-bold text-gray-600 d-block mb-2">Restricciones</span>
+              <div class="d-flex flex-wrap gap-1">
+                <span v-if="securityClassification.requires_single_cell" class="badge badge-light-warning fs-8">Celda Individual</span>
+                <span v-if="securityClassification.limited_recreation_time" class="badge badge-light-warning fs-8">Recreación Limitada</span>
+                <span v-if="securityClassification.restricted_visits" class="badge badge-light-warning fs-8">Visitas Restringidas</span>
+                <span v-if="securityClassification.monitored_communications" class="badge badge-light-info fs-8">Com. Monitoreadas</span>
+                <span v-if="securityClassification.escort_required" class="badge badge-light-danger fs-8">Escolta</span>
+                <span v-if="securityClassification.restricted_work_assignments" class="badge badge-light-warning fs-8">Trabajo Restringido</span>
+                <span v-if="securityClassification.medical_isolation" class="badge badge-light-primary fs-8">Aislamiento Médico</span>
               </div>
             </div>
 
@@ -77,10 +111,7 @@
                 $t("inmates.tabs.security.classification.classifiedBy")
               }}</span>
               <span class="text-gray-800">
-                {{
-                  securityClassification?.classifier_name ||
-                  $t("inmates.tabs.security.classification.notSpecified")
-                }}
+                {{ getClassifierName(securityClassification) }}
               </span>
             </div>
 
@@ -91,11 +122,12 @@
               }}</span>
               <div class="d-flex align-items-center">
                 <span class="text-gray-800 me-2">
-                  {{ formatDate(securityClassification?.review_date || "") }}
+                  {{ formatDate(securityClassification.next_review_date) }}
                 </span>
                 <span v-if="isReviewOverdue" class="badge badge-light-danger">
                   <KTIcon icon-name="warning-2" icon-class="fs-6 me-1" />
                   {{ $t("inmates.tabs.security.classification.overdue") }}
+                  <span class="ms-1">({{ securityClassification.days_until_review }}d)</span>
                 </span>
                 <span
                   v-else-if="isReviewSoon"
@@ -103,6 +135,7 @@
                 >
                   <KTIcon icon-name="calendar" icon-class="fs-6 me-1" />
                   {{ $t("inmates.tabs.security.classification.upcoming") }}
+                  <span class="ms-1">({{ securityClassification.days_until_review }}d)</span>
                 </span>
               </div>
             </div>
@@ -137,7 +170,7 @@
             <div class="text-gray-600 fs-8">
               <KTIcon icon-name="calendar" icon-class="fs-7 me-1" />
               {{ $t("inmates.tabs.security.classification.lastUpdate") }}:
-              {{ formatDate(securityClassification?.updated_at || "") }}
+              {{ formatDate(securityClassification.updated_at) }}
             </div>
           </div>
         </div>
@@ -211,7 +244,8 @@
                     />
                     <div class="flex-grow-1">
                       <div class="fw-bold text-danger fs-6">
-                        {{ gang.gang_name }}
+                        {{ gang.gang_type_name || getGangTypeLabel(gang.gang_type) }}
+                        <span v-if="gang.gang_name" class="text-gray-700 fs-7 ms-1">({{ gang.gang_name }})</span>
                       </div>
                       <div class="text-gray-600 fs-7 mb-2">
                         {{ $t("inmates.tabs.security.gangAffiliations.level") }}:
@@ -220,88 +254,43 @@
                       <div class="d-flex gap-2 mb-2">
                         <span
                           class="badge badge-sm"
-                          :class="getRiskAssessmentClass(gang.risk_assessment)"
+                          :class="getIntelligenceLevelBadge(gang.intelligence_level)"
                         >
-                          {{ $t("inmates.tabs.security.gangAffiliations.risk") }}:
-                          {{ getRiskAssessmentText(gang.risk_assessment) }}
+                          Inteligencia: {{ getIntelligenceLevelLabel(gang.intelligence_level) }}
                         </span>
-                        <span
-                          class="badge badge-sm"
-                          :class="getGangStatusClass(gang.status)"
-                        >
-                          {{ getGangStatusText(gang.status) }}
+                        <span v-if="gang.is_current" class="badge badge-sm badge-light-success">
+                          Activa
+                        </span>
+                        <span v-else class="badge badge-sm badge-light-secondary">
+                          Inactiva
                         </span>
                       </div>
-                      <div v-if="gang.verified_date" class="text-gray-600 fs-8">
-                        {{ $t("inmates.tabs.security.gangAffiliations.verified") }}:
-                        {{ formatDate(gang.verified_date) }}
-                        <span v-if="gang.verifier_name">
-                          {{ $t("inmates.tabs.security.gangAffiliations.by") }}
-                          {{ gang.verifier_name }}</span
-                        >
+                      <div v-if="gang.confirmation_date" class="text-gray-600 fs-8">
+                        Confirmado: {{ formatDate(gang.confirmation_date) }}
                       </div>
                       <div
-                        v-if="gang.conflicts_with"
+                        v-if="gang.rival_gangs && gang.rival_gangs.length > 0"
                         class="text-danger fs-8 mt-1"
                       >
                         <KTIcon icon-name="warning-2" icon-class="fs-7 me-1" />
                         {{ $t("inmates.tabs.security.gangAffiliations.conflicts") }}:
                         {{
-                          Array.isArray(gang.conflicts_with)
-                            ? gang.conflicts_with.join(", ")
-                            : gang.conflicts_with
+                          Array.isArray(gang.rival_gangs)
+                            ? gang.rival_gangs.join(", ")
+                            : gang.rival_gangs
                         }}
                       </div>
-                    </div>
-                    <div class="dropdown">
-                      <button
-                        class="btn btn-sm btn-light btn-active-light-primary"
-                        data-bs-toggle="dropdown"
-                      >
-                        <KTIcon icon-name="dots-vertical" icon-class="fs-7" />
-                      </button>
                       <div
-                        class="dropdown-menu menu menu-sub menu-sub-dropdown menu-column menu-rounded menu-gray-600 menu-state-bg-light-primary fw-semibold fs-7 w-200px py-4"
+                        v-if="gang.must_separate_from && gang.must_separate_from.length > 0"
+                        class="text-warning fs-8 mt-1"
                       >
-                        <div class="menu-item px-3">
-                          <a
-                            @click.prevent="viewGangDetails(gang)"
-                            class="menu-link px-3"
-                          >
-                            <KTIcon icon-name="eye" icon-class="fs-6 me-2" />
-                            {{ $t("inmates.tabs.security.buttons.viewDetails") }}
-                          </a>
-                        </div>
-                        <div
-                          v-if="canManageIntelligence"
-                          class="menu-item px-3"
-                        >
-                          <a
-                            @click.prevent="editGangAffiliation(gang)"
-                            class="menu-link px-3"
-                          >
-                            <KTIcon icon-name="pencil" icon-class="fs-6 me-2" />
-                            {{ $t("inmates.tabs.security.buttons.edit") }}
-                          </a>
-                        </div>
-                        <div
-                          v-if="canManageIntelligence"
-                          class="menu-separator"
-                        ></div>
-                        <div
-                          v-if="
-                            canManageIntelligence && gang.status === 'active'
-                          "
-                          class="menu-item px-3"
-                        >
-                          <a
-                            @click.prevent="deactivateGangAffiliation(gang)"
-                            class="menu-link px-3 text-warning"
-                          >
-                            <KTIcon icon-name="pause" icon-class="fs-6 me-2" />
-                            {{ $t("inmates.tabs.security.buttons.deactivate") }}
-                          </a>
-                        </div>
+                        <KTIcon icon-name="shield-cross" icon-class="fs-7 me-1" />
+                        Separar de:
+                        {{
+                          Array.isArray(gang.must_separate_from)
+                            ? gang.must_separate_from.join(", ")
+                            : gang.must_separate_from
+                        }}
                       </div>
                     </div>
                   </div>
@@ -331,7 +320,7 @@
             <div
               v-if="
                 gangAffiliations.length === 0 &&
-                inmate.gang_affiliation_status === 'none'
+                (!inmate.gang_affiliation_status || inmate.gang_affiliation_status === 'none')
               "
               class="text-center py-5"
             >
@@ -363,16 +352,6 @@
               $t("inmates.tabs.security.measures.subtitle")
             }}</span>
           </h3>
-          <div class="card-toolbar">
-            <button
-              v-if="canManageSecurityMeasures"
-              @click="openManageSecurityMeasuresModal"
-              class="btn btn-sm btn-light-danger"
-            >
-              <KTIcon icon-name="security-check" icon-class="fs-2" />
-              {{ $t("inmates.tabs.security.buttons.manage") }}
-            </button>
-          </div>
         </div>
         <div class="card-body pt-0">
           <div v-if="loading.measures" class="text-center py-5">
@@ -530,40 +509,6 @@
               </div>
             </div>
 
-            <!-- Security Measures List -->
-            <div v-if="securityMeasures.length > 0" class="mb-4">
-              <span class="fw-bold text-gray-600 d-block mb-3">{{
-                $t("inmates.tabs.security.measures.additionalMeasures")
-              }}</span>
-              <div
-                v-for="measure in securityMeasures"
-                :key="measure.id"
-                class="border border-warning border-dashed rounded p-3 mb-2 bg-light-warning"
-              >
-                <div class="d-flex align-items-center">
-                  <KTIcon
-                    icon-name="security-check"
-                    icon-class="fs-5 text-warning me-2"
-                  />
-                  <div class="flex-grow-1">
-                    <div class="fw-bold text-gray-800 fs-7">
-                      {{ measure.measure_type }}
-                    </div>
-                    <div class="text-gray-600 fs-8">
-                      {{ measure.description }}
-                    </div>
-                    <div
-                      v-if="measure.expiration_date"
-                      class="text-gray-600 fs-8"
-                    >
-                      {{ $t("inmates.tabs.security.measures.expires") }}:
-                      {{ formatDate(measure.expiration_date) }}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
             <!-- Active Alerts -->
             <div v-if="activeAlerts.length > 0" class="mb-4">
               <span class="fw-bold text-gray-600 d-block mb-3">{{
@@ -581,18 +526,26 @@
                   />
                   <div class="flex-grow-1">
                     <div class="fw-bold text-danger fs-7">
-                      {{ alert.alert_type }}
+                      {{ getAlertTypeLabel(alert.alert_type) }}
                     </div>
                     <div class="text-gray-600 fs-8">
-                      {{ alert.description }}
+                      {{ alert.alert_description }}
                     </div>
-                    <div class="text-gray-600 fs-8">
-                      {{ $t("inmates.tabs.security.measures.created") }}:
-                      {{ formatDate(alert.created_date) }}
+                    <div class="d-flex gap-2 mt-1">
+                      <span class="badge badge-sm" :class="getPriorityBadge(alert.priority_level)">
+                        {{ getPriorityLabel(alert.priority_level) }}
+                      </span>
+                      <span class="text-gray-500 fs-8">
+                        {{ formatDate(alert.alert_date) }}
+                      </span>
                     </div>
                   </div>
                 </div>
               </div>
+            </div>
+
+            <div v-if="activeAlerts.length === 0 && !loading.measures" class="text-center py-3">
+              <div class="text-gray-500 fs-7">Sin alertas activas</div>
             </div>
           </div>
         </div>
@@ -612,14 +565,6 @@
             }}</span>
           </h3>
           <div class="card-toolbar">
-            <button
-              v-if="canAddIncident"
-              @click="openAddIncidentModal"
-              class="btn btn-sm btn-light-danger me-3"
-            >
-              <KTIcon icon-name="plus" icon-class="fs-2" />
-              {{ $t("inmates.tabs.security.buttons.registerIncident") }}
-            </button>
             <button
               @click="refreshSecurityHistory"
               class="btn btn-sm btn-light"
@@ -660,72 +605,38 @@
                     <th>{{ $t("inmates.tabs.security.history.tableHeaders.eventType") }}</th>
                     <th>{{ $t("inmates.tabs.security.history.tableHeaders.description") }}</th>
                     <th>{{ $t("inmates.tabs.security.history.tableHeaders.severity") }}</th>
-                    <th>{{ $t("inmates.tabs.security.history.tableHeaders.reportedBy") }}</th>
                     <th>{{ $t("inmates.tabs.security.history.tableHeaders.status") }}</th>
-                    <th>{{ $t("inmates.tabs.security.history.tableHeaders.actions") }}</th>
                   </tr>
                 </thead>
                 <tbody>
                   <tr v-for="incident in securityHistory" :key="incident.id">
                     <td>{{ formatDateTime(incident.incident_date) }}</td>
                     <td>
-                      <div class="fw-bold">{{ incident.incident_type }}</div>
+                      <div class="fw-bold">{{ getIncidentTypeLabel(incident.incident_type) }}</div>
                       <div v-if="incident.location" class="text-gray-600 fs-7">
                         {{ incident.location }}
                       </div>
                     </td>
                     <td>
-                      <div>{{ incident.description }}</div>
-                      <div
-                        v-if="incident.people_involved"
-                        class="text-gray-600 fs-7"
-                      >
-                        {{ $t("inmates.tabs.security.history.involved") }}:
-                        {{ incident.people_involved }}
+                      <div class="text-truncate" style="max-width: 300px">
+                        {{ incident.incident_description || incident.description }}
                       </div>
                     </td>
                     <td>
                       <span
                         class="badge"
-                        :class="getSeverityClass(incident.severity)"
+                        :class="getSeverityClass(incident.severity_level || incident.severity)"
                       >
-                        {{ getSeverityText(incident.severity) }}
+                        {{ getSeverityText(incident.severity_level || incident.severity) }}
                       </span>
-                    </td>
-                    <td>
-                      <div class="fw-bold">{{ incident.reported_by_name }}</div>
-                      <div class="text-gray-600 fs-7">
-                        {{ incident.reported_by_role }}
-                      </div>
                     </td>
                     <td>
                       <span
                         class="badge"
-                        :class="getIncidentStatusClass(incident.status)"
+                        :class="getIncidentStatusClass(incident.resolution_status || incident.status)"
                       >
-                        {{ getIncidentStatusText(incident.status) }}
+                        {{ getIncidentStatusText(incident.resolution_status || incident.status) }}
                       </span>
-                    </td>
-                    <td>
-                      <div class="d-flex gap-1">
-                        <button
-                          @click="viewIncidentDetails(incident)"
-                          class="btn btn-sm btn-light btn-active-light-primary"
-                          :title="$t('inmates.tabs.security.buttons.viewDetails')"
-                        >
-                          <KTIcon icon-name="eye" icon-class="fs-7" />
-                        </button>
-                        <button
-                          v-if="
-                            canEditIncident && incident.status !== 'resolved'
-                          "
-                          @click="editIncident(incident)"
-                          class="btn btn-sm btn-light btn-active-light-primary"
-                          :title="$t('inmates.tabs.security.buttons.edit')"
-                        >
-                          <KTIcon icon-name="pencil" icon-class="fs-7" />
-                        </button>
-                      </div>
                     </td>
                   </tr>
                 </tbody>
@@ -740,62 +651,28 @@
 
 <script setup lang="ts">
 import { ref, onMounted, computed } from "vue";
+import { useRouter } from "vue-router";
 import { useAuthStore } from "@/stores/auth";
 import { useI18n } from "vue-i18n";
-import type {
-  InmateDetail,
-  InmateSecurityClassification,
-  InmateGangAffiliation,
-} from "@/types/inmates";
-import Swal from "sweetalert2";
+import type { InmateDetail } from "@/types/inmates";
+import ApiService from "@/core/services/ApiService";
 import KTIcon from "@/core/helpers/kt-icon/KTIcon.vue";
 
 const { t } = useI18n();
+const router = useRouter();
 
 interface Props {
   inmate: InmateDetail;
-}
-
-// Security specific interfaces
-interface SecurityMeasure {
-  id: number;
-  measure_type: string;
-  description: string;
-  expiration_date?: string;
-  created_date: string;
-}
-
-interface SecurityAlert {
-  id: number;
-  alert_type: string;
-  description: string;
-  created_date: string;
-  priority: "low" | "medium" | "high" | "critical";
-}
-
-interface SecurityIncident {
-  id: number;
-  incident_date: string;
-  incident_type: string;
-  description: string;
-  location?: string;
-  people_involved?: string;
-  severity: "low" | "medium" | "high" | "critical";
-  reported_by_name: string;
-  reported_by_role: string;
-  status: "reported" | "investigating" | "resolved" | "dismissed";
-  resolution?: string;
 }
 
 const props = defineProps<Props>();
 const authStore = useAuthStore();
 
 // Reactive data
-const securityClassification = ref<InmateSecurityClassification | null>(null);
-const gangAffiliations = ref<InmateGangAffiliation[]>([]);
-const securityMeasures = ref<SecurityMeasure[]>([]);
-const activeAlerts = ref<SecurityAlert[]>([]);
-const securityHistory = ref<SecurityIncident[]>([]);
+const securityClassification = ref<any>(null);
+const gangAffiliations = ref<any[]>([]);
+const activeAlerts = ref<any[]>([]);
+const securityHistory = ref<any[]>([]);
 
 const loading = ref({
   classification: false,
@@ -806,82 +683,49 @@ const loading = ref({
 
 // Computed properties
 const canEditSecurity = computed(() =>
-  authStore.hasPermission("security.edit"),
+  authStore.hasPermission("security.edit") || authStore.hasPermission("inmates.security.edit"),
 );
 const canManageIntelligence = computed(() =>
-  authStore.hasPermission("security.intelligence"),
-);
-const canManageSecurityMeasures = computed(() =>
-  authStore.hasPermission("security.measures"),
-);
-const canAddIncident = computed(() =>
-  authStore.hasPermission("security.incidents"),
-);
-const canEditIncident = computed(() =>
-  authStore.hasPermission("security.edit_incidents"),
+  authStore.hasPermission("security.intelligence") || authStore.hasPermission("inmates.security.edit"),
 );
 
 const isReviewOverdue = computed(() => {
-  if (!securityClassification.value?.review_date) return false;
-  const reviewDate = new Date(securityClassification.value.review_date);
-  const today = new Date();
-  return reviewDate < today;
+  if (!securityClassification.value?.next_review_date) return false;
+  const reviewDate = new Date(securityClassification.value.next_review_date);
+  return reviewDate < new Date();
 });
 
 const isReviewSoon = computed(() => {
-  if (!securityClassification.value?.review_date) return false;
-  const reviewDate = new Date(securityClassification.value.review_date);
+  if (!securityClassification.value?.next_review_date) return false;
+  const reviewDate = new Date(securityClassification.value.next_review_date);
   const today = new Date();
   const weekFromNow = new Date(today.getTime() + 7 * 24 * 60 * 60 * 1000);
   return reviewDate <= weekFromNow && reviewDate >= today;
 });
 
-// Methods
+// Load data via API
 const loadSecurityData = async () => {
+  if (!props.inmate?.id) return;
   try {
     loading.value.classification = true;
-
-    // Load security classification - check multiple possible field names
-    const classificationData =
-      props.inmate.security_classification ||
-      props.inmate.current_security_classification ||
-      props.inmate.currentSecurityClassification;
-
-    if (classificationData) {
-      securityClassification.value = classificationData;
+    const res = await ApiService.get(`/inmate-security-classifications/current/${props.inmate.id}`);
+    if (res.data.success && res.data.data) {
+      securityClassification.value = res.data.data;
     }
   } catch (error) {
-    console.error("Error loading security data:", error);
+    console.error("Error loading security classification:", error);
   } finally {
     loading.value.classification = false;
   }
 };
 
 const loadGangData = async () => {
+  if (!props.inmate?.id) return;
   try {
     loading.value.gangs = true;
-
-    // Load gang affiliations - check multiple possible field names
-    // Backend may return array (gang_affiliations) or single object (current_gang_affiliation)
-    let affiliationsData =
-      props.inmate.gang_affiliations ||
-      props.inmate.gangAffiliations;
-
-    // If we have current_gang_affiliation (singular), convert to array
-    const currentAffiliation =
-      props.inmate.current_gang_affiliation ||
-      props.inmate.currentGangAffiliation;
-
-    if (!affiliationsData && currentAffiliation) {
-      affiliationsData = [currentAffiliation];
-    }
-
-    if (affiliationsData && Array.isArray(affiliationsData)) {
-      gangAffiliations.value = affiliationsData.filter(
-        (g) => g.status === "active",
-      );
-    } else {
-      gangAffiliations.value = [];
+    const res = await ApiService.get(`/inmate-gang-affiliations/by-inmate/${props.inmate.id}`);
+    if (res.data.success && Array.isArray(res.data.data)) {
+      gangAffiliations.value = res.data.data.filter((g: any) => g.is_current);
     }
   } catch (error) {
     console.error("Error loading gang data:", error);
@@ -890,58 +734,34 @@ const loadGangData = async () => {
   }
 };
 
-const loadSecurityMeasures = async () => {
+const loadAlerts = async () => {
+  if (!props.inmate?.id) return;
   try {
     loading.value.measures = true;
-
-    // Load active security alerts from props
-    const alertsData = props.inmate.activeSecurityAlerts || props.inmate.active_security_alerts || props.inmate.securityAlerts || props.inmate.security_alerts;
-    if (alertsData && Array.isArray(alertsData)) {
-      activeAlerts.value = alertsData.map((alert: any) => ({
-        id: alert.id,
-        alert_type: alert.alert_type || 'general',
-        description: alert.alert_description || alert.description || '',
-        created_date: alert.alert_date || alert.created_at,
-        priority: alert.priority || 'medium',
-      }));
-    } else {
-      activeAlerts.value = [];
+    const res = await ApiService.get(`/security/alerts`, {
+      params: { inmate_id: props.inmate.id, is_active: true, per_page: 10 }
+    });
+    if (res.data.success) {
+      const data = res.data.data?.data || res.data.data || [];
+      activeAlerts.value = Array.isArray(data) ? data : [];
     }
-
-    // Security measures would come from a different relationship if available
-    // For now, keep as empty array as there's no specific security_measures table
-    securityMeasures.value = [];
   } catch (error) {
-    console.error("Error loading security measures:", error);
+    console.error("Error loading security alerts:", error);
   } finally {
     loading.value.measures = false;
   }
 };
 
 const loadSecurityHistory = async () => {
+  if (!props.inmate?.id) return;
   try {
     loading.value.history = true;
-
-    // Load security incidents from props
-    const incidentsData = props.inmate.securityIncidents || props.inmate.security_incidents;
-    if (incidentsData && Array.isArray(incidentsData)) {
-      securityHistory.value = incidentsData
-        .map((incident: any) => ({
-          id: incident.id,
-          incident_date: incident.incident_date || incident.created_at,
-          incident_type: incident.incidentType?.name || incident.incident_type?.name || incident.incident_type_name || 'Otro',
-          description: incident.description || incident.incident_description || '',
-          location: incident.incident_location || incident.location,
-          people_involved: incident.people_involved || incident.involved_parties,
-          severity: incident.severity_level || incident.severity || 'medium',
-          reported_by_name: incident.reportedBy?.name || incident.reported_by?.name || incident.reported_by_name || 'N/A',
-          reported_by_role: incident.reportedBy?.role || incident.reported_by?.role || 'Personal',
-          status: incident.incident_status || incident.status || 'reported',
-          resolution: incident.resolution_notes || incident.resolution,
-        }))
-        .sort((a: any, b: any) => new Date(b.incident_date).getTime() - new Date(a.incident_date).getTime());
-    } else {
-      securityHistory.value = [];
+    const res = await ApiService.get(`/security/incidents`, {
+      params: { inmate_id: props.inmate.id, per_page: 10 }
+    });
+    if (res.data.success) {
+      const data = res.data.data?.data || res.data.data || [];
+      securityHistory.value = Array.isArray(data) ? data : [];
     }
   } catch (error) {
     console.error("Error loading security history:", error);
@@ -950,67 +770,18 @@ const loadSecurityHistory = async () => {
   }
 };
 
-// Security classification methods
+// Navigation
 const openEditClassificationModal = () => {
-  Swal.fire({
-    title: t("inmates.tabs.security.swal.updateClassification"),
-    text: t("inmates.tabs.security.swal.updateClassificationDesc"),
-    icon: "info",
-    confirmButtonText: "OK",
+  router.push({
+    name: "security-classifications",
+    query: { inmate_id: String(props.inmate.id) }
   });
 };
 
-// Gang affiliation methods
 const openManageGangAffiliationModal = () => {
-  Swal.fire({
-    title: t("inmates.tabs.security.swal.manageAffiliations"),
-    text: t("inmates.tabs.security.swal.manageAffiliationsDesc"),
-    icon: "info",
-    confirmButtonText: "OK",
-  });
-};
-
-const viewGangDetails = (gang: InmateGangAffiliation) => {
-};
-
-const editGangAffiliation = (gang: InmateGangAffiliation) => {
-};
-
-const deactivateGangAffiliation = async (gang: InmateGangAffiliation) => {
-  const { value: reason } = await Swal.fire({
-    title: t("inmates.tabs.security.swal.deactivateAffiliation"),
-    text: t("inmates.tabs.security.swal.deactivateAffiliationConfirm", {
-      gang: gang.gang_name,
-    }),
-    input: "textarea",
-    inputPlaceholder: t("inmates.tabs.security.swal.deactivationReason"),
-    showCancelButton: true,
-    confirmButtonText: t("inmates.tabs.security.buttons.deactivate"),
-    cancelButtonText: t("inmates.tabs.security.buttons.cancel"),
-  });
-
-  if (reason) {
-    await loadGangData();
-  }
-};
-
-// Security measures methods
-const openManageSecurityMeasuresModal = () => {
-  Swal.fire({
-    title: t("inmates.tabs.security.swal.manageMeasures"),
-    text: t("inmates.tabs.security.swal.manageMeasuresDesc"),
-    icon: "info",
-    confirmButtonText: "OK",
-  });
-};
-
-// Incident methods
-const openAddIncidentModal = () => {
-  Swal.fire({
-    title: t("inmates.tabs.security.swal.registerIncident"),
-    text: t("inmates.tabs.security.swal.registerIncidentDesc"),
-    icon: "info",
-    confirmButtonText: "OK",
+  router.push({
+    name: "security-gang-affiliations",
+    query: { inmate_id: String(props.inmate.id) }
   });
 };
 
@@ -1018,127 +789,197 @@ const refreshSecurityHistory = async () => {
   await loadSecurityHistory();
 };
 
-const viewIncidentDetails = (incident: SecurityIncident) => {
-};
+// Helper methods - Security Level
+const getSecurityLevelBadge = (level: string) => ({
+  minimum: 'badge-light-success',
+  medium: 'badge-light-warning',
+  maximum: 'badge-danger',
+  super_maximum: 'badge-dark',
+}[level] || 'badge-light-secondary');
 
-const editIncident = (incident: SecurityIncident) => {
-};
+const getLevelLabel = (level: string) => ({
+  minimum: 'Mínima',
+  medium: 'Media',
+  maximum: 'Máxima',
+  super_maximum: 'Súper Máxima',
+}[level] || level || 'N/A');
 
-// Helper methods
-const getClassificationClass = (classification: string): string => {
-  const classes: Record<string, string> = {
-    Bajo: "badge-light-success",
-    Medio: "badge-light-warning",
-    Alto: "badge-light-danger",
-    Máximo: "badge-danger",
-    Protección: "badge-light-info",
+const getLevelDescription = (level: string) => {
+  const descriptions: Record<string, string> = {
+    minimum: 'Bajo riesgo - Población general',
+    medium: 'Riesgo moderado - Supervisión estándar',
+    maximum: 'Alto riesgo - Supervisión intensiva',
+    super_maximum: 'Riesgo extremo - Máxima seguridad',
   };
-  return classes[classification] || "badge-light-secondary";
+  return descriptions[level] || '';
 };
 
-const getRiskLevelDescription = (classification: string): string => {
-  if (!classification) {
-    return t("inmates.tabs.security.riskDescriptions.undefined");
+// Helper - Overall Risk
+const getOverallRiskBadge = (risk: string) => ({
+  low: 'badge-light-success',
+  medium: 'badge-light-warning',
+  high: 'badge-light-danger',
+  extreme: 'badge-danger',
+}[risk] || 'badge-light-secondary');
+
+const getOverallRiskLabel = (risk: string) => ({
+  low: 'Bajo',
+  medium: 'Medio',
+  high: 'Alto',
+  extreme: 'Extremo',
+}[risk] || risk || 'N/A');
+
+// Helper - Classifier Name
+const getClassifierName = (c: any) => {
+  if (c?.classified_by) {
+    return `${c.classified_by.first_name || ''} ${c.classified_by.last_name || ''}`.trim() || 'N/A';
   }
-
-  // Map classification names to translation keys
-  const classificationMap: Record<string, string> = {
-    Bajo: "low",
-    Medio: "medium",
-    Alto: "high",
-    Máximo: "maximum",
-    Protección: "protection",
-    // Also support English keys
-    Low: "low",
-    Medium: "medium",
-    High: "high",
-    Maximum: "maximum",
-    Protection: "protection",
-  };
-
-  const key = classificationMap[classification];
-  if (key) {
-    return t(`inmates.tabs.security.riskDescriptions.${key}`);
-  }
-
-  return t("inmates.tabs.security.riskDescriptions.undefined");
+  return 'N/A';
 };
 
-const getGangStatusClass = (status: string): string => {
-  const classes: Record<string, string> = {
-    none: "badge-light-success",
-    suspected: "badge-light-warning",
-    confirmed: "badge-light-danger",
-    active: "badge-danger",
-    inactive: "badge-light-secondary",
-    under_review: "badge-light-info",
-  };
-  return classes[status] || "badge-light-secondary";
-};
+// Helper - Gang
+const getGangStatusClass = (status: string): string => ({
+  none: "badge-light-success",
+  suspected_ms13: "badge-light-warning",
+  confirmed_ms13: "badge-danger",
+  ex_ms13: "badge-light-secondary",
+  suspected_barrio18: "badge-light-warning",
+  confirmed_barrio18: "badge-danger",
+  ex_barrio18: "badge-light-secondary",
+  other_gang: "badge-light-danger",
+  gang_leader: "badge-dark",
+  protected_witness: "badge-light-info",
+}[status] || "badge-light-secondary");
 
 const getGangStatusText = (status: string): string => {
-  if (!status) return status;
-  const statusKey = `inmates.tabs.security.gangStatuses.${status}`;
-  const translated = t(statusKey);
-  return translated !== statusKey ? translated : status;
-};
-
-const getAffiliationLevelText = (level: string): string => {
-  if (!level) return level;
-  const levelKey = `inmates.tabs.security.affiliationLevels.${level}`;
-  const translated = t(levelKey);
-  return translated !== levelKey ? translated : level;
-};
-
-const getRiskAssessmentClass = (risk: string): string => {
-  const classes: Record<string, string> = {
-    low: "badge-light-success",
-    medium: "badge-light-warning",
-    high: "badge-light-danger",
+  const labels: Record<string, string> = {
+    none: 'Sin afiliación',
+    suspected_ms13: 'Sospechoso MS-13',
+    confirmed_ms13: 'Confirmado MS-13',
+    ex_ms13: 'Ex MS-13',
+    suspected_barrio18: 'Sospechoso Barrio 18',
+    confirmed_barrio18: 'Confirmado Barrio 18',
+    ex_barrio18: 'Ex Barrio 18',
+    other_gang: 'Otra pandilla',
+    gang_leader: 'Líder de pandilla',
+    protected_witness: 'Testigo protegido',
   };
-  return classes[risk] || "badge-light-secondary";
+  return labels[status] || status || 'Desconocido';
 };
 
-const getRiskAssessmentText = (risk: string): string => {
-  if (!risk) return risk;
-  const riskKey = `inmates.tabs.security.riskAssessment.${risk}`;
-  const translated = t(riskKey);
-  return translated !== riskKey ? translated : risk;
-};
+const getGangTypeLabel = (type: string) => ({
+  ms13: 'MS-13',
+  barrio18_surenos: 'Barrio 18 Sureños',
+  barrio18_revolucionarios: 'Barrio 18 Revolucionarios',
+  other_gang: 'Otra Pandilla',
+  organized_crime: 'Crimen Organizado',
+  drug_cartel: 'Narcotráfico',
+  none: 'Ninguna',
+}[type] || type || 'N/A');
 
-const getSeverityClass = (severity: string): string => {
-  const classes: Record<string, string> = {
-    low: "badge-light-success",
-    medium: "badge-light-warning",
-    high: "badge-light-danger",
-    critical: "badge-danger",
-  };
-  return classes[severity] || "badge-light-secondary";
-};
+const getAffiliationLevelText = (level: string): string => ({
+  suspected: 'Sospechoso',
+  confirmed_member: 'Miembro Confirmado',
+  leader: 'Líder',
+  high_ranking: 'Alto Rango',
+  founder: 'Fundador',
+  inactive: 'Inactivo',
+  former_member: 'Ex-miembro',
+}[level] || level || 'N/A');
 
-const getSeverityText = (severity: string): string => {
-  if (!severity) return severity;
-  const severityKey = `inmates.tabs.security.severity.${severity}`;
-  const translated = t(severityKey);
-  return translated !== severityKey ? translated : severity;
-};
+const getIntelligenceLevelBadge = (level: string) => ({
+  low: 'badge-light-success',
+  medium: 'badge-light-warning',
+  high: 'badge-light-danger',
+  critical: 'badge-danger',
+}[level] || 'badge-light-secondary');
 
-const getIncidentStatusClass = (status: string): string => {
-  const classes: Record<string, string> = {
-    reported: "badge-light-info",
-    investigating: "badge-light-warning",
-    resolved: "badge-light-success",
-    dismissed: "badge-light-secondary",
-  };
-  return classes[status] || "badge-light-secondary";
-};
+const getIntelligenceLevelLabel = (level: string) => ({
+  low: 'Baja',
+  medium: 'Media',
+  high: 'Alta',
+  critical: 'Crítica',
+}[level] || level || 'N/A');
 
-const getIncidentStatusText = (status: string): string => {
-  if (!status) return status;
-  const statusKey = `inmates.tabs.security.incidentStatuses.${status}`;
-  const translated = t(statusKey);
-  return translated !== statusKey ? translated : status;
-};
+// Helper - Alert Types
+const getAlertTypeLabel = (type: string) => ({
+  high_escape_risk: 'Alto Riesgo Fuga',
+  violence_threat: 'Amenaza Violencia',
+  gang_leader: 'Líder Pandilla',
+  extortion_coordinator: 'Coordinador Extorsión',
+  suicide_risk: 'Riesgo Suicidio',
+  medical_emergency: 'Emergencia Médica',
+  court_appearance: 'Audiencia Judicial',
+  transfer_pending: 'Traslado Pendiente',
+  visitor_restriction: 'Restricción Visitas',
+  communication_restriction: 'Restricción Comunicaciones',
+  isolation_required: 'Aislamiento Requerido',
+  weapon_possession_risk: 'Riesgo Posesión Armas',
+  contraband_risk: 'Riesgo Contrabando',
+  corruption_involvement: 'Involucramiento Corrupción',
+}[type] || type || 'N/A');
+
+const getPriorityBadge = (priority: string) => ({
+  low: 'badge-light-success',
+  medium: 'badge-light-warning',
+  high: 'badge-light-danger',
+  critical: 'badge-danger',
+}[priority] || 'badge-light-secondary');
+
+const getPriorityLabel = (priority: string) => ({
+  low: 'Baja',
+  medium: 'Media',
+  high: 'Alta',
+  critical: 'Crítica',
+}[priority] || priority || 'N/A');
+
+// Helper - Incidents
+const getIncidentTypeLabel = (type: string) => ({
+  violence_against_inmate: 'Violencia contra PPL',
+  violence_against_staff: 'Violencia contra Personal',
+  gang_activity: 'Actividad de Pandillas',
+  extortion_attempt: 'Intento de Extorsión',
+  contraband_possession: 'Posesión de Contrabando',
+  escape_attempt: 'Intento de Fuga',
+  riot_participation: 'Participación en Motín',
+  unauthorized_communication: 'Comunicación No Autorizada',
+  bribery_attempt: 'Intento de Soborno',
+  weapon_possession: 'Posesión de Arma',
+  drug_possession: 'Posesión de Drogas',
+  cell_phone_possession: 'Posesión de Celular',
+  threatening_behavior: 'Comportamiento Amenazante',
+  sexual_harassment: 'Acoso Sexual',
+  property_damage: 'Daño a Propiedad',
+  rule_violation: 'Violación de Reglas',
+}[type] || type || 'N/A');
+
+const getSeverityClass = (severity: string): string => ({
+  low: "badge-light-success",
+  medium: "badge-light-warning",
+  high: "badge-light-danger",
+  critical: "badge-danger",
+}[severity] || "badge-light-secondary");
+
+const getSeverityText = (severity: string): string => ({
+  low: 'Bajo',
+  medium: 'Medio',
+  high: 'Alto',
+  critical: 'Crítico',
+}[severity] || severity || 'N/A');
+
+const getIncidentStatusClass = (status: string): string => ({
+  pending: "badge-light-secondary",
+  investigating: "badge-light-warning",
+  resolved: "badge-light-success",
+  dismissed: "badge-light-info",
+}[status] || "badge-light-secondary");
+
+const getIncidentStatusText = (status: string): string => ({
+  pending: 'Pendiente',
+  investigating: 'Investigando',
+  resolved: 'Resuelto',
+  dismissed: 'Desestimado',
+}[status] || status || 'N/A');
 
 const formatDate = (date: string): string => {
   if (!date) return "N/A";
@@ -1154,7 +995,7 @@ const formatDateTime = (datetime: string): string => {
 onMounted(() => {
   loadSecurityData();
   loadGangData();
-  loadSecurityMeasures();
+  loadAlerts();
   loadSecurityHistory();
 });
 </script>
