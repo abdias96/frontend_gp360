@@ -24,15 +24,15 @@
             <input v-model="filters.search" type="text" class="form-control" placeholder="Buscar..." @input="handleSearch" />
           </div>
           <div class="col-md-2">
-            <label class="form-label">Centro</label>
-            <select v-model="filters.center_id" class="form-select" @change="handleFilterChange">
+            <label class="form-label">Tipo</label>
+            <select v-model="filters.incident_type" class="form-select" @change="handleFilterChange">
               <option value="">Todos</option>
-              <option v-for="c in centers" :key="c?.id" :value="c?.id">{{ c?.name }}</option>
+              <option v-for="(label, key) in incidentTypeLabels" :key="key" :value="key">{{ label }}</option>
             </select>
           </div>
           <div class="col-md-2">
             <label class="form-label">Severidad</label>
-            <select v-model="filters.severity" class="form-select" @change="handleFilterChange">
+            <select v-model="filters.severity_level" class="form-select" @change="handleFilterChange">
               <option value="">Todas</option>
               <option value="low">Baja</option>
               <option value="medium">Media</option>
@@ -144,10 +144,10 @@
                   <span v-else class="text-muted">General</span>
                 </td>
                 <td>{{ getTypeLabel(r.incident_type) }}</td>
-                <td><span class="badge" :class="getSeverityBadge(r.severity_level || r.severity)">{{ getSeverityLabel(r.severity_level || r.severity) }}</span></td>
+                <td><span class="badge" :class="getSeverityBadge(r.severity_level)">{{ getSeverityLabel(r.severity_level) }}</span></td>
                 <td>{{ formatDateTime(r.incident_date) }}</td>
                 <td>{{ r.location || 'N/A' }}</td>
-                <td><span class="badge" :class="getStatusBadge(r.resolution_status || r.status)">{{ getStatusLabel(r.resolution_status || r.status) }}</span></td>
+                <td><span class="badge" :class="getStatusBadge(r.resolution_status)">{{ getStatusLabel(r.resolution_status) }}</span></td>
                 <td class="text-end">
                   <div class="d-flex gap-2 justify-content-end">
                     <button type="button" class="btn btn-icon btn-sm btn-light-primary" title="Ver" @click="viewDetail(r)"><i class="fas fa-eye"></i></button>
@@ -198,7 +198,6 @@ const canEdit = computed(() => authStore.isSuperAdmin || authStore.hasPermission
 const canDelete = computed(() => authStore.isSuperAdmin || authStore.hasPermission('security.incidents.delete'));
 
 const records = ref<any[]>([]);
-const centers = ref<any[]>([]);
 const loading = ref(false);
 const selectedRecord = ref<any>(null);
 const isEditing = ref(false);
@@ -216,7 +215,7 @@ const incidentTypeLabels: Record<string, string> = {
   property_damage: 'Daño a propiedad', rule_violation: 'Violación de reglas',
 };
 
-const filters = ref({ search: '', center_id: '', severity: '', date_from: '', date_to: '' });
+const filters = ref({ search: '', incident_type: '', severity_level: '', date_from: '', date_to: '' });
 const pagination = ref({ currentPage: 1, perPage: 15, total: 0, lastPage: 1, from: 0, to: 0 });
 const stats = ref({ total: 0, investigating: 0, resolved: 0, critical: 0 });
 
@@ -261,11 +260,6 @@ const loadStats = async () => {
   } catch (e) { console.error('Error loading stats:', e); }
 };
 
-const loadCenters = async () => {
-  try { const res = await ApiService.get('/catalogs/centers'); centers.value = res.data?.data || []; }
-  catch (e) { console.error('Error loading centers:', e); }
-};
-
 const getTypeLabel = (t: string) => incidentTypeLabels[t] || t;
 const getSeverityBadge = (s: string) => ({ low: 'badge-light-info', medium: 'badge-light-warning', high: 'badge-light-danger', critical: 'badge-danger' }[s] || 'badge-light');
 const getSeverityLabel = (s: string) => ({ low: 'Baja', medium: 'Media', high: 'Alta', critical: 'Crítica' }[s] || s);
@@ -275,7 +269,7 @@ const formatDateTime = (d: string) => d ? new Date(d).toLocaleString('es-GT') : 
 
 const handleSearch = debounce(() => { pagination.value.currentPage = 1; loadRecords(); }, 500);
 const handleFilterChange = () => { pagination.value.currentPage = 1; loadRecords(); };
-const resetFilters = () => { filters.value = { search: '', center_id: '', severity: '', date_from: '', date_to: '' }; pagination.value.currentPage = 1; loadRecords(); };
+const resetFilters = () => { filters.value = { search: '', incident_type: '', severity_level: '', date_from: '', date_to: '' }; pagination.value.currentPage = 1; loadRecords(); };
 const changePage = (p: number) => { if (p >= 1 && p <= pagination.value.lastPage) { pagination.value.currentPage = p; loadRecords(); } };
 const changePerPage = (pp: number) => { pagination.value.perPage = pp; pagination.value.currentPage = 1; loadRecords(); };
 const nextPage = () => { if (pagination.value.currentPage < pagination.value.lastPage) changePage(pagination.value.currentPage + 1); };
@@ -293,7 +287,7 @@ const deleteRecord = async (r: any) => {
 };
 const onSaved = () => { loadRecords(); loadStats(); Swal.fire({ icon: 'success', title: 'Incidente guardado', timer: 2000, showConfirmButton: false }); };
 
-onMounted(async () => { await Promise.all([loadCenters(), loadRecords(), loadStats()]); });
+onMounted(async () => { await Promise.all([loadRecords(), loadStats()]); });
 </script>
 
 <style scoped>

@@ -25,14 +25,14 @@
                   </div>
                   <div class="col-md-4">
                     <strong>Severidad:</strong><br>
-                    <span class="badge" :class="getSeverityBadge(incident.severity_level || incident.severity)">
-                      {{ getSeverityLabel(incident.severity_level || incident.severity) }}
+                    <span class="badge" :class="getSeverityBadge(incident.severity_level)">
+                      {{ getSeverityLabel(incident.severity_level) }}
                     </span>
                   </div>
                   <div class="col-md-4">
                     <strong>Estado:</strong><br>
-                    <span class="badge" :class="getStatusBadge(incident.resolution_status || incident.status)">
-                      {{ getStatusLabel(incident.resolution_status || incident.status) }}
+                    <span class="badge" :class="getStatusBadge(incident.resolution_status)">
+                      {{ getStatusLabel(incident.resolution_status) }}
                     </span>
                   </div>
                 </div>
@@ -64,7 +64,7 @@
                 </div>
                 <div class="mb-3">
                   <strong>Descripción:</strong>
-                  <p class="text-muted mt-1">{{ incident.incident_description || incident.description || 'N/A' }}</p>
+                  <p class="text-muted mt-1">{{ incident.incident_description || 'N/A' }}</p>
                 </div>
                 <div v-if="incident.circumstances" class="mb-3">
                   <strong>Circunstancias:</strong>

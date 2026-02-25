@@ -213,17 +213,20 @@ const formModalRef = ref<any>(null);
 const detailModalRef = ref<any>(null);
 
 const alertTypes = [
-  { value: 'escape_risk', label: 'Riesgo de Fuga' },
-  { value: 'violence_risk', label: 'Riesgo de Violencia' },
-  { value: 'gang_activity', label: 'Actividad Pandillera' },
-  { value: 'contraband', label: 'Contrabando' },
+  { value: 'high_escape_risk', label: 'Alto Riesgo de Fuga' },
+  { value: 'violence_threat', label: 'Amenaza de Violencia' },
+  { value: 'gang_leader', label: 'Líder de Pandilla' },
+  { value: 'extortion_coordinator', label: 'Coordinador de Extorsión' },
   { value: 'suicide_risk', label: 'Riesgo Suicida' },
   { value: 'medical_emergency', label: 'Emergencia Médica' },
-  { value: 'external_threat', label: 'Amenaza Externa' },
-  { value: 'riot_potential', label: 'Potencial Motín' },
-  { value: 'intelligence_alert', label: 'Alerta de Inteligencia' },
-  { value: 'transfer_required', label: 'Traslado Requerido' },
-  { value: 'other', label: 'Otra' },
+  { value: 'court_appearance', label: 'Audiencia Judicial' },
+  { value: 'transfer_pending', label: 'Traslado Pendiente' },
+  { value: 'visitor_restriction', label: 'Restricción de Visitas' },
+  { value: 'communication_restriction', label: 'Restricción de Comunicaciones' },
+  { value: 'isolation_required', label: 'Aislamiento Requerido' },
+  { value: 'weapon_possession_risk', label: 'Riesgo de Posesión de Armas' },
+  { value: 'contraband_risk', label: 'Riesgo de Contrabando' },
+  { value: 'corruption_involvement', label: 'Involucramiento en Corrupción' },
 ];
 
 const filters = ref({ search: '', alert_type: '', priority_level: '', is_active: '' });

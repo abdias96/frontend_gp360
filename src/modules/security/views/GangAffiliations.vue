@@ -252,9 +252,9 @@ const loadStats = async () => {
     if (res.data?.success) {
       const s = res.data.data;
       stats.value.total = s.total_affiliations || s.total || 0;
-      stats.value.ms13 = s.by_gang_type?.ms13 || 0;
-      stats.value.barrio18 = s.by_gang_type?.barrio18 || 0;
-      stats.value.high_threat = (s.by_threat_level?.high || 0) + (s.by_threat_level?.extreme || 0);
+      stats.value.ms13 = s.ms13_count || s.by_gang_type?.ms13 || 0;
+      stats.value.barrio18 = s.barrio18_count || (s.by_gang_type?.barrio18_surenos || 0) + (s.by_gang_type?.barrio18_revolucionarios || 0);
+      stats.value.high_threat = s.high_threat_count || (s.by_intelligence_level?.high || 0) + (s.by_intelligence_level?.critical || 0);
     }
   } catch (e) { console.error('Error loading stats:', e); }
 };
