@@ -38,7 +38,7 @@
                       :key="inmate.id" 
                       :value="inmate.id"
                     >
-                      {{ inmate.first_name }} {{ inmate.last_name }} - {{ inmate.inmate_number }}
+                      {{ [inmate.first_name, inmate.middle_name, inmate.last_name, inmate.second_last_name].filter(Boolean).join(' ') }} - {{ inmate.inmate_number }}
                     </option>
                   </select>
                   <div v-if="errorMessage" class="invalid-feedback">

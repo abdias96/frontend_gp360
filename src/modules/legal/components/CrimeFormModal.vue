@@ -576,7 +576,7 @@ const loadInmateById = async (inmateId: number) => {
       // Preload this inmate into options so it displays correctly
       inmatesOptions.value = [{
         value: inmate.id,
-        label: `${inmate.first_name} ${inmate.last_name} (${inmate.inmate_number})`
+        label: `${[inmate.first_name, inmate.middle_name, inmate.last_name, inmate.second_last_name].filter(Boolean).join(' ')} (${inmate.inmate_number})`
       }];
     }
   } catch (error) {

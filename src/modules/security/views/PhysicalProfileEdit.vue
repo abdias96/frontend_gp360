@@ -8,7 +8,7 @@
             <h3 class="card-title align-items-start flex-column">
               <span class="card-label fw-bold fs-3 mb-1">Editar Perfil Físico</span>
               <span class="text-muted mt-1 fw-semibold fs-7">
-                PPL: {{ inmateData?.first_name }} {{ inmateData?.last_name }} - {{ inmateData?.identification_number }}
+                PPL: {{ [inmateData?.first_name, inmateData?.middle_name, inmateData?.last_name, inmateData?.second_last_name].filter(Boolean).join(' ') }} - {{ inmateData?.identification_number }}
               </span>
             </h3>
             <div class="card-toolbar">

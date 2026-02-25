@@ -21,7 +21,7 @@
             <div>
               <strong>Liberación #{{ release.release_number }}</strong><br>
               <span class="text-muted">
-                PPL: {{ release.inmate?.first_name }} {{ release.inmate?.last_name }}<br>
+                PPL: {{ [release.inmate?.first_name, release.inmate?.middle_name, release.inmate?.last_name, release.inmate?.second_last_name].filter(Boolean).join(' ') }}<br>
                 Fecha Programada: {{ formatDate(release.scheduled_release_date) }}
               </span>
             </div>

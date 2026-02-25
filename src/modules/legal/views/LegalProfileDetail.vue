@@ -583,7 +583,7 @@ const inmateName = computed(() => {
   if (!profile.value?.inmate) return 'Sin nombre';
   return profile.value.inmate.full_name ||
          profile.value.inmate.name ||
-         `${profile.value.inmate.first_name} ${profile.value.inmate.last_name}`.trim() ||
+         [profile.value.inmate.first_name, profile.value.inmate.middle_name, profile.value.inmate.last_name, profile.value.inmate.second_last_name].filter(Boolean).join(' ') ||
          'Sin nombre';
 });
 

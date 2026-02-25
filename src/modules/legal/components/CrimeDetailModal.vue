@@ -268,7 +268,7 @@ const formatCurrency = (amount: number) => {
 
 const getInmateName = (inmate: any) => {
   if (!inmate) return 'Sin asignar';
-  return `${inmate.first_name || ''} ${inmate.last_name || ''}`.trim() || 'Sin nombre';
+  return [inmate.first_name, inmate.middle_name, inmate.last_name, inmate.second_last_name].filter(Boolean).join(' ') || 'Sin nombre';
 };
 
 const getClassificationName = (classificationId: number) => {

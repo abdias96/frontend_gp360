@@ -39,7 +39,7 @@
                 <div class="card-body">
                   <div class="mb-3">
                     <label class="text-muted fs-7">Nombre Completo</label>
-                    <div class="fw-bold">{{ release.inmate?.first_name }} {{ release.inmate?.last_name }}</div>
+                    <div class="fw-bold">{{ [release.inmate?.first_name, release.inmate?.middle_name, release.inmate?.last_name, release.inmate?.second_last_name].filter(Boolean).join(' ') }}</div>
                   </div>
                   <div class="mb-3">
                     <label class="text-muted fs-7">Documento</label>

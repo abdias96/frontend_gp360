@@ -72,7 +72,7 @@
                     <td>{{ formatDate(visit.requested_visit_date) }}</td>
                     <td>
                       <div class="d-flex flex-column">
-                        <span class="fw-bold">{{ visit.inmate?.first_name }} {{ visit.inmate?.last_name }}</span>
+                        <span class="fw-bold">{{ [visit.inmate?.first_name, visit.inmate?.middle_name, visit.inmate?.last_name, visit.inmate?.second_last_name].filter(Boolean).join(' ') }}</span>
                         <span class="text-muted fs-7">{{ visit.inmate?.document_number }}</span>
                       </div>
                     </td>
@@ -220,7 +220,7 @@
                     :key="rel.id"
                     :value="rel"
                   >
-                    {{ rel.inmate?.first_name }} {{ rel.inmate?.last_name }}
+                    {{ [rel.inmate?.first_name, rel.inmate?.middle_name, rel.inmate?.last_name, rel.inmate?.second_last_name].filter(Boolean).join(' ') }}
                     ({{ rel.inmate?.document_number || 'Sin DPI' }}) -
                     {{ rel.inmate?.current_center?.name || rel.inmate?.currentCenter?.name || 'Sin centro asignado' }}
                   </option>
@@ -354,7 +354,7 @@
                     </td>
                     <td>
                       <div class="fw-bold">
-                        {{ visit.inmate?.first_name }} {{ visit.inmate?.last_name }}
+                        {{ [visit.inmate?.first_name, visit.inmate?.middle_name, visit.inmate?.last_name, visit.inmate?.second_last_name].filter(Boolean).join(' ') }}
                       </div>
                       <div class="text-muted fs-7">
                         {{ visit.inmate?.document_number }}
@@ -500,7 +500,7 @@
                 <div>
                   <div class="fw-bold">{{ visitToExit.visitor?.full_name }}</div>
                   <div class="text-muted fs-7">
-                    Visitando a: {{ visitToExit.inmate?.first_name }} {{ visitToExit.inmate?.last_name }}
+                    Visitando a: {{ [visitToExit.inmate?.first_name, visitToExit.inmate?.middle_name, visitToExit.inmate?.last_name, visitToExit.inmate?.second_last_name].filter(Boolean).join(' ') }}
                   </div>
                 </div>
               </div>

@@ -109,7 +109,7 @@
                       <span class="path4"></span>
                     </i>
                     <div>
-                      <div class="fw-bold">{{ file.inmate.first_name }} {{ file.inmate.last_name }}</div>
+                      <div class="fw-bold">{{ [file.inmate.first_name, file.inmate.middle_name, file.inmate.last_name, file.inmate.second_last_name].filter(Boolean).join(' ') }}</div>
                       <div class="text-muted fs-7">DPI: {{ file.inmate.document_number }}</div>
                       <div v-if="file.inmate.inmate_number" class="text-muted fs-7">
                         No. Interno: {{ file.inmate.inmate_number }}

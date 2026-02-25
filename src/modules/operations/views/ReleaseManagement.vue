@@ -193,7 +193,7 @@
               </td>
               <td>
                 <div class="d-flex flex-column">
-                  <span class="text-dark fw-bold">{{ release.inmate?.first_name }} {{ release.inmate?.last_name }}</span>
+                  <span class="text-dark fw-bold">{{ [release.inmate?.first_name, release.inmate?.middle_name, release.inmate?.last_name, release.inmate?.second_last_name].filter(Boolean).join(' ') }}</span>
                   <span class="text-muted fs-7">{{ release.inmate?.document_number }}</span>
                 </div>
               </td>

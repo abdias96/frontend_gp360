@@ -403,7 +403,7 @@ const formatDate = (date: string) => {
 
 const getInmateName = (inmate: any) => {
   if (!inmate) return 'N/A';
-  return `${inmate.first_name} ${inmate.last_name}`;
+  return [inmate.first_name, inmate.middle_name, inmate.last_name, inmate.second_last_name].filter(Boolean).join(' ');
 };
 
 const getInitials = (inmate: any) => {

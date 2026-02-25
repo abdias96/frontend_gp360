@@ -45,7 +45,7 @@
                   class="p-2 cursor-pointer hover-bg-light rounded"
                   @click="selectInmate(inmate)"
                 >
-                  <span class="fw-bold">{{ inmate.first_name }} {{ inmate.last_name }}</span>
+                  <span class="fw-bold">{{ [inmate.first_name, inmate.middle_name, inmate.last_name, inmate.second_last_name].filter(Boolean).join(' ') }}</span>
                   <span class="text-muted ms-2">{{ inmate.document_number }}</span>
                 </div>
               </div>
@@ -58,7 +58,7 @@
                   <span class="path4"></span>
                 </i>
                 <div>
-                  <div class="fw-bold">{{ selectedInmate.first_name }} {{ selectedInmate.last_name }}</div>
+                  <div class="fw-bold">{{ [selectedInmate.first_name, selectedInmate.middle_name, selectedInmate.last_name, selectedInmate.second_last_name].filter(Boolean).join(' ') }}</div>
                   <div class="text-muted fs-7">{{ selectedInmate.document_number }}</div>
                 </div>
                 <button type="button" class="btn btn-sm btn-icon btn-light-danger ms-auto" @click="clearInmate">

@@ -46,7 +46,7 @@
             <div v-if="alert.inmate" class="card border mb-5">
               <div class="card-header"><h5 class="card-title mb-0">PPL Asociado</h5></div>
               <div class="card-body p-4">
-                <strong>{{ alert.inmate.first_name }} {{ alert.inmate.last_name }} {{ alert.inmate.second_last_name || '' }}</strong>
+                <strong>{{ [alert.inmate.first_name, alert.inmate.middle_name, alert.inmate.last_name, alert.inmate.second_last_name].filter(Boolean).join(' ') }}</strong>
                 <span class="text-muted ms-2">{{ alert.inmate.inmate_number }}</span>
               </div>
             </div>

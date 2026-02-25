@@ -421,7 +421,7 @@ const loadInmates = async () => {
     
     inmatesOptions.value = inmates.map((inmate: any) => ({
       value: inmate.id,
-      label: `${inmate.first_name} ${inmate.last_name} (${inmate.inmate_number})`
+      label: `${[inmate.first_name, inmate.middle_name, inmate.last_name, inmate.second_last_name].filter(Boolean).join(' ')} (${inmate.inmate_number})`
     }));
   } catch (error) {
     console.error('Error loading inmates:', error);
@@ -553,7 +553,7 @@ const formatCurrency = (amount: number) => {
 
 const getInmateName = (inmate: any) => {
   if (!inmate) return 'Sin asignar';
-  return `${inmate.first_name || ''} ${inmate.last_name || ''}`.trim() || 'Sin nombre';
+  return [inmate.first_name, inmate.middle_name, inmate.last_name, inmate.second_last_name].filter(Boolean).join(' ') || 'Sin nombre';
 };
 
 const getClassificationName = (classificationId: number) => {

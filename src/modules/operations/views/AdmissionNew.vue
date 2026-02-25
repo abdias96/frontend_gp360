@@ -218,7 +218,7 @@
                 <h5 class="mb-3">{{ $t('operations.admissions.summary') }}</h5>
                 <div class="row">
                   <div class="col-md-6">
-                    <p><strong>{{ $t('operations.admissions.full_name') }}:</strong> {{ formData.first_name }} {{ formData.last_name }}</p>
+                    <p><strong>{{ $t('operations.admissions.full_name') }}:</strong> {{ [formData.first_name, formData.middle_name, formData.last_name, formData.second_last_name].filter(Boolean).join(' ') }}</p>
                     <p><strong>{{ $t('operations.admissions.document') }}:</strong> {{ formData.document_type }} - {{ formData.document_number }}</p>
                     <p><strong>{{ $t('operations.admissions.legal_status') }}:</strong> {{ formData.legal_status }}</p>
                   </div>

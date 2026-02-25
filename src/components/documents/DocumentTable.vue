@@ -73,7 +73,7 @@
           <td v-if="showInmateColumn">
             <div v-if="file.inmate" class="d-flex flex-column">
               <span class="text-gray-800">
-                {{ file.inmate.first_name }} {{ file.inmate.last_name }}
+                {{ [file.inmate.first_name, file.inmate.middle_name, file.inmate.last_name, file.inmate.second_last_name].filter(Boolean).join(' ') }}
               </span>
               <span class="text-muted fs-7">{{ file.inmate.document_number }}</span>
             </div>

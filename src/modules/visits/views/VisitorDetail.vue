@@ -280,7 +280,7 @@ const relatedInmates = computed(() => {
   return visitorData.value.relationships.map((rel: any) => ({
     id: rel.id,
     inmateName: rel.inmate ?
-      [rel.inmate.first_name, rel.inmate.last_name].filter(Boolean).join(' ') :
+      [rel.inmate.first_name, rel.inmate.middle_name, rel.inmate.last_name, rel.inmate.second_last_name].filter(Boolean).join(' ') :
       'N/A',
     inmateCode: rel.inmate?.inmate_number || rel.inmate?.inmate_code || 'N/A',
     relationship: rel.relationship_type?.name || 'N/A',
@@ -355,7 +355,7 @@ const visitHistory = computed(() => {
       date: dateOnly,
       time: timeOnly || '-',
       inmateName: visit.inmate ?
-        [visit.inmate.first_name, visit.inmate.last_name].filter(Boolean).join(' ') :
+        [visit.inmate.first_name, visit.inmate.middle_name, visit.inmate.last_name, visit.inmate.second_last_name].filter(Boolean).join(' ') :
         'N/A',
       type: visit.visit_type?.name || 'N/A',
       duration: visit.actual_duration_minutes || visit.requested_duration_minutes || visit.duration_minutes || 0,
