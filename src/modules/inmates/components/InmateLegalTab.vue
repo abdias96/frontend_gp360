@@ -154,109 +154,27 @@
         </div>
         <!--end::Sentence Information-->
 
-        <!--begin::Primary Crime-->
+        <!--begin::Crimes-->
         <div class="col-12">
           <div class="card card-flush">
             <div class="card-header pt-7">
               <h3 class="card-title align-items-start flex-column">
-                <span class="card-label fw-bold text-gray-800"
-                  >Delito Principal</span
-                >
-              </h3>
-            </div>
-            <div class="card-body pt-0">
-              <div
-                v-if="!primaryCrimeName"
-                class="text-center py-5"
-              >
-                <div class="text-gray-600">
-                  No hay delito principal registrado
-                </div>
-              </div>
-              <div v-else class="row">
-                <div class="col-md-6">
-                  <div class="mb-4">
-                    <span class="fw-bold text-gray-600 d-block mb-2"
-                      >Delito</span
-                    >
-                    <span class="text-gray-800">{{
-                      primaryCrimeName
-                    }}</span>
-                  </div>
-                </div>
-                <div class="col-md-6">
-                  <div class="mb-4">
-                    <span class="fw-bold text-gray-600 d-block mb-2">Tipo</span>
-                    <span class="badge badge-light-danger">Principal</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-        <!--end::Primary Crime-->
-
-        <!--begin::Secondary Crimes-->
-        <div
-          v-if="secondaryCrimes && secondaryCrimes.length > 0"
-          class="col-12"
-        >
-          <div class="card card-flush">
-            <div class="card-header pt-7">
-              <h3 class="card-title align-items-start flex-column">
-                <span class="card-label fw-bold text-gray-800"
-                  >Delitos Secundarios</span
-                >
-              </h3>
-            </div>
-            <div class="card-body pt-0">
-              <div class="table-responsive">
-                <table class="table table-row-dashed table-row-gray-300 gy-7">
-                  <thead>
-                    <tr
-                      class="fw-bold fs-6 text-gray-800 border-bottom-2 border-gray-200"
-                    >
-                      <th>Delito</th>
-                      <th>Descripción</th>
-                      <th>Tipo</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr
-                      v-for="(crime, index) in secondaryCrimes"
-                      :key="index"
-                    >
-                      <td>{{ crime.crime?.name || crime.crime_description || "N/A" }}</td>
-                      <td>{{ crime.crime_location || "N/A" }}</td>
-                      <td>
-                        <span class="badge badge-light-warning"
-                          >Secundario</span
-                        >
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          </div>
-        </div>
-        <!--end::Secondary Crimes-->
-
-        <!--begin::All Crimes List-->
-        <div v-if="legalProfile && legalProfile.crimes && legalProfile.crimes.length > 0" class="col-12">
-          <div class="card card-flush">
-            <div class="card-header pt-7">
-              <h3 class="card-title align-items-start flex-column">
-                <span class="card-label fw-bold text-gray-800"
-                  >Todos los Delitos</span
-                >
-                <span class="card-label text-muted mt-1 fw-semibold fs-7">
+                <span class="card-label fw-bold text-gray-800">Delitos</span>
+                <span v-if="legalProfile.crimes?.length" class="text-muted mt-1 fw-semibold fs-7">
                   {{ legalProfile.crimes.length }} delito(s) registrado(s)
                 </span>
               </h3>
             </div>
             <div class="card-body pt-0">
-              <div class="table-responsive">
+              <div
+                v-if="!legalProfile.crimes || legalProfile.crimes.length === 0"
+                class="text-center py-5"
+              >
+                <div class="text-gray-600">
+                  No hay delitos registrados
+                </div>
+              </div>
+              <div v-else class="table-responsive">
                 <table class="table table-row-dashed table-row-gray-300 gy-7">
                   <thead>
                     <tr
@@ -277,7 +195,7 @@
                             crime.crime?.name || crime.crime_description || "N/A"
                           }}</span>
                           <span
-                            v-if="crime.crime_description"
+                            v-if="crime.crime_description && crime.crime?.name"
                             class="text-muted fs-7"
                           >
                             {{ crime.crime_description }}
@@ -286,12 +204,10 @@
                       </td>
                       <td>{{ crime.crime_classification?.name || "N/A" }}</td>
                       <td>
-                        <div class="d-flex flex-column">
-                          <span v-if="crime.crime_date">{{
-                            formatDate(crime.crime_date)
-                          }}</span>
-                          <span v-else class="text-muted">N/A</span>
-                        </div>
+                        <span v-if="crime.crime_date">{{
+                          formatDate(crime.crime_date)
+                        }}</span>
+                        <span v-else class="text-muted">N/A</span>
                       </td>
                       <td>
                         {{ crime.crime_location || "N/A" }}
@@ -300,12 +216,12 @@
                         <span
                           class="badge"
                           :class="
-                            crime.is_primary
+                            crime.is_primary || crime.is_main
                               ? 'badge-light-danger'
                               : 'badge-light-warning'
                           "
                         >
-                          {{ crime.is_primary ? "Principal" : "Secundario" }}
+                          {{ crime.is_primary || crime.is_main ? "Principal" : "Secundario" }}
                         </span>
                       </td>
                     </tr>
@@ -315,7 +231,7 @@
             </div>
           </div>
         </div>
-        <!--end::All Crimes List-->
+        <!--end::Crimes-->
       </div>
     </div>
     <!--end::Card body-->
@@ -323,9 +239,9 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted } from "vue";
+import { computed } from "vue";
 import { useAuthStore } from "@/stores/auth";
-import type { InmateDetail, InmateCrime } from "@/types/inmates";
+import type { InmateDetail } from "@/types/inmates";
 import Swal from "sweetalert2";
 
 interface Props {
@@ -334,10 +250,6 @@ interface Props {
 
 const props = defineProps<Props>();
 const authStore = useAuthStore();
-
-// Debug logging on mount
-onMounted(() => {
-});
 
 // Computed properties
 // Try legalProfiles first (camelCase from backend), then fall back to legal_profiles (snake_case)
@@ -365,35 +277,6 @@ const hasSentenceTime = computed(() => {
     legalProfile.value.sentence_months ||
     legalProfile.value.sentence_days
   );
-});
-
-// Computed property for primary crime
-const primaryCrime = computed(() => {
-  if (!legalProfile.value || !legalProfile.value.crimes || legalProfile.value.crimes.length === 0) {
-    return null;
-  }
-  // Return the first crime or the one marked as primary
-  const primaryFound = legalProfile.value.crimes.find((c: any) => c.is_primary);
-  return primaryFound || legalProfile.value.crimes[0];
-});
-
-// Computed property for primary crime name
-const primaryCrimeName = computed(() => {
-  if (!primaryCrime.value) return null;
-  // Try to get from the crime relation first, then from crime_description
-  return primaryCrime.value.crime?.name || primaryCrime.value.crime_description || 'N/A';
-});
-
-// Computed property for secondary crimes
-const secondaryCrimes = computed(() => {
-  if (!legalProfile.value || !legalProfile.value.crimes || legalProfile.value.crimes.length === 0) {
-    return [];
-  }
-  // Return all crimes except the primary one
-  if (primaryCrime.value) {
-    return legalProfile.value.crimes.filter((c: any) => c.id !== primaryCrime.value.id);
-  }
-  return legalProfile.value.crimes.slice(1); // Skip first if no primary is marked
 });
 
 // Methods
@@ -429,24 +312,6 @@ const formatSentenceDuration = (): string => {
   }
 
   return parts.join(", ");
-};
-
-const formatCrimeSentence = (crime: InmateCrime): string => {
-  const parts: string[] = [];
-
-  if (crime.sentence_years) {
-    parts.push(`${crime.sentence_years}a`);
-  }
-
-  if (crime.sentence_months) {
-    parts.push(`${crime.sentence_months}m`);
-  }
-
-  if (crime.sentence_days) {
-    parts.push(`${crime.sentence_days}d`);
-  }
-
-  return parts.join(" ");
 };
 
 const editLegalProfile = () => {
