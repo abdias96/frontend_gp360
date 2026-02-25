@@ -281,7 +281,7 @@ const loadCenters = async () => {
   catch (e) { console.error('Error loading centers:', e); }
 };
 
-const getInmateName = (r: any) => { const i = r?.inmate; if (!i) return 'N/A'; return [i.first_name, i.last_name, i.second_last_name].filter(Boolean).join(' '); };
+const getInmateName = (r: any) => { const i = r?.inmate; if (!i) return 'N/A'; return [i.first_name, i.middle_name, i.last_name, i.second_last_name].filter(Boolean).join(' '); };
 const formatDate = (d: string) => d ? new Date(d).toLocaleDateString('es-GT') : 'N/A';
 
 const handleSearch = debounce(() => { pagination.value.currentPage = 1; loadRecords(); }, 500);

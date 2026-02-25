@@ -279,7 +279,7 @@ const loadStats = async () => {
   } catch (e) { console.error('Error loading stats:', e); }
 };
 
-const getInmateName = (r: any) => { const i = r?.inmate; if (!i) return 'N/A'; return [i.first_name, i.last_name, i.second_last_name].filter(Boolean).join(' '); };
+const getInmateName = (r: any) => { const i = r?.inmate; if (!i) return 'N/A'; return [i.first_name, i.middle_name, i.last_name, i.second_last_name].filter(Boolean).join(' '); };
 const getTypeLabel = (t: string) => alertTypes.find(a => a.value === t)?.label || t;
 const getPriorityBadge = (p: string) => ({ low: 'badge-light-info', medium: 'badge-light-warning', high: 'badge-light-danger', critical: 'badge-danger' }[p] || 'badge-light');
 const getPriorityLabel = (p: string) => ({ low: 'Baja', medium: 'Media', high: 'Alta', critical: 'Crítica' }[p] || p);

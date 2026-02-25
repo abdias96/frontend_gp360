@@ -140,7 +140,7 @@
             <tbody class="text-gray-600 fw-semibold">
               <tr v-for="r in records" :key="r.id">
                 <td>
-                  <span v-if="r.inmate" class="text-gray-800 fw-bold">{{ r.inmate.first_name }} {{ r.inmate.last_name }}</span>
+                  <span v-if="r.inmate" class="text-gray-800 fw-bold">{{ [r.inmate.first_name, r.inmate.middle_name, r.inmate.last_name, r.inmate.second_last_name].filter(Boolean).join(' ') }}</span>
                   <span v-else class="text-muted">General</span>
                 </td>
                 <td>{{ getTypeLabel(r.incident_type) }}</td>
