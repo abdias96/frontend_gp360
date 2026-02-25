@@ -28,8 +28,7 @@
             <select v-model="filters.gang_type" class="form-select" @change="handleFilterChange">
               <option value="">Todos</option>
               <option value="ms13">MS-13</option>
-              <option value="barrio18_surenos">B18 Sureños</option>
-              <option value="barrio18_revolucionarios">B18 Revolucionarios</option>
+              <option value="barrio18">Barrio 18</option>
               <option value="other_gang">Otra Pandilla</option>
               <option value="organized_crime">Crimen Org.</option>
               <option value="drug_cartel">Cartel</option>
@@ -260,8 +259,8 @@ const loadStats = async () => {
 };
 
 const getInmateName = (r: any) => { const i = r?.inmate; if (!i) return 'N/A'; return [i.first_name, i.middle_name, i.last_name, i.second_last_name].filter(Boolean).join(' '); };
-const getGangLabel = (t: string) => ({ ms13: 'MS-13', barrio18_surenos: 'B18 Sureños', barrio18_revolucionarios: 'B18 Revolucionarios', other_gang: 'Otra Pandilla', drug_cartel: 'Cartel', organized_crime: 'Crimen Org.', none: 'Ninguna', barrio18: 'Barrio 18', local_gang: 'Pandilla Local', other: 'Otra' }[t] || t);
-const getGangBadge = (t: string) => ({ ms13: 'badge-danger', barrio18_surenos: 'badge-warning', barrio18_revolucionarios: 'badge-warning', drug_cartel: 'badge-dark', organized_crime: 'badge-dark', barrio18: 'badge-warning' }[t] || 'badge-light-info');
+const getGangLabel = (t: string) => ({ ms13: 'MS-13', barrio18: 'Barrio 18', other_gang: 'Otra Pandilla', drug_cartel: 'Cartel', organized_crime: 'Crimen Org.', none: 'Ninguna' }[t] || t);
+const getGangBadge = (t: string) => ({ ms13: 'badge-danger', barrio18: 'badge-warning', drug_cartel: 'badge-dark', organized_crime: 'badge-dark' }[t] || 'badge-light-info');
 const getLevelLabel = (l: string) => ({ suspected: 'Sospechoso', confirmed_member: 'Confirmado', leader: 'Líder', high_ranking: 'Alto Rango', founder: 'Fundador', inactive: 'Inactivo', former_member: 'Ex-miembro', core: 'Núcleo', active: 'Activo', associate: 'Asociado', sympathizer: 'Simpatizante', peripheral: 'Periférico', former: 'Ex-miembro', unknown: 'Desconocido' }[l] || l || 'N/A');
 const getIntelBadge = (l: string) => ({ low: 'badge-light-success', medium: 'badge-light-warning', high: 'badge-light-danger', critical: 'badge-danger' }[l] || 'badge-light');
 const getIntelLabel = (l: string) => ({ low: 'Bajo', medium: 'Medio', high: 'Alto', critical: 'Crítico' }[l] || l || 'N/A');

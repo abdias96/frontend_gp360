@@ -33,8 +33,7 @@
                 <select v-model="form.gang_type" class="form-select" :class="{ 'is-invalid': errors.gang_type }">
                   <option value="">Seleccionar...</option>
                   <option value="ms13">Mara Salvatrucha (MS-13)</option>
-                  <option value="barrio18_surenos">Barrio 18 Sureños</option>
-                  <option value="barrio18_revolucionarios">Barrio 18 Revolucionarios</option>
+                  <option value="barrio18">Barrio 18</option>
                   <option value="other_gang">Otra Pandilla</option>
                   <option value="organized_crime">Crimen Organizado</option>
                   <option value="drug_cartel">Cartel de Drogas</option>

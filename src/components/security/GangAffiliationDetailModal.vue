@@ -155,20 +155,17 @@ let modalInstance: Modal | null = null;
 const getInmateName = (r: any) => {
   const i = r?.inmate;
   if (!i) return 'N/A';
-  return [i.first_name, i.last_name, i.second_last_name].filter(Boolean).join(' ');
+  return [i.first_name, i.middle_name, i.last_name, i.second_last_name].filter(Boolean).join(' ');
 };
 
 const getGangLabel = (t: string) => ({
-  ms13: 'MS-13', barrio18_surenos: 'Barrio 18 Sureños', barrio18_revolucionarios: 'Barrio 18 Revolucionarios',
+  ms13: 'MS-13', barrio18: 'Barrio 18',
   other_gang: 'Otra Pandilla', drug_cartel: 'Cartel', organized_crime: 'Crimen Organizado', none: 'Ninguna',
-  // Legacy values
-  barrio18: 'Barrio 18', local_gang: 'Pandilla Local', other: 'Otra',
 }[t] || t);
 
 const getGangBadge = (t: string) => ({
-  ms13: 'badge-danger', barrio18_surenos: 'badge-warning', barrio18_revolucionarios: 'badge-warning',
+  ms13: 'badge-danger', barrio18: 'badge-warning',
   drug_cartel: 'badge-dark', organized_crime: 'badge-dark',
-  barrio18: 'badge-warning',
 }[t] || 'badge-light-info');
 
 const getLevelLabel = (l: string) => ({
