@@ -56,6 +56,23 @@
           </button>
           <!--end::Advanced Search-->
 
+          <!--begin::Bulk Print-->
+          <button
+            type="button"
+            :class="selectionMode ? 'btn btn-light-danger' : 'btn btn-light-warning'"
+            @click="toggleSelectionMode"
+          >
+            <i class="ki-duotone ki-printer fs-2">
+              <span class="path1"></span>
+              <span class="path2"></span>
+              <span class="path3"></span>
+              <span class="path4"></span>
+              <span class="path5"></span>
+            </i>
+            {{ selectionMode ? $t('inmates.list.bulkPrint.cancelSelection') : $t('inmates.list.bulkPrint.toggleButton') }}
+          </button>
+          <!--end::Bulk Print-->
+
           <!--begin::Add inmate-->
           <router-link
             to="/inmates/create"
@@ -143,6 +160,84 @@
             </select>
           </div>
         </div>
+        <!--begin::Second row of filters-->
+        <div class="row w-100 g-3 mt-1">
+          <div class="col-md-3">
+            <label class="form-label fs-7 fw-bold">{{ $t('inmates.list.filterLabels.gangAffiliation') }}</label>
+            <select
+              v-model="localFilters.gang_affiliation_status"
+              class="form-select form-select-solid"
+              @change="handleFilterChange"
+            >
+              <option value="">{{ $t('inmates.list.filterLabels.allGangStatuses') }}</option>
+              <option value="none">{{ $t('inmates.list.gangStatuses.none') }}</option>
+              <option value="suspected_ms13">{{ $t('inmates.list.gangStatuses.suspected_ms13') }}</option>
+              <option value="confirmed_ms13">{{ $t('inmates.list.gangStatuses.confirmed_ms13') }}</option>
+              <option value="suspected_barrio18">{{ $t('inmates.list.gangStatuses.suspected_barrio18') }}</option>
+              <option value="confirmed_barrio18">{{ $t('inmates.list.gangStatuses.confirmed_barrio18') }}</option>
+              <option value="other_gang">{{ $t('inmates.list.gangStatuses.other_gang') }}</option>
+              <option value="gang_leader">{{ $t('inmates.list.gangStatuses.gang_leader') }}</option>
+              <option value="protected_witness">{{ $t('inmates.list.gangStatuses.protected_witness') }}</option>
+            </select>
+          </div>
+          <div class="col-md-3">
+            <label class="form-label fs-7 fw-bold">{{ $t('inmates.list.filterLabels.riskClassification') }}</label>
+            <select
+              v-model="localFilters.risk_classification_id"
+              class="form-select form-select-solid"
+              @change="handleFilterChange"
+            >
+              <option value="">{{ $t('inmates.list.filterLabels.allRiskClassifications') }}</option>
+              <option
+                v-for="option in riskClassificationsOptions"
+                :key="option.value"
+                :value="option.value"
+              >
+                {{ option.label }}
+              </option>
+            </select>
+          </div>
+          <div class="col-md-2">
+            <label class="form-label fs-7 fw-bold">{{ $t('inmates.list.filterLabels.proceduralStatus') }}</label>
+            <select
+              v-model="localFilters.procedural_status_id"
+              class="form-select form-select-solid"
+              @change="handleFilterChange"
+            >
+              <option value="">{{ $t('inmates.list.filterLabels.allProceduralStatuses') }}</option>
+              <option
+                v-for="option in proceduralStatusesOptions"
+                :key="option.value"
+                :value="option.value"
+              >
+                {{ option.label }}
+              </option>
+            </select>
+          </div>
+          <div class="col-md-2">
+            <label class="form-label fs-7 fw-bold">{{ $t('inmates.list.filterLabels.ageFrom') }}</label>
+            <input
+              type="number"
+              v-model.number="localFilters.age_from"
+              class="form-control form-control-solid"
+              min="18"
+              max="100"
+              @change="handleFilterChange"
+            />
+          </div>
+          <div class="col-md-2">
+            <label class="form-label fs-7 fw-bold">{{ $t('inmates.list.filterLabels.ageTo') }}</label>
+            <input
+              type="number"
+              v-model.number="localFilters.age_to"
+              class="form-control form-control-solid"
+              min="18"
+              max="100"
+              @change="handleFilterChange"
+            />
+          </div>
+        </div>
+        <!--end::Second row of filters-->
         <div class="d-flex justify-content-end mt-3">
           <button
             type="button"
@@ -342,6 +437,17 @@
               <tr
                 class="text-start text-muted fw-bold fs-7 text-uppercase gs-0"
               >
+                <th v-if="selectionMode" class="w-25px">
+                  <div class="form-check form-check-sm form-check-custom form-check-solid">
+                    <input
+                      class="form-check-input"
+                      type="checkbox"
+                      :checked="isPageAllSelected"
+                      @change="togglePageSelection"
+                      :title="isPageAllSelected ? $t('inmates.list.bulkPrint.deselectPage') : $t('inmates.list.bulkPrint.selectPage')"
+                    />
+                  </div>
+                </th>
                 <th class="min-w-200px">{{ $t('inmates.list.tableHeaders.inmate') }}</th>
                 <th class="min-w-125px">{{ $t('inmates.list.tableHeaders.identification') }}</th>
                 <th class="min-w-125px">{{ $t('inmates.list.tableHeaders.status') }}</th>
@@ -355,7 +461,19 @@
 
             <!--begin::Table body-->
             <tbody class="text-gray-600 fw-semibold">
-              <tr v-for="inmate in inmates" :key="inmate.id">
+              <tr v-for="inmate in inmates" :key="inmate.id" :class="{ 'bg-light-warning': selectionMode && selectedIds.has(inmate.id) }">
+                <!--begin::Checkbox-->
+                <td v-if="selectionMode">
+                  <div class="form-check form-check-sm form-check-custom form-check-solid">
+                    <input
+                      class="form-check-input"
+                      type="checkbox"
+                      :checked="selectedIds.has(inmate.id)"
+                      @change="toggleInmateSelection(inmate.id)"
+                    />
+                  </div>
+                </td>
+                <!--end::Checkbox-->
                 <!--begin::Inmate-->
                 <td class="d-flex align-items-center">
                   <!--begin::Avatar-->
@@ -594,6 +712,56 @@
     <!--end::Card body-->
   </div>
 
+  <!--begin::Bulk Print Floating Bar-->
+  <div
+    v-if="selectionMode && (selectedIds.size > 0 || selectAllFiltered)"
+    class="bulk-print-bar"
+  >
+    <div class="d-flex align-items-center justify-content-between w-100 flex-wrap gap-3">
+      <div class="d-flex align-items-center gap-3">
+        <span class="fw-bold text-white">
+          <i class="ki-duotone ki-check-circle fs-3 text-white me-1"><span class="path1"></span><span class="path2"></span></i>
+          {{ selectAllFiltered
+            ? $t('inmates.list.bulkPrint.selectAllFiltered', { total: pagination.total })
+            : $t('inmates.list.bulkPrint.selected', { count: selectedIds.size })
+          }}
+        </span>
+        <button
+          v-if="!selectAllFiltered && selectedIds.size < pagination.total && pagination.total <= 200"
+          type="button"
+          class="btn btn-sm btn-light"
+          @click="selectAllFiltered = true"
+        >
+          {{ $t('inmates.list.bulkPrint.selectAllFiltered', { total: pagination.total }) }}
+        </button>
+      </div>
+      <div class="d-flex align-items-center gap-3">
+        <input
+          type="text"
+          v-model="watermarkText"
+          class="form-control form-control-sm form-control-solid w-200px"
+          :placeholder="$t('inmates.list.bulkPrint.watermarkPlaceholder')"
+        />
+        <button
+          type="button"
+          class="btn btn-sm btn-warning fw-bold"
+          @click="printSelectedProfiles"
+        >
+          <i class="ki-duotone ki-printer fs-4 me-1"><span class="path1"></span><span class="path2"></span><span class="path3"></span><span class="path4"></span><span class="path5"></span></i>
+          {{ $t('inmates.list.bulkPrint.generateProfiles') }}
+        </button>
+        <button
+          type="button"
+          class="btn btn-sm btn-light"
+          @click="cancelSelection"
+        >
+          <i class="ki-duotone ki-cross fs-4"></i>
+        </button>
+      </div>
+    </div>
+  </div>
+  <!--end::Bulk Print Floating Bar-->
+
   <!-- Modals -->
   <TransferFormModal
     :show="showTransferModal"
@@ -621,6 +789,8 @@ import type { InmateListItem, InmateStatistics } from "@/types/inmates";
 import Swal from "sweetalert2";
 import TransferFormModal from "@/components/inmates/modals/TransferFormModal.vue";
 import ChangeStatusModal from "@/components/inmates/modals/ChangeStatusModal.vue";
+import ApiService from "@/core/services/ApiService";
+import { generateBatchPrintHTML } from "@/utils/inmatePrintProfile";
 
 // Stores and composables
 const inmatesStore = useInmatesStore();
@@ -630,6 +800,8 @@ const {
   centers,
   centersOptions,
   nationalitiesOptions,
+  riskClassificationsOptions,
+  proceduralStatusesOptions,
   loadInmateCatalogs,
 } = useCatalogs();
 const router = useRouter();
@@ -642,12 +814,23 @@ const loadingStatistics = ref(false);
 const selectedInmate = ref<InmateListItem | null>(null);
 const showTransferModal = ref(false);
 
+// Selection mode state
+const selectionMode = ref(false);
+const selectedIds = ref<Set<number>>(new Set());
+const selectAllFiltered = ref(false);
+const watermarkText = ref('');
+
 // Local filter reactive variables
 const localFilters = ref({
   center_id: null as number | null,
   status: null as string | null,
   gender: null as string | null,
   nationality_id: null as number | null,
+  gang_affiliation_status: null as string | null,
+  risk_classification_id: null as number | null,
+  procedural_status_id: null as number | null,
+  age_from: null as number | null,
+  age_to: null as number | null,
 });
 
 // Computed properties
@@ -677,8 +860,19 @@ const hasActiveFilters = computed(() => {
     localFilters.value.center_id ||
     localFilters.value.status ||
     localFilters.value.gender ||
-    localFilters.value.nationality_id
+    localFilters.value.nationality_id ||
+    localFilters.value.gang_affiliation_status ||
+    localFilters.value.risk_classification_id ||
+    localFilters.value.procedural_status_id ||
+    localFilters.value.age_from ||
+    localFilters.value.age_to
   );
+});
+
+// Check if all inmates on current page are selected
+const isPageAllSelected = computed(() => {
+  if (inmates.value.length === 0) return false;
+  return inmates.value.every((inmate: any) => selectedIds.value.has(inmate.id));
 });
 
 // Generate pagination pages
@@ -777,9 +971,21 @@ const handleFilterChange = () => {
     nationality_id: localFilters.value.nationality_id
       ? Number(localFilters.value.nationality_id)
       : null,
+    gang_affiliation_status: localFilters.value.gang_affiliation_status || null,
+    risk_classification_id: localFilters.value.risk_classification_id
+      ? Number(localFilters.value.risk_classification_id)
+      : null,
+    procedural_status_id: localFilters.value.procedural_status_id
+      ? Number(localFilters.value.procedural_status_id)
+      : null,
+    age_from: localFilters.value.age_from || null,
+    age_to: localFilters.value.age_to || null,
   });
   // Reset to first page when filtering
   inmatesStore.setCurrentPage(1);
+  // Clear selection when filters change
+  selectedIds.value.clear();
+  selectAllFiltered.value = false;
   // Fetch with new filters
   fetchInmates();
 };
@@ -792,9 +998,17 @@ const clearFilters = () => {
     status: null,
     gender: null,
     nationality_id: null,
+    gang_affiliation_status: null,
+    risk_classification_id: null,
+    procedural_status_id: null,
+    age_from: null,
+    age_to: null,
   };
   // Clear store filters
   inmatesStore.clearFilters();
+  // Clear selection
+  selectedIds.value.clear();
+  selectAllFiltered.value = false;
   fetchInmates();
 };
 
@@ -1068,6 +1282,136 @@ const openAdvancedSearch = async () => {
   }
 };
 
+// ── Selection Mode & Bulk Print ──────────────────────────────────
+
+const toggleSelectionMode = () => {
+  selectionMode.value = !selectionMode.value;
+  if (!selectionMode.value) {
+    cancelSelection();
+  }
+};
+
+const cancelSelection = () => {
+  selectionMode.value = false;
+  selectedIds.value.clear();
+  selectAllFiltered.value = false;
+};
+
+const toggleInmateSelection = (id: number) => {
+  const newSet = new Set(selectedIds.value);
+  if (newSet.has(id)) {
+    newSet.delete(id);
+  } else {
+    newSet.add(id);
+  }
+  selectedIds.value = newSet;
+  selectAllFiltered.value = false;
+};
+
+const togglePageSelection = () => {
+  const newSet = new Set(selectedIds.value);
+  if (isPageAllSelected.value) {
+    // Deselect all on current page
+    inmates.value.forEach((inmate: any) => newSet.delete(inmate.id));
+  } else {
+    // Select all on current page
+    inmates.value.forEach((inmate: any) => newSet.add(inmate.id));
+  }
+  selectedIds.value = newSet;
+  selectAllFiltered.value = false;
+};
+
+const printSelectedProfiles = async () => {
+  const totalSelected = selectAllFiltered.value ? pagination.value.total : selectedIds.value.size;
+
+  if (totalSelected === 0) return;
+
+  if (totalSelected > 200) {
+    await Swal.fire({
+      icon: 'warning',
+      title: t('inmates.list.bulkPrint.error'),
+      text: t('inmates.list.bulkPrint.limitWarning'),
+    });
+    return;
+  }
+
+  Swal.fire({
+    title: t('inmates.list.bulkPrint.generating'),
+    text: t('inmates.list.bulkPrint.generatingDetail', { count: totalSelected }),
+    allowOutsideClick: false,
+    didOpen: () => { Swal.showLoading(); },
+  });
+
+  try {
+    // Build request body
+    let body: Record<string, any>;
+    if (selectAllFiltered.value) {
+      // Send current filters so backend selects all matching
+      body = {
+        status: localFilters.value.status || undefined,
+        gender: localFilters.value.gender || undefined,
+        center_id: localFilters.value.center_id ? Number(localFilters.value.center_id) : undefined,
+        nationality_id: localFilters.value.nationality_id ? Number(localFilters.value.nationality_id) : undefined,
+        gang_affiliation_status: localFilters.value.gang_affiliation_status || undefined,
+        risk_classification_id: localFilters.value.risk_classification_id ? Number(localFilters.value.risk_classification_id) : undefined,
+        procedural_status_id: localFilters.value.procedural_status_id ? Number(localFilters.value.procedural_status_id) : undefined,
+        age_from: localFilters.value.age_from || undefined,
+        age_to: localFilters.value.age_to || undefined,
+        search: searchTerm.value || undefined,
+      };
+      // Remove undefined values
+      Object.keys(body).forEach((key) => {
+        if (body[key] === undefined) delete body[key];
+      });
+    } else {
+      body = { ids: Array.from(selectedIds.value) };
+    }
+
+    const response = await ApiService.post('/inmates/batch-print', body);
+
+    if (!response.data.success) {
+      throw new Error(response.data.message || 'Error');
+    }
+
+    const inmatesData = response.data.data;
+
+    const html = generateBatchPrintHTML(inmatesData, {
+      watermark: watermarkText.value || undefined,
+    });
+
+    const printWindow = window.open('', '_blank');
+    if (!printWindow) {
+      Swal.fire({
+        icon: 'error',
+        title: t('inmates.list.bulkPrint.error'),
+        text: t('inmates.list.bulkPrint.popupError'),
+      });
+      return;
+    }
+
+    printWindow.document.write(html);
+    printWindow.document.close();
+    printWindow.focus();
+    setTimeout(() => printWindow.print(), 500);
+
+    Swal.fire({
+      icon: 'success',
+      title: t('inmates.list.bulkPrint.success'),
+      timer: 2000,
+      showConfirmButton: false,
+    });
+  } catch (error: any) {
+    console.error('Error in batch print:', error);
+    Swal.fire({
+      icon: 'error',
+      title: t('inmates.list.bulkPrint.error'),
+      text: error.response?.data?.message || error.message,
+    });
+  }
+};
+
+// ── Status & Transfer ───────────────────────────────────────────
+
 const changeStatus = (inmate: InmateListItem) => {
   selectedInmate.value = inmate;
 
@@ -1145,6 +1489,31 @@ watch(
 
 .page-item.disabled .page-link {
   cursor: not-allowed;
+}
+
+/* Bulk Print Floating Bar */
+.bulk-print-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 1050;
+  background: #1b1b28;
+  color: #fff;
+  padding: 12px 24px;
+  box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.15);
+  display: flex;
+  align-items: center;
+}
+
+.bulk-print-bar .form-control-solid {
+  background-color: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.2);
+  color: #fff;
+}
+
+.bulk-print-bar .form-control-solid::placeholder {
+  color: rgba(255, 255, 255, 0.5);
 }
 
 /* Skeleton loader animation */

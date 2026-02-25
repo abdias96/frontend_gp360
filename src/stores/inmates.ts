@@ -24,6 +24,11 @@ interface InmateState {
     status: string | null;
     gender: string | null;
     nationality_id: number | null;
+    gang_affiliation_status: string | null;
+    risk_classification_id: number | null;
+    procedural_status_id: number | null;
+    age_from: number | null;
+    age_to: number | null;
   };
 }
 
@@ -45,6 +50,11 @@ export const useInmatesStore = defineStore("inmates", {
       status: null,
       gender: null,
       nationality_id: null,
+      gang_affiliation_status: null,
+      risk_classification_id: null,
+      procedural_status_id: null,
+      age_from: null,
+      age_to: null,
     },
   }),
 
@@ -86,6 +96,11 @@ export const useInmatesStore = defineStore("inmates", {
           status: this.filters.status || undefined,
           gender: this.filters.gender || undefined,
           nationality_id: this.filters.nationality_id || undefined,
+          gang_affiliation_status: this.filters.gang_affiliation_status || undefined,
+          risk_classification_id: this.filters.risk_classification_id || undefined,
+          procedural_status_id: this.filters.procedural_status_id || undefined,
+          age_from: this.filters.age_from || undefined,
+          age_to: this.filters.age_to || undefined,
           with_photos: true, // Keep photos for the inmates list display
         };
 
@@ -367,6 +382,11 @@ export const useInmatesStore = defineStore("inmates", {
         status: null,
         gender: null,
         nationality_id: null,
+        gang_affiliation_status: null,
+        risk_classification_id: null,
+        procedural_status_id: null,
+        age_from: null,
+        age_to: null,
       };
     },
 
