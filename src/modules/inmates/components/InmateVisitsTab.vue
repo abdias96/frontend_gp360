@@ -835,29 +835,43 @@ const loadVisitorData = async () => {
       authorizedVisitors.value = [];
     }
 
-    // Load recent visits from props (visit_requests or visitRequests)
-    const visitRequestsData = props.inmate.visit_requests || props.inmate.visitRequests;
-    if (visitRequestsData && Array.isArray(visitRequestsData)) {
-      // Map visit requests to Visit interface
-      recentVisits.value = visitRequestsData
-        .map((request: any) => ({
-          id: request.id,
-          inmate_id: request.inmate_id,
-          visitor_dpi: request.visitor?.document_number || request.visitor_dpi || 'N/A',
-          visitor_name: request.visitor?.full_name || request.visitor_name || 'N/A',
-          visit_date: request.requested_visit_date,
-          duration_minutes: request.requested_duration_minutes || 0,
-          visit_type_id: request.visit_type_id,
-          visit_type_name: request.visit_type?.name || request.visitType?.name || 'N/A',
-          status: request.status,
-          notes: request.visit_purpose || request.decision_notes,
-          created_at: request.created_at,
-        }))
-        .sort((a: any, b: any) => new Date(b.visit_date).getTime() - new Date(a.visit_date).getTime())
-        .slice(0, 10); // Last 10 visits
-    } else {
-      recentVisits.value = [];
-    }
+    // Load recent visits from visit_logs (actual visits) or visit_requests (requests)
+    const visitLogsData = props.inmate.visit_logs || props.inmate.visitLogs || [];
+    const visitRequestsData = props.inmate.visit_requests || props.inmate.visitRequests || [];
+    // Merge both sources, preferring visit_logs (actual visits)
+    const allVisits = [
+      ...visitLogsData.map((log: any) => ({
+        id: log.id,
+        inmate_id: log.inmate_id,
+        visitor_dpi: log.visitor?.document_number || 'N/A',
+        visitor_name: log.visitor?.full_name || 'N/A',
+        visit_date: log.actual_entry_datetime || log.requested_visit_date || log.created_at,
+        duration_minutes: log.actual_duration_minutes || log.requested_duration_minutes || 0,
+        visit_type_id: log.visit_type_id,
+        visit_type_name: log.visit_type?.name || log.visitType?.name || 'N/A',
+        status: log.status,
+        notes: log.visit_purpose || log.entry_notes,
+        created_at: log.created_at,
+        source: 'log',
+      })),
+      ...visitRequestsData.map((request: any) => ({
+        id: request.id,
+        inmate_id: request.inmate_id,
+        visitor_dpi: request.visitor?.document_number || request.visitor_dpi || 'N/A',
+        visitor_name: request.visitor?.full_name || request.visitor_name || 'N/A',
+        visit_date: request.requested_visit_date,
+        duration_minutes: request.requested_duration_minutes || 0,
+        visit_type_id: request.visit_type_id,
+        visit_type_name: request.visit_type?.name || request.visitType?.name || 'N/A',
+        status: request.status,
+        notes: request.visit_purpose || request.decision_notes,
+        created_at: request.created_at,
+        source: 'request',
+      })),
+    ];
+    recentVisits.value = allVisits
+      .sort((a: any, b: any) => new Date(b.visit_date).getTime() - new Date(a.visit_date).getTime())
+      .slice(0, 10);
 
     // Load relationship types
     await loadRelationshipTypes();
@@ -872,44 +886,46 @@ const loadVisitStatistics = async () => {
   try {
     loading.value.statistics = true;
 
-    // Calculate real statistics from visit data
+    // Calculate real statistics from visit_logs (actual visits) + visit_requests
+    const visitLogsData = props.inmate.visit_logs || props.inmate.visitLogs || [];
     const visitRequestsData = props.inmate.visit_requests || props.inmate.visitRequests || [];
+    const allVisitData = [...visitLogsData, ...visitRequestsData];
     const now = new Date();
     const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
 
     // Filter visits from last 30 days
-    const recentVisits = visitRequestsData.filter((request: any) => {
-      const visitDate = new Date(request.requested_visit_date || request.created_at);
+    const recentVisitsFiltered = allVisitData.filter((v: any) => {
+      const visitDate = new Date(v.actual_entry_datetime || v.requested_visit_date || v.created_at);
       return visitDate >= thirtyDaysAgo;
     });
 
     // Calculate total visits (completed and in_progress)
-    const completedVisits = recentVisits.filter((v: any) =>
+    const completedVisits = recentVisitsFiltered.filter((v: any) =>
       v.status === 'completed' || v.status === 'in_progress' || v.status === 'approved'
     );
 
     // Calculate unique visitors
-    const uniqueVisitorDPIs = new Set(
-      completedVisits.map((v: any) => v.visitor?.visitor_dpi || v.visitor_dpi)
+    const uniqueVisitorIds = new Set(
+      completedVisits.map((v: any) => v.visitor_id).filter(Boolean)
     );
 
     // Calculate average duration
     const totalDuration = completedVisits.reduce((sum: number, v: any) =>
-      sum + (v.requested_duration_minutes || 0), 0
+      sum + (v.actual_duration_minutes || v.requested_duration_minutes || 0), 0
     );
     const avgDuration = completedVisits.length > 0
       ? Math.round(totalDuration / completedVisits.length)
       : 0;
 
-    // Count scheduled visits
-    const scheduledCount = visitRequestsData.filter((v: any) =>
+    // Count scheduled/pending visits
+    const scheduledCount = allVisitData.filter((v: any) =>
       v.status === 'pending' || v.status === 'approved'
     ).length;
 
     // Visit types distribution
     const typeDistribution: Record<string, number> = {};
     completedVisits.forEach((v: any) => {
-      const typeName = v.visitType?.name || v.visit_type?.name || 'Otro';
+      const typeName = v.visit_type?.name || v.visitType?.name || 'Otro';
       typeDistribution[typeName] = (typeDistribution[typeName] || 0) + 1;
     });
 
@@ -1201,17 +1217,30 @@ const viewBiometricDetails = (log: BiometricLog) => {
 const getVisitorStatusClass = (status: string): string => {
   const classes: Record<string, string> = {
     active: "badge-light-success",
+    approved: "badge-light-success",
+    pending: "badge-light-warning",
     suspended: "badge-light-warning",
     revoked: "badge-light-danger",
+    rejected: "badge-light-danger",
   };
   return classes[status] || "badge-light-secondary";
+};
+
+const visitorStatusLabels: Record<string, string> = {
+  active: "Activo",
+  approved: "Aprobado",
+  pending: "Pendiente",
+  suspended: "Suspendido",
+  revoked: "Revocado",
+  rejected: "Rechazado",
 };
 
 const getVisitorStatusText = (status: string): string => {
   if (!status) return status;
   const statusKey = `inmates.tabs.visits.visitorStatuses.${status}`;
   const translated = t(statusKey);
-  return translated !== statusKey ? translated : status;
+  if (translated !== statusKey) return translated;
+  return visitorStatusLabels[status] || status;
 };
 
 const getVisitStatusClass = (status: string): string => {
