@@ -499,8 +499,8 @@ const getStatusTextClass = (status: string) => ({
 
 // ── Security helpers ──
 const getSecurityLevelBadgeClass = (level: string) => ({
-  minimum: 'badge-light-success', medium: 'badge-light-warning',
-  maximum: 'badge-danger', super_maximum: 'badge-dark',
+  low: 'badge-light-success', medium: 'badge-light-warning',
+  high: 'badge-danger', maximum: 'badge-dark',
 }[level] || 'badge-light-secondary');
 
 const getOverallRiskBadge = (score: number | null) => {

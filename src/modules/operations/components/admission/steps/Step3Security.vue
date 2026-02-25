@@ -203,10 +203,10 @@
           <div class="col-md-6">
             <label class="form-label required">{{ t('admissions.wizard.fields.recommendedSecurityLevel') }}</label>
             <select v-model="riskAssessment.recommended_security_level" class="form-select" required>
-              <option value="minimum">{{ t('admissions.wizard.fields.securityMinimum') }}</option>
+              <option value="low">{{ t('admissions.wizard.fields.securityLow') }}</option>
               <option value="medium">{{ t('admissions.wizard.fields.securityMedium') }}</option>
+              <option value="high">{{ t('admissions.wizard.fields.securityHigh') }}</option>
               <option value="maximum">{{ t('admissions.wizard.fields.securityMaximum') }}</option>
-              <option value="super_maximum">{{ t('admissions.wizard.fields.securitySuperMax') }}</option>
             </select>
           </div>
 

@@ -58,7 +58,6 @@ export const commonTranslations = {
         medium: "Medium",
         high: "High",
         maximum: "Maximum",
-        super_maximum: "Super Maximum",
         notAssigned: "Not Assigned",
       },
       admissionType: {
@@ -489,7 +488,6 @@ export const commonTranslations = {
         medium: "Media",
         high: "Alta",
         maximum: "Máxima",
-        super_maximum: "Súper máxima",
         notAssigned: "No asignado",
       },
       admissionType: {

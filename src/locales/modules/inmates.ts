@@ -517,10 +517,10 @@ export const inmatesTranslations = {
             house_arrest: "House arrest",
           },
           securityLevels: {
-            minimum: "Minimum",
+            low: "Low",
             medium: "Medium",
+            high: "High",
             maximum: "Maximum",
-            super_maximum: "Super maximum",
           },
           culturalPractices: {
             maya_traditional: "Mayan traditions",
@@ -2194,10 +2194,10 @@ export const inmatesTranslations = {
             house_arrest: "Arresto domiciliario",
           },
           securityLevels: {
-            minimum: "Mínimo",
+            low: "Bajo",
             medium: "Medio",
+            high: "Alto",
             maximum: "Máximo",
-            super_maximum: "Súper máximo",
           },
           culturalPractices: {
             maya_traditional: "Tradiciones mayas",
@@ -2274,7 +2274,6 @@ export const inmatesTranslations = {
             none: "Ninguna",
           },
           riskLevels: {
-            minimum: "Mínimo",
             low: "Bajo",
             medium: "Medio",
             high: "Alto",

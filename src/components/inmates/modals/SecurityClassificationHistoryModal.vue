@@ -232,11 +232,11 @@ const getInmateName = (i: any) => {
 };
 
 const getLevelBadge = (l: string) => ({
-  minimum: 'badge-light-success', medium: 'badge-light-warning', maximum: 'badge-danger', super_maximum: 'badge-dark',
+  low: 'badge-light-success', medium: 'badge-light-warning', high: 'badge-danger', maximum: 'badge-dark',
 }[l] || 'badge-light');
 
 const getLevelLabel = (l: string) => ({
-  minimum: 'Mínimo', medium: 'Medio', maximum: 'Máximo', super_maximum: 'Super Máximo',
+  low: 'Bajo', medium: 'Medio', high: 'Alto', maximum: 'Máximo',
 }[l] || l || 'N/A');
 
 const getRiskBadge = (r: string) => ({

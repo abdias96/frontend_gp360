@@ -111,10 +111,10 @@ const sectorOptions = computed(() =>
 
 const getSecurityLevelLabel = (level: string): string => {
   const labels: Record<string, string> = {
-    'minimum': t('admissions.wizard.fields.securityMinimum'),
+    'low': t('admissions.wizard.fields.securityLow'),
     'medium': t('admissions.wizard.fields.securityMedium'),
-    'maximum': t('admissions.wizard.fields.securityMaximum'),
-    'super_maximum': t('admissions.wizard.fields.securitySuperMax')
+    'high': t('admissions.wizard.fields.securityHigh'),
+    'maximum': t('admissions.wizard.fields.securityMaximum')
   };
   return labels[level] || level;
 };

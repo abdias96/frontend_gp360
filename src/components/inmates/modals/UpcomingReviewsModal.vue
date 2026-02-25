@@ -626,20 +626,17 @@ const getSecurityLevelBadgeClass = (level: string) => {
     low: 'badge-light-info',
     medium: 'badge-light-primary',
     high: 'badge-light-warning',
-    maximum: 'badge-light-danger',
-    super_maximum: 'badge-dark'
+    maximum: 'badge-dark'
   };
   return classes[level] || 'badge-light-secondary';
 };
 
 const getSecurityLevelLabel = (level: string) => {
   const labels: { [key: string]: string } = {
-    minimum: 'Mínimo',
     low: 'Bajo',
     medium: 'Medio',
     high: 'Alto',
-    maximum: 'Máximo',
-    super_maximum: 'Super Máximo'
+    maximum: 'Máximo'
   };
   return labels[level] || level;
 };

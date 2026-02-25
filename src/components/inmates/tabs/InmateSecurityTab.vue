@@ -515,7 +515,6 @@ const securityAlerts = computed(() => {
 // Methods
 const getRiskLevelLabel = (level: string) => {
   const levels: Record<string, string> = {
-    'minimum': 'Mínimo',
     'low': 'Bajo',
     'medium': 'Medio',
     'high': 'Alto',

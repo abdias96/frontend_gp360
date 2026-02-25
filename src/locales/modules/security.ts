@@ -17,10 +17,10 @@ export const securityTranslations = {
         historical: "Historical",
         pendingReview: "Pending Review",
         levels: {
-          minimum: "Minimum",
+          low: "Low",
           medium: "Medium",
+          high: "High",
           maximum: "Maximum",
-          super_maximum: "Super Maximum",
         },
         riskScores: {
           violence: "Violence Risk",
@@ -253,10 +253,10 @@ export const securityTranslations = {
         historical: "Histórico",
         pendingReview: "Revisión Pendiente",
         levels: {
-          minimum: "Mínimo",
+          low: "Bajo",
           medium: "Medio",
+          high: "Alto",
           maximum: "Máximo",
-          super_maximum: "Super Máximo",
         },
         riskScores: {
           violence: "Riesgo de Violencia",

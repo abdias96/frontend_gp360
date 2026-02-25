@@ -327,11 +327,11 @@ const getInitials = (inmate: any) => {
 };
 
 const getSecurityLevelBadgeClass = (level: string) => {
-  return { minimum: 'badge-light-success', medium: 'badge-light-primary', maximum: 'badge-light-danger', super_maximum: 'badge-dark' }[level] || 'badge-light-secondary';
+  return { low: 'badge-light-success', medium: 'badge-light-primary', high: 'badge-light-danger', maximum: 'badge-dark' }[level] || 'badge-light-secondary';
 };
 
 const getSecurityLevelLabel = (level: string) => {
-  return { minimum: 'Mínimo', medium: 'Medio', maximum: 'Máximo', super_maximum: 'Super Máximo' }[level] || level;
+  return { low: 'Bajo', medium: 'Medio', high: 'Alto', maximum: 'Máximo' }[level] || level;
 };
 
 const getScoreColor = (score: number | null) => {

@@ -48,10 +48,10 @@
             <label class="form-label">Nivel de Seguridad</label>
             <select v-model="filters.security_level" class="form-select" @change="handleFilterChange">
               <option value="">Todos</option>
-              <option value="minimum">Mínimo</option>
+              <option value="low">Bajo</option>
               <option value="medium">Medio</option>
+              <option value="high">Alto</option>
               <option value="maximum">Máximo</option>
-              <option value="super_maximum">Super Máximo</option>
             </select>
           </div>
           <div class="col-md-2">
@@ -120,8 +120,8 @@
             <div class="d-flex align-items-center">
               <span class="me-5"><i class="fas fa-lock fs-2x text-white"></i></span>
               <div class="text-white">
-                <div class="fs-2 fw-bold">{{ stats.super_maximum }}</div>
-                <div class="fs-7">Super Máximo</div>
+                <div class="fs-2 fw-bold">{{ stats.maximum }}</div>
+                <div class="fs-7">Máximo</div>
               </div>
             </div>
           </div>
@@ -352,7 +352,7 @@ const stats = ref({
   total: 0,
   high_risk: 0,
   pending_review: 0,
-  super_maximum: 0,
+  maximum: 0,
 });
 
 const visiblePages = computed(() => {
@@ -408,7 +408,7 @@ const loadStats = async () => {
       stats.value.total = s.total_classifications || 0;
       stats.value.high_risk = (s.by_risk_level?.high || 0) + (s.by_risk_level?.extreme || 0);
       stats.value.pending_review = s.pending_reviews || 0;
-      stats.value.super_maximum = s.by_classification_level?.super_maximum || 0;
+      stats.value.maximum = s.by_classification_level?.maximum || 0;
     }
   } catch (error) {
     console.error('Error loading stats:', error);
@@ -435,20 +435,20 @@ const getInmateName = (record: any) => {
 
 const getLevelBadge = (level: string) => {
   const map: Record<string, string> = {
-    minimum: 'badge-light-success',
+    low: 'badge-light-success',
     medium: 'badge-light-warning',
-    maximum: 'badge-danger',
-    super_maximum: 'badge-dark',
+    high: 'badge-danger',
+    maximum: 'badge-dark',
   };
   return map[level] || 'badge-light';
 };
 
 const getLevelLabel = (level: string) => {
   const map: Record<string, string> = {
-    minimum: 'Mínimo',
+    low: 'Bajo',
     medium: 'Medio',
+    high: 'Alto',
     maximum: 'Máximo',
-    super_maximum: 'Super Máximo',
   };
   return map[level] || level;
 };

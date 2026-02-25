@@ -791,25 +791,25 @@ const refreshSecurityHistory = async () => {
 
 // Helper methods - Security Level
 const getSecurityLevelBadge = (level: string) => ({
-  minimum: 'badge-light-success',
+  low: 'badge-light-success',
   medium: 'badge-light-warning',
-  maximum: 'badge-danger',
-  super_maximum: 'badge-dark',
+  high: 'badge-danger',
+  maximum: 'badge-dark',
 }[level] || 'badge-light-secondary');
 
 const getLevelLabel = (level: string) => ({
-  minimum: 'Mínima',
+  low: 'Baja',
   medium: 'Media',
+  high: 'Alta',
   maximum: 'Máxima',
-  super_maximum: 'Súper Máxima',
 }[level] || level || 'N/A');
 
 const getLevelDescription = (level: string) => {
   const descriptions: Record<string, string> = {
-    minimum: 'Bajo riesgo - Población general',
+    low: 'Bajo riesgo - Población general',
     medium: 'Riesgo moderado - Supervisión estándar',
-    maximum: 'Alto riesgo - Supervisión intensiva',
-    super_maximum: 'Riesgo extremo - Máxima seguridad',
+    high: 'Alto riesgo - Supervisión intensiva',
+    maximum: 'Riesgo extremo - Máxima seguridad',
   };
   return descriptions[level] || '';
 };

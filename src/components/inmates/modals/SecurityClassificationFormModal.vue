@@ -46,10 +46,10 @@
                   :class="{ 'is-invalid': errors.security_level }"
                 >
                   <option value="">Seleccionar nivel...</option>
-                  <option value="minimum">Mínimo</option>
+                  <option value="low">Bajo</option>
                   <option value="medium">Medio</option>
+                  <option value="high">Alto</option>
                   <option value="maximum">Máximo</option>
-                  <option value="super_maximum">Super Máximo</option>
                 </select>
                 <div v-if="errors.security_level" class="invalid-feedback">{{ errors.security_level }}</div>
               </div>
