@@ -321,7 +321,6 @@
                   <tr class="fw-bold text-muted">
                     <th class="ps-4">Visitante</th>
                     <th>PPL</th>
-                    <th>Centro</th>
                     <th>Tipo</th>
                     <th>Hora Entrada</th>
                     <th>Tiempo Transcurrido</th>
@@ -360,11 +359,9 @@
                       <div class="text-muted fs-7">
                         {{ visit.inmate?.document_number }}
                       </div>
-                    </td>
-                    <td>
-                      <span class="badge badge-light-secondary fs-7">
-                        {{ visit.inmate?.current_center?.name || visit.inmate?.currentCenter?.name || 'N/A' }}
-                      </span>
+                      <div class="text-muted fs-8">
+                        <i class="fas fa-building fs-9 me-1"></i>{{ visit.inmate?.current_center?.name || visit.inmate?.currentCenter?.name || '' }}
+                      </div>
                     </td>
                     <td>
                       <span class="badge badge-light-info">
