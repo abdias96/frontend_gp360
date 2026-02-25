@@ -553,29 +553,39 @@ const fetchDocumentData = async () => {
                              props.inmate.documents || [];
 
     // Map digital files to a consistent format
+    // DB columns: document_file_type_id (FK), original_filename, document_title,
+    // confidentiality_level, ai_analysis_status, digitally_signed, document_date,
+    // document_source, document_tags, human_review_required, review_status
     const allDocuments = Array.isArray(digitalFilesData)
-      ? digitalFilesData.map((doc: any) => ({
-          id: doc.id,
-          name: doc.original_filename || doc.file_name || doc.name || 'Documento',
-          type: doc.file_type?.code || doc.file_type_name?.toLowerCase() || 'other',
-          category: doc.file_type?.name || doc.file_type_name || 'General',
-          status: doc.access_level === 'confidential' ? 'restringido' : 'aprobado',
-          uploaded_at: doc.upload_date || doc.created_at,
-          created_at: doc.created_at,
-          is_ai_processed: doc.is_ai_processed || false,
-          is_signed: doc.is_digitally_signed || false,
-          is_confidential: doc.access_level === 'confidential',
-          file_url: doc.file_url,
-          uploader_name: doc.uploader_name,
-          description: doc.description,
-          tags: doc.tags,
-          document_date: doc.upload_date || doc.created_at,
-          court: doc.court_name,
-          authority: doc.authority,
-          medical_specialty: doc.specialty,
-          department: doc.department,
-          approval_status: doc.approval_status || 'Pendiente'
-        }))
+      ? digitalFilesData.map((doc: any) => {
+          const fileType = doc.document_file_type || doc.documentFileType;
+          const uploader = doc.uploaded_by_user || doc.uploadedBy || doc.uploaded_by;
+          return {
+            id: doc.id,
+            name: doc.document_title || doc.original_filename || doc.file_name || 'Documento',
+            type: fileType?.category || 'other',
+            category: fileType?.name || 'General',
+            status: doc.review_status || (doc.confidentiality_level === 'confidential' ? 'restringido' : 'aprobado'),
+            uploaded_at: doc.document_date || doc.created_at,
+            created_at: doc.created_at,
+            is_ai_processed: doc.ai_analysis_completed || doc.ai_analysis_status === 'completed',
+            is_signed: doc.digitally_signed || false,
+            is_confidential: ['confidential', 'restricted', 'classified'].includes(doc.confidentiality_level),
+            file_url: doc.file_path,
+            uploader_name: typeof uploader === 'object' ? uploader?.name : null,
+            description: doc.document_description || doc.description,
+            tags: doc.document_tags || doc.tags,
+            document_date: doc.document_date || doc.created_at,
+            court: doc.document_source,
+            authority: doc.document_source,
+            medical_specialty: fileType?.category === 'medical' ? fileType?.name : null,
+            department: fileType?.category === 'administrative' ? fileType?.name : null,
+            approval_status: doc.review_status === 'approved' ? 'Aprobado'
+              : doc.review_status === 'rejected' ? 'Rechazado'
+              : doc.review_status === 'needs_correction' ? 'En Revisión'
+              : 'Pendiente'
+          };
+        })
       : [];
 
     // Sort by most recent first
@@ -606,17 +616,25 @@ const fetchDocumentData = async () => {
       doc.category?.toLowerCase().includes('admin')
     ).slice(0, 5);
 
-    // Calculate statistics
-    const pendingReview = allDocuments.filter((doc: any) =>
-      doc.status === 'pendiente' || doc.approval_status === 'Pendiente'
+    // Calculate statistics from raw data for accuracy
+    const pendingReview = digitalFilesData.filter((doc: any) =>
+      doc.human_review_required && doc.review_status !== 'approved'
     ).length;
 
-    const aiProcessed = allDocuments.filter((doc: any) =>
-      doc.is_ai_processed
+    const aiProcessed = digitalFilesData.filter((doc: any) =>
+      doc.ai_analysis_completed || doc.ai_analysis_status === 'completed'
     ).length;
 
-    const digitalSignatures = allDocuments.filter((doc: any) =>
-      doc.is_signed
+    const aiFailed = digitalFilesData.filter((doc: any) =>
+      doc.ai_analysis_status === 'failed'
+    ).length;
+
+    const digitalSignatures = digitalFilesData.filter((doc: any) =>
+      doc.digitally_signed
+    ).length;
+
+    const missingSigs = digitalFilesData.filter((doc: any) =>
+      doc.requires_digital_signature && !doc.digitally_signed
     ).length;
 
     documentStats.value = {
@@ -624,8 +642,8 @@ const fetchDocumentData = async () => {
       pending_review: pendingReview,
       ai_processed: aiProcessed,
       digital_signatures: digitalSignatures,
-      ai_processing_errors: 0,
-      missing_signatures: allDocuments.length - digitalSignatures
+      ai_processing_errors: aiFailed,
+      missing_signatures: missingSigs
     };
 
   } catch (error) {

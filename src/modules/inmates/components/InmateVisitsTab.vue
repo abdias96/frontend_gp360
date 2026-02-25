@@ -816,25 +816,39 @@ const loadVisitorData = async () => {
   try {
     loading.value.visits = true;
 
-    // Load authorized visitors from props
-    if (props.inmate.visitorRelationships || props.inmate.visitor_relationships) {
-      authorizedVisitors.value = props.inmate.visitorRelationships || props.inmate.visitor_relationships || [];
+    // Load authorized visitors from props and map to expected field names
+    const rawVisitors = props.inmate.visitor_relationships || props.inmate.visitorRelationships || [];
+    if (Array.isArray(rawVisitors) && rawVisitors.length > 0) {
+      authorizedVisitors.value = rawVisitors.map((rel: any) => ({
+        ...rel,
+        // Map nested visitor data to flat fields expected by template
+        visitor_name: rel.visitor?.full_name || rel.visitor_name || 'N/A',
+        visitor_dpi: rel.visitor?.document_number || rel.visitor_dpi || 'N/A',
+        // Map relationship type name
+        relationship_type_name: rel.relationship_type?.name || rel.relationshipType?.name || rel.relationship_type_name || '',
+        // Map authorization_status to status
+        status: rel.authorization_status || rel.status || 'pending',
+        // Map max_visits_per_month to visit_limit_per_month
+        visit_limit_per_month: rel.max_visits_per_month || rel.visit_limit_per_month || null,
+      }));
+    } else {
+      authorizedVisitors.value = [];
     }
 
     // Load recent visits from props (visit_requests or visitRequests)
-    const visitRequestsData = props.inmate.visitRequests || props.inmate.visit_requests;
+    const visitRequestsData = props.inmate.visit_requests || props.inmate.visitRequests;
     if (visitRequestsData && Array.isArray(visitRequestsData)) {
       // Map visit requests to Visit interface
       recentVisits.value = visitRequestsData
         .map((request: any) => ({
           id: request.id,
           inmate_id: request.inmate_id,
-          visitor_dpi: request.visitor?.visitor_dpi || request.visitor_dpi || 'N/A',
+          visitor_dpi: request.visitor?.document_number || request.visitor_dpi || 'N/A',
           visitor_name: request.visitor?.full_name || request.visitor_name || 'N/A',
           visit_date: request.requested_visit_date,
           duration_minutes: request.requested_duration_minutes || 0,
           visit_type_id: request.visit_type_id,
-          visit_type_name: request.visitType?.name || request.visit_type?.name || 'N/A',
+          visit_type_name: request.visit_type?.name || request.visitType?.name || 'N/A',
           status: request.status,
           notes: request.visit_purpose || request.decision_notes,
           created_at: request.created_at,
@@ -859,7 +873,7 @@ const loadVisitStatistics = async () => {
     loading.value.statistics = true;
 
     // Calculate real statistics from visit data
-    const visitRequestsData = props.inmate.visitRequests || props.inmate.visit_requests || [];
+    const visitRequestsData = props.inmate.visit_requests || props.inmate.visitRequests || [];
     const now = new Date();
     const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
 
@@ -947,21 +961,21 @@ const loadBiometricData = async () => {
     ];
 
     // Load recent biometric logs from props
-    const biometricLogsData = props.inmate.visitBiometricLogs || props.inmate.visit_biometric_logs;
+    const biometricLogsData = props.inmate.visit_biometric_logs || props.inmate.visitBiometricLogs;
     if (biometricLogsData && Array.isArray(biometricLogsData)) {
       // Map biometric logs to BiometricLog interface
       biometricLogs.value = biometricLogsData
         .map((log: any) => ({
           id: log.id,
-          visitor_dpi: log.visitor_dpi || 'N/A',
-          visitor_name: log.visitor_name || log.visitor?.full_name || 'N/A',
-          device_id: log.device_id || 0,
-          device_name: log.device?.device_name || log.device_name || 'N/A',
-          access_datetime: log.access_datetime || log.created_at,
-          access_type: log.access_type || 'entry',
-          verification_status: log.verification_status || 'success',
-          quality_score: log.quality_score || log.biometric_quality_score || 0,
-          notes: log.notes || log.verification_notes,
+          visitor_dpi: log.visitor?.document_number || log.visitor_dpi || 'N/A',
+          visitor_name: log.visitor?.full_name || log.visitor_name || 'N/A',
+          device_id: log.entry_biometric_device_id || log.device_id || 0,
+          device_name: log.device?.device_name || log.device_name || log.entry_biometric_device_id || 'N/A',
+          access_datetime: log.entry_datetime || log.access_datetime || log.created_at,
+          access_type: log.exit_datetime ? 'exit' : 'entry',
+          verification_status: log.entry_successful ? 'success' : 'failed',
+          quality_score: log.entry_match_confidence || log.quality_score || 0,
+          notes: log.entry_notes || log.notes,
         }))
         .sort((a: any, b: any) => new Date(b.access_datetime).getTime() - new Date(a.access_datetime).getTime())
         .slice(0, 20); // Last 20 logs

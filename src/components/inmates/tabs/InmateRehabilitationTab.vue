@@ -323,93 +323,117 @@ const lastEvaluation = ref<any>(null);
 // Methods
 const fetchRehabilitationData = async () => {
   try {
-    // Load program enrollments from inmate props
-    const enrollments = props.inmate.program_enrollments ||
-                        props.inmate.programEnrollments ||
-                        props.inmate.rehabilitation_programs || [];
+    // Load program participations from inmate props
+    // Backend serializes programParticipations → program_participations
+    const participations = props.inmate.program_participations ||
+                           props.inmate.programParticipations || [];
 
     // Filter active programs
-    activePrograms.value = Array.isArray(enrollments)
-      ? enrollments.filter((p: any) => p.status === 'active' || p.is_active)
+    activePrograms.value = Array.isArray(participations)
+      ? participations.filter((p: any) => p.status === 'active' || p.status === 'enrolled')
       : [];
+
+    // Helper to get program type category
+    const getProgramCategory = (p: any): string => {
+      return p.program?.program_type?.code ||
+             p.program?.program_type?.name?.toLowerCase() ||
+             '';
+    };
 
     // Categorize programs by type
     educationalPrograms.value = activePrograms.value
-      .filter((p: any) => p.program?.category === 'educational' || p.program_type === 'educational' || p.category === 'educational')
+      .filter((p: any) => {
+        const cat = getProgramCategory(p);
+        return cat.includes('educa') || cat.includes('academic');
+      })
       .map((p: any) => ({
         id: p.id,
-        name: p.program?.name || p.program_name || p.name || 'Programa Educativo',
-        progress: p.progress_percentage || p.progress || 0,
-        schedule: p.schedule || p.program?.schedule || 'Sin horario definido'
+        name: p.program?.name || 'Programa Educativo',
+        progress: p.attendance_percentage || 0,
+        schedule: formatSchedule(p.program?.schedule) || 'Sin horario definido'
       }));
 
     workPrograms.value = activePrograms.value
-      .filter((p: any) => p.program?.category === 'work' || p.program_type === 'work' || p.category === 'laboral')
+      .filter((p: any) => {
+        const cat = getProgramCategory(p);
+        return cat.includes('labor') || cat.includes('work') || cat.includes('trabaj');
+      })
       .map((p: any) => ({
         id: p.id,
-        name: p.program?.name || p.program_name || p.name || 'Programa Laboral',
-        position: p.position || p.job_position || 'Sin posición asignada',
-        schedule: p.schedule || p.program?.schedule || 'Sin horario definido'
+        name: p.program?.name || 'Programa Laboral',
+        position: p.initial_goals || 'Sin posición asignada',
+        schedule: formatSchedule(p.program?.schedule) || 'Sin horario definido'
       }));
 
     therapeuticPrograms.value = activePrograms.value
-      .filter((p: any) => p.program?.category === 'therapeutic' || p.program_type === 'therapeutic' || p.category === 'terapeutico')
+      .filter((p: any) => {
+        const cat = getProgramCategory(p);
+        return cat.includes('terap') || cat.includes('therap') || cat.includes('psico');
+      })
       .map((p: any) => ({
         id: p.id,
-        name: p.program?.name || p.program_name || p.name || 'Programa Terapéutico',
-        therapist: p.therapist_name || p.assigned_therapist || 'Sin terapeuta asignado',
-        sessions_completed: p.sessions_completed || 0,
-        sessions_total: p.sessions_total || p.total_sessions || 0
+        name: p.program?.name || 'Programa Terapéutico',
+        therapist: p.program?.coordinator_name || 'Sin terapeuta asignado',
+        sessions_completed: p.sessions_attended || 0,
+        sessions_total: (p.sessions_attended || 0) + (p.sessions_missed || 0) || p.program?.sessions_per_week * (p.program?.duration_weeks || 0) || 0
       }));
 
-    // Load achievements/certificates
-    const achievementsData = props.inmate.rehabilitation_achievements ||
-                             props.inmate.achievements ||
-                             props.inmate.certificates || [];
-    certificates.value = Array.isArray(achievementsData) ? achievementsData : [];
-
-    // Calculate total hours from attendance records
-    const attendanceRecords = props.inmate.program_attendances ||
-                              props.inmate.programAttendances || [];
-    if (Array.isArray(attendanceRecords)) {
-      totalHours.value = attendanceRecords.reduce((sum: number, record: any) => {
-        return sum + (record.hours_attended || record.hours || 0);
-      }, 0);
+    // If no programs matched specific categories, show all as educational by default
+    if (educationalPrograms.value.length === 0 && workPrograms.value.length === 0 && therapeuticPrograms.value.length === 0) {
+      educationalPrograms.value = activePrograms.value.map((p: any) => ({
+        id: p.id,
+        name: p.program?.name || 'Programa',
+        progress: p.attendance_percentage || 0,
+        schedule: formatSchedule(p.program?.schedule) || 'Sin horario definido'
+      }));
     }
 
-    // Calculate overall progress
+    // Count certificates from participations that earned them
+    certificates.value = participations.filter((p: any) => p.certificate_earned);
+
+    // Calculate total hours from program data
+    totalHours.value = participations.reduce((sum: number, p: any) => {
+      const sessionsAttended = p.sessions_attended || 0;
+      const hoursPerSession = p.program?.hours_per_session || 1;
+      return sum + (sessionsAttended * hoursPerSession);
+    }, 0);
+
+    // Calculate overall progress from attendance percentage
     if (activePrograms.value.length > 0) {
       const totalProgress = activePrograms.value.reduce((sum: number, p: any) => {
-        return sum + (p.progress_percentage || p.progress || 0);
+        return sum + (p.attendance_percentage || 0);
       }, 0);
       overallProgress.value = Math.round(totalProgress / activePrograms.value.length);
     } else {
       overallProgress.value = 0;
     }
 
-    // Load behavior score from inmate data
-    behaviorScore.value = props.inmate.discipline_points || props.inmate.behavior_score || 0;
+    // Load behavior score from behavior_points collection
+    const behaviorPoints = props.inmate.behavior_points || props.inmate.behaviorPoints || [];
+    if (Array.isArray(behaviorPoints) && behaviorPoints.length > 0) {
+      // Sum all behavior points or take the latest value
+      behaviorScore.value = behaviorPoints.reduce((sum: number, bp: any) => sum + (bp.points || bp.score || 0), 0);
+    } else {
+      behaviorScore.value = 0;
+    }
 
     // Calculate participation rate from attendance
-    if (Array.isArray(attendanceRecords) && attendanceRecords.length > 0) {
-      const attendedCount = attendanceRecords.filter((r: any) => r.attended || r.status === 'present').length;
-      participationRate.value = Math.round((attendedCount / attendanceRecords.length) * 100);
+    if (participations.length > 0) {
+      const totalAttendance = participations.reduce((sum: number, p: any) => sum + (p.attendance_percentage || 0), 0);
+      participationRate.value = Math.round(totalAttendance / participations.length);
     } else {
       participationRate.value = 0;
     }
 
-    // Load last evaluation
-    const evaluations = props.inmate.program_evaluations ||
-                        props.inmate.programEvaluations ||
-                        props.inmate.evaluations || [];
-    if (Array.isArray(evaluations) && evaluations.length > 0) {
-      const sortedEvaluations = [...evaluations].sort((a: any, b: any) =>
-        new Date(b.evaluation_date || b.created_at).getTime() -
-        new Date(a.evaluation_date || a.created_at).getTime()
+    // Get last evaluation from participations
+    const evaluatedParticipations = participations.filter((p: any) => p.final_evaluation_date);
+    if (evaluatedParticipations.length > 0) {
+      const sorted = [...evaluatedParticipations].sort((a: any, b: any) =>
+        new Date(b.final_evaluation_date).getTime() - new Date(a.final_evaluation_date).getTime()
       );
       lastEvaluation.value = {
-        date: sortedEvaluations[0].evaluation_date || sortedEvaluations[0].created_at,
-        score: sortedEvaluations[0].score || sortedEvaluations[0].rating
+        date: sorted[0].final_evaluation_date,
+        score: sorted[0].final_grade || sorted[0].overall_grade
       };
     } else {
       lastEvaluation.value = null;
@@ -417,6 +441,16 @@ const fetchRehabilitationData = async () => {
   } catch (error) {
     console.error('Error fetching rehabilitation data:', error);
   }
+};
+
+const formatSchedule = (schedule: any): string => {
+  if (!schedule) return '';
+  if (typeof schedule === 'string') return schedule;
+  if (Array.isArray(schedule)) return schedule.join(', ');
+  if (typeof schedule === 'object') {
+    return Object.entries(schedule).map(([k, v]) => `${k}: ${v}`).join(', ');
+  }
+  return String(schedule);
 };
 
 // Lifecycle

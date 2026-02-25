@@ -547,123 +547,154 @@ const transferStats = ref<TransferStatistics>({
 
 const transferReasons = ref<TransferReason[]>([]);
 
-// Mock data for demonstration
 onMounted(() => {
   loadTransferData();
 });
 
 const loadTransferData = () => {
-  // Current location
+  // Current location from inmate data
   currentLocation.value = {
-    center_name: "Centro Preventivo Zona 18",
-    sector_name: "Sector B - Media Seguridad",
-    cell_number: "B-204",
-    arrival_date: "2023-08-15",
-    security_level: "medium",
-    sector_occupancy: 78,
-    placement_reason: "Clasificación por nivel de riesgo"
+    center_name: props.inmate.current_center?.name || props.inmate.currentCenter?.name || 'Sin centro asignado',
+    sector_name: props.inmate.current_sector?.name || props.inmate.currentSector?.name || '',
+    cell_number: props.inmate.current_cell_number || '',
+    arrival_date: props.inmate.admission_date || '',
+    security_level: props.inmate.current_security_classification?.security_level ||
+                    props.inmate.currentSecurityClassification?.security_level || 'medium',
+    sector_occupancy: 0,
+    placement_reason: ''
   };
 
-  // Transfer requests
-  transferRequests.value = [
-    {
-      id: 1,
-      destination_center_name: "Centro de Cumplimiento de Condena",
-      destination_sector_name: "Sector A - Mínima Seguridad",
-      transfer_type: "routine",
-      priority: "normal",
-      request_date: "2024-01-20",
-      requested_by: "Dr. López - Equipo Multidisciplinario",
-      status: "pending",
-      reason: "Progreso en rehabilitación"
-    },
-    {
-      id: 2,
-      destination_center_name: "Hospital Nacional de Salud Mental",
-      destination_sector_name: "Pabellón Psiquiátrico",
-      transfer_type: "medical",
-      priority: "high",
-      request_date: "2024-01-18",
-      requested_by: "Dr. García - Médico Psiquiatra",
-      status: "approved",
-      reason: "Evaluación psicológica especializada"
-    }
-  ];
+  // Get transfers from inmate prop
+  // Backend serializes: transfers with destination_center, origin_center, transfer_reason
+  const rawTransfers = props.inmate.transfers || [];
+  const transfersArray = Array.isArray(rawTransfers) ? rawTransfers : [];
 
-  // Location history
-  locationHistory.value = [
-    {
-      id: 1,
-      center_name: "Centro Preventivo Zona 18",
-      sector_name: "Sector B - Media Seguridad",
-      cell_number: "B-204",
-      arrival_date: "2023-08-15T08:30:00",
-      transfer_type: "routine",
-      transfer_reason: "Reclasificación de seguridad",
-      duration_days: 158
-    },
-    {
-      id: 2,
-      center_name: "Centro de Detención Preventiva",
-      sector_name: "Sector C - Alta Seguridad",
-      cell_number: "C-115",
-      arrival_date: "2023-03-10T14:15:00",
-      departure_date: "2023-08-15T08:30:00",
-      transfer_type: "security",
-      transfer_reason: "Incidente de seguridad",
-      duration_days: 158
-    },
-    {
-      id: 3,
-      center_name: "Centro de Ingreso",
-      sector_name: "Sector de Clasificación",
-      cell_number: "CL-08",
-      arrival_date: "2023-03-01T10:00:00",
-      departure_date: "2023-03-10T14:15:00",
-      transfer_type: "admission",
-      transfer_reason: "Ingreso inicial al sistema",
-      duration_days: 9
-    }
-  ];
+  // Sort transfers by date (newest first)
+  const sortedTransfers = [...transfersArray].sort((a: any, b: any) => {
+    const dateA = new Date(a.scheduled_departure_datetime || a.actual_departure_datetime || a.created_at || 0);
+    const dateB = new Date(b.scheduled_departure_datetime || b.actual_departure_datetime || b.created_at || 0);
+    return dateB.getTime() - dateA.getTime();
+  });
 
-  // Scheduled transfers
-  scheduledTransfers.value = [
-    {
-      id: 1,
-      destination: "Hospital Roosevelt - Consulta Externa",
-      scheduled_date: "2024-01-25T09:00:00",
-      status: "scheduled"
-    }
-  ];
+  // Update current location from the most recent completed transfer
+  const lastCompleted = sortedTransfers.find((t: any) => t.status === 'completed');
+  if (lastCompleted) {
+    currentLocation.value.center_name = lastCompleted.destination_center?.name || currentLocation.value.center_name;
+    currentLocation.value.arrival_date = lastCompleted.actual_arrival_datetime || lastCompleted.transfer_completed_datetime || currentLocation.value.arrival_date;
+    currentLocation.value.cell_number = lastCompleted.destination_cell_number || currentLocation.value.cell_number;
+  }
 
-  // Security requirements
-  securityRequirements.value = [
-    {
-      id: 1,
-      type: "escort",
-      description: "Escolta de seguridad media requerida"
-    },
-    {
-      id: 2,
-      type: "medical_clearance",
-      description: "Autorización médica para traslado"
+  // Map pending/approved transfers as transfer requests
+  transferRequests.value = sortedTransfers
+    .filter((t: any) => t.status === 'requested' || t.status === 'approved' || t.status === 'pending' || t.status === 'in_transit')
+    .map((t: any) => ({
+      id: t.id,
+      destination_center_name: t.destination_center?.name || 'N/A',
+      destination_sector_name: t.destination_sector?.name || '',
+      transfer_type: t.transfer_reason?.code || 'routine',
+      priority: t.incident_severity || 'normal',
+      request_date: t.created_at || t.scheduled_departure_datetime,
+      requested_by: t.created_by_name || '',
+      status: t.status === 'in_transit' ? 'in_process' : t.status,
+      reason: t.transfer_reason?.name || t.transfer_description || ''
+    }));
+
+  // Build location history from all transfers
+  locationHistory.value = sortedTransfers.map((t: any, index: number) => {
+    const arrivalDate = t.actual_arrival_datetime || t.scheduled_arrival_datetime;
+    const departureDate = index > 0 ? (sortedTransfers[index - 1]?.actual_departure_datetime || sortedTransfers[index - 1]?.scheduled_departure_datetime) : null;
+
+    // Calculate duration
+    let durationDays = 0;
+    if (arrivalDate) {
+      const endDate = departureDate ? new Date(departureDate) : new Date();
+      const startDate = new Date(arrivalDate);
+      durationDays = Math.ceil((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
     }
-  ];
+
+    return {
+      id: t.id,
+      center_name: t.destination_center?.name || 'N/A',
+      sector_name: t.destination_sector?.name || '',
+      cell_number: t.destination_cell_number || '',
+      arrival_date: arrivalDate || t.created_at,
+      departure_date: departureDate,
+      transfer_type: t.transfer_reason?.code || 'routine',
+      transfer_reason: t.transfer_reason?.name || t.transfer_description || '',
+      duration_days: Math.abs(durationDays)
+    };
+  });
+
+  // If no transfers, add admission as first entry
+  if (locationHistory.value.length === 0 && props.inmate.admission_date) {
+    const admDate = new Date(props.inmate.admission_date);
+    const daysInLocation = Math.ceil((new Date().getTime() - admDate.getTime()) / (1000 * 60 * 60 * 24));
+    locationHistory.value = [{
+      id: 0,
+      center_name: currentLocation.value.center_name,
+      sector_name: currentLocation.value.sector_name || '',
+      cell_number: currentLocation.value.cell_number || '',
+      arrival_date: props.inmate.admission_date,
+      departure_date: undefined,
+      transfer_type: 'admission',
+      transfer_reason: 'Ingreso al sistema',
+      duration_days: daysInLocation
+    }];
+  }
+
+  // Scheduled transfers (pending or in_transit)
+  scheduledTransfers.value = sortedTransfers
+    .filter((t: any) => t.status === 'approved' || t.status === 'in_transit')
+    .map((t: any) => ({
+      id: t.id,
+      destination: t.destination_center?.name || 'N/A',
+      scheduled_date: t.scheduled_departure_datetime || t.scheduled_arrival_datetime || '',
+      status: t.status === 'in_transit' ? 'in_transit' : 'scheduled'
+    }));
+
+  // Security requirements from security measures in transfers
+  securityRequirements.value = [];
+  const latestTransfer = sortedTransfers[0];
+  if (latestTransfer?.security_measures && Array.isArray(latestTransfer.security_measures)) {
+    securityRequirements.value = latestTransfer.security_measures.map((measure: any, idx: number) => ({
+      id: idx + 1,
+      type: typeof measure === 'string' ? 'escort' : (measure.type || 'escort'),
+      description: typeof measure === 'string' ? measure : (measure.description || measure.name || '')
+    }));
+  }
 
   // Transfer statistics
+  const completedTransfers = sortedTransfers.filter((t: any) => t.status === 'completed');
+  const totalDays = locationHistory.value.reduce((sum: number, loc: any) => sum + (loc.duration_days || 0), 0);
+  const avgDays = locationHistory.value.length > 0 ? Math.round(totalDays / locationHistory.value.length) : 0;
+  const maxDays = locationHistory.value.length > 0 ? Math.max(...locationHistory.value.map((loc: any) => loc.duration_days || 0)) : 0;
+
   transferStats.value = {
-    total_transfers: locationHistory.value.length,
-    average_stay_days: Math.round(locationHistory.value.reduce((sum, loc) => sum + (loc.duration_days || 0), 0) / locationHistory.value.length),
-    longest_stay_days: Math.max(...locationHistory.value.map(loc => loc.duration_days || 0))
+    total_transfers: transfersArray.length,
+    average_stay_days: avgDays,
+    longest_stay_days: maxDays
   };
 
-  // Transfer reasons
-  transferReasons.value = [
-    { reason: "Rutinario", count: 2 },
-    { reason: "Médico", count: 1 },
-    { reason: "Seguridad", count: 1 },
-    { reason: "Legal", count: 0 }
-  ];
+  // Transfer reasons distribution
+  const reasonCounts: Record<string, number> = {};
+  sortedTransfers.forEach((t: any) => {
+    const reason = t.transfer_reason?.name || 'Sin motivo';
+    reasonCounts[reason] = (reasonCounts[reason] || 0) + 1;
+  });
+  transferReasons.value = Object.entries(reasonCounts).map(([reason, count]) => ({
+    reason,
+    count
+  }));
+
+  // If no reasons, show default categories with zero counts
+  if (transferReasons.value.length === 0) {
+    transferReasons.value = [
+      { reason: 'Rutinario', count: 0 },
+      { reason: 'Médico', count: 0 },
+      { reason: 'Seguridad', count: 0 },
+      { reason: 'Legal', count: 0 }
+    ];
+  }
 };
 
 // Methods

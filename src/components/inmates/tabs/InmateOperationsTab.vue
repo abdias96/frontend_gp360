@@ -664,17 +664,18 @@ const fetchOperationsData = async () => {
     const transfersData = props.inmate.transfers || props.inmate.transferHistory || [];
 
     // Map transfers to a consistent format
+    // Backend serializes: destinationCenter → destination_center, originCenter → origin_center, transferReason → transfer_reason
     transferHistory.value = Array.isArray(transfersData)
       ? transfersData.map((transfer: any) => ({
           id: transfer.id,
           type: transfer.transfer_reason?.code || transfer.transfer_type || 'routine',
-          destination_center: transfer.to_center_name || transfer.to_center?.name || 'N/A',
-          origin_center: transfer.from_center_name || transfer.from_center?.name || 'N/A',
-          reason: transfer.transfer_reason_name || transfer.transfer_reason?.name || transfer.justification,
-          transfer_date: transfer.transfer_date || transfer.request_date,
+          destination_center: transfer.destination_center?.name || transfer.to_center_name || 'N/A',
+          origin_center: transfer.origin_center?.name || transfer.from_center_name || 'N/A',
+          reason: transfer.transfer_reason?.name || transfer.justification || transfer.reason,
+          transfer_date: transfer.transfer_date || transfer.scheduled_date || transfer.request_date,
           status: transfer.status || 'pending',
-          approved_by: transfer.approver_name,
-          executed_by: transfer.executor_name,
+          approved_by: transfer.approved_by_name || transfer.approver_name,
+          executed_by: transfer.executed_by_name || transfer.executor_name,
           transport_details: transfer.transport_details
         })).sort((a: any, b: any) =>
           new Date(b.transfer_date).getTime() - new Date(a.transfer_date).getTime()
