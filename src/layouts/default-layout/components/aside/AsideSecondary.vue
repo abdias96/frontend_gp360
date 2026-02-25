@@ -2071,7 +2071,7 @@
                       class="menu-item"
                       v-if="isSuperAdmin || hasPermission('reports.inmates')"
                     >
-                      <router-link to="/reports/inmate-reports" class="menu-link">
+                      <router-link to="/reports/inmates" class="menu-link">
                         <span class="menu-bullet"
                           ><span class="bullet bullet-dot"></span
                         ></span>
@@ -2082,7 +2082,7 @@
                       class="menu-item"
                       v-if="isSuperAdmin || hasPermission('reports.legal')"
                     >
-                      <router-link to="/reports/legal-reports" class="menu-link">
+                      <router-link to="/reports/legal" class="menu-link">
                         <span class="menu-bullet"
                           ><span class="bullet bullet-dot"></span
                         ></span>
@@ -2093,7 +2093,7 @@
                       class="menu-item"
                       v-if="isSuperAdmin || hasPermission('reports.medical')"
                     >
-                      <router-link to="/reports/medical-reports" class="menu-link">
+                      <router-link to="/reports/medical" class="menu-link">
                         <span class="menu-bullet"
                           ><span class="bullet bullet-dot"></span
                         ></span>
@@ -2104,7 +2104,7 @@
                       class="menu-item"
                       v-if="isSuperAdmin || hasPermission('reports.security')"
                     >
-                      <router-link to="/reports/security-reports" class="menu-link">
+                      <router-link to="/reports/security" class="menu-link">
                         <span class="menu-bullet"
                           ><span class="bullet bullet-dot"></span
                         ></span>
@@ -2115,7 +2115,7 @@
                       class="menu-item"
                       v-if="isSuperAdmin || hasPermission('reports.operations')"
                     >
-                      <router-link to="/reports/operations-reports" class="menu-link">
+                      <router-link to="/reports/operations" class="menu-link">
                         <span class="menu-bullet"
                           ><span class="bullet bullet-dot"></span
                         ></span>
@@ -2126,7 +2126,7 @@
                       class="menu-item"
                       v-if="isSuperAdmin || hasPermission('reports.statistical')"
                     >
-                      <router-link to="/reports/statistical-reports" class="menu-link">
+                      <router-link to="/reports/statistical" class="menu-link">
                         <span class="menu-bullet"
                           ><span class="bullet bullet-dot"></span
                         ></span>
