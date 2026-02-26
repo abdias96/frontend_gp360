@@ -12,6 +12,12 @@
       <div class="card-header">
         <h3 class="card-title">{{ $t("reports.filters") }}</h3>
         <div class="card-toolbar">
+          <button @click="doExportExcel" class="btn btn-sm btn-light-success me-2" :disabled="!data">
+            <i class="bi bi-file-earmark-excel me-1"></i> {{ $t("reports.exportExcel") }}
+          </button>
+          <button @click="doExportPDF" class="btn btn-sm btn-light-primary me-2" :disabled="!data">
+            <i class="bi bi-file-pdf me-1"></i> {{ $t("reports.exportPDF") }}
+          </button>
           <button @click="generateReport" class="btn btn-primary" :disabled="loading">
             <i class="bi bi-bar-chart me-1"></i> {{ $t("reports.generate") }}
           </button>
@@ -26,13 +32,21 @@
               <option v-for="c in centers" :key="c.id" :value="c.id">{{ c.name }}</option>
             </select>
           </div>
+          <div class="col-md-4">
+            <label class="form-label">{{ $t("reports.dateFrom") }}</label>
+            <input type="date" v-model="filters.dateFrom" class="form-control" />
+          </div>
+          <div class="col-md-4">
+            <label class="form-label">{{ $t("reports.dateTo") }}</label>
+            <input type="date" v-model="filters.dateTo" class="form-control" />
+          </div>
         </div>
       </div>
     </div>
 
     <!-- Stats -->
     <div class="row g-5 mt-0" v-if="data">
-      <div class="col-xl-3">
+      <div class="col-xl-2">
         <div class="card card-flush">
           <div class="card-body">
             <div class="d-flex align-items-center">
@@ -49,7 +63,7 @@
           </div>
         </div>
       </div>
-      <div class="col-xl-3">
+      <div class="col-xl-2">
         <div class="card card-flush">
           <div class="card-body">
             <div class="d-flex align-items-center">
@@ -66,7 +80,7 @@
           </div>
         </div>
       </div>
-      <div class="col-xl-3">
+      <div class="col-xl-2">
         <div class="card card-flush">
           <div class="card-body">
             <div class="d-flex align-items-center">
@@ -83,7 +97,7 @@
           </div>
         </div>
       </div>
-      <div class="col-xl-3">
+      <div class="col-xl-2">
         <div class="card card-flush">
           <div class="card-body">
             <div class="d-flex align-items-center">
@@ -95,6 +109,40 @@
               <div>
                 <div class="fw-bold fs-6 text-gray-400">{{ $t("reports.securityReports.monitoring") }}</div>
                 <div class="fs-2 fw-bold">{{ formatNumber(data.monitoring.total_records) }}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-xl-2">
+        <div class="card card-flush">
+          <div class="card-body">
+            <div class="d-flex align-items-center">
+              <div class="symbol symbol-50px me-5">
+                <span class="symbol-label bg-light-success">
+                  <i class="bi bi-door-closed fs-2x text-success"></i>
+                </span>
+              </div>
+              <div>
+                <div class="fw-bold fs-6 text-gray-400">{{ $t("reports.securityReports.requiresSingleCell") }}</div>
+                <div class="fs-2 fw-bold">{{ formatNumber(data.classifications?.requires_single_cell || 0) }}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-xl-2">
+        <div class="card card-flush">
+          <div class="card-body">
+            <div class="d-flex align-items-center">
+              <div class="symbol symbol-50px me-5">
+                <span class="symbol-label bg-light-dark">
+                  <i class="bi bi-speedometer2 fs-2x text-dark"></i>
+                </span>
+              </div>
+              <div>
+                <div class="fw-bold fs-7 text-gray-400">{{ $t("reports.securityReports.avgOverallRisk") }}</div>
+                <div class="fs-2 fw-bold">{{ data.classifications?.risk_scores?.avg_overall || 0 }}</div>
               </div>
             </div>
           </div>
@@ -136,20 +184,36 @@
       </div>
     </div>
 
+    <!-- New Charts: Affiliation Level + Risk Scores -->
+    <div class="row g-5 mt-0" v-if="data">
+      <div class="col-xl-6" v-if="Object.keys(data.gangs?.by_affiliation_level || {}).length">
+        <div class="card card-flush h-100">
+          <div class="card-header">
+            <h3 class="card-title">{{ $t("reports.securityReports.affiliationLevel") }}</h3>
+          </div>
+          <div class="card-body">
+            <apexchart type="bar" height="300" :options="affiliationChartOptions" :series="affiliationChartSeries" />
+          </div>
+        </div>
+      </div>
+      <div class="col-xl-6" v-if="data.classifications?.risk_scores">
+        <div class="card card-flush h-100">
+          <div class="card-header">
+            <h3 class="card-title">{{ $t("reports.securityReports.riskScores") }}</h3>
+          </div>
+          <div class="card-body">
+            <apexchart type="bar" height="300" :options="riskChartOptions" :series="riskChartSeries" />
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- Tables -->
     <div class="row g-5 mt-0" v-if="data">
-      <div class="col-xl-6">
-        <div class="card card-flush">
+      <div class="col-xl-4">
+        <div class="card card-flush h-100">
           <div class="card-header">
             <h3 class="card-title">{{ $t("reports.securityReports.incidentsByStatus") }}</h3>
-            <div class="card-toolbar">
-              <button @click="doExportPDF" class="btn btn-sm btn-light-primary me-2">
-                <i class="bi bi-file-pdf me-1"></i> PDF
-              </button>
-              <button @click="doExportExcel" class="btn btn-sm btn-light-success">
-                <i class="bi bi-file-earmark-excel me-1"></i> Excel
-              </button>
-            </div>
           </div>
           <div class="card-body">
             <table class="table table-row-dashed table-row-gray-300 gy-5">
@@ -171,8 +235,8 @@
           </div>
         </div>
       </div>
-      <div class="col-xl-6">
-        <div class="card card-flush">
+      <div class="col-xl-4">
+        <div class="card card-flush h-100">
           <div class="card-header">
             <h3 class="card-title">{{ $t("reports.securityReports.alertsByPriority") }}</h3>
           </div>
@@ -190,6 +254,29 @@
                     <span class="badge" :class="getPriorityBadge(String(priority))">{{ priority }}</span>
                   </td>
                   <td class="text-end fw-bold">{{ formatNumber(total) }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+      <div class="col-xl-4" v-if="data.gangs?.by_clique?.length">
+        <div class="card card-flush h-100">
+          <div class="card-header">
+            <h3 class="card-title">{{ $t("reports.securityReports.byClique") }}</h3>
+          </div>
+          <div class="card-body">
+            <table class="table table-row-dashed table-row-gray-300 gy-5">
+              <thead>
+                <tr class="fw-semibold fs-6 text-gray-800">
+                  <th>{{ $t("reports.name") }}</th>
+                  <th class="text-end">{{ $t("reports.total") }}</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="(item, idx) in data.gangs.by_clique" :key="idx">
+                  <td>{{ item.name }}</td>
+                  <td class="text-end fw-bold">{{ formatNumber(item.total) }}</td>
                 </tr>
               </tbody>
             </table>
@@ -224,12 +311,12 @@ const { t } = useI18n();
 const loading = ref(false);
 const data = ref<any>(null);
 const centers = ref<{ id: number; name: string }[]>([]);
-const filters = ref({ centerId: "" });
+const filters = ref({ centerId: "", dateFrom: "", dateTo: "" });
 
 const loadCenters = async () => {
   try {
-    const res = await ApiService.query("catalogs/centers", { active: true });
-    if (res.data.status === "success") centers.value = res.data.data || [];
+    const res = await ApiService.query("catalogs/centers", { simple: true });
+    if (res.data.success) centers.value = res.data.data || [];
   } catch { /* ignore */ }
 };
 
@@ -239,6 +326,8 @@ const generateReport = async () => {
   try {
     const params: any = {};
     if (filters.value.centerId) params.center_id = filters.value.centerId;
+    if (filters.value.dateFrom) params.date_from = filters.value.dateFrom;
+    if (filters.value.dateTo) params.date_to = filters.value.dateTo;
     const res = await ApiService.query("reports/security", params);
     if (res.data.status === "success") data.value = res.data.data;
   } catch {
@@ -289,6 +378,49 @@ const trendChartSeries = computed(() => [{
   data: (data.value?.incidents?.trend_last_12_months || []).map((t: any) => t.count),
 }]);
 
+// Affiliation level chart
+const affiliationChartOptions = computed(() => {
+  const keys = Object.keys(data.value?.gangs?.by_affiliation_level || {});
+  return {
+    chart: { type: "bar", toolbar: { show: false } },
+    xaxis: { categories: keys },
+    colors: [CHART_COLORS[3]],
+    plotOptions: { bar: { horizontal: true, barHeight: "60%" } },
+    dataLabels: { enabled: true },
+  };
+});
+const affiliationChartSeries = computed(() => [{
+  name: t("reports.total"),
+  data: Object.values(data.value?.gangs?.by_affiliation_level || {}),
+}]);
+
+// Risk scores chart
+const riskChartOptions = computed(() => {
+  const rs = data.value?.classifications?.risk_scores || {};
+  return {
+    chart: { type: "bar", toolbar: { show: false } },
+    xaxis: {
+      categories: [
+        t("reports.securityReports.avgViolenceRisk"),
+        t("reports.securityReports.avgEscapeRisk"),
+        t("reports.securityReports.avgOverallRisk"),
+      ],
+    },
+    colors: ["#f1416c", "#ffc700", "#7239ea"],
+    plotOptions: { bar: { distributed: true, columnWidth: "50%" } },
+    dataLabels: { enabled: true },
+    legend: { show: false },
+    yaxis: { max: 100 },
+  };
+});
+const riskChartSeries = computed(() => {
+  const rs = data.value?.classifications?.risk_scores || {};
+  return [{
+    name: t("reports.securityReports.riskScores"),
+    data: [rs.avg_violence || 0, rs.avg_escape || 0, rs.avg_overall || 0],
+  }];
+});
+
 const getStatusBadge = (status: string) => {
   const map: Record<string, string> = { pending: "badge-warning", investigating: "badge-info", resolved: "badge-success", dismissed: "badge-secondary" };
   return map[status] || "badge-secondary";
@@ -307,12 +439,32 @@ const doExportPDF = () => {
   );
 };
 const doExportExcel = () => {
-  const rows = objectToRows(data.value?.incidents?.by_status);
-  exportToExcel(t("reports.securityReports.title"), [{
+  const d = data.value;
+  if (!d) return;
+  const sheets: any[] = [];
+  sheets.push({
     name: "Incidentes",
-    columns: [t("reports.securityReports.status"), t("reports.inmateReports.count")],
-    rows,
-  }]);
+    columns: ["Estado", "Total"],
+    rows: objectToRows(d.incidents?.by_status),
+  });
+  sheets.push({
+    name: "Pandillas",
+    columns: ["Tipo", "Total"],
+    rows: objectToRows(d.gangs?.by_type),
+  });
+  sheets.push({
+    name: "Nivel Afiliación",
+    columns: ["Nivel", "Total"],
+    rows: objectToRows(d.gangs?.by_affiliation_level),
+  });
+  if (d.gangs?.by_clique?.length) {
+    sheets.push({
+      name: "Clicas",
+      columns: ["Clica", "Total"],
+      rows: d.gangs.by_clique.map((c: any) => [c.name, c.total]),
+    });
+  }
+  exportToExcel(t("reports.securityReports.title"), sheets);
 };
 
 onMounted(() => { loadCenters(); generateReport(); });

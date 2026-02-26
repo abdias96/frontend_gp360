@@ -17,6 +17,12 @@
       <div class="card-header">
         <h3 class="card-title">{{ $t("reports.filters") }}</h3>
         <div class="card-toolbar">
+          <button @click="exportFullExcel" class="btn btn-sm btn-light-success me-2" :disabled="!data">
+            <i class="bi bi-file-earmark-excel me-1"></i> {{ $t("reports.exportExcel") }}
+          </button>
+          <button @click="exportFullPDF" class="btn btn-sm btn-light-primary me-2" :disabled="!data">
+            <i class="bi bi-file-pdf me-1"></i> {{ $t("reports.exportPDF") }}
+          </button>
           <button
             @click="generateReport"
             class="btn btn-primary"
@@ -29,7 +35,7 @@
       </div>
       <div class="card-body">
         <div class="row g-3">
-          <div class="col-md-4">
+          <div class="col-md-2">
             <label class="form-label">{{ $t("reports.inmateReports.center") }}</label>
             <select v-model="filters.centerId" class="form-select">
               <option value="">{{ $t("reports.inmateReports.allCenters") }}</option>
@@ -38,13 +44,50 @@
               </option>
             </select>
           </div>
+          <div class="col-md-2">
+            <label class="form-label">{{ $t("reports.gender") }}</label>
+            <select v-model="filters.gender" class="form-select">
+              <option value="">{{ $t("reports.allGenders") }}</option>
+              <option value="M">{{ $t("reports.male") }}</option>
+              <option value="F">{{ $t("reports.female") }}</option>
+            </select>
+          </div>
+          <div class="col-md-2">
+            <label class="form-label">{{ $t("reports.inmateReports.statusFilter") }}</label>
+            <select v-model="filters.status" class="form-select">
+              <option value="">{{ $t("reports.allStatuses") }}</option>
+              <option value="active">{{ $t("reports.inmateReports.statusActive") }}</option>
+              <option value="released">{{ $t("reports.inmateReports.statusReleased") }}</option>
+              <option value="transferred">{{ $t("reports.inmateReports.statusTransferred") }}</option>
+              <option value="deceased">{{ $t("reports.inmateReports.statusDeceased") }}</option>
+              <option value="escaped">{{ $t("reports.inmateReports.statusEscaped") }}</option>
+            </select>
+          </div>
+          <div class="col-md-2">
+            <label class="form-label">{{ $t("reports.inmateReports.gangFilter") }}</label>
+            <select v-model="filters.gangAffiliation" class="form-select">
+              <option value="">{{ $t("reports.inmateReports.allGangs") }}</option>
+              <option value="none">{{ $t("reports.inmateReports.noGang") }}</option>
+              <option value="confirmed_ms13">MS-13</option>
+              <option value="confirmed_barrio18">Barrio 18</option>
+              <option value="other_gang">{{ $t("reports.inmateReports.otherGang") }}</option>
+            </select>
+          </div>
+          <div class="col-md-2">
+            <label class="form-label">{{ $t("reports.dateFrom") }}</label>
+            <input type="date" v-model="filters.dateFrom" class="form-control" />
+          </div>
+          <div class="col-md-2">
+            <label class="form-label">{{ $t("reports.dateTo") }}</label>
+            <input type="date" v-model="filters.dateTo" class="form-control" />
+          </div>
         </div>
       </div>
     </div>
 
     <!-- Stats Cards -->
     <div class="row g-5 mt-0" v-if="data">
-      <div class="col-xl-3">
+      <div class="col-xl-2">
         <div class="card card-flush">
           <div class="card-body">
             <div class="d-flex align-items-center">
@@ -65,7 +108,7 @@
           </div>
         </div>
       </div>
-      <div class="col-xl-3">
+      <div class="col-xl-2">
         <div class="card card-flush">
           <div class="card-body">
             <div class="d-flex align-items-center">
@@ -86,7 +129,7 @@
           </div>
         </div>
       </div>
-      <div class="col-xl-3">
+      <div class="col-xl-2">
         <div class="card card-flush">
           <div class="card-body">
             <div class="d-flex align-items-center">
@@ -107,7 +150,7 @@
           </div>
         </div>
       </div>
-      <div class="col-xl-3">
+      <div class="col-xl-2">
         <div class="card card-flush">
           <div class="card-body">
             <div class="d-flex align-items-center">
@@ -128,9 +171,51 @@
           </div>
         </div>
       </div>
+      <div class="col-xl-2">
+        <div class="card card-flush">
+          <div class="card-body">
+            <div class="d-flex align-items-center">
+              <div class="symbol symbol-50px me-5">
+                <span class="symbol-label bg-light-info">
+                  <i class="bi bi-bar-chart fs-2x text-info"></i>
+                </span>
+              </div>
+              <div>
+                <div class="fw-bold fs-6 text-gray-400">
+                  {{ $t("reports.total") }}
+                </div>
+                <div class="fs-2 fw-bold">
+                  {{ formatNumber(data.population.total) }}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-xl-2">
+        <div class="card card-flush">
+          <div class="card-body">
+            <div class="d-flex align-items-center">
+              <div class="symbol symbol-50px me-5">
+                <span class="symbol-label bg-light-dark">
+                  <i class="bi bi-x-circle fs-2x text-dark"></i>
+                </span>
+              </div>
+              <div>
+                <div class="fw-bold fs-6 text-gray-400">
+                  {{ $t("reports.inmateReports.deceased") }}
+                </div>
+                <div class="fs-2 fw-bold">
+                  {{ formatNumber(data.population.deceased) }}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
 
-    <!-- Charts Row -->
+    <!-- Charts Row 1: Population by Center + Gender -->
     <div class="row g-5 mt-0" v-if="data">
       <div class="col-xl-8">
         <div class="card card-flush h-100">
@@ -164,6 +249,7 @@
       </div>
     </div>
 
+    <!-- Charts Row 2: Security Level + Admissions Trend -->
     <div class="row g-5 mt-0" v-if="data">
       <div class="col-xl-4">
         <div class="card card-flush h-100">
@@ -197,23 +283,61 @@
       </div>
     </div>
 
+    <!-- Charts Row 3: Ethnicity + Education -->
+    <div class="row g-5 mt-0" v-if="data && data.demographics">
+      <div class="col-xl-4">
+        <div class="card card-flush h-100">
+          <div class="card-header">
+            <h3 class="card-title">{{ $t("reports.inmateReports.byEthnicity") }}</h3>
+          </div>
+          <div class="card-body">
+            <apexchart
+              type="pie"
+              height="300"
+              :options="ethnicityChartOptions"
+              :series="ethnicityChartSeries"
+            />
+          </div>
+        </div>
+      </div>
+      <div class="col-xl-4">
+        <div class="card card-flush h-100">
+          <div class="card-header">
+            <h3 class="card-title">{{ $t("reports.inmateReports.byEducation") }}</h3>
+          </div>
+          <div class="card-body">
+            <apexchart
+              type="bar"
+              height="300"
+              :options="educationChartOptions"
+              :series="educationChartSeries"
+            />
+          </div>
+        </div>
+      </div>
+      <div class="col-xl-4">
+        <div class="card card-flush h-100">
+          <div class="card-header">
+            <h3 class="card-title">{{ $t("reports.inmateReports.byNationality") }}</h3>
+          </div>
+          <div class="card-body">
+            <apexchart
+              type="bar"
+              height="300"
+              :options="nationalityChartOptions"
+              :series="nationalityChartSeries"
+            />
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- Tables -->
     <div class="row g-5 mt-0" v-if="data">
       <div class="col-xl-6">
         <div class="card card-flush">
           <div class="card-header">
             <h3 class="card-title">{{ $t("reports.inmateReports.top10Crimes") }}</h3>
-            <div class="card-toolbar">
-              <button
-                @click="exportCrimesPDF"
-                class="btn btn-sm btn-light-primary me-2"
-              >
-                <i class="bi bi-file-pdf me-1"></i> PDF
-              </button>
-              <button @click="exportCrimesExcel" class="btn btn-sm btn-light-success">
-                <i class="bi bi-file-earmark-excel me-1"></i> Excel
-              </button>
-            </div>
           </div>
           <div class="card-body">
             <table class="table table-row-dashed table-row-gray-300 gy-5">
@@ -264,6 +388,79 @@
       </div>
     </div>
 
+    <!-- New Tables: Civil Status + Population by Status -->
+    <div class="row g-5 mt-0" v-if="data">
+      <div class="col-xl-4" v-if="data.demographics?.by_civil_status?.length">
+        <div class="card card-flush h-100">
+          <div class="card-header">
+            <h3 class="card-title">{{ $t("reports.inmateReports.byCivilStatus") }}</h3>
+          </div>
+          <div class="card-body">
+            <table class="table table-row-dashed table-row-gray-300 gy-5">
+              <thead>
+                <tr class="fw-semibold fs-6 text-gray-800">
+                  <th>{{ $t("reports.name") }}</th>
+                  <th class="text-end">{{ $t("reports.total") }}</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="(item, idx) in data.demographics.by_civil_status" :key="idx">
+                  <td>{{ item.name }}</td>
+                  <td class="text-end fw-bold">{{ formatNumber(item.total) }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+      <div class="col-xl-4" v-if="data.population?.by_status">
+        <div class="card card-flush h-100">
+          <div class="card-header">
+            <h3 class="card-title">{{ $t("reports.inmateReports.populationByStatus") }}</h3>
+          </div>
+          <div class="card-body">
+            <table class="table table-row-dashed table-row-gray-300 gy-5">
+              <thead>
+                <tr class="fw-semibold fs-6 text-gray-800">
+                  <th>{{ $t("reports.inmateReports.statusFilter") }}</th>
+                  <th class="text-end">{{ $t("reports.total") }}</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="(total, status) in data.population.by_status" :key="status">
+                  <td>{{ status }}</td>
+                  <td class="text-end fw-bold">{{ formatNumber(total) }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+      <div class="col-xl-4" v-if="data.biometrics?.finger_distribution">
+        <div class="card card-flush h-100">
+          <div class="card-header">
+            <h3 class="card-title">{{ $t("reports.inmateReports.fingerDistribution") }}</h3>
+          </div>
+          <div class="card-body">
+            <table class="table table-row-dashed table-row-gray-300 gy-5">
+              <thead>
+                <tr class="fw-semibold fs-6 text-gray-800">
+                  <th>{{ $t("reports.inmateReports.fingersCount") }}</th>
+                  <th class="text-end">{{ $t("reports.inmateReports.inmatesCount") }}</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="(count, fingers) in data.biometrics.finger_distribution" :key="fingers">
+                  <td>{{ fingers }}</td>
+                  <td class="text-end fw-bold">{{ formatNumber(count) }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- Loading -->
     <div v-if="loading" class="text-center py-10">
       <div class="spinner-border" role="status">
@@ -294,19 +491,25 @@ import {
   formatPercentage,
   exportToPDF,
   exportToExcel,
-  arrayToRows,
 } from "../composables/useReportExport";
 
 const { t } = useI18n();
 const loading = ref(false);
 const data = ref<any>(null);
 const centers = ref<{ id: number; name: string }[]>([]);
-const filters = ref({ centerId: "" });
+const filters = ref({
+  centerId: "",
+  gender: "",
+  status: "",
+  gangAffiliation: "",
+  dateFrom: "",
+  dateTo: "",
+});
 
 const loadCenters = async () => {
   try {
-    const res = await ApiService.query("catalogs/centers", { active: true });
-    if (res.data.status === "success") {
+    const res = await ApiService.query("catalogs/centers", { simple: true });
+    if (res.data.success) {
       centers.value = res.data.data || [];
     }
   } catch {
@@ -320,6 +523,11 @@ const generateReport = async () => {
   try {
     const params: any = {};
     if (filters.value.centerId) params.center_id = filters.value.centerId;
+    if (filters.value.gender) params.gender = filters.value.gender;
+    if (filters.value.status) params.status = filters.value.status;
+    if (filters.value.gangAffiliation) params.gang_affiliation = filters.value.gangAffiliation;
+    if (filters.value.dateFrom) params.date_from = filters.value.dateFrom;
+    if (filters.value.dateTo) params.date_to = filters.value.dateTo;
     const res = await ApiService.query("reports/inmates", params);
     if (res.data.status === "success") {
       data.value = res.data.data;
@@ -392,6 +600,54 @@ const trendChartSeries = computed(() => [
   },
 ]);
 
+// Ethnicity chart
+const ethnicityChartOptions = computed(() => {
+  const items = data.value?.demographics?.by_ethnicity || [];
+  return {
+    chart: { type: "pie" },
+    labels: items.map((i: any) => i.name),
+    colors: CHART_COLORS,
+    legend: { position: "bottom" },
+  };
+});
+const ethnicityChartSeries = computed(() =>
+  (data.value?.demographics?.by_ethnicity || []).map((i: any) => i.total),
+);
+
+// Education chart
+const educationChartOptions = computed(() => ({
+  chart: { type: "bar", toolbar: { show: false } },
+  plotOptions: { bar: { horizontal: true, barHeight: "60%" } },
+  xaxis: {
+    categories: (data.value?.demographics?.by_education || []).map((i: any) => i.name),
+  },
+  colors: [CHART_COLORS[2]],
+  dataLabels: { enabled: true },
+}));
+const educationChartSeries = computed(() => [
+  {
+    name: t("reports.total"),
+    data: (data.value?.demographics?.by_education || []).map((i: any) => i.total),
+  },
+]);
+
+// Nationality chart
+const nationalityChartOptions = computed(() => ({
+  chart: { type: "bar", toolbar: { show: false } },
+  plotOptions: { bar: { horizontal: true, barHeight: "60%" } },
+  xaxis: {
+    categories: (data.value?.demographics?.by_nationality || []).map((i: any) => i.name),
+  },
+  colors: [CHART_COLORS[4]],
+  dataLabels: { enabled: true },
+}));
+const nationalityChartSeries = computed(() => [
+  {
+    name: t("reports.total"),
+    data: (data.value?.demographics?.by_nationality || []).map((i: any) => i.total),
+  },
+]);
+
 // Helpers
 const getGangBadge = (type: string) => {
   if (type.includes("ms13")) return "badge-danger";
@@ -399,24 +655,53 @@ const getGangBadge = (type: string) => {
   return "badge-secondary";
 };
 
-const exportCrimesPDF = () => {
+const exportFullPDF = () => {
   const crimes = data.value?.crimes?.top_10_crimes || [];
   exportToPDF(
-    t("reports.inmateReports.top10Crimes"),
+    t("reports.inmateReports.title"),
     ["#", t("reports.inmateReports.crime"), t("reports.inmateReports.count")],
     crimes.map((c: any, i: number) => [i + 1, c.name, c.total]),
   );
 };
 
-const exportCrimesExcel = () => {
-  const crimes = data.value?.crimes?.top_10_crimes || [];
-  exportToExcel(t("reports.inmateReports.top10Crimes"), [
-    {
-      name: "Delitos",
-      columns: ["#", t("reports.inmateReports.crime"), t("reports.inmateReports.count")],
-      rows: crimes.map((c: any, i: number) => [i + 1, c.name, c.total]),
-    },
-  ]);
+const exportFullExcel = () => {
+  const d = data.value;
+  if (!d) return;
+  const sheets: any[] = [];
+
+  // Population sheet
+  const popRows = (d.population?.by_center || []).map((c: any) => [c.code, c.name, c.total]);
+  sheets.push({
+    name: "Población",
+    columns: ["Código", "Centro", "Población"],
+    rows: popRows,
+  });
+
+  // Demographics sheet
+  const demoRows = (d.demographics?.by_ethnicity || []).map((i: any) => [i.name, i.total]);
+  sheets.push({
+    name: "Demografía",
+    columns: ["Etnia", "Total"],
+    rows: demoRows,
+  });
+
+  // Crimes sheet
+  const crimeRows = (d.crimes?.top_10_crimes || []).map((c: any, i: number) => [i + 1, c.name, c.total]);
+  sheets.push({
+    name: "Delitos",
+    columns: ["#", "Delito", "Total"],
+    rows: crimeRows,
+  });
+
+  // Gangs sheet
+  const gangRows = Object.entries(d.gangs?.by_type || {}).map(([type, total]) => [type, total]);
+  sheets.push({
+    name: "Pandillas",
+    columns: ["Tipo", "Total"],
+    rows: gangRows,
+  });
+
+  exportToExcel(t("reports.inmateReports.title"), sheets);
 };
 
 onMounted(() => {

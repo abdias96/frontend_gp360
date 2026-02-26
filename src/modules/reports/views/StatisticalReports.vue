@@ -26,13 +26,21 @@
               <option v-for="c in centers" :key="c.id" :value="c.id">{{ c.name }}</option>
             </select>
           </div>
+          <div class="col-md-4">
+            <label class="form-label">{{ $t("reports.dateFrom") }}</label>
+            <input type="date" v-model="filters.dateFrom" class="form-control" />
+          </div>
+          <div class="col-md-4">
+            <label class="form-label">{{ $t("reports.dateTo") }}</label>
+            <input type="date" v-model="filters.dateTo" class="form-control" />
+          </div>
         </div>
       </div>
     </div>
 
     <!-- Stats -->
     <div class="row g-5 mt-0" v-if="data">
-      <div class="col-xl-3">
+      <div class="col-xl-2 col-md-4">
         <div class="card card-flush">
           <div class="card-body">
             <div class="d-flex align-items-center">
@@ -42,14 +50,14 @@
                 </span>
               </div>
               <div>
-                <div class="fw-bold fs-6 text-gray-400">{{ $t("reports.statisticalReports.totalPopulation") }}</div>
+                <div class="fw-bold fs-7 text-gray-400">{{ $t("reports.statisticalReports.totalPopulation") }}</div>
                 <div class="fs-2 fw-bold">{{ formatNumber(data.population_summary.total) }}</div>
               </div>
             </div>
           </div>
         </div>
       </div>
-      <div class="col-xl-3">
+      <div class="col-xl-2 col-md-4">
         <div class="card card-flush">
           <div class="card-body">
             <div class="d-flex align-items-center">
@@ -59,14 +67,14 @@
                 </span>
               </div>
               <div>
-                <div class="fw-bold fs-6 text-gray-400">{{ $t("reports.statisticalReports.occupancyRate") }}</div>
+                <div class="fw-bold fs-7 text-gray-400">{{ $t("reports.statisticalReports.occupancyRate") }}</div>
                 <div class="fs-2 fw-bold">{{ formatPercentage(data.population_summary.occupancy_rate) }}</div>
               </div>
             </div>
           </div>
         </div>
       </div>
-      <div class="col-xl-3">
+      <div class="col-xl-2 col-md-4">
         <div class="card card-flush">
           <div class="card-body">
             <div class="d-flex align-items-center">
@@ -76,14 +84,14 @@
                 </span>
               </div>
               <div>
-                <div class="fw-bold fs-6 text-gray-400">{{ $t("reports.statisticalReports.securityIndex") }}</div>
+                <div class="fw-bold fs-7 text-gray-400">{{ $t("reports.statisticalReports.securityIndex") }}</div>
                 <div class="fs-2 fw-bold">{{ data.security_index.avg_incidents_per_100 }}</div>
               </div>
             </div>
           </div>
         </div>
       </div>
-      <div class="col-xl-3">
+      <div class="col-xl-2 col-md-4">
         <div class="card card-flush">
           <div class="card-body">
             <div class="d-flex align-items-center">
@@ -93,8 +101,42 @@
                 </span>
               </div>
               <div>
-                <div class="fw-bold fs-6 text-gray-400">{{ $t("reports.statisticalReports.avgPreventiva") }}</div>
+                <div class="fw-bold fs-7 text-gray-400">{{ $t("reports.statisticalReports.avgPreventiva") }}</div>
                 <div class="fs-2 fw-bold">{{ formatNumber(data.legal_index.avg_days_preventiva) }} {{ $t("reports.statisticalReports.days") }}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-xl-2 col-md-4">
+        <div class="card card-flush">
+          <div class="card-body">
+            <div class="d-flex align-items-center">
+              <div class="symbol symbol-50px me-5">
+                <span class="symbol-label bg-light-success">
+                  <i class="bi bi-fingerprint fs-2x text-success"></i>
+                </span>
+              </div>
+              <div>
+                <div class="fw-bold fs-7 text-gray-400">{{ $t("reports.statisticalReports.biometricCoverage") }}</div>
+                <div class="fs-2 fw-bold">{{ formatPercentage(data.demographics_index.biometric_coverage) }}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-xl-2 col-md-4">
+        <div class="card card-flush">
+          <div class="card-body">
+            <div class="d-flex align-items-center">
+              <div class="symbol symbol-50px me-5">
+                <span class="symbol-label bg-light-dark">
+                  <i class="bi bi-globe2 fs-2x text-dark"></i>
+                </span>
+              </div>
+              <div>
+                <div class="fw-bold fs-7 text-gray-400">{{ $t("reports.statisticalReports.ethnicDiversity") }}</div>
+                <div class="fs-2 fw-bold">{{ data.demographics_index.ethnicity_diversity }}</div>
               </div>
             </div>
           </div>
@@ -121,6 +163,24 @@
           </div>
           <div class="card-body">
             <div class="d-flex flex-column gap-5">
+              <div>
+                <div class="d-flex justify-content-between mb-1">
+                  <span class="text-muted fs-7">{{ $t("reports.statisticalReports.biometricCoverage") }}</span>
+                  <span class="fw-bold">{{ formatPercentage(data.demographics_index.biometric_coverage) }}</span>
+                </div>
+                <div class="progress h-6px">
+                  <div class="progress-bar bg-success" :style="{width: Math.min(data.demographics_index.biometric_coverage, 100) + '%'}"></div>
+                </div>
+              </div>
+              <div>
+                <div class="d-flex justify-content-between mb-1">
+                  <span class="text-muted fs-7">{{ $t("reports.statisticalReports.educationRate") }}</span>
+                  <span class="fw-bold">{{ formatPercentage(data.demographics_index.education_rate) }}</span>
+                </div>
+                <div class="progress h-6px">
+                  <div class="progress-bar bg-info" :style="{width: Math.min(data.demographics_index.education_rate, 100) + '%'}"></div>
+                </div>
+              </div>
               <div>
                 <div class="d-flex justify-content-between mb-1">
                   <span class="text-muted fs-7">{{ $t("reports.statisticalReports.gangPercentage") }}</span>
@@ -173,10 +233,10 @@
         <h3 class="card-title">{{ $t("reports.statisticalReports.centerSummary") }}</h3>
         <div class="card-toolbar">
           <button @click="doExportPDF" class="btn btn-sm btn-light-primary me-2">
-            <i class="bi bi-file-pdf me-1"></i> PDF
+            <i class="bi bi-file-pdf me-1"></i> {{ $t("reports.exportPDF") }}
           </button>
           <button @click="doExportExcel" class="btn btn-sm btn-light-success">
-            <i class="bi bi-file-earmark-excel me-1"></i> Excel
+            <i class="bi bi-file-earmark-excel me-1"></i> {{ $t("reports.exportExcel") }}
           </button>
         </div>
       </div>
@@ -188,6 +248,8 @@
                 <th>{{ $t("reports.statisticalReports.centerName") }}</th>
                 <th class="text-end">{{ $t("reports.statisticalReports.capacity") }}</th>
                 <th class="text-end">{{ $t("reports.inmateReports.population") }}</th>
+                <th class="text-end">{{ $t("reports.statisticalReports.maleCount") }}</th>
+                <th class="text-end">{{ $t("reports.statisticalReports.femaleCount") }}</th>
                 <th class="text-end">{{ $t("reports.statisticalReports.occupancyPct") }}</th>
               </tr>
             </thead>
@@ -199,6 +261,8 @@
                 </td>
                 <td class="text-end">{{ formatNumber(center.capacity) }}</td>
                 <td class="text-end">{{ formatNumber(center.population) }}</td>
+                <td class="text-end">{{ formatNumber(center.male) }}</td>
+                <td class="text-end">{{ formatNumber(center.female) }}</td>
                 <td class="text-end">
                   <span class="badge" :class="center.occupancy_rate > 100 ? 'badge-danger' : center.occupancy_rate > 80 ? 'badge-warning' : 'badge-success'">
                     {{ formatPercentage(center.occupancy_rate) }}
@@ -211,6 +275,8 @@
                 <td>Total</td>
                 <td class="text-end">{{ formatNumber(data.population_summary.capacity) }}</td>
                 <td class="text-end">{{ formatNumber(data.population_summary.total) }}</td>
+                <td class="text-end">{{ formatNumber(data.population_summary.by_gender?.M || 0) }}</td>
+                <td class="text-end">{{ formatNumber(data.population_summary.by_gender?.F || 0) }}</td>
                 <td class="text-end">
                   <span class="badge" :class="data.population_summary.occupancy_rate > 100 ? 'badge-danger' : 'badge-success'">
                     {{ formatPercentage(data.population_summary.occupancy_rate) }}
@@ -249,12 +315,12 @@ const { t } = useI18n();
 const loading = ref(false);
 const data = ref<any>(null);
 const centers = ref<{ id: number; name: string }[]>([]);
-const filters = ref({ centerId: "" });
+const filters = ref({ centerId: "", dateFrom: "", dateTo: "" });
 
 const loadCenters = async () => {
   try {
-    const res = await ApiService.query("catalogs/centers", { active: true });
-    if (res.data.status === "success") centers.value = res.data.data || [];
+    const res = await ApiService.query("catalogs/centers", { simple: true });
+    if (res.data.success) centers.value = res.data.data || [];
   } catch { /* ignore */ }
 };
 
@@ -264,6 +330,8 @@ const generateReport = async () => {
   try {
     const params: any = {};
     if (filters.value.centerId) params.center_id = filters.value.centerId;
+    if (filters.value.dateFrom) params.date_from = filters.value.dateFrom;
+    if (filters.value.dateTo) params.date_to = filters.value.dateTo;
     const res = await ApiService.query("reports/statistical", params);
     if (res.data.status === "success") data.value = res.data.data;
   } catch {
@@ -313,18 +381,57 @@ const doExportPDF = () => {
   const byCenter = data.value?.population_summary?.by_center || [];
   exportToPDF(
     t("reports.statisticalReports.centerSummary"),
-    [t("reports.statisticalReports.centerName"), t("reports.statisticalReports.capacity"), t("reports.inmateReports.population"), t("reports.statisticalReports.occupancyPct")],
-    byCenter.map((c: any) => [c.name, c.capacity, c.population, c.occupancy_rate + "%"]),
+    [
+      t("reports.statisticalReports.centerName"),
+      t("reports.statisticalReports.capacity"),
+      t("reports.inmateReports.population"),
+      t("reports.statisticalReports.maleCount"),
+      t("reports.statisticalReports.femaleCount"),
+      t("reports.statisticalReports.occupancyPct"),
+    ],
+    byCenter.map((c: any) => [c.name, c.capacity, c.population, c.male, c.female, c.occupancy_rate + "%"]),
     true,
   );
 };
+
 const doExportExcel = () => {
   const byCenter = data.value?.population_summary?.by_center || [];
-  exportToExcel(t("reports.statisticalReports.centerSummary"), [{
-    name: "Centros",
-    columns: [t("reports.statisticalReports.centerName"), "Codigo", t("reports.statisticalReports.capacity"), t("reports.inmateReports.population"), t("reports.statisticalReports.occupancyPct")],
-    rows: byCenter.map((c: any) => [c.name, c.code, c.capacity, c.population, c.occupancy_rate]),
-  }]);
+  const trend = data.value?.population_trend || [];
+  exportToExcel(t("reports.statisticalReports.title"), [
+    {
+      name: "Resumen Centros",
+      columns: [
+        t("reports.statisticalReports.centerName"),
+        "Codigo",
+        t("reports.statisticalReports.capacity"),
+        t("reports.inmateReports.population"),
+        t("reports.statisticalReports.maleCount"),
+        t("reports.statisticalReports.femaleCount"),
+        t("reports.statisticalReports.occupancyPct"),
+      ],
+      rows: byCenter.map((c: any) => [c.name, c.code, c.capacity, c.population, c.male, c.female, c.occupancy_rate]),
+    },
+    {
+      name: "Tendencia Poblacional",
+      columns: ["Mes", t("reports.statisticalReports.admissions"), t("reports.statisticalReports.releases"), t("reports.statisticalReports.netChange")],
+      rows: trend.map((t: any) => [t.month, t.admissions, t.releases, t.net_change]),
+    },
+    {
+      name: "Indicadores",
+      columns: ["Indicador", "Valor"],
+      rows: [
+        [t("reports.statisticalReports.totalPopulation"), data.value?.population_summary?.total || 0],
+        [t("reports.statisticalReports.occupancyRate"), (data.value?.population_summary?.occupancy_rate || 0) + "%"],
+        [t("reports.statisticalReports.biometricCoverage"), (data.value?.demographics_index?.biometric_coverage || 0) + "%"],
+        [t("reports.statisticalReports.educationRate"), (data.value?.demographics_index?.education_rate || 0) + "%"],
+        [t("reports.statisticalReports.ethnicDiversity"), data.value?.demographics_index?.ethnicity_diversity || 0],
+        [t("reports.statisticalReports.gangPercentage"), (data.value?.security_index?.gang_percentage || 0) + "%"],
+        [t("reports.statisticalReports.chronicDiseaseRate"), (data.value?.medical_index?.chronic_disease_rate || 0) + "%"],
+        [t("reports.statisticalReports.securityIndex"), data.value?.security_index?.avg_incidents_per_100 || 0],
+        [t("reports.statisticalReports.avgPreventiva"), (data.value?.legal_index?.avg_days_preventiva || 0) + " " + t("reports.statisticalReports.days")],
+      ],
+    },
+  ]);
 };
 
 onMounted(() => { loadCenters(); generateReport(); });
