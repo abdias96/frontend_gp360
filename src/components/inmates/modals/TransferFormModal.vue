@@ -161,7 +161,6 @@
                   type="datetime-local"
                   class="form-control"
                   :class="{ 'is-invalid': errors.scheduled_departure_datetime }"
-                  :min="minDatetime"
                 />
                 <div v-if="errors.scheduled_departure_datetime" class="invalid-feedback">{{ errors.scheduled_departure_datetime }}</div>
               </div>
@@ -449,11 +448,6 @@ const errors = ref<{ [key: string]: string }>({});
 // Computed
 const isEditing = computed(() => !!props.transfer);
 const inmateId = computed(() => props.inmateId);
-const minDatetime = computed(() => {
-  const now = new Date();
-  now.setHours(now.getHours() + 1); // At least 1 hour from now
-  return now.toISOString().slice(0, 16); // Format: YYYY-MM-DDTHH:mm
-});
 
 // Watchers
 watch(() => props.show, async (show) => {
