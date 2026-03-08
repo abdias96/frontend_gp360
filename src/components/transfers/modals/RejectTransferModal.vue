@@ -119,11 +119,11 @@ const reject = async () => {
       emit('rejected');
       close();
     }
-  } catch (error: any) {
-    console.error('Error rejecting transfer:', error);
+  } catch (err: any) {
+    console.error('Error rejecting transfer:', err);
     await Swal.fire({
       title: 'Error',
-      text: error.response?.data?.message || 'Error al rechazar el traslado',
+      text: err.response?.data?.message || 'Error al rechazar el traslado',
       icon: 'error'
     });
   } finally {
