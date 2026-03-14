@@ -39,8 +39,10 @@ const openModal = async () => {
       ApiService.get("/catalogs/centers"),
       ApiService.get("/catalogs/sectors"),
     ]);
-    centers = centersRes.data.data || centersRes.data || [];
-    sectors = sectorsRes.data.data || sectorsRes.data || [];
+    const cData = centersRes.data?.data;
+    centers = Array.isArray(cData) ? cData : (cData?.data || []);
+    const sData = sectorsRes.data?.data;
+    sectors = Array.isArray(sData) ? sData : (sData?.data || []);
   } catch (e) {
     console.error("Error loading catalogs:", e);
     await Swal.fire({ icon: "error", title: "Error", text: "No se pudieron cargar los catálogos" });
