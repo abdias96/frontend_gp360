@@ -113,6 +113,30 @@
                 {{ $t('inmates.detail.actions.changeStatus') }}
               </a>
             </li>
+            <template v-if="isSuperAdmin">
+              <li class="menu-separator"></li>
+              <li class="menu-item px-3">
+                <a href="#" class="menu-link px-3" @click.prevent="openAssignLocation">
+                  <i class="ki-duotone ki-geolocation fs-6 me-2">
+                    <span class="path1"></span>
+                    <span class="path2"></span>
+                  </i>
+                  Asignar Centro/Sector
+                </a>
+              </li>
+              <li class="menu-item px-3">
+                <a href="#" class="menu-link px-3 text-danger" @click.prevent="confirmDelete">
+                  <i class="ki-duotone ki-trash fs-6 me-2">
+                    <span class="path1"></span>
+                    <span class="path2"></span>
+                    <span class="path3"></span>
+                    <span class="path4"></span>
+                    <span class="path5"></span>
+                  </i>
+                  Eliminar Perfil
+                </a>
+              </li>
+            </template>
           </ul>
         </div>
       </div>
@@ -411,6 +435,15 @@
       @statusChanged="handleStatusChanged"
       @released="handleReleased"
     />
+
+    <!-- Assign Location Modal (Admin only) -->
+    <AssignLocationModal
+      v-if="isSuperAdmin"
+      :show="showAssignLocationModal"
+      :inmate="inmate"
+      @saved="handleLocationAssigned"
+      @close="showAssignLocationModal = false"
+    />
   </div>
 </template>
 
@@ -432,6 +465,7 @@ import InmateDocumentsTab from "@/components/inmates/tabs/InmateDocumentsTab.vue
 import InmateOperationsTab from "@/components/inmates/tabs/InmateOperationsTab.vue";
 import TransferFormModal from "@/components/inmates/modals/TransferFormModal.vue";
 import ChangeStatusModal from "@/components/inmates/modals/ChangeStatusModal.vue";
+import AssignLocationModal from "@/components/inmates/modals/AssignLocationModal.vue";
 import Swal from "sweetalert2";
 import { useBiometricMatching } from "@/composables/useBiometricMatching";
 import { formatDate as formatDateHelper } from "@/core/helpers/formatters";
@@ -450,6 +484,7 @@ const router = useRouter();
 // Reactive data
 const loading = ref(false);
 const showTransferModal = ref(false);
+const showAssignLocationModal = ref(false);
 const selectedInmateForAction = ref<any>(null);
 
 // Computed properties
@@ -462,6 +497,7 @@ const canTransfer = computed(() => authStore.hasPermission("inmates.transfer"));
 const canChangeStatus = computed(() =>
   authStore.hasPermission("inmates.change_status"),
 );
+const isSuperAdmin = computed(() => authStore.isSuperAdmin);
 
 // Methods
 const loadInmate = async () => {
@@ -535,6 +571,47 @@ const getRiskBadgeClass = (level: number) => {
     5: "badge-light-dark", // Máximo
   };
   return classes[level as keyof typeof classes] || "badge-light-secondary";
+};
+
+const openAssignLocation = () => {
+  showAssignLocationModal.value = true;
+};
+
+const handleLocationAssigned = async () => {
+  showAssignLocationModal.value = false;
+  await loadInmate();
+};
+
+const confirmDelete = async () => {
+  if (!inmate.value) return;
+  const result = await Swal.fire({
+    title: "Eliminar Perfil",
+    html: `<p>Se eliminara el perfil de <strong>${inmate.value.full_name}</strong> (ID: ${inmate.value.id}).</p><p class="text-danger fw-bold">Esta accion no se puede deshacer.</p>`,
+    icon: "warning",
+    showCancelButton: true,
+    confirmButtonColor: "#d33",
+    confirmButtonText: "Si, eliminar",
+    cancelButtonText: "Cancelar",
+  });
+
+  if (result.isConfirmed) {
+    try {
+      await inmatesStore.deleteInmate(inmate.value.id);
+      await Swal.fire({
+        icon: "success",
+        title: "Perfil eliminado",
+        text: `${inmate.value.full_name} fue eliminado correctamente.`,
+        timer: 2000,
+      });
+      router.push("/inmates");
+    } catch (error: any) {
+      await Swal.fire({
+        icon: "error",
+        title: "Error",
+        text: error.response?.data?.message || "No se pudo eliminar el perfil",
+      });
+    }
+  }
 };
 
 const initiateTransfer = () => {

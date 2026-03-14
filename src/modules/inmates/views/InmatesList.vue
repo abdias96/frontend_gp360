@@ -606,6 +606,29 @@
                           {{ $t('inmates.list.actions.changeStatus') }}
                         </a>
                       </li>
+                      <template v-if="isSuperAdmin">
+                        <li><hr class="dropdown-divider" /></li>
+                        <li>
+                          <a
+                            href="#"
+                            class="dropdown-item"
+                            @click.prevent="openAssignLocation(inmate)"
+                          >
+                            <i class="ki-duotone ki-geolocation fs-6 me-2"><span class="path1"></span><span class="path2"></span></i>
+                            Asignar Centro/Sector
+                          </a>
+                        </li>
+                        <li>
+                          <a
+                            href="#"
+                            class="dropdown-item text-danger"
+                            @click.prevent="confirmDelete(inmate)"
+                          >
+                            <i class="ki-duotone ki-trash fs-6 me-2"><span class="path1"></span><span class="path2"></span><span class="path3"></span><span class="path4"></span><span class="path5"></span></i>
+                            Eliminar Perfil
+                          </a>
+                        </li>
+                      </template>
                     </ul>
                   </div>
                 </td>
@@ -776,6 +799,14 @@
     @statusChanged="handleStatusChanged"
     @released="handleReleased"
   />
+
+  <AssignLocationModal
+    v-if="isSuperAdmin"
+    :show="showAssignLocationModal"
+    :inmate="selectedInmate"
+    @saved="handleLocationAssigned"
+    @close="showAssignLocationModal = false"
+  />
 </template>
 
 <script setup lang="ts">
@@ -789,6 +820,7 @@ import type { InmateListItem, InmateStatistics } from "@/types/inmates";
 import Swal from "sweetalert2";
 import TransferFormModal from "@/components/inmates/modals/TransferFormModal.vue";
 import ChangeStatusModal from "@/components/inmates/modals/ChangeStatusModal.vue";
+import AssignLocationModal from "@/components/inmates/modals/AssignLocationModal.vue";
 import ApiService from "@/core/services/ApiService";
 import { generateBatchPrintHTML } from "@/utils/inmatePrintProfile";
 
@@ -813,6 +845,7 @@ const statistics = ref<InmateStatistics | null>(null);
 const loadingStatistics = ref(false);
 const selectedInmate = ref<InmateListItem | null>(null);
 const showTransferModal = ref(false);
+const showAssignLocationModal = ref(false);
 
 // Selection mode state
 const selectionMode = ref(false);
@@ -852,6 +885,7 @@ const canChangeStatus = computed(() =>
 const canAdvancedSearch = computed(() =>
   authStore.hasPermission("inmates.advanced_search"),
 );
+const isSuperAdmin = computed(() => authStore.isSuperAdmin);
 
 // Check if any filter is active
 const hasActiveFilters = computed(() => {
@@ -1052,6 +1086,49 @@ const loadCatalogs = async () => {
 const initiateTransfer = (inmate: InmateListItem) => {
   selectedInmate.value = inmate;
   showTransferModal.value = true;
+};
+
+const openAssignLocation = (inmate: InmateListItem) => {
+  selectedInmate.value = inmate;
+  showAssignLocationModal.value = true;
+};
+
+const handleLocationAssigned = () => {
+  showAssignLocationModal.value = false;
+  selectedInmate.value = null;
+  fetchInmates();
+};
+
+const confirmDelete = async (inmate: InmateListItem) => {
+  const fullName = getInmateFullName(inmate);
+  const result = await Swal.fire({
+    title: "Eliminar Perfil",
+    html: `<p>Se eliminara el perfil de <strong>${fullName}</strong> (ID: ${inmate.id}).</p><p class="text-danger fw-bold">Esta accion no se puede deshacer.</p>`,
+    icon: "warning",
+    showCancelButton: true,
+    confirmButtonColor: "#d33",
+    confirmButtonText: "Si, eliminar",
+    cancelButtonText: "Cancelar",
+  });
+
+  if (result.isConfirmed) {
+    try {
+      await inmatesStore.deleteInmate(inmate.id);
+      await Swal.fire({
+        icon: "success",
+        title: "Perfil eliminado",
+        text: `${fullName} fue eliminado correctamente.`,
+        timer: 2000,
+      });
+      fetchInmates();
+    } catch (error: any) {
+      await Swal.fire({
+        icon: "error",
+        title: "Error",
+        text: error.response?.data?.message || "No se pudo eliminar el perfil",
+      });
+    }
+  }
 };
 
 const openAdvancedSearch = async () => {

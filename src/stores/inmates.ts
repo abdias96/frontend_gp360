@@ -261,6 +261,29 @@ export const useInmatesStore = defineStore("inmates", {
       }
     },
 
+    // Admin: Assign location directly
+    async assignLocation(id: string | number, data: { center_id: number; sector_id: number | null; reason?: string }) {
+      try {
+        this.loading = true;
+        this.error = null;
+
+        const response = await ApiService.post(`/inmates/${id}/assign-location`, data);
+
+        // Refresh inmate data
+        if (this.currentInmate?.id === id) {
+          this.currentInmate = response.data.data;
+        }
+
+        return response.data;
+      } catch (error: any) {
+        this.error = error.response?.data?.message || "Error al asignar ubicación";
+        console.error("Error assigning location:", error);
+        throw error;
+      } finally {
+        this.loading = false;
+      }
+    },
+
     // Transfer inmate
     async transferInmate(id: string | number, transferData: any) {
       try {

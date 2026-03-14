@@ -77,6 +77,7 @@
               <option value="in_transit">En Tránsito</option>
               <option value="completed">Completado</option>
               <option value="cancelled">Cancelado</option>
+              <option value="rejected">Rechazado</option>
             </select>
           </div>
           <div class="col-md-3">
@@ -814,6 +815,7 @@ const getStatusLabel = (status: string) => {
     in_transit: 'En Tránsito',
     completed: 'Completado',
     cancelled: 'Cancelado',
+    rejected: 'Rechazado',
   };
   return labels[status] || status;
 };
@@ -825,6 +827,7 @@ const getStatusBadgeClass = (status: string) => {
     in_transit: 'badge badge-light-info fw-bold',
     completed: 'badge badge-light-success fw-bold',
     cancelled: 'badge badge-light-danger fw-bold',
+    rejected: 'badge badge-light-danger fw-bold',
   };
   return classes[status] || 'badge badge-light fw-bold';
 };
