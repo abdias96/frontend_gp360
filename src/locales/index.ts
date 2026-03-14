@@ -19,6 +19,8 @@ import { documentsTranslations } from "./modules/documents";
 import { renapTranslations } from "./modules/renap";
 import { emergencyTranslations } from "./modules/emergency";
 import { securityTranslations } from "./modules/security";
+import { rehabilitationTranslations } from "./modules/rehabilitation";
+import { medicalTranslations } from "./modules/medical";
 import operationsEs from "./es/operations";
 import operationsEn from "./en/operations";
 import visitsEs from "./es/visits";
@@ -66,7 +68,11 @@ const enTranslations = deepMerge(
                                     deepMerge(renapTranslations.en,
                                       deepMerge(emergencyTranslations.en,
                                         deepMerge(securityTranslations.en,
-                                          deepMerge(operationsEn, visitsEn)
+                                          deepMerge(rehabilitationTranslations.en,
+                                          deepMerge(medicalTranslations.en,
+                                            deepMerge(operationsEn, visitsEn)
+                                          )
+                                          )
                                         )
                                       )
                                     )
@@ -112,7 +118,11 @@ const esTranslations = deepMerge(
                                     deepMerge(renapTranslations.es,
                                       deepMerge(emergencyTranslations.es,
                                         deepMerge(securityTranslations.es,
-                                          deepMerge(operationsEs, visitsEs)
+                                          deepMerge(rehabilitationTranslations.es,
+                                          deepMerge(medicalTranslations.es,
+                                            deepMerge(operationsEs, visitsEs)
+                                          )
+                                          )
                                         )
                                       )
                                     )
