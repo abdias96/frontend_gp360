@@ -474,14 +474,20 @@ export function useAdmissionWizard() {
       return;
     }
 
-    // Skip duplicate check for placeholder values (sin documento)
-    const placeholderValues = ['-', 'n/a', 's/n', 'sin documento', 'pending'];
+    // Skip duplicate check entirely for placeholder values (sin documento)
+    const placeholderValues = ['-', 'n/a', 's/n', 'sin documento', 'pending', ''];
     const docValue = (inmateData.value.identification_number || '').trim().toLowerCase();
     const isPlaceholder = placeholderValues.includes(docValue);
 
+    if (isPlaceholder) {
+      duplicateCheckResult.value = null;
+      duplicateConfirmed.value = false;
+      return;
+    }
+
     try {
       const params: any = {};
-      if (inmateData.value.identification_number && !isPlaceholder) {
+      if (inmateData.value.identification_number) {
         params.identification_number = inmateData.value.identification_number;
       }
       if (inmateData.value.first_name && inmateData.value.first_surname) {
