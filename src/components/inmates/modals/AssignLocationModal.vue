@@ -36,8 +36,8 @@ const openModal = async () => {
   let sectors: any[] = [];
   try {
     const [centersRes, sectorsRes] = await Promise.all([
-      ApiService.get("/catalogs/centers"),
-      ApiService.get("/catalogs/sectors"),
+      ApiService.get("/catalogs/centers?per_page=999"),
+      ApiService.get("/catalogs/sectors?per_page=999"),
     ]);
     const cData = centersRes.data?.data;
     centers = Array.isArray(cData) ? cData : (cData?.data || []);
