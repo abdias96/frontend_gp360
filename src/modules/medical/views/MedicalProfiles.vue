@@ -230,7 +230,7 @@ const total = ref(0);
 const loadProfiles = async () => {
   loading.value = true;
   try {
-    const response = await ApiService.get('/medical/profiles', {
+    const response = await ApiService.get('/inmate-medical-profiles', {
       params: {
         page: currentPage.value,
         per_page: perPage.value,
@@ -324,7 +324,7 @@ const handleEmergencyList = () => {
 
 const handleExport = async () => {
   try {
-    const response = await ApiService.get('/medical/profiles/export', {
+    const response = await ApiService.get('/inmate-medical-profiles/export', {
       params: {
         search: searchQuery.value,
         center_id: selectedCenter.value,
