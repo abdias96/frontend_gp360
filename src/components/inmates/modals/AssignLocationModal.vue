@@ -31,13 +31,13 @@ const openModal = async () => {
     return;
   }
 
-  // Load catalogs
+  // Load catalogs using simple mode for clean data
   let centers: any[] = [];
   let sectors: any[] = [];
   try {
     const [centersRes, sectorsRes] = await Promise.all([
-      ApiService.get("/catalogs/centers?per_page=999"),
-      ApiService.get("/catalogs/sectors?per_page=999"),
+      ApiService.get("/catalogs/centers?simple=true"),
+      ApiService.get("/catalogs/sectors?simple=true"),
     ]);
     const cData = centersRes.data?.data;
     centers = Array.isArray(cData) ? cData : (cData?.data || []);
@@ -101,13 +101,19 @@ const openModal = async () => {
       const sectorSelect = document.getElementById("swal-sector") as HTMLSelectElement;
 
       const updateSectors = (centerId: number | null) => {
-        sectorSelect.innerHTML = '<option value="">Seleccionar sector...</option>';
         if (!centerId) {
-          sectorSelect.disabled = true;
           sectorSelect.innerHTML = '<option value="">Seleccione un centro primero</option>';
+          sectorSelect.disabled = true;
           return;
         }
-        const filtered = sectors.filter((s: any) => s.center_id === centerId);
+        const filtered = sectors.filter((s: any) => Number(s.center_id) === centerId);
+        if (filtered.length === 0) {
+          sectorSelect.innerHTML = '<option value="">No hay sectores para este centro</option>';
+          sectorSelect.disabled = false;
+          return;
+        }
+        sectorSelect.innerHTML = '<option value="">Seleccionar sector...</option>';
+        sectorSelect.disabled = false;
         filtered.forEach((s: any) => {
           const opt = document.createElement("option");
           opt.value = String(s.id);
@@ -115,7 +121,6 @@ const openModal = async () => {
           if (s.id === props.inmate?.current_sector_id) opt.selected = true;
           sectorSelect.appendChild(opt);
         });
-        sectorSelect.disabled = filtered.length === 0;
       };
 
       // Initialize sectors if center is pre-selected
