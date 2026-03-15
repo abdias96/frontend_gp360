@@ -100,7 +100,7 @@
             </div>
             <div class="mb-5">
               <label class="form-label text-muted">{{ $t('visits.visitorDetail.biometricStatus') }}</label>
-              <div class="d-flex align-items-center">
+              <div class="d-flex align-items-center gap-2">
                 <span v-if="visitor.biometricRegistered" class="badge badge-success">
                   <i class="fas fa-fingerprint me-1"></i>
                   {{ $t('visits.visitorDetail.biometricRegistered') }}
@@ -109,6 +109,10 @@
                   <i class="fas fa-exclamation-triangle me-1"></i>
                   {{ $t('visits.visitorDetail.biometricPending') }}
                 </span>
+                <button class="btn btn-sm btn-primary" @click="launchBiometricCapture">
+                  <i class="fas fa-fingerprint me-1"></i>
+                  {{ visitor.biometricRegistered ? 'Recapturar' : 'Capturar Biometría' }}
+                </button>
               </div>
             </div>
             <div class="mb-5">
@@ -421,6 +425,30 @@ const getStatusBadgeClass = (status: string) => {
 
 const handleEdit = () => {
   router.push(`/visits/visitors/${route.params.id}/edit`)
+}
+
+const launchBiometricCapture = async () => {
+  try {
+    const response = await ApiService.post('/biometric-service/launch-enrollment', {
+      enrollable_id: route.params.id,
+      type: 'visitor',
+      capture_type: 'enrollment'
+    })
+    const data = response.data
+    if (data.success && data.data?.protocol_url) {
+      window.location.href = data.data.protocol_url
+      Swal.fire({
+        title: 'Servicio Biométrico',
+        text: 'Se está abriendo el servicio de captura biométrica. Por favor autorice la apertura en su navegador.',
+        icon: 'info',
+        confirmButtonText: 'OK'
+      })
+    } else {
+      Swal.fire({ title: 'Error', text: data.message || 'No se pudo generar la URL', icon: 'error' })
+    }
+  } catch (err: any) {
+    Swal.fire({ title: 'Error', text: 'No se pudo iniciar el servicio biométrico', icon: 'error' })
+  }
 }
 
 // Lifecycle

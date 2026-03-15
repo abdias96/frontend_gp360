@@ -86,6 +86,22 @@ export const visitorsApi = {
   // Search visitors
   search(query) {
     return apiClient.get('/visitors/search', { params: { q: query } })
+  },
+
+  // Launch biometric enrollment for visitor
+  launchBiometricEnrollment(visitorId) {
+    return apiClient.post('/biometric-service/launch-enrollment', {
+      enrollable_id: visitorId,
+      type: 'visitor',
+      capture_type: 'enrollment'
+    })
+  },
+
+  // Get biometric enrollment status for visitor
+  getBiometricStatus(visitorId) {
+    return apiClient.get(`/biometric-service/enrollment-status/${visitorId}`, {
+      params: { type: 'visitor' }
+    })
   }
 }
 
@@ -181,17 +197,17 @@ export const visitRequestsApi = {
 
   // Approve visit request
   approve(id, data) {
-    return apiClient.patch(`/visit-requests/${id}/approve`, data)
+    return apiClient.post(`/visit-requests/${id}/approve`, data)
   },
 
   // Reject visit request
   reject(id, data) {
-    return apiClient.patch(`/visit-requests/${id}/reject`, data)
+    return apiClient.post(`/visit-requests/${id}/reject`, data)
   },
 
   // Cancel visit request
   cancel(id, data = {}) {
-    return apiClient.patch(`/visit-requests/${id}/cancel`, data)
+    return apiClient.post(`/visit-requests/${id}/cancel`, data)
   },
 
   // Schedule visit

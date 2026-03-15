@@ -303,6 +303,7 @@ import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import Swal from 'sweetalert2'
+import ApiService from '@/core/services/ApiService'
 
 // Composables
 const route = useRoute()
@@ -451,66 +452,59 @@ const getStatusMessage = () => {
 
 const handleApprove = async () => {
   const result = await Swal.fire({
-    title: t('visits.visitRequestDetail.approveTitle'),
-    text: t('visits.visitRequestDetail.approveText'),
+    title: 'Aprobar Solicitud',
+    text: '¿Está seguro de aprobar esta solicitud de visita?',
+    input: 'textarea',
+    inputLabel: 'Notas de aprobación (opcional)',
+    inputPlaceholder: 'Agregar notas...',
     icon: 'question',
     showCancelButton: true,
-    confirmButtonText: t('common.approve'),
-    cancelButtonText: t('common.cancel')
+    confirmButtonText: 'Aprobar',
+    cancelButtonText: 'Cancelar'
   })
 
   if (result.isConfirmed) {
-    request.value.status = 'approved'
-    approvalHistory.value.push({
-      id: approvalHistory.value.length + 1,
-      type: 'approved',
-      action: 'Solicitud aprobada',
-      user: 'Oficial Juan Pérez',
-      date: new Date().toISOString(),
-      notes: null
-    })
-    
-    Swal.fire({
-      title: t('common.success'),
-      text: t('visits.visitRequestDetail.approveSuccess'),
-      icon: 'success'
-    })
+    try {
+      const response = await ApiService.post(`/visit-requests/${request.value.id}/approve`, {
+        approval_notes: result.value || ''
+      })
+      if (response.data.success) {
+        request.value.status = 'approved'
+        Swal.fire({ title: '¡Éxito!', text: 'Solicitud aprobada exitosamente', icon: 'success' })
+      }
+    } catch (err) {
+      Swal.fire({ title: 'Error', text: 'No se pudo aprobar la solicitud', icon: 'error' })
+    }
   }
 }
 
 const handleReject = async () => {
   const result = await Swal.fire({
-    title: t('visits.visitRequestDetail.rejectTitle'),
+    title: 'Rechazar Solicitud',
     input: 'textarea',
-    inputLabel: t('visits.visitRequestDetail.rejectReason'),
-    inputPlaceholder: t('visits.visitRequestDetail.rejectReasonPlaceholder'),
+    inputLabel: 'Motivo de rechazo',
+    inputPlaceholder: 'Ingrese el motivo del rechazo...',
     icon: 'warning',
     showCancelButton: true,
-    confirmButtonText: t('common.reject'),
-    cancelButtonText: t('common.cancel'),
+    confirmButtonText: 'Rechazar',
+    cancelButtonText: 'Cancelar',
     inputValidator: (value) => {
-      if (!value) {
-        return t('visits.visitRequestDetail.rejectReasonRequired')
-      }
+      if (!value) return 'Debe ingresar un motivo de rechazo'
     }
   })
 
   if (result.isConfirmed) {
-    request.value.status = 'rejected'
-    approvalHistory.value.push({
-      id: approvalHistory.value.length + 1,
-      type: 'rejected',
-      action: 'Solicitud rechazada',
-      user: 'Oficial Juan Pérez',
-      date: new Date().toISOString(),
-      notes: result.value
-    })
-    
-    Swal.fire({
-      title: t('common.success'),
-      text: t('visits.visitRequestDetail.rejectSuccess'),
-      icon: 'success'
-    })
+    try {
+      const response = await ApiService.post(`/visit-requests/${request.value.id}/reject`, {
+        rejection_reason: result.value
+      })
+      if (response.data.success) {
+        request.value.status = 'rejected'
+        Swal.fire({ title: '¡Éxito!', text: 'Solicitud rechazada', icon: 'success' })
+      }
+    } catch (err) {
+      Swal.fire({ title: 'Error', text: 'No se pudo rechazar la solicitud', icon: 'error' })
+    }
   }
 }
 

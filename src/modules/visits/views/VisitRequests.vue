@@ -170,6 +170,7 @@
                     </div>
                     <div>
                       <span class="text-gray-900 fw-bold">{{ request.visitorName }}</span>
+                      <span v-if="request.visitorSource === 'public_website'" class="badge badge-light-info ms-2 fs-8">Web</span>
                       <br>
                       <span class="text-muted fs-7">{{ request.visitorDocument }}</span>
                     </div>
@@ -277,11 +278,12 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import Swal from 'sweetalert2'
 import { useAuthStore } from '@/stores/auth'
+import ApiService from '@/core/services/ApiService'
 
 // Composables
 const router = useRouter()
@@ -295,6 +297,7 @@ const canDelete = computed(() => authStore.isSuperAdmin || authStore.hasPermissi
 const canApprove = computed(() => authStore.isSuperAdmin || authStore.hasPermission('visits.requests_approve'))
 
 // Refs
+const loading = ref(false)
 const filters = ref({
   status: '',
   date: '',
@@ -303,116 +306,109 @@ const filters = ref({
 })
 
 const stats = ref({
-  pending: 12,
-  approved: 8,
-  rejected: 2,
-  scheduled: 15
+  pending: 0,
+  approved: 0,
+  rejected: 0,
+  scheduled: 0
 })
 
-const visitRequests = ref([
-  {
-    id: 1,
-    requestDate: '2024-03-15T10:30:00',
-    visitorName: 'María García López',
-    visitorDocument: 'DPI: 2547896321234',
-    visitorPhoto: null,
-    inmateName: 'Juan García López',
-    inmateCode: 'REC-2024-001',
-    inmatePhoto: null,
-    visitType: 'family',
-    requestedDate: '2024-03-20',
-    requestedTime: '14:00 - 15:00',
-    status: 'pending',
-    priority: 'normal',
-    urgent: false
-  },
-  {
-    id: 2,
-    requestDate: '2024-03-15T11:45:00',
-    visitorName: 'Lic. Carlos Mendez',
-    visitorDocument: 'DPI: 1234567890123',
-    visitorPhoto: null,
-    inmateName: 'Pedro Ramirez',
-    inmateCode: 'REC-2024-025',
-    inmatePhoto: null,
-    visitType: 'legal',
-    requestedDate: '2024-03-16',
-    requestedTime: '10:00 - 11:00',
-    status: 'pending',
-    priority: 'high',
-    urgent: true
-  },
-  {
-    id: 3,
-    requestDate: '2024-03-14T09:00:00',
-    visitorName: 'Ana Martinez',
-    visitorDocument: 'DPI: 9876543210987',
-    visitorPhoto: null,
-    inmateName: 'Luis Hernandez',
-    inmateCode: 'REC-2024-010',
-    inmatePhoto: null,
-    visitType: 'family',
-    requestedDate: '2024-03-18',
-    requestedTime: '14:00 - 15:00',
-    status: 'approved',
-    priority: 'normal',
-    urgent: false
-  },
-  {
-    id: 4,
-    requestDate: '2024-03-14T15:20:00',
-    visitorName: 'Padre Miguel Angel',
-    visitorDocument: 'DPI: 5555555555555',
-    visitorPhoto: null,
-    inmateName: 'Roberto Silva',
-    inmateCode: 'REC-2024-032',
-    inmatePhoto: null,
-    visitType: 'religious',
-    requestedDate: '2024-03-19',
-    requestedTime: '09:00 - 10:00',
-    status: 'scheduled',
-    priority: 'normal',
-    urgent: false
-  }
-])
+const visitRequests = ref<any[]>([])
+const pagination = ref({ current_page: 1, last_page: 1, total: 0 })
 
 const currentPage = ref(1)
-const itemsPerPage = 10
+const itemsPerPage = 15
+
+// Load data from API
+const loadRequests = async () => {
+  loading.value = true
+  try {
+    const params: any = { per_page: itemsPerPage, page: currentPage.value }
+    if (filters.value.status) params.status = filters.value.status
+    if (filters.value.date) params.date_from = filters.value.date
+    if (filters.value.search) params.search = filters.value.search
+
+    const { data } = await ApiService.get('/visit-requests', params)
+    if (data.success) {
+      const apiData = data.data
+      visitRequests.value = (apiData.data || []).map((r: any) => ({
+        id: r.id,
+        requestDate: r.created_at,
+        requestNumber: r.request_number,
+        visitorName: r.visitor ? `${r.visitor.first_name || ''} ${r.visitor.first_surname || ''}`.trim() : '-',
+        visitorDocument: r.visitor?.document_number ? `DPI: ${r.visitor.document_number}` : '',
+        visitorPhoto: null,
+        visitorSource: r.visitor?.source || 'internal',
+        inmateName: r.inmate ? `${r.inmate.first_name || ''} ${r.inmate.last_name || ''}`.trim() : 'Sin asignar',
+        inmateCode: r.inmate?.id ? `ID-${r.inmate.id}` : '',
+        inmatePhoto: null,
+        visitType: r.visit_type?.name || 'general',
+        requestedDate: r.requested_visit_date,
+        requestedTime: r.start_time && r.end_time ? `${r.start_time} - ${r.end_time}` : '',
+        status: r.status,
+        priority: 'normal',
+        urgent: false
+      }))
+      pagination.value = {
+        current_page: apiData.current_page || 1,
+        last_page: apiData.last_page || 1,
+        total: apiData.total || 0
+      }
+    }
+  } catch (err) {
+    console.error('Error loading visit requests:', err)
+  } finally {
+    loading.value = false
+  }
+}
+
+const loadStats = async () => {
+  try {
+    const { data } = await ApiService.get('/visit-requests/statistics')
+    if (data.success) {
+      stats.value = {
+        pending: data.data.pending || 0,
+        approved: data.data.today_approved || data.data.approved || 0,
+        rejected: data.data.rejected || 0,
+        scheduled: data.data.from_public_website || 0
+      }
+    }
+  } catch (err) {
+    console.error('Error loading stats:', err)
+  }
+}
+
+onMounted(() => {
+  loadRequests()
+  loadStats()
+})
+
+// Watch filters and reload
+let filterTimeout: any = null
+watch(filters, () => {
+  clearTimeout(filterTimeout)
+  filterTimeout = setTimeout(() => {
+    currentPage.value = 1
+    loadRequests()
+  }, 500)
+}, { deep: true })
+
+watch(currentPage, () => loadRequests())
 
 // Computed
-const filteredRequests = computed(() => {
-  return visitRequests.value.filter(request => {
-    if (filters.value.status && request.status !== filters.value.status) return false
-    if (filters.value.type && request.visitType !== filters.value.type) return false
-    if (filters.value.search) {
-      const search = filters.value.search.toLowerCase()
-      return request.visitorName.toLowerCase().includes(search) ||
-             request.inmateName.toLowerCase().includes(search) ||
-             request.inmateCode.toLowerCase().includes(search)
-    }
-    return true
-  })
-})
-
-const paginatedRequests = computed(() => {
-  const start = (currentPage.value - 1) * itemsPerPage
-  const end = start + itemsPerPage
-  return filteredRequests.value.slice(start, end)
-})
-
-const totalPages = computed(() => {
-  return Math.ceil(filteredRequests.value.length / itemsPerPage)
-})
+const paginatedRequests = computed(() => visitRequests.value)
+const totalPages = computed(() => pagination.value.last_page)
 
 // Methods
 const formatDate = (dateString: string) => {
+  if (!dateString) return '-'
   return new Date(dateString).toLocaleDateString('es-GT')
 }
 
 const formatTime = (dateString: string) => {
-  return new Date(dateString).toLocaleTimeString('es-GT', { 
-    hour: '2-digit', 
-    minute: '2-digit' 
+  if (!dateString) return ''
+  return new Date(dateString).toLocaleTimeString('es-GT', {
+    hour: '2-digit',
+    minute: '2-digit'
   })
 }
 
@@ -421,7 +417,8 @@ const getStatusBadgeClass = (status: string) => {
     pending: 'badge badge-warning',
     approved: 'badge badge-success',
     rejected: 'badge badge-danger',
-    scheduled: 'badge badge-primary'
+    scheduled: 'badge badge-primary',
+    cancelled: 'badge badge-secondary'
   }
   return classes[status] || 'badge badge-secondary'
 }
@@ -441,58 +438,61 @@ const handleNewRequest = () => {
 
 const handleApprove = async (id: number) => {
   const result = await Swal.fire({
-    title: t('visits.visitRequests.approveTitle'),
-    text: t('visits.visitRequests.approveText'),
+    title: 'Aprobar Solicitud',
+    text: '¿Está seguro de aprobar esta solicitud de visita?',
+    input: 'textarea',
+    inputLabel: 'Notas de aprobación (opcional)',
+    inputPlaceholder: 'Agregar notas...',
     icon: 'question',
     showCancelButton: true,
-    confirmButtonText: t('common.approve'),
-    cancelButtonText: t('common.cancel')
+    confirmButtonText: 'Aprobar',
+    cancelButtonText: 'Cancelar'
   })
 
   if (result.isConfirmed) {
-    // Update request status
-    const request = visitRequests.value.find(r => r.id === id)
-    if (request) {
-      request.status = 'approved'
+    try {
+      const { data } = await ApiService.post(`/visit-requests/${id}/approve`, {
+        approval_notes: result.value || ''
+      })
+      if (data.success) {
+        Swal.fire({ title: '¡Éxito!', text: 'Solicitud aprobada exitosamente', icon: 'success' })
+        loadRequests()
+        loadStats()
+      }
+    } catch (err) {
+      Swal.fire({ title: 'Error', text: 'No se pudo aprobar la solicitud', icon: 'error' })
     }
-    
-    Swal.fire({
-      title: t('common.success'),
-      text: t('visits.visitRequests.approveSuccess'),
-      icon: 'success'
-    })
   }
 }
 
 const handleReject = async (id: number) => {
   const result = await Swal.fire({
-    title: t('visits.visitRequests.rejectTitle'),
+    title: 'Rechazar Solicitud',
     input: 'textarea',
-    inputLabel: t('visits.visitRequests.rejectReason'),
-    inputPlaceholder: t('visits.visitRequests.rejectReasonPlaceholder'),
+    inputLabel: 'Motivo de rechazo',
+    inputPlaceholder: 'Ingrese el motivo del rechazo...',
     icon: 'warning',
     showCancelButton: true,
-    confirmButtonText: t('common.reject'),
-    cancelButtonText: t('common.cancel'),
+    confirmButtonText: 'Rechazar',
+    cancelButtonText: 'Cancelar',
     inputValidator: (value) => {
-      if (!value) {
-        return t('visits.visitRequests.rejectReasonRequired')
-      }
+      if (!value) return 'Debe ingresar un motivo de rechazo'
     }
   })
 
   if (result.isConfirmed) {
-    // Update request status
-    const request = visitRequests.value.find(r => r.id === id)
-    if (request) {
-      request.status = 'rejected'
+    try {
+      const { data } = await ApiService.post(`/visit-requests/${id}/reject`, {
+        rejection_reason: result.value
+      })
+      if (data.success) {
+        Swal.fire({ title: '¡Éxito!', text: 'Solicitud rechazada', icon: 'success' })
+        loadRequests()
+        loadStats()
+      }
+    } catch (err) {
+      Swal.fire({ title: 'Error', text: 'No se pudo rechazar la solicitud', icon: 'error' })
     }
-    
-    Swal.fire({
-      title: t('common.success'),
-      text: t('visits.visitRequests.rejectSuccess'),
-      icon: 'success'
-    })
   }
 }
 
