@@ -685,6 +685,25 @@ const routes: Array<RouteRecordRaw> = [
           permissions: "visits.settings_manage",
         },
       },
+      // Website management routes
+      {
+        path: "/website/settings",
+        name: "website-settings",
+        component: () => import("@/modules/website/views/WebsiteSettings.vue"),
+        meta: {
+          pageTitle: "Configuración del Sitio Web",
+          breadcrumbs: ["Sitio Web", "Configuración"],
+        },
+      },
+      {
+        path: "/website/news",
+        name: "website-news",
+        component: () => import("@/modules/website/views/WebsiteNews.vue"),
+        meta: {
+          pageTitle: "Noticias del Sitio Web",
+          breadcrumbs: ["Sitio Web", "Noticias"],
+        },
+      },
       // Catalog routes
       {
         path: "/catalogs/countries",

@@ -857,6 +857,28 @@ const MainMenuConfig: Array<MenuItem> = [
       },
     ],
   },
+  {
+    heading: "website",
+    route: "/website",
+    pages: [
+      {
+        sectionTitle: "websiteManagement",
+        route: "/website",
+        keenthemesIcon: "abstract-26",
+        bootstrapIcon: "bi-globe2",
+        sub: [
+          {
+            heading: "websiteSettings",
+            route: "/website/settings",
+          },
+          {
+            heading: "websiteNews",
+            route: "/website/news",
+          },
+        ],
+      },
+    ],
+  },
 ];
 
 export default MainMenuConfig;

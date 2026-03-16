@@ -246,6 +246,12 @@ export const menuTranslations = {
       // Administration
       backups: "Backups",
       auditLogs: "Audit Logs",
+
+      // Website
+      website: "Website",
+      websiteManagement: "Public Website",
+      websiteSettings: "Settings & Content",
+      websiteNews: "News",
     },
   },
   es: {
@@ -487,6 +493,12 @@ export const menuTranslations = {
       // Administration
       backups: "Respaldos",
       auditLogs: "Logs de auditoría",
+
+      // Website
+      website: "Sitio Web",
+      websiteManagement: "Sitio Web Público",
+      websiteSettings: "Configuración y Contenido",
+      websiteNews: "Noticias",
 
       // Additional Missing Menu Items
       healthManagement: "Gestión de salud",
