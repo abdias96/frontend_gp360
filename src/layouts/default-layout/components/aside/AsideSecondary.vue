@@ -2414,6 +2414,45 @@
                   </div>
                 </div>
 
+                <!-- Website Management -->
+                <div
+                  class="menu-item menu-accordion"
+                  :class="{ show: websiteMenuOpen }"
+                  v-if="isSuperAdmin"
+                >
+                  <span class="menu-link" @click="toggleWebsiteMenu">
+                    <span class="menu-icon">
+                      <KTIcon icon-name="abstract-26" icon-class="fs-2" />
+                    </span>
+                    <span class="menu-title fw-bold">{{ $t("menu.website") || 'Sitio Web' }}</span>
+                    <span
+                      class="menu-arrow"
+                      :class="{ rotate: websiteMenuOpen }"
+                    ></span>
+                  </span>
+                  <div
+                    class="menu-sub menu-sub-accordion"
+                    v-show="websiteMenuOpen"
+                  >
+                    <div class="menu-item">
+                      <router-link to="/website/settings" class="menu-link">
+                        <span class="menu-bullet"
+                          ><span class="bullet bullet-dot"></span
+                        ></span>
+                        <span class="menu-title">{{ $t("menu.websiteSettings") || 'Configuración' }}</span>
+                      </router-link>
+                    </div>
+                    <div class="menu-item">
+                      <router-link to="/website/news" class="menu-link">
+                        <span class="menu-bullet"
+                          ><span class="bullet bullet-dot"></span
+                        ></span>
+                        <span class="menu-title">{{ $t("menu.websiteNews") || 'Noticias' }}</span>
+                      </router-link>
+                    </div>
+                  </div>
+                </div>
+
                 <!-- Activity Logs -->
                 <div
                   class="menu-item"
@@ -2484,6 +2523,7 @@ export default defineComponent({
     const emergencyMenuOpen = ref(false);
     const systemMenuOpen = ref(false);
     const grievancesMenuOpen = ref(false);
+    const websiteMenuOpen = ref(false);
 
     const asideSecondaryDisplay = computed(() => {
       return true; // Always show for GP360
@@ -2727,6 +2767,11 @@ export default defineComponent({
       resetAutoCollapseTimer();
     };
 
+    const toggleWebsiteMenu = () => {
+      websiteMenuOpen.value = !websiteMenuOpen.value;
+      resetAutoCollapseTimer();
+    };
+
     // Lifecycle hooks
     onMounted(() => {
       // Check initial state from config
@@ -2842,6 +2887,8 @@ export default defineComponent({
       toggleDocumentsMenu,
       toggleEmergencyMenu,
       toggleSystemMenu,
+      websiteMenuOpen,
+      toggleWebsiteMenu,
     };
   },
 });
