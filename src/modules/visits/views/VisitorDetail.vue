@@ -276,10 +276,30 @@
                 PPL No Vinculado
               </h5>
               <p class="text-muted mb-3">
-                Esta solicitud no tiene un PPL vinculado. Busque y vincule al PPL correspondiente.
+                Esta solicitud no tiene un PPL vinculado. Verifique los datos proporcionados por el visitante y vincule al PPL correspondiente.
               </p>
-              <div v-if="latestVisitRequest.visit_purpose" class="mb-3">
-                <label class="form-label text-muted">Proposito / PPL indicado por el visitante:</label>
+              <div class="row g-3 mb-4">
+                <div class="col-md-4" v-if="parsedInmateInfo.name">
+                  <div class="p-3 bg-white rounded border">
+                    <small class="text-muted d-block">Nombre del PPL (indicado)</small>
+                    <strong class="text-dark">{{ parsedInmateInfo.name }}</strong>
+                  </div>
+                </div>
+                <div class="col-md-4" v-if="parsedInmateInfo.dpi">
+                  <div class="p-3 bg-white rounded border border-primary">
+                    <small class="text-muted d-block">DPI / CUI del PPL</small>
+                    <strong class="text-primary fs-6">{{ parsedInmateInfo.dpi }}</strong>
+                  </div>
+                </div>
+                <div class="col-md-4" v-if="parsedInmateInfo.causa">
+                  <div class="p-3 bg-white rounded border border-info">
+                    <small class="text-muted d-block">No. de Causa / Expediente</small>
+                    <strong class="text-info">{{ parsedInmateInfo.causa }}</strong>
+                  </div>
+                </div>
+              </div>
+              <div v-if="latestVisitRequest.visit_purpose && !parsedInmateInfo.dpi && !parsedInmateInfo.causa" class="mb-3">
+                <label class="form-label text-muted">Datos indicados por el visitante:</label>
                 <p class="fw-bold text-gray-900">{{ latestVisitRequest.visit_purpose }}</p>
               </div>
               <div class="row align-items-end">
@@ -290,7 +310,7 @@
                       v-model="inmateSearchQuery"
                       type="text"
                       class="form-control"
-                      placeholder="Nombre o codigo del PPL..."
+                      placeholder="Buscar por nombre, DPI o código..."
                       @input="debounceInmateSearch"
                     />
                     <div
@@ -599,11 +619,28 @@ const visitor = computed(() => {
 
 const latestVisitRequest = computed(() => {
   if (!visitorData.value?.visit_requests || visitorData.value.visit_requests.length === 0) return null
-  // Return the most recent visit request
   const sorted = [...visitorData.value.visit_requests].sort((a: any, b: any) => {
     return new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
   })
   return sorted[0]
+})
+
+const parsedInmateInfo = computed(() => {
+  const result = { name: '', dpi: '', causa: '' }
+  const req = latestVisitRequest.value
+  if (!req) return result
+
+  // Name from the visit request or purpose
+  result.name = req.inmate_name || ''
+
+  // Parse DPI and causa from purpose field (format: "Motivo | DPI PPL: 1234567890123 | Causa: C-xxx")
+  const purpose = req.visit_purpose || req.purpose || ''
+  const dpiMatch = purpose.match(/DPI PPL:\s*(\S+)/)
+  const causaMatch = purpose.match(/Causa:\s*(\S+)/)
+  if (dpiMatch) result.dpi = dpiMatch[1]
+  if (causaMatch) result.causa = causaMatch[1]
+
+  return result
 })
 
 const relatedInmates = computed(() => {
