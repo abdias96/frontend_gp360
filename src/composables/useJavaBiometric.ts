@@ -42,7 +42,7 @@ export function useJavaBiometric() {
   /**
    * Lanzar el servicio Java de captura biométrica usando protocolo personalizado
    */
-  const launchBiometricCapture = async (inmateId: number, captureType: string = 'enrollment'): Promise<any> => {
+  const launchBiometricCapture = async (enrollableId: number, captureType: string = 'enrollment', enrollableType: string = 'inmate'): Promise<any> => {
     try {
       isCapturing.value = true
 
@@ -52,7 +52,9 @@ export function useJavaBiometric() {
         : 'biometric-service/launch-enrollment'
 
       const response = await ApiService.post(endpoint, {
-        inmate_id: inmateId,
+        enrollable_id: enrollableId,
+        inmate_id: enrollableId, // backward compat
+        type: enrollableType,
         capture_type: captureType
       })
 
@@ -119,7 +121,7 @@ export function useJavaBiometric() {
         })
 
         // Iniciar polling para detectar cuando termine
-        return await pollForCaptureCompletion(inmateId)
+        return await pollForCaptureCompletion(enrollableId, enrollableType)
 
       } else {
         throw new Error(response.data.message || 'Error al lanzar servicio')
@@ -145,7 +147,7 @@ export function useJavaBiometric() {
   /**
    * Polling para verificar cuando se complete la captura
    */
-  const pollForCaptureCompletion = async (inmateId: number): Promise<any> => {
+  const pollForCaptureCompletion = async (enrollableId: number, enrollableType: string = 'inmate'): Promise<any> => {
     return new Promise((resolve, reject) => {
       let attempts = 0
       const maxAttempts = 120 // 2 minutos máximo
@@ -165,16 +167,16 @@ export function useJavaBiometric() {
         allowOutsideClick: false,
         showConfirmButton: false,
         didOpen: () => {
-          // Iniciar polling
+          // Iniciar polling usando enrollment-status endpoint (supports both inmates and visitors)
           pollingInterval.value = window.setInterval(async () => {
             attempts++
 
             try {
-              const response = await ApiService.get('biometric-service/check-capture-status', '', {
-                params: { inmate_id: inmateId }
+              const response = await ApiService.get(`biometric-service/enrollment-status/${enrollableId}`, '', {
+                params: { type: enrollableType }
               })
 
-              if (response.data.capture_completed) {
+              if (response.data.success && response.data.data?.total_enrolled >= 10) {
                 // Captura completada
                 clearInterval(pollingInterval.value!)
                 pollingInterval.value = null
@@ -220,10 +222,10 @@ export function useJavaBiometric() {
   /**
    * Iniciar captura de huella dactilar (método legacy para compatibilidad)
    */
-  const startFingerprintCapture = async (fingerType: string = 'right_index', inmateId?: number): Promise<any> => {
+  const startFingerprintCapture = async (fingerType: string = 'right_index', inmateId?: number, enrollableType: string = 'inmate'): Promise<any> => {
     // Si se proporciona inmateId, usar el nuevo método
     if (inmateId) {
-      return await launchBiometricCapture(inmateId, 'enrollment')
+      return await launchBiometricCapture(inmateId, 'enrollment', enrollableType)
     }
 
     // Método legacy - intentar captura directa si el servicio responde como HTTP

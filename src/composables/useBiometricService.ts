@@ -4,7 +4,7 @@ import { useAuthStore } from '@/stores/auth';
 
 export interface BiometricServiceOptions {
   enrollableId: number;
-  enrollableType?: string;
+  enrollableType?: 'inmate' | 'visitor';
   onComplete?: (success: boolean) => void;
   onError?: (error: Error) => void;
 }
@@ -50,7 +50,9 @@ export function useBiometricService() {
           'Accept': 'application/json'
         },
         body: JSON.stringify({
-          inmate_id: options.enrollableId,
+          enrollable_id: options.enrollableId,
+          inmate_id: options.enrollableId, // backward compat
+          type: options.enrollableType || 'inmate',
           capture_type: 'enrollment'
         })
       });
@@ -112,7 +114,7 @@ export function useBiometricService() {
       });
 
       // Start polling for completion
-      pollForCompletion(options.enrollableId, options);
+      pollForCompletion(options.enrollableId, options.enrollableType || 'inmate', options);
 
     } catch (error) {
       console.error('Error launching biometric service:', error);
@@ -209,7 +211,7 @@ export function useBiometricService() {
 
     if (result.isConfirmed) {
       // Wait for service completion (poll the API)
-      pollForCompletion(params.enrollableId, options);
+      pollForCompletion(params.enrollableId, params.enrollableType || 'inmate', options);
     } else {
       isServiceRunning.value = false;
       if (options.onError) {
@@ -220,17 +222,18 @@ export function useBiometricService() {
 
   /**
    * Poll API to check if biometric data was saved
+   * Uses the polymorphic enrollment-status endpoint that supports both inmates and visitors
    */
-  const pollForCompletion = async (enrollableId: number, options: BiometricServiceOptions) => {
+  const pollForCompletion = async (enrollableId: number, enrollableType: string, options: BiometricServiceOptions) => {
     let attempts = 0;
     const maxAttempts = 60; // 5 minutes max
 
     const checkInterval = setInterval(async () => {
       attempts++;
-      
+
       try {
-        // Check inmate_biometric_data table for fingerprints
-        const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/inmate-biometric-data?inmate_id=${enrollableId}&active_only=true`, {
+        // Use the enrollment-status endpoint which queries biometric_data (polymorphic table)
+        const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/biometric-service/enrollment-status/${enrollableId}?type=${enrollableType}`, {
           headers: {
             'Authorization': `Bearer ${authStore.token}`,
             'Accept': 'application/json'
@@ -239,9 +242,9 @@ export function useBiometricService() {
 
         if (response.ok) {
           const result = await response.json();
-          
-          // Check if we have 10 active fingerprints
-          if (result.data && result.data.length >= 10) {
+
+          // Check if enrollment is complete (at least 1 fingerprint, ideally 10)
+          if (result.success && result.data && result.data.total_enrolled >= 10) {
             clearInterval(checkInterval);
             handleServiceResult({ success: true }, options);
           }
@@ -253,7 +256,7 @@ export function useBiometricService() {
       if (attempts >= maxAttempts) {
         clearInterval(checkInterval);
         isServiceRunning.value = false;
-        
+
         Swal.fire({
           title: 'Tiempo agotado',
           text: 'No se detectó la finalización del servicio biométrico',
