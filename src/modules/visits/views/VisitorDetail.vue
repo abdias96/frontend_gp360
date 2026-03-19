@@ -630,15 +630,23 @@ const parsedInmateInfo = computed(() => {
   const req = latestVisitRequest.value
   if (!req) return result
 
-  // Name from the visit request or purpose
+  // Use dedicated fields first, fall back to parsing from purpose
   result.name = req.inmate_name || ''
+  result.dpi = req.inmate_document || ''
+  result.causa = req.inmate_case_number || ''
 
-  // Parse DPI and causa from purpose field (format: "Motivo | DPI PPL: 1234567890123 | Causa: C-xxx")
-  const purpose = req.visit_purpose || req.purpose || ''
-  const dpiMatch = purpose.match(/DPI PPL:\s*(\S+)/)
-  const causaMatch = purpose.match(/Causa:\s*(\S+)/)
-  if (dpiMatch) result.dpi = dpiMatch[1]
-  if (causaMatch) result.causa = causaMatch[1]
+  // Fallback: parse from visit_purpose if dedicated fields are empty (old records)
+  if (!result.dpi || !result.causa) {
+    const purpose = req.visit_purpose || req.purpose || ''
+    if (!result.dpi) {
+      const dpiMatch = purpose.match(/DPI PPL:\s*(\S+)/)
+      if (dpiMatch) result.dpi = dpiMatch[1]
+    }
+    if (!result.causa) {
+      const causaMatch = purpose.match(/Causa:\s*(\S+)/)
+      if (causaMatch) result.causa = causaMatch[1]
+    }
+  }
 
   return result
 })

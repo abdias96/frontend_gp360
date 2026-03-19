@@ -83,7 +83,7 @@ function getPrintStyles(watermark?: string): string {
   return `
     @page {
       size: letter;
-      margin: 1cm;
+      margin: 0.8cm;
     }
 
     * {
@@ -94,13 +94,12 @@ function getPrintStyles(watermark?: string): string {
 
     body {
       font-family: Arial, sans-serif;
-      font-size: 10pt;
-      line-height: 1.3;
+      font-size: 8pt;
+      line-height: 1.2;
     }
 
     .page {
       page-break-after: always;
-      padding: 15px;
     }
 
     .page:last-child {
@@ -110,53 +109,53 @@ function getPrintStyles(watermark?: string): string {
     /* Header */
     .official-header {
       text-align: center;
-      margin-bottom: 15px;
-      border-bottom: 3px solid #000;
-      padding-bottom: 10px;
+      margin-bottom: 6px;
+      border-bottom: 2px solid #000;
+      padding-bottom: 4px;
     }
 
     .official-header h1 {
-      font-size: 11pt;
+      font-size: 9pt;
       font-weight: bold;
-      margin-bottom: 3px;
+      margin-bottom: 1px;
     }
 
     .official-header h2 {
-      font-size: 10pt;
+      font-size: 8pt;
       font-weight: bold;
-      margin-bottom: 8px;
+      margin-bottom: 2px;
     }
 
     .official-header .title {
-      font-size: 12pt;
+      font-size: 10pt;
       font-weight: bold;
-      margin: 5px 0;
+      margin: 2px 0;
     }
 
     .header-info {
       display: flex;
       justify-content: space-between;
-      font-size: 8pt;
-      margin-top: 5px;
+      font-size: 7pt;
+      margin-top: 2px;
     }
 
     /* Main container */
     .main-container {
       display: flex;
-      gap: 15px;
-      margin-bottom: 15px;
+      gap: 8px;
+      margin-bottom: 4px;
     }
 
     .photo-section {
       flex-shrink: 0;
-      width: 150px;
+      width: 115px;
     }
 
     .photo-section img {
-      width: 150px;
-      height: 180px;
+      width: 115px;
+      height: 140px;
       object-fit: cover;
-      border: 2px solid #333;
+      border: 1px solid #333;
     }
 
     .info-section {
@@ -166,8 +165,8 @@ function getPrintStyles(watermark?: string): string {
     /* Data rows */
     .data-row {
       display: flex;
-      margin-bottom: 4px;
-      font-size: 9pt;
+      margin-bottom: 1px;
+      font-size: 8pt;
     }
 
     .data-row.full {
@@ -176,7 +175,7 @@ function getPrintStyles(watermark?: string): string {
 
     .data-label {
       font-weight: bold;
-      min-width: 140px;
+      min-width: 120px;
       flex-shrink: 0;
     }
 
@@ -188,30 +187,30 @@ function getPrintStyles(watermark?: string): string {
     .section-title {
       background-color: #333;
       color: white;
-      padding: 5px 10px;
-      font-size: 10pt;
+      padding: 2px 8px;
+      font-size: 8pt;
       font-weight: bold;
-      margin: 15px 0 10px 0;
+      margin: 5px 0 3px 0;
       text-align: center;
-      letter-spacing: 2px;
+      letter-spacing: 1px;
     }
 
     /* Fingerprints */
     .fingerprints-container {
-      margin: 20px 0;
+      margin: 5px 0;
     }
 
     .fingerprints-row {
       display: flex;
       justify-content: center;
-      gap: 10px;
-      margin: 20px 0;
+      gap: 6px;
+      margin: 3px 0;
     }
 
     .fingerprint-box {
-      width: 80px;
-      height: 100px;
-      border: 2px solid #333;
+      width: 65px;
+      height: 80px;
+      border: 1px solid #333;
       background: white;
       display: flex;
       align-items: center;
@@ -227,23 +226,22 @@ function getPrintStyles(watermark?: string): string {
 
     .fingerprint-placeholder {
       color: #ccc;
-      font-size: 8pt;
+      font-size: 7pt;
       text-align: center;
     }
 
     .fingerprints-label {
       text-align: center;
       font-weight: bold;
-      margin: 10px 0;
-      font-size: 9pt;
+      margin: 4px 0 2px 0;
+      font-size: 8pt;
     }
 
     /* Signatures */
     .signatures {
       display: flex;
       justify-content: space-around;
-      margin-top: 40px;
-      padding-top: 20px;
+      margin-top: 15px;
     }
 
     .signature-box {
@@ -253,9 +251,9 @@ function getPrintStyles(watermark?: string): string {
 
     .signature-line {
       border-top: 1px solid #333;
-      margin-top: 60px;
-      padding-top: 5px;
-      font-size: 8pt;
+      margin-top: 30px;
+      padding-top: 3px;
+      font-size: 7pt;
       font-weight: bold;
     }
 
@@ -263,19 +261,19 @@ function getPrintStyles(watermark?: string): string {
     .data-table {
       width: 100%;
       border-collapse: collapse;
-      margin: 10px 0;
-      font-size: 9pt;
+      margin: 2px 0;
+      font-size: 8pt;
     }
 
     .data-table td {
-      padding: 4px 8px;
+      padding: 2px 5px;
       border: 1px solid #ddd;
     }
 
     .data-table td:first-child {
       font-weight: bold;
       background: #f5f5f5;
-      width: 180px;
+      width: 150px;
     }
 
     @media print {
@@ -395,9 +393,9 @@ export function generateInmatePages(inmate: any, operatorName?: string): string 
           <img src="${photoUrl}" alt="Foto del Interno">
         </div>
         <div class="info-section">
-          <div class="data-row full" style="margin-bottom: 10px;">
+          <div class="data-row full" style="margin-bottom: 3px;">
             <span class="data-label">Nombre Completo:</span>
-            <span class="data-value" style="font-size: 12pt; font-weight: bold;">${fullName}</span>
+            <span class="data-value" style="font-size: 10pt; font-weight: bold;">${fullName}</span>
           </div>
           <div class="data-row"><span class="data-label">No. Interno:</span><span class="data-value">${inmate.inmate_number || 'N/A'}</span></div>
           <div class="data-row"><span class="data-label">No. Expediente:</span><span class="data-value">${inmate.internal_number || 'N/A'}</span></div>
@@ -555,7 +553,7 @@ export function generateInmatePages(inmate: any, operatorName?: string): string 
         ${inmate.high_profile_case ? `<tr><td>Caso de Alto Perfil:</td><td colspan="3">S&Iacute;</td></tr>` : ''}
       </table>
 
-      <div class="section-title" style="margin-top: 20px;">CONTACTO DE EMERGENCIA</div>
+      <div class="section-title">CONTACTO DE EMERGENCIA</div>
       <table class="data-table">
         <tr><td>Nombre Completo:</td><td colspan="3">${emergencyContact.full_name || inmate.emergency_contact_name || 'N/A'}</td></tr>
         <tr>
@@ -569,11 +567,11 @@ export function generateInmatePages(inmate: any, operatorName?: string): string 
         <div class="fingerprints-label">HUELLAS DIGITALES MANO DERECHA DEL INTERNO</div>
         <div class="fingerprints-row">${renderFingerprintBoxes(rightHandPrints)}</div>
 
-        <div style="text-align: center; margin: 20px 0;">
-          <div style="border-top: 1px solid #333; display: inline-block; padding-top: 5px; min-width: 300px;">
+        <div style="text-align: center; margin: 6px 0;">
+          <div style="border-top: 1px solid #333; display: inline-block; padding-top: 3px; min-width: 250px; font-size: 8pt;">
             (F) ${fullName}
           </div>
-          <div style="font-weight: bold; font-size: 9pt; margin-top: 5px;">INTERNO</div>
+          <div style="font-weight: bold; font-size: 8pt; margin-top: 2px;">INTERNO</div>
         </div>
 
         <div class="fingerprints-label">HUELLAS DIGITALES MANO IZQUIERDA DEL INTERNO</div>
@@ -583,15 +581,15 @@ export function generateInmatePages(inmate: any, operatorName?: string): string 
       <div class="signatures">
         <div class="signature-box">
           <div class="signature-line">(F) _______________________</div>
-          ${operadorLabel ? `<div style="font-size: 8pt; margin-top: 3px;">${operadorLabel}</div>` : ''}
-          <div style="font-weight: bold; margin-top: 3px; font-size: 9pt;">OPERADOR RESPONSABLE</div>
-          <div style="font-size: 7pt; color: #666;">Impresi&oacute;n de ficha</div>
+          ${operadorLabel ? `<div style="font-size: 7pt; margin-top: 2px;">${operadorLabel}</div>` : ''}
+          <div style="font-weight: bold; margin-top: 2px; font-size: 8pt;">OPERADOR RESPONSABLE</div>
+          <div style="font-size: 6pt; color: #666;">Impresi&oacute;n de ficha</div>
         </div>
         <div class="signature-box">
           <div class="signature-line">(F) _______________________</div>
-          ${fichadorLabel ? `<div style="font-size: 8pt; margin-top: 3px;">${fichadorLabel}</div>` : ''}
-          <div style="font-weight: bold; margin-top: 3px; font-size: 9pt;">FICHADOR RESPONSABLE</div>
-          <div style="font-size: 7pt; color: #666;">Captura de huellas y fotograf&iacute;a</div>
+          ${fichadorLabel ? `<div style="font-size: 7pt; margin-top: 2px;">${fichadorLabel}</div>` : ''}
+          <div style="font-weight: bold; margin-top: 2px; font-size: 8pt;">FICHADOR RESPONSABLE</div>
+          <div style="font-size: 6pt; color: #666;">Captura de huellas y fotograf&iacute;a</div>
         </div>
       </div>
     </div>`;

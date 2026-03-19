@@ -80,15 +80,11 @@
           <label class="form-label">{{ $t('visits.common.status') }}</label>
           <select v-model="filters.status" class="form-select">
             <option value="">Todos</option>
-            <option value="pending_documentation">Pendiente Documentación</option>
-            <option value="documentation_review">Revisión Documentación</option>
-            <option value="background_check">Verificación Antecedentes</option>
-            <option value="biometric_enrollment">Enrolamiento Biométrico</option>
-            <option value="approved">Aprobado</option>
-            <option value="rejected">Rechazado</option>
+            <option value="pending">Pendiente</option>
+            <option value="active">Activo</option>
+            <option value="inactive">Inactivo</option>
             <option value="suspended">Suspendido</option>
-            <option value="revoked">Revocado</option>
-            <option value="expired">Expirado</option>
+            <option value="blacklisted">Lista Negra</option>
           </select>
         </div>
         <div class="col-md-3">
@@ -120,35 +116,35 @@
 
       <!-- Quick Filters -->
       <div class="mb-6">
-        <button 
-          @click="applyQuickFilter('pending_verification')"
+        <button
+          @click="applyQuickFilter('pending')"
           class="btn btn-sm btn-light me-2"
-          :class="{ active: quickFilter === 'pending_verification' }"
+          :class="{ active: quickFilter === 'pending' }"
         >
           <i class="fas fa-clock text-warning"></i>
-          Pendientes Verificación
+          Pendientes (Web)
         </button>
-        <button 
+        <button
           @click="applyQuickFilter('without_biometrics')"
           class="btn btn-sm btn-light me-2"
           :class="{ active: quickFilter === 'without_biometrics' }"
         >
           <i class="fas fa-fingerprint text-danger"></i>
-          Sin Biometría
+          Sin Biometria
         </button>
-        <button 
-          @click="applyQuickFilter('recent_visitors')"
+        <button
+          @click="applyQuickFilter('active')"
           class="btn btn-sm btn-light me-2"
-          :class="{ active: quickFilter === 'recent_visitors' }"
+          :class="{ active: quickFilter === 'active' }"
         >
-          <i class="fas fa-calendar text-info"></i>
-          Visitantes Recientes
+          <i class="fas fa-check-circle text-success"></i>
+          Activos
         </button>
-        <button 
+        <button
           @click="clearFilters"
           class="btn btn-sm btn-secondary"
         >
-          {{ $t('visits.common.filter') }}
+          Limpiar Filtros
         </button>
       </div>
 
@@ -166,18 +162,17 @@
             <tr class="fw-semibold fs-6 text-gray-800 border-bottom-2 border-gray-200">
               <th>Visitante</th>
               <th>Documento</th>
+              <th>PPL Solicitado</th>
               <th>Contacto</th>
               <th>Estado</th>
               <th>Biometría</th>
-              <th>Relaciones Activas</th>
-              <th>Última Visita</th>
-              <th>Puntuación</th>
+              <th>Origen</th>
               <th>{{ $t('visits.common.actions') }}</th>
             </tr>
           </thead>
           <tbody>
             <tr v-if="!visitors.data || visitors.data.length === 0">
-              <td colspan="9" class="text-center py-6">
+              <td colspan="8" class="text-center py-6">
                 <div class="text-muted">
                   <i class="fas fa-users mb-3 fs-2x"></i>
                   <p>No hay visitantes registrados</p>
@@ -187,13 +182,9 @@
             <tr v-else v-for="visitor in visitors.data" :key="visitor.id">
               <td>
                 <div class="d-flex align-items-center">
-                  <div class="symbol symbol-50px me-3">
-                    <img v-if="visitor.front_photo_path" 
-                         :src="`/storage/${visitor.front_photo_path}`" 
-                         alt="Foto" 
-                         class="symbol-label">
-                    <div v-else class="symbol-label bg-light-primary">
-                      <i class="fas fa-user text-primary fs-3"></i>
+                  <div class="symbol symbol-40px me-3">
+                    <div class="symbol-label bg-light-primary">
+                      <i class="fas fa-user text-primary fs-5"></i>
                     </div>
                   </div>
                   <div class="d-flex flex-column">
@@ -204,53 +195,69 @@
               </td>
               <td>
                 <div class="d-flex flex-column">
-                  <span class="text-gray-800">{{ visitor.document_type?.name || 'N/A' }}</span>
-                  <span class="text-muted fs-7">{{ visitor.identification_number }}</span>
+                  <span class="text-gray-800 fw-semibold">{{ visitor.document_number }}</span>
+                  <span class="text-muted fs-7">{{ visitor.document_type || 'DPI' }}</span>
                 </div>
               </td>
               <td>
+                <template v-if="getPplInfo(visitor).hasData">
+                  <!-- PPL ya vinculado -->
+                  <div v-if="getPplInfo(visitor).linked" class="d-flex flex-column">
+                    <span class="text-success fw-bold fs-7">
+                      <i class="fas fa-check-circle text-success me-1"></i>
+                      {{ getPplInfo(visitor).linkedName }}
+                    </span>
+                    <span v-if="getPplInfo(visitor).linkedNumber" class="text-muted fs-8">
+                      {{ getPplInfo(visitor).linkedNumber }}
+                    </span>
+                  </div>
+                  <!-- PPL declarado pero no vinculado -->
+                  <div v-else class="d-flex flex-column">
+                    <span v-if="getPplInfo(visitor).name" class="text-gray-800 fw-semibold fs-7">
+                      <i class="fas fa-exclamation-circle text-warning me-1"></i>
+                      {{ getPplInfo(visitor).name }}
+                    </span>
+                    <span v-if="getPplInfo(visitor).dpi" class="text-muted fs-8">
+                      DPI: {{ getPplInfo(visitor).dpi }}
+                    </span>
+                    <span v-if="getPplInfo(visitor).causa" class="text-muted fs-8">
+                      Causa: {{ getPplInfo(visitor).causa }}
+                    </span>
+                    <span v-if="!getPplInfo(visitor).name && !getPplInfo(visitor).dpi && !getPplInfo(visitor).causa" class="text-warning fs-8">
+                      Sin datos de PPL
+                    </span>
+                  </div>
+                </template>
+                <span v-else class="text-muted fs-7">-</span>
+              </td>
+              <td>
                 <div class="d-flex flex-column">
-                  <span class="text-gray-800">{{ visitor.mobile_phone || visitor.phone || '-' }}</span>
+                  <span class="text-gray-800">{{ visitor.phone_number || '-' }}</span>
                   <span class="text-muted fs-7">{{ visitor.email || '-' }}</span>
                 </div>
               </td>
               <td>
-                <span class="badge" :class="getStatusBadgeClass(visitor.accreditation_status)">
-                  {{ formatStatus(visitor.accreditation_status) }}
+                <span class="badge" :class="getStatusBadgeClass(visitor.status)">
+                  {{ formatStatus(visitor.status) }}
                 </span>
               </td>
               <td>
                 <div class="text-center">
-                  <i v-if="visitor.biometric_enrolled" 
-                     class="fas fa-fingerprint text-success fs-3" 
-                     title="Biometría registrada"></i>
-                  <i v-else 
-                     class="fas fa-fingerprint text-muted fs-3" 
-                     title="Sin biometría"></i>
+                  <i v-if="visitor.has_biometric_data"
+                     class="fas fa-fingerprint text-success fs-3"
+                     title="Biometria registrada"></i>
+                  <i v-else
+                     class="fas fa-fingerprint text-muted fs-3"
+                     title="Sin biometria"></i>
                 </div>
               </td>
               <td>
-                <div class="text-center">
-                  <span class="badge badge-light-primary">{{ visitor.relationships_count || 0 }}</span>
-                </div>
-              </td>
-              <td>
-                <span v-if="visitor.last_visit_date" class="text-gray-800">
-                  {{ formatDate(visitor.last_visit_date) }}
+                <span v-if="visitor.source === 'public_website'" class="badge badge-light-info fs-8">
+                  <i class="fas fa-globe me-1"></i> Web
                 </span>
-                <span v-else class="text-muted">Sin visitas</span>
-              </td>
-              <td>
-                <div class="d-flex align-items-center">
-                  <div class="progress h-6px w-60px me-2">
-                    <div 
-                      class="progress-bar" 
-                      :class="getConductScoreClass(visitor.conduct_score)"
-                      :style="`width: ${visitor.conduct_score || 100}%`"
-                    ></div>
-                  </div>
-                  <span class="fs-7 text-muted">{{ visitor.conduct_score || 100 }}%</span>
-                </div>
+                <span v-else class="badge badge-light-primary fs-8">
+                  <i class="fas fa-desktop me-1"></i> Interno
+                </span>
               </td>
               <td>
                 <div class="btn-group">
@@ -514,14 +521,14 @@ const applyQuickFilter = (filter) => {
 
   // Apply specific filter
   switch (filter) {
-    case 'pending_verification':
-      filters.status = 'pending_verification'
+    case 'pending':
+      filters.status = 'pending'
       break
     case 'without_biometrics':
       filters.has_biometrics = 'false'
       break
-    case 'recent_visitors':
-      filters.recent_activity = 'true'
+    case 'active':
+      filters.status = 'active'
       break
   }
   
@@ -687,6 +694,9 @@ const getAge = (birthDate) => {
 
 const formatStatus = (status) => {
   const statuses = {
+    'pending': 'Pendiente',
+    'active': 'Activo',
+    'inactive': 'Inactivo',
     'pending_documentation': 'Pendiente Doc.',
     'documentation_review': 'Revisión Doc.',
     'background_check': 'Verificación',
@@ -694,6 +704,7 @@ const formatStatus = (status) => {
     'approved': 'Aprobado',
     'rejected': 'Rechazado',
     'suspended': 'Suspendido',
+    'blacklisted': 'Lista Negra',
     'revoked': 'Revocado',
     'expired': 'Expirado'
   }
@@ -702,6 +713,9 @@ const formatStatus = (status) => {
 
 const getStatusBadgeClass = (status) => {
   const classes = {
+    'pending': 'badge-light-warning',
+    'active': 'badge-light-success',
+    'inactive': 'badge-light-secondary',
     'pending_documentation': 'badge-light-secondary',
     'documentation_review': 'badge-light-info',
     'background_check': 'badge-light-warning',
@@ -709,16 +723,31 @@ const getStatusBadgeClass = (status) => {
     'approved': 'badge-light-success',
     'rejected': 'badge-light-danger',
     'suspended': 'badge-light-danger',
+    'blacklisted': 'badge-light-dark',
     'revoked': 'badge-light-dark',
     'expired': 'badge-light-secondary'
   }
   return classes[status] || 'badge-light-secondary'
 }
 
-const getConductScoreClass = (score) => {
-  if (score >= 80) return 'bg-success'
-  if (score >= 60) return 'bg-warning'
-  return 'bg-danger'
+const getPplInfo = (visitor) => {
+  const req = visitor.latest_visit_request
+  if (!req) return { hasData: false }
+
+  const linked = !!req.inmate_id && !!req.inmate
+  const inmate = req.inmate
+
+  return {
+    hasData: true,
+    linked,
+    linkedName: inmate
+      ? [inmate.first_name, inmate.middle_name, inmate.last_name, inmate.second_last_name].filter(Boolean).join(' ')
+      : null,
+    linkedNumber: inmate?.inmate_number || null,
+    name: req.inmate_name || null,
+    dpi: req.inmate_document || null,
+    causa: req.inmate_case_number || null,
+  }
 }
 
 // Watchers
