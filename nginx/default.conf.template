@@ -1,0 +1,95 @@
+# ============================================================
+# Frontend interno GP360 (Metronic / Vue 3) — nginx config
+# Variables: BACKEND_URL, BACKEND_PROXY_TIMEOUT, NGINX_HOST
+# ============================================================
+
+server {
+    listen       80;
+    server_name  ${NGINX_HOST};
+
+    root   /usr/share/nginx/html;
+    index  index.html;
+
+    access_log  /var/log/nginx/access.log;
+    error_log   /var/log/nginx/error.log;
+
+    # Healthcheck
+    location = /healthz {
+        access_log off;
+        return 200 "ok\n";
+        add_header Content-Type text/plain;
+    }
+
+    # ---- Cabeceras de seguridad (frontend interno autenticado) ----
+    add_header X-Frame-Options "SAMEORIGIN" always;
+    add_header X-Content-Type-Options "nosniff" always;
+    add_header X-XSS-Protection "1; mode=block" always;
+    add_header Referrer-Policy "strict-origin-when-cross-origin" always;
+    add_header Permissions-Policy "camera=(), microphone=(), geolocation=()" always;
+    # CSP más permisiva por Metronic (carga dinámica de iconos, fonts, scripts inline)
+    add_header Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: blob: https:; connect-src 'self' https: wss: ws:; frame-src 'self'; frame-ancestors 'self';" always;
+
+    gzip            on;
+    gzip_vary       on;
+    gzip_min_length 1024;
+    gzip_types      text/plain text/css text/javascript application/javascript application/json application/xml image/svg+xml;
+
+    # Cache largo para assets con hash; index.html siempre fresco
+    location ~* \.(?:js|css|woff2?|ttf|eot|otf|png|jpe?g|gif|webp|svg|ico|map)$ {
+        expires 1y;
+        add_header Cache-Control      "public, immutable" always;
+        add_header X-Content-Type-Options "nosniff" always;
+        try_files $uri =404;
+    }
+
+    location = /index.html {
+        expires -1;
+    }
+
+    # ---- Proxy a backend GP360 ----
+    # El SPA hace requests a /api/* (build con VITE_APP_API_URL=/api).
+    # nginx redirige a ${BACKEND_URL}/api/* preservando paths.
+    location /api/ {
+        proxy_pass         ${BACKEND_URL}/api/;
+        proxy_http_version 1.1;
+
+        proxy_set_header   Host              $host;
+        proxy_set_header   X-Real-IP         $remote_addr;
+        proxy_set_header   X-Forwarded-For   $proxy_add_x_forwarded_for;
+        proxy_set_header   X-Forwarded-Proto $scheme;
+        proxy_set_header   X-Forwarded-Host  $host;
+
+        # Sanctum / cookies
+        proxy_set_header   Cookie            $http_cookie;
+        proxy_pass_header  Set-Cookie;
+
+        # WebSocket support (Reverb chat en :6001 separadamente, pero esto cubre fallbacks)
+        proxy_set_header   Upgrade           $http_upgrade;
+        proxy_set_header   Connection        "upgrade";
+
+        proxy_connect_timeout ${BACKEND_PROXY_TIMEOUT};
+        proxy_send_timeout    ${BACKEND_PROXY_TIMEOUT};
+        proxy_read_timeout    ${BACKEND_PROXY_TIMEOUT};
+
+        # Uploads de documentos digitales pueden ser grandes (PDF + imágenes)
+        client_max_body_size 50m;
+    }
+
+    # ---- Proxy a CSRF cookie de Sanctum ----
+    location = /sanctum/csrf-cookie {
+        proxy_pass         ${BACKEND_URL}/sanctum/csrf-cookie;
+        proxy_set_header   Host              $host;
+        proxy_set_header   X-Real-IP         $remote_addr;
+        proxy_set_header   X-Forwarded-For   $proxy_add_x_forwarded_for;
+        proxy_set_header   X-Forwarded-Proto $scheme;
+        proxy_set_header   Cookie            $http_cookie;
+        proxy_pass_header  Set-Cookie;
+    }
+
+    # ---- SPA fallback ----
+    location / {
+        try_files $uri $uri/ /index.html;
+    }
+
+    error_page 500 502 503 504 /index.html;
+}
