@@ -228,6 +228,37 @@ const routes: Array<RouteRecordRaw> = [
           permissions: ["biometric.view", "biometric.identify"],
         },
       },
+      // === MINGOB BioAgent (.NET 8 loopback 127.0.0.1:8400) ===
+      {
+        path: "/bioagent/identify",
+        name: "bioagent-identify-1n",
+        component: () => import("@/modules/bioagent/views/Identification1N.vue"),
+        meta: {
+          pageTitle: "Identificación 1:N (BioAgent)",
+          breadcrumbs: ["Biometría", "Identificación 1:N"],
+          permissions: ["biometric.view", "biometric.identify"],
+        },
+      },
+      {
+        path: "/bioagent/enroll/inmate",
+        name: "bioagent-enroll-inmate",
+        component: () => import("@/modules/bioagent/views/EnrollmentInmate.vue"),
+        meta: {
+          pageTitle: "Enrolamiento PPL (BioAgent)",
+          breadcrumbs: ["Biometría", "Enrolamiento PPL"],
+          permissions: ["biometric.view", "biometric.enroll"],
+        },
+      },
+      {
+        path: "/bioagent/enroll/visitor",
+        name: "bioagent-enroll-visitor",
+        component: () => import("@/modules/bioagent/views/EnrollmentVisitor.vue"),
+        meta: {
+          pageTitle: "Enrolamiento Visitante (BioAgent)",
+          breadcrumbs: ["Biometría", "Enrolamiento Visitante"],
+          permissions: ["biometric.view", "biometric.enroll"],
+        },
+      },
       {
         path: "/inmates/create",
         name: "inmates-create",

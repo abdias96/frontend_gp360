@@ -100,6 +100,53 @@
                   </router-link>
                 </div>
 
+                <!-- BioAgent (.NET 8 loopback) -->
+                <div
+                  class="menu-item"
+                  v-if="isSuperAdmin || hasPermission('biometric.view') || hasPermission('biometric.identify')"
+                >
+                  <router-link
+                    to="/bioagent/identify"
+                    class="menu-link"
+                    :class="{ 'bg-primary text-white': $route.path === '/bioagent/identify' }"
+                  >
+                    <span class="menu-icon">
+                      <i class="bi bi-search fs-3"></i>
+                    </span>
+                    <span class="menu-title fw-bold">1:N (BioAgent)</span>
+                  </router-link>
+                </div>
+                <div
+                  class="menu-item"
+                  v-if="isSuperAdmin || hasPermission('biometric.view') || hasPermission('biometric.enroll')"
+                >
+                  <router-link
+                    to="/bioagent/enroll/inmate"
+                    class="menu-link"
+                    :class="{ 'bg-primary text-white': $route.path === '/bioagent/enroll/inmate' }"
+                  >
+                    <span class="menu-icon">
+                      <i class="bi bi-fingerprint fs-3"></i>
+                    </span>
+                    <span class="menu-title fw-bold">Enrolar PPL (BioAgent)</span>
+                  </router-link>
+                </div>
+                <div
+                  class="menu-item"
+                  v-if="isSuperAdmin || hasPermission('biometric.view') || hasPermission('biometric.enroll')"
+                >
+                  <router-link
+                    to="/bioagent/enroll/visitor"
+                    class="menu-link"
+                    :class="{ 'bg-primary text-white': $route.path === '/bioagent/enroll/visitor' }"
+                  >
+                    <span class="menu-icon">
+                      <i class="bi bi-person-badge fs-3"></i>
+                    </span>
+                    <span class="menu-title fw-bold">Enrolar Visitante (BioAgent)</span>
+                  </router-link>
+                </div>
+
                 <!-- Inmates Management -->
                 <div
                   class="menu-item menu-accordion"
