@@ -1,0 +1,51 @@
+name: build-push
+
+# Construye la SPA Vue del frontend GP360 y la publica en GHCR en cada push
+# a main. VITE_APP_API_URL=/api (relativo) → Traefik rutea /api al backend en
+# el mismo host gp360.mingob.gob.gt. El cluster pull vía ghcr-pull (ns gp360).
+
+on:
+  push:
+    branches: [main]
+    paths-ignore:
+      - '**.md'
+      - 'docs/**'
+  workflow_dispatch: {}
+
+concurrency:
+  group: build-push-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build & push
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          build-args: |
+            VITE_APP_API_URL=/api
+            VITE_APP_ENV=production
+            VITE_APP_NAME=GP360
+          tags: |
+            ghcr.io/abdias96/gp360-frontend:latest
+            ghcr.io/abdias96/gp360-frontend:${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
