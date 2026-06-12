@@ -150,9 +150,10 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onUnmounted, ref } from 'vue'
+import { computed, onMounted, onUnmounted, ref } from 'vue'
+import { useRoute } from 'vue-router'
 import Swal from 'sweetalert2'
-import axios from 'axios'
+import ApiService from '@/core/services/ApiService'
 import {
   useBioAgent,
   FINGER_LABELS,
@@ -168,6 +169,7 @@ interface InmateRow {
   center: string
 }
 
+const route = useRoute()
 const bio = useBioAgent()
 const checking = ref(false)
 const capturing = ref(false)
@@ -184,6 +186,10 @@ let searchDebounce: number | null = null
 const flow = ref<EnrollFlowSnapshot | null>(null)
 const streamLog = ref<EnrollEvent[]>([])
 let streamCleanup: (() => void) | null = null
+
+// Templates capturados por dedo (el snapshot del agente no los incluye;
+// solo viajan en la respuesta de cada capture-next)
+const capturedTemplates = ref<Record<string, { template: string | null; quality: number | null }>>({})
 
 const isAgentReady = computed(() => bio.isAvailable.value && bio.isHandshaken.value)
 
@@ -232,10 +238,11 @@ function onSearch() {
   searchDebounce = window.setTimeout(async () => {
     if (search.value.length < 2) { results.value = []; return }
     try {
-      const { data } = await axios.get('/api/inmates/search', {
-        params: { q: search.value, limit: 8 },
+      const { data } = await ApiService.query('/inmates/search', {
+        q: search.value,
+        per_page: 8,
       })
-      results.value = data?.data || []
+      results.value = (data?.data || []).map(mapInmateRow)
     } catch {
       results.value = []
     }
@@ -246,6 +253,29 @@ function selectInmate(r: InmateRow) {
   selected.value = r
   results.value = []
   search.value = `${r.code} — ${r.full_name}`
+}
+
+/** Normaliza el objeto Inmate crudo del API al row que usa esta vista. */
+function mapInmateRow(i: any): InmateRow {
+  return {
+    id: i.id,
+    code: i.inmate_number || i.document_number || `#${i.id}`,
+    full_name: i.full_name || [i.first_name, i.last_name].filter(Boolean).join(' '),
+    center: i.current_center?.name || '',
+  }
+}
+
+/** Preselección vía ?inmate_id= (desde perfil físico / admisión). */
+async function preselectFromQuery() {
+  const id = Number(route.query.inmate_id)
+  if (!id) return
+  try {
+    const { data } = await ApiService.get(`/inmates/${id}`)
+    const inmate = data?.data
+    if (inmate) selectInmate(mapInmateRow(inmate))
+  } catch {
+    /* si falla, el usuario puede buscar manualmente */
+  }
 }
 
 async function beginFlow() {
@@ -271,6 +301,12 @@ async function captureNext() {
   try {
     const r = await bio.captureNextFinger(flow.value.flowId, 60, 3)
     flow.value = r.snapshot
+    if (r.step?.success && r.step.finger) {
+      capturedTemplates.value[r.step.finger] = {
+        template: r.template_base64,
+        quality: r.step.quality,
+      }
+    }
   } catch (e: any) {
     await Swal.fire({ icon: 'warning', title: 'Captura falló', text: e?.message || 'Reintente la captura' })
   } finally {
@@ -299,22 +335,27 @@ async function persistTemplates() {
   if (!flow.value || !selected.value) return
   persisting.value = true
   try {
-    const fingerprints: Record<string, { template: string; quality: number }> = {}
-    for (const step of flow.value.history) {
-      if (step.success) {
-        // El agente guarda el template_base64 al completar; lo recuperamos del status final.
-      }
+    const fingerprints = Object.entries(capturedTemplates.value)
+      .filter(([, v]) => !!v.template)
+      .map(([finger, v]) => ({
+        finger,
+        quality: v.quality,
+        template_base64: v.template,
+      }))
+    if (!fingerprints.length) {
+      await Swal.fire({
+        icon: 'warning',
+        title: 'Sin templates',
+        text: 'Ninguna captura devolvió template. Reinicie el flujo de enrolamiento.',
+      })
+      return
     }
-    const final = await bio.getEnrollmentStatus(flow.value.flowId)
     const payload = {
-      inmate_id: selected.value.id,
       flow_id: flow.value.flowId,
       enrolled_at: new Date().toISOString(),
-      fingerprints: final.history
-        .filter((s) => s.success)
-        .map((s) => ({ finger: s.finger, quality: s.quality })),
+      fingerprints,
     }
-    await axios.post(`/api/inmates/${selected.value.id}/biometric/enrollments`, payload)
+    await ApiService.post(`/inmates/${selected.value.id}/biometric/enrollments`, payload)
     await Swal.fire({
       icon: 'success',
       title: '¡Enrolamiento guardado!',
@@ -335,6 +376,7 @@ function cleanupFlow() {
   streamCleanup = null
   flow.value = null
   streamLog.value = []
+  capturedTemplates.value = {}
 }
 
 function formatTime(iso: string): string {
@@ -343,8 +385,11 @@ function formatTime(iso: string): string {
 
 onUnmounted(() => { if (streamCleanup) streamCleanup() })
 
-// Auto-conectar al montar
-connectAgent()
+// Auto-conectar al montar + preselección por query param
+onMounted(() => {
+  connectAgent()
+  preselectFromQuery()
+})
 </script>
 
 <style scoped>

@@ -147,7 +147,7 @@
 <script setup lang="ts">
 import { computed, onUnmounted, ref } from 'vue'
 import Swal from 'sweetalert2'
-import axios from 'axios'
+import ApiService from '@/core/services/ApiService'
 import {
   useBioAgent,
   FINGER_LABELS,
@@ -179,6 +179,9 @@ const visit = ref<VisitInfo | null>(null)
 const flow = ref<EnrollFlowSnapshot | null>(null)
 const streamLog = ref<EnrollEvent[]>([])
 let streamCleanup: (() => void) | null = null
+
+// Templates capturados por dedo (solo viajan en cada respuesta de capture-next)
+const capturedTemplates = ref<Record<string, { template: string | null; quality: number | null }>>({})
 
 const isAgentReady = computed(() => bio.isAvailable.value && bio.isHandshaken.value)
 
@@ -213,7 +216,7 @@ async function lookupVisit() {
   lookingUp.value = true
   try {
     const code = visCode.value.trim().toUpperCase()
-    const { data } = await axios.get(`/api/visits/by-code/${encodeURIComponent(code)}`)
+    const { data } = await ApiService.get(`/visits/by-code/${encodeURIComponent(code)}`)
     visit.value = data?.data
     if (!visit.value) {
       await Swal.fire({ icon: 'warning', title: 'Sin resultado', text: 'No se encontró una visita aprobada con ese código.' })
@@ -247,6 +250,12 @@ async function captureNext() {
   try {
     const r = await bio.captureNextFinger(flow.value.flowId, 60, 3)
     flow.value = r.snapshot
+    if (r.step?.success && r.step.finger) {
+      capturedTemplates.value[r.step.finger] = {
+        template: r.template_base64,
+        quality: r.step.quality,
+      }
+    }
   } catch (e: any) {
     await Swal.fire({ icon: 'warning', title: 'Captura falló', text: e?.message })
   } finally { capturing.value = false }
@@ -268,17 +277,27 @@ async function persistTemplates() {
   if (!flow.value || !visit.value) return
   persisting.value = true
   try {
-    const final = await bio.getEnrollmentStatus(flow.value.flowId)
+    const fingerprints = Object.entries(capturedTemplates.value)
+      .filter(([, v]) => !!v.template)
+      .map(([finger, v]) => ({
+        finger,
+        quality: v.quality,
+        template_base64: v.template,
+      }))
+    if (!fingerprints.length) {
+      await Swal.fire({
+        icon: 'warning',
+        title: 'Sin templates',
+        text: 'Ninguna captura devolvió template. Reinicie el flujo de enrolamiento.',
+      })
+      return
+    }
     const payload = {
-      visit_id: visit.value.id,
-      vis_code: visit.value.code,
       flow_id: flow.value.flowId,
       enrolled_at: new Date().toISOString(),
-      fingerprints: final.history
-        .filter((s) => s.success)
-        .map((s) => ({ finger: s.finger, quality: s.quality })),
+      fingerprints,
     }
-    await axios.post(`/api/visits/${visit.value.id}/biometric/enroll`, payload)
+    await ApiService.post(`/visits/${visit.value.id}/biometric/enroll`, payload)
     await Swal.fire({
       icon: 'success',
       title: 'Visitante enrolado',
@@ -297,6 +316,7 @@ function cleanupFlow() {
   streamCleanup = null
   flow.value = null
   streamLog.value = []
+  capturedTemplates.value = {}
 }
 
 function formatTime(iso: string) {

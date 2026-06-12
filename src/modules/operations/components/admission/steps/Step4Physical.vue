@@ -241,6 +241,24 @@
               </div>
             </div>
           </div>
+
+          <!-- Enrolamiento biométrico (BioAgent) -->
+          <div class="col-12">
+            <div class="separator my-5"></div>
+            <h5 class="mb-4">
+              Huellas dactilares
+              <span
+                class="badge ms-2"
+                :class="biometricData.enrolled ? 'badge-light-success' : 'badge-light-warning'"
+              >
+                {{ biometricData.enrolled ? 'Enroladas' : 'Pendiente' }}
+              </span>
+            </h5>
+            <BioAgentEnrollPanel
+              :inmate-id="inmateId"
+              @enrolled="onBiometricEnrolled"
+            />
+          </div>
         </div>
       </div>
     </div>
@@ -250,6 +268,7 @@
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n';
 import { useAdmissionWizard } from '@/modules/operations/composables/useAdmissionWizard';
+import BioAgentEnrollPanel from '@/modules/bioagent/components/BioAgentEnrollPanel.vue';
 
 const { t } = useI18n();
 
@@ -257,6 +276,13 @@ const {
   physicalProfile,
   photos,
   bloodTypes,
-  capturePhoto
+  capturePhoto,
+  inmateId,
+  biometricData
 } = useAdmissionWizard();
+
+const onBiometricEnrolled = (count: number) => {
+  biometricData.value.enrolled = true;
+  biometricData.value.fingerprints = Array(count).fill('enrolled');
+};
 </script>

@@ -198,25 +198,16 @@ const routes: Array<RouteRecordRaw> = [
           permissions: "inmates.list",
         },
       },
+      // Rutas legacy del BiometricService Java → redirigen a BioAgent
       {
         path: "/inmates/biometric-verification",
         name: "inmates-biometric-verification",
-        component: () => import("@/modules/inmates/views/BiometricVerification.vue"),
-        meta: {
-          pageTitle: "Identificación biométrica 1:N",
-          breadcrumbs: ["Internos", "Identificación biométrica 1:N"],
-          permissions: ["biometric.view", "biometric.identify"],
-        },
+        redirect: { name: "bioagent-identify-1n" },
       },
       {
         path: "/inmates/biometric-identification",
         name: "inmates-biometric-identification",
-        component: () => import("@/components/biometric/BiometricIdentification.vue"),
-        meta: {
-          pageTitle: "Identificación biométrica 1:N",
-          breadcrumbs: ["Internos", "Identificación biométrica"],
-          permissions: ["biometric.view", "biometric.identify"],
-        },
+        redirect: { name: "bioagent-identify-1n" },
       },
       {
         path: "/test/direct-biometric",
@@ -1320,14 +1311,13 @@ const routes: Array<RouteRecordRaw> = [
         },
       },
       {
+        // Legacy (Java BiometricService) → enrolamiento BioAgent con PPL preseleccionado
         path: "/security/biometric/:inmateId",
         name: "security-biometric-capture",
-        component: () => import("@/modules/security/views/BiometricCapture.vue"),
-        meta: {
-          pageTitle: "Captura biométrica",
-          breadcrumbs: ["Seguridad", "Captura biométrica"],
-          permissions: ["biometric.view", "biometric.enroll"],
-        },
+        redirect: (to) => ({
+          name: "bioagent-enroll-inmate",
+          query: { inmate_id: String(to.params.inmateId) },
+        }),
       },
       {
         path: "/security/photo/:inmateId",

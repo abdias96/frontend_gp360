@@ -35,6 +35,32 @@ const MainMenuConfig: Array<MenuItem> = [
     ],
   },
   {
+    heading: "biometrics",
+    route: "/bioagent",
+    pages: [
+      {
+        sectionTitle: "biometricsBioAgent",
+        route: "/bioagent",
+        keenthemesIcon: "fingerprint-scanning",
+        bootstrapIcon: "bi-fingerprint",
+        sub: [
+          {
+            heading: "bioagentIdentify1N",
+            route: "/bioagent/identify",
+          },
+          {
+            heading: "bioagentEnrollInmate",
+            route: "/bioagent/enroll/inmate",
+          },
+          {
+            heading: "bioagentEnrollVisitor",
+            route: "/bioagent/enroll/visitor",
+          },
+        ],
+      },
+    ],
+  },
+  {
     heading: "legal",
     route: "/legal",
     pages: [

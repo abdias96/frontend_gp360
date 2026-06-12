@@ -183,7 +183,7 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 import Swal from 'sweetalert2'
-import axios from 'axios'
+import ApiService from '@/core/services/ApiService'
 import {
   useBioAgent,
   FINGER_LABELS,
@@ -264,7 +264,7 @@ async function captureAndIdentify() {
     capture.value = await bio.capture(finger.value, 60, 15)
 
     phase.value = 'local'
-    const { data: local } = await axios.post('/api/biometric/identify', {
+    const { data: local } = await ApiService.post('/biometric/identify', {
       finger: finger.value,
       template_base64: capture.value.templateBase64,
       quality: capture.value.quality,
@@ -276,7 +276,7 @@ async function captureAndIdentify() {
     }
 
     phase.value = 'renap'
-    const { data: renap } = await axios.post('/api/biometric/renap-fallback', {
+    const { data: renap } = await ApiService.post('/biometric/renap-fallback', {
       finger: finger.value,
       template_base64: capture.value.templateBase64,
     })
@@ -296,7 +296,7 @@ async function captureAndIdentify() {
 async function logIngress() {
   if (!result.value?.subject) return
   try {
-    await axios.post('/api/access/log', {
+    await ApiService.post('/access/log', {
       subject_kind: result.value.subject.kind,
       subject_id: result.value.subject.id,
       method: 'biometric_1n',
