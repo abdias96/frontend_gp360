@@ -347,38 +347,34 @@
     </div>
 
     <!-- Movement Modal -->
-    <!-- TODO: Create MovementModal component -->
-    <!-- <MovementModal
+    <MovementModal
       v-if="showNewMovementModal"
       @close="showNewMovementModal = false"
       @saved="handleMovementSaved"
-    /> -->
+    />
 
     <!-- Emergency Movement Modal -->
-    <!-- TODO: Create EmergencyMovementModal component -->
-    <!-- <EmergencyMovementModal
+    <EmergencyMovementModal
       v-if="showEmergencyModal"
       @close="showEmergencyModal = false"
       @saved="handleMovementSaved"
-    /> -->
+    />
 
     <!-- Movement Detail Modal -->
-    <!-- TODO: Create MovementDetailModal component -->
-    <!-- <MovementDetailModal
+    <MovementDetailModal
       v-if="showDetailModal"
       :movement="selectedMovement"
       @close="showDetailModal = false"
       @updated="handleMovementUpdated"
-    /> -->
+    />
 
     <!-- Status Update Modal -->
-    <!-- TODO: Create StatusUpdateModal component -->
-    <!-- <StatusUpdateModal
+    <StatusUpdateModal
       v-if="showStatusModal"
       :movement="selectedMovement"
       @close="showStatusModal = false"
       @updated="handleMovementUpdated"
-    /> -->
+    />
   </div>
 </template>
 
@@ -387,12 +383,12 @@ import { ref, reactive, computed, onMounted, watch } from 'vue'
 import { useToast } from '@/composables/useToast'
 import { useAuthStore } from '@/stores/auth'
 import { movementsApi } from '@/services/api/operations'
-// import MovementModal from '../components/MovementModal.vue'
-// import EmergencyMovementModal from '../components/EmergencyMovementModal.vue'
-// import MovementDetailModal from '../components/MovementDetailModal.vue'
-// import StatusUpdateModal from '../components/StatusUpdateModal.vue'
+import MovementModal from '../components/MovementModal.vue'
+import EmergencyMovementModal from '../components/EmergencyMovementModal.vue'
+import MovementDetailModal from '../components/MovementDetailModal.vue'
+import StatusUpdateModal from '../components/StatusUpdateModal.vue'
 
-const { showToast, showConfirm } = useToast()
+const { showToast, showConfirm, showPrompt } = useToast()
 const authStore = useAuthStore()
 const { user } = authStore
 
@@ -454,18 +450,28 @@ const visiblePages = computed(() => {
 })
 
 // Methods
+// El backend envuelve las respuestas en { success, data }; además se omiten
+// los filtros vacíos/false porque Laravel los interpretaría como presentes.
+const cleanParams = (obj) => {
+  return Object.fromEntries(
+    Object.entries(obj).filter(([, value]) =>
+      value !== '' && value !== null && value !== undefined && value !== false
+    )
+  )
+}
+
 const loadMovements = async (page = 1) => {
   try {
     loading.value = true
-    const params = {
+    const params = cleanParams({
       page,
       per_page: 20,
       ...filters
-    }
-    
+    })
+
     const response = await movementsApi.getList(params)
-    movements.value = response.data.movements
-    summary.value = response.data.summary
+    const payload = response.data?.data ?? response.data
+    movements.value = payload.movements
   } catch (error) {
     showToast('Error al cargar movimientos', 'error')
     console.error('Error loading movements:', error)
@@ -477,9 +483,27 @@ const loadMovements = async (page = 1) => {
 const loadActiveMovements = async () => {
   try {
     const response = await movementsApi.getActiveByLocation()
-    activeMovements.value = response.data.by_type
+    const payload = response.data?.data ?? response.data
+    activeMovements.value = payload.by_type || {}
+    summary.value.total_active = payload.total_active ?? 0
+    summary.value.total_overdue = payload.total_overdue ?? 0
   } catch (error) {
     console.error('Error loading active movements:', error)
+  }
+}
+
+const loadStatistics = async () => {
+  try {
+    const today = new Date().toISOString().slice(0, 10)
+    const response = await movementsApi.getStatistics({
+      date_from: `${today} 00:00:00`,
+      date_to: `${today} 23:59:59`
+    })
+    const stats = response.data?.data ?? response.data
+    summary.value.completed_today = stats.completed ?? 0
+    summary.value.average_duration = Math.round(stats.average_duration || 0)
+  } catch (error) {
+    console.error('Error loading movement statistics:', error)
   }
 }
 
@@ -511,7 +535,8 @@ const viewMovement = (movement) => {
 }
 
 const startMovement = async (movement) => {
-  if (await showConfirm('¿Confirma el inicio de este movimiento?')) {
+  const result = await showConfirm('¿Confirma el inicio de este movimiento?')
+  if (result.isConfirmed) {
     try {
       await movementsApi.start(movement.id)
       showToast('Movimiento iniciado exitosamente', 'success')
@@ -529,7 +554,8 @@ const updateStatus = (movement) => {
 }
 
 const completeMovement = async (movement) => {
-  if (await showConfirm('¿Confirma la finalización de este movimiento?')) {
+  const result = await showConfirm('¿Confirma la finalización de este movimiento?')
+  if (result.isConfirmed) {
     try {
       await movementsApi.updateStatus(movement.id, { status: 'completed' })
       showToast('Movimiento completado exitosamente', 'success')
@@ -542,12 +568,12 @@ const completeMovement = async (movement) => {
 }
 
 const cancelMovement = async (movement) => {
-  const reason = await showPrompt('Ingrese la razón de cancelación:')
-  if (reason) {
+  const result = await showPrompt('Cancelar movimiento', 'Razón de cancelación')
+  if (result.isConfirmed && result.value) {
     try {
-      await movementsApi.updateStatus(movement.id, { 
+      await movementsApi.updateStatus(movement.id, {
         status: 'cancelled',
-        cancellation_reason: reason
+        cancellation_reason: result.value
       })
       showToast('Movimiento cancelado exitosamente', 'success')
       loadMovements(movements.value.current_page)
@@ -563,12 +589,15 @@ const handleMovementSaved = () => {
   showEmergencyModal.value = false
   loadMovements(1)
   loadActiveMovements()
+  loadStatistics()
 }
 
 const handleMovementUpdated = () => {
   showStatusModal.value = false
+  showDetailModal.value = false
   loadMovements(movements.value.current_page)
   loadActiveMovements()
+  loadStatistics()
 }
 
 // Formatting methods
@@ -681,5 +710,6 @@ watch(filters, () => {
 onMounted(() => {
   loadMovements()
   loadActiveMovements()
+  loadStatistics()
 })
 </script>

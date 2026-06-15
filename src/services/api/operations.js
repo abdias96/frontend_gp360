@@ -82,17 +82,17 @@ export const dailyCountsApi = {
 
   // Submit count results
   submit(id, data) {
-    return apiClient.patch(`/counts/${id}/submit`, data)
+    return apiClient.post(`/counts/${id}/submit`, data)
   },
 
   // Resolve count discrepancy
   resolveDiscrepancy(id, data) {
-    return apiClient.patch(`/counts/${id}/resolve`, data)
+    return apiClient.post(`/counts/${id}/resolve`, data)
   },
 
   // Verify count (supervisor)
   verify(id) {
-    return apiClient.patch(`/counts/${id}/verify`)
+    return apiClient.post(`/counts/${id}/verify`)
   },
 
   // Get count statistics
@@ -130,22 +130,22 @@ export const movementsApi = {
 
   // Start movement
   start(id, data = {}) {
-    return apiClient.patch(`/movements/${id}/start`, data)
+    return apiClient.post(`/movements/${id}/start`, data)
   },
 
   // Update movement status
   updateStatus(id, data) {
-    return apiClient.patch(`/movements/${id}/status`, data)
+    return apiClient.post(`/movements/${id}/status`, data)
   },
 
   // Get active movements by location
   getActiveByLocation(params = {}) {
-    return apiClient.get('/movements/active', { params })
+    return apiClient.get('/movements/active-by-location', { params })
   },
 
   // Get movement history for inmate
-  getInmateHistory(inmateId) {
-    return apiClient.get(`/movements/inmate/${inmateId}/history`)
+  getInmateHistory(inmateId, params = {}) {
+    return apiClient.get(`/movements/inmate/${inmateId}`, { params })
   },
 
   // Get movement statistics
@@ -183,7 +183,7 @@ export const releasesApi = {
 
   // Update release plan evaluations
   updateEvaluations(id, data) {
-    return apiClient.patch(`/releases/plans/${id}/evaluations`, data)
+    return apiClient.post(`/releases/plans/${id}/evaluations`, data)
   },
 
   // Update release plan details
@@ -193,7 +193,7 @@ export const releasesApi = {
 
   // Update preparation status
   updatePreparation(id, data) {
-    return apiClient.patch(`/releases/plans/${id}/preparation`, data)
+    return apiClient.post(`/releases/plans/${id}/preparation`, data)
   },
 
   // Create release order

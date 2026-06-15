@@ -6,16 +6,17 @@
         <p class="text-muted">{{ $t('operations.movements.history.subtitle') }}</p>
       </div>
       <div class="card-toolbar">
-        <router-link 
+        <router-link
           :to="{ name: 'operations-movements' }"
           class="btn btn-light-primary btn-sm me-2"
         >
           <i class="fas fa-arrow-left me-2"></i>
           Volver
         </router-link>
-        <button 
+        <button
           @click="exportHistory"
           class="btn btn-light-success btn-sm"
+          :disabled="!movements.length"
         >
           <i class="fas fa-file-excel me-2"></i>
           Exportar
@@ -27,72 +28,61 @@
       <!-- Filters -->
       <div class="row mb-6">
         <div class="col-md-3">
-          <label class="form-label">Tipo de Movimiento</label>
-          <select v-model="filters.movement_type" class="form-select">
+          <label for="hist-type" class="form-label">Tipo de Movimiento</label>
+          <select id="hist-type" v-model="filters.movement_type" class="form-select">
             <option value="">Todos</option>
-            <option value="internal">Movimiento Interno</option>
-            <option value="transfer">Traslado</option>
-            <option value="court">Audiencia</option>
             <option value="medical">Médico</option>
-            <option value="temporary">Temporal</option>
+            <option value="education">Educación</option>
+            <option value="work">Trabajo</option>
+            <option value="visit">Visita</option>
+            <option value="court">Tribunal</option>
+            <option value="administrative">Administrativo</option>
+            <option value="religious">Religioso</option>
+            <option value="sports">Deportes</option>
+            <option value="emergency">Emergencia</option>
+            <option value="transfer">Traslado</option>
           </select>
         </div>
         <div class="col-md-3">
-          <label class="form-label">Centro</label>
-          <select v-model="filters.center_id" class="form-select">
-            <option value="">Todos los centros</option>
-            <option v-for="center in centers" :key="center.id" :value="center.id">
-              {{ center.name }}
-            </option>
-          </select>
-        </div>
-        <div class="col-md-3">
-          <label class="form-label">Fecha Desde</label>
-          <input 
-            type="date" 
-            v-model="filters.date_from"
-            class="form-control"
-          >
-        </div>
-        <div class="col-md-3">
-          <label class="form-label">Fecha Hasta</label>
-          <input 
-            type="date" 
-            v-model="filters.date_to"
-            class="form-control"
-          >
-        </div>
-      </div>
-
-      <div class="row mb-6">
-        <div class="col-md-6">
-          <label class="form-label">Buscar PPL</label>
-          <input 
-            type="text" 
-            v-model="filters.search"
-            class="form-control"
-            placeholder="Nombre, DPI o código..."
-          >
-        </div>
-        <div class="col-md-3">
-          <label class="form-label">Estado</label>
-          <select v-model="filters.status" class="form-select">
+          <label for="hist-status" class="form-label">Estado</label>
+          <select id="hist-status" v-model="filters.status" class="form-select">
             <option value="">Todos</option>
-            <option value="pending">Pendiente</option>
+            <option value="active">Activos</option>
+            <option value="scheduled">Programados</option>
             <option value="in_transit">En Tránsito</option>
-            <option value="completed">Completado</option>
-            <option value="cancelled">Cancelado</option>
+            <option value="at_destination">En Destino</option>
+            <option value="returning">Regresando</option>
+            <option value="completed">Completados</option>
+            <option value="cancelled">Cancelados</option>
           </select>
+        </div>
+        <div class="col-md-3">
+          <label for="hist-date" class="form-label">Fecha</label>
+          <input
+            id="hist-date"
+            type="date"
+            v-model="filters.date"
+            class="form-control"
+          >
         </div>
         <div class="col-md-3">
           <label class="form-label">&nbsp;</label>
-          <button 
+          <button
             @click="clearFilters"
             class="btn btn-light-primary w-100"
           >
             <i class="fas fa-redo me-2"></i>
             Limpiar Filtros
           </button>
+        </div>
+      </div>
+
+      <div class="row mb-6">
+        <div class="col-md-6">
+          <InmateSearchField
+            v-model="selectedInmate"
+            label="Historial por PPL (opcional)"
+          />
         </div>
       </div>
 
@@ -104,21 +94,8 @@
               <div class="d-flex align-items-center">
                 <i class="fas fa-exchange-alt fa-2x text-primary me-3"></i>
                 <div>
-                  <div class="fs-4 fw-bold">{{ statistics.total_movements }}</div>
+                  <div class="fs-4 fw-bold">{{ statistics.total }}</div>
                   <div class="fs-7 text-muted">Total Movimientos</div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div class="col-md-3">
-          <div class="card bg-light-warning">
-            <div class="card-body p-5">
-              <div class="d-flex align-items-center">
-                <i class="fas fa-clock fa-2x text-warning me-3"></i>
-                <div>
-                  <div class="fs-4 fw-bold">{{ statistics.pending }}</div>
-                  <div class="fs-7 text-muted">Pendientes</div>
                 </div>
               </div>
             </div>
@@ -130,8 +107,8 @@
               <div class="d-flex align-items-center">
                 <i class="fas fa-truck fa-2x text-info me-3"></i>
                 <div>
-                  <div class="fs-4 fw-bold">{{ statistics.in_transit }}</div>
-                  <div class="fs-7 text-muted">En Tránsito</div>
+                  <div class="fs-4 fw-bold">{{ statistics.active }}</div>
+                  <div class="fs-7 text-muted">Activos</div>
                 </div>
               </div>
             </div>
@@ -143,8 +120,21 @@
               <div class="d-flex align-items-center">
                 <i class="fas fa-check-circle fa-2x text-success me-3"></i>
                 <div>
-                  <div class="fs-4 fw-bold">{{ statistics.completed_today }}</div>
-                  <div class="fs-7 text-muted">Completados Hoy</div>
+                  <div class="fs-4 fw-bold">{{ statistics.completed }}</div>
+                  <div class="fs-7 text-muted">Completados</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="card bg-light-danger">
+            <div class="card-body p-5">
+              <div class="d-flex align-items-center">
+                <i class="fas fa-times-circle fa-2x text-danger me-3"></i>
+                <div>
+                  <div class="fs-4 fw-bold">{{ statistics.cancelled }}</div>
+                  <div class="fs-7 text-muted">Cancelados</div>
                 </div>
               </div>
             </div>
@@ -152,8 +142,15 @@
         </div>
       </div>
 
+      <!-- Loading -->
+      <div v-if="loading" class="text-center py-10">
+        <div class="spinner-border text-primary" role="status">
+          <span class="visually-hidden">Cargando...</span>
+        </div>
+      </div>
+
       <!-- Movement History Table -->
-      <div class="table-responsive">
+      <div v-else class="table-responsive">
         <table class="table table-rounded table-striped border gy-7 gs-7">
           <thead>
             <tr class="fw-semibold fs-6 text-gray-800 border-bottom-2 border-gray-200">
@@ -162,9 +159,9 @@
               <th>Tipo</th>
               <th>Origen</th>
               <th>Destino</th>
-              <th>Fecha/Hora</th>
+              <th>Salida</th>
+              <th>Retorno</th>
               <th>Estado</th>
-              <th>Autorizado por</th>
               <th>Acciones</th>
             </tr>
           </thead>
@@ -173,8 +170,8 @@
               <td class="fw-bold">#{{ movement.id }}</td>
               <td>
                 <div class="d-flex flex-column">
-                  <span class="text-gray-800 fw-bold">{{ movement.inmate.full_name }}</span>
-                  <span class="text-muted fs-7">{{ movement.inmate.document_number }}</span>
+                  <span class="text-gray-800 fw-bold">{{ inmateName(movement) }}</span>
+                  <span class="text-muted fs-7">{{ inmateDocument(movement) }}</span>
                 </div>
               </td>
               <td>
@@ -184,46 +181,36 @@
               </td>
               <td>
                 <div class="d-flex flex-column">
-                  <span class="text-gray-800">{{ movement.origin.center }}</span>
-                  <span class="text-muted fs-7">{{ movement.origin.location }}</span>
+                  <span class="text-gray-800">{{ movement.from_location || '-' }}</span>
+                  <span v-if="movement.from_sector" class="text-muted fs-7">{{ movement.from_sector.name }}</span>
                 </div>
               </td>
               <td>
                 <div class="d-flex flex-column">
-                  <span class="text-gray-800">{{ movement.destination.center }}</span>
-                  <span class="text-muted fs-7">{{ movement.destination.location }}</span>
+                  <span class="text-gray-800">{{ movement.to_location || '-' }}</span>
+                  <span v-if="movement.to_sector" class="text-muted fs-7">{{ movement.to_sector.name }}</span>
                 </div>
               </td>
-              <td>
-                <div class="d-flex flex-column">
-                  <span class="text-gray-800">{{ formatDate(movement.movement_date) }}</span>
-                  <span class="text-muted fs-7">{{ formatTime(movement.movement_time) }}</span>
-                </div>
-              </td>
+              <td>{{ formatDateTime(movement.departure_time) || '-' }}</td>
+              <td>{{ formatDateTime(movement.actual_return_time) || formatDateTime(movement.expected_return_time) || '-' }}</td>
               <td>
                 <span class="badge" :class="getStatusBadgeClass(movement.status)">
                   {{ formatStatus(movement.status) }}
                 </span>
               </td>
-              <td>{{ movement.authorized_by || '-' }}</td>
               <td>
-                <div class="btn-group">
-                  <button 
-                    @click="viewDetails(movement)"
-                    class="btn btn-light btn-sm"
-                    title="Ver detalles"
-                  >
-                    <i class="fas fa-eye"></i>
-                  </button>
-                  <button 
-                    v-if="canPrint(movement)"
-                    @click="printMovement(movement)"
-                    class="btn btn-light btn-sm"
-                    title="Imprimir"
-                  >
-                    <i class="fas fa-print"></i>
-                  </button>
-                </div>
+                <button
+                  @click="viewDetails(movement)"
+                  class="btn btn-light btn-sm"
+                  title="Ver detalles"
+                >
+                  <i class="fas fa-eye"></i>
+                </button>
+              </td>
+            </tr>
+            <tr v-if="!movements.length">
+              <td colspan="9" class="text-center text-muted py-10">
+                No se encontraron movimientos con los criterios seleccionados.
               </td>
             </tr>
           </tbody>
@@ -233,7 +220,7 @@
       <!-- Pagination -->
       <div class="d-flex justify-content-between align-items-center mt-6">
         <div class="text-muted">
-          Mostrando {{ pagination.from }} - {{ pagination.to }} de {{ pagination.total }} registros
+          Mostrando {{ pagination.from || 0 }} - {{ pagination.to || 0 }} de {{ pagination.total }} registros
         </div>
         <nav>
           <ul class="pagination">
@@ -242,10 +229,10 @@
                 Anterior
               </button>
             </li>
-            <li 
-              v-for="page in visiblePages" 
+            <li
+              v-for="page in visiblePages"
               :key="page"
-              class="page-item" 
+              class="page-item"
               :class="{ active: page === pagination.current_page }"
             >
               <button class="page-link" @click="loadPage(page)">{{ page }}</button>
@@ -266,32 +253,29 @@
 import { ref, reactive, computed, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
-import { useAuthStore } from '@/stores/auth'
 import Swal from 'sweetalert2'
+import { movementsApi } from '@/services/api/operations'
+import InmateSearchField from '../components/InmateSearchField.vue'
 
 const { t } = useI18n()
 const router = useRouter()
-const authStore = useAuthStore()
 
 // Data
 const loading = ref(false)
 const movements = ref<any[]>([])
-const centers = ref<any[]>([])
+const selectedInmate = ref<any>(null)
 
 const filters = reactive({
   movement_type: '',
-  center_id: '',
-  date_from: '',
-  date_to: '',
-  search: '',
-  status: ''
+  status: '',
+  date: ''
 })
 
 const statistics = ref({
-  total_movements: 0,
-  pending: 0,
-  in_transit: 0,
-  completed_today: 0
+  total: 0,
+  active: 0,
+  completed: 0,
+  cancelled: 0
 })
 
 const pagination = ref({
@@ -310,82 +294,74 @@ const visiblePages = computed(() => {
   const pages = []
   const current = pagination.value.current_page
   const last = pagination.value.last_page
-  
+
   let start = Math.max(1, current - 2)
   let end = Math.min(last, current + 2)
-  
+
   for (let i = start; i <= end; i++) {
     pages.push(i)
   }
-  
+
   return pages
 })
 
 // Methods
+// Se omiten filtros vacíos: Laravel interpreta el parámetro presente aunque sea ''
+const cleanParams = (obj: Record<string, any>) => {
+  return Object.fromEntries(
+    Object.entries(obj).filter(([, value]) =>
+      value !== '' && value !== null && value !== undefined && value !== false
+    )
+  )
+}
+
+const setPagination = (paginator: any) => {
+  pagination.value = {
+    current_page: paginator.current_page,
+    last_page: paginator.last_page,
+    per_page: paginator.per_page,
+    total: paginator.total,
+    from: paginator.from,
+    to: paginator.to,
+    prev_page_url: paginator.prev_page_url,
+    next_page_url: paginator.next_page_url
+  }
+}
+
+const countByStatus = (items: any[], statuses: string[]) => {
+  return items.filter((m) => statuses.includes(m.status)).length
+}
+
 const loadMovementHistory = async (page = 1) => {
   loading.value = true
   try {
-    // TODO: Implement API call
-    // Mock data for now
-    movements.value = [
-      {
-        id: 1001,
-        inmate: {
-          full_name: 'Juan Pérez García',
-          document_number: '1234567890101'
-        },
-        movement_type: 'transfer',
-        origin: {
-          center: 'Centro Preventivo Zona 18',
-          location: 'Sector A - Celda A-101'
-        },
-        destination: {
-          center: 'Granja Penal Canadá',
-          location: 'Sector B - Celda B-205'
-        },
-        movement_date: '2024-01-15',
-        movement_time: '10:30:00',
-        status: 'completed',
-        authorized_by: 'Director Centro'
-      },
-      {
-        id: 1002,
-        inmate: {
-          full_name: 'María González López',
-          document_number: '9876543210101'
-        },
-        movement_type: 'court',
-        origin: {
-          center: 'Centro Preventivo Zona 18',
-          location: 'Sector C - Celda C-303'
-        },
-        destination: {
-          center: 'Torre de Tribunales',
-          location: 'Juzgado 5to'
-        },
-        movement_date: '2024-01-16',
-        movement_time: '08:00:00',
-        status: 'in_transit',
-        authorized_by: 'Juez de Ejecución'
+    if (selectedInmate.value) {
+      // Historial específico del PPL seleccionado
+      const response = await movementsApi.getInmateHistory(selectedInmate.value.id, { page })
+      const payload = response.data?.data ?? response.data
+      const paginator = payload.movements
+      movements.value = paginator.data || []
+      setPagination(paginator)
+      statistics.value = {
+        total: payload.statistics?.total_movements ?? paginator.total,
+        active: countByStatus(movements.value, ['scheduled', 'in_transit', 'at_destination', 'returning']),
+        completed: countByStatus(movements.value, ['completed']),
+        cancelled: countByStatus(movements.value, ['cancelled'])
       }
-    ]
-    
-    statistics.value = {
-      total_movements: 156,
-      pending: 8,
-      in_transit: 3,
-      completed_today: 12
-    }
-    
-    pagination.value = {
-      current_page: page,
-      last_page: 8,
-      per_page: 20,
-      total: 156,
-      from: 1,
-      to: 20,
-      prev_page_url: page > 1 ? '#' : null,
-      next_page_url: page < 8 ? '#' : null
+    } else {
+      // Listado general con filtros del backend
+      const response = await movementsApi.getList(cleanParams({ page, ...filters }))
+      const payload = response.data?.data ?? response.data
+      const paginator = payload.movements
+      movements.value = paginator.data || []
+      setPagination(paginator)
+      const summary = payload.summary || {}
+      statistics.value = {
+        total: paginator.total ?? summary.total ?? 0,
+        active: summary.active ?? 0,
+        completed: summary.completed ?? 0,
+        cancelled: summary.cancelled ?? 0
+      }
     }
   } catch (error) {
     console.error('Error loading movement history:', error)
@@ -399,19 +375,6 @@ const loadMovementHistory = async (page = 1) => {
   }
 }
 
-const loadCenters = async () => {
-  try {
-    // TODO: Implement API call
-    centers.value = [
-      { id: 1, name: 'Centro Preventivo Zona 18' },
-      { id: 2, name: 'Granja Penal Canadá' },
-      { id: 3, name: 'Centro de Detención Preventiva para Mujeres' }
-    ]
-  } catch (error) {
-    console.error('Error loading centers:', error)
-  }
-}
-
 const loadPage = (page: number) => {
   if (page >= 1 && page <= pagination.value.last_page) {
     loadMovementHistory(page)
@@ -419,46 +382,69 @@ const loadPage = (page: number) => {
 }
 
 const clearFilters = () => {
-  Object.keys(filters).forEach(key => {
-    filters[key as keyof typeof filters] = ''
-  })
-  loadMovementHistory(1)
+  filters.movement_type = ''
+  filters.status = ''
+  filters.date = ''
+  selectedInmate.value = null
 }
 
 const viewDetails = (movement: any) => {
-  router.push({ 
-    name: 'operations-movement-detail', 
-    params: { id: movement.id } 
+  router.push({
+    name: 'operations-movements-detail',
+    params: { id: movement.id }
   })
 }
 
-const printMovement = async (movement: any) => {
+const exportHistory = () => {
   try {
-    // TODO: Implement print functionality
-    await Swal.fire({
-      icon: 'info',
-      title: 'Imprimiendo',
-      text: 'Generando documento de movimiento...'
-    })
-  } catch (error) {
-    await Swal.fire({
-      icon: 'error',
-      title: 'Error',
-      text: 'No se pudo imprimir el documento'
-    })
-  }
-}
+    const headers = [
+      'ID',
+      'PPL',
+      'Documento',
+      'Tipo',
+      'Origen',
+      'Destino',
+      'Salida',
+      'Retorno Esperado',
+      'Retorno Real',
+      'Estado',
+      'Motivo'
+    ]
 
-const exportHistory = async () => {
-  try {
-    // TODO: Implement export functionality
-    await Swal.fire({
-      icon: 'success',
-      title: 'Exportando',
-      text: 'El archivo se está generando...'
-    })
+    const escapeCsv = (value: any) => {
+      const text = value === null || value === undefined ? '' : String(value)
+      return `"${text.replace(/"/g, '""')}"`
+    }
+
+    const rows = movements.value.map((m) => [
+      m.id,
+      inmateName(m),
+      inmateDocument(m),
+      formatMovementType(m.movement_type),
+      m.from_location || '',
+      m.to_location || '',
+      formatDateTime(m.departure_time) || '',
+      formatDateTime(m.expected_return_time) || '',
+      formatDateTime(m.actual_return_time) || '',
+      formatStatus(m.status),
+      m.reason || ''
+    ].map(escapeCsv).join(','))
+
+    // BOM UTF-8 para que Excel reconozca acentos
+    const csv = '\uFEFF' + [headers.map(escapeCsv).join(','), ...rows].join('\r\n')
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' })
+    const url = URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    const today = new Date().toISOString().slice(0, 10)
+    link.href = url
+    link.download = `historial_movimientos_${today}.csv`
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+    URL.revokeObjectURL(url)
   } catch (error) {
-    await Swal.fire({
+    console.error('Error exporting history:', error)
+    Swal.fire({
       icon: 'error',
       title: 'Error',
       text: 'No se pudo exportar el historial'
@@ -466,60 +452,77 @@ const exportHistory = async () => {
   }
 }
 
-const canPrint = (movement: any) => {
-  return ['completed', 'in_transit'].includes(movement.status)
+// Helpers
+const inmateName = (movement: any) => {
+  return movement.inmate?.full_name || selectedInmate.value?.full_name || '-'
+}
+
+const inmateDocument = (movement: any) => {
+  return movement.inmate?.document_number || selectedInmate.value?.document_number || ''
 }
 
 // Formatting methods
 const formatMovementType = (type: string) => {
   const types: Record<string, string> = {
-    'internal': 'Interno',
-    'transfer': 'Traslado',
-    'court': 'Audiencia',
-    'medical': 'Médico',
-    'temporary': 'Temporal'
+    medical: 'Médico',
+    education: 'Educación',
+    work: 'Trabajo',
+    visit: 'Visita',
+    court: 'Tribunal',
+    administrative: 'Administrativo',
+    religious: 'Religioso',
+    sports: 'Deportes',
+    emergency: 'Emergencia',
+    transfer: 'Traslado'
   }
   return types[type] || type
 }
 
 const formatStatus = (status: string) => {
   const statuses: Record<string, string> = {
-    'pending': 'Pendiente',
-    'in_transit': 'En Tránsito',
-    'completed': 'Completado',
-    'cancelled': 'Cancelado'
+    scheduled: 'Programado',
+    in_transit: 'En Tránsito',
+    at_destination: 'En Destino',
+    returning: 'Regresando',
+    completed: 'Completado',
+    cancelled: 'Cancelado'
   }
   return statuses[status] || status
 }
 
-const formatDate = (date: string) => {
-  return new Date(date).toLocaleDateString('es-GT')
-}
-
-const formatTime = (time: string) => {
-  return new Date(`2000-01-01 ${time}`).toLocaleTimeString('es-GT', { 
-    hour: '2-digit', 
-    minute: '2-digit' 
-  })
+const formatDateTime = (datetime: string) => {
+  if (!datetime) return null
+  const date = new Date(datetime)
+  return `${date.toLocaleDateString('es-GT')} ${date.toLocaleTimeString('es-GT', {
+    hour: '2-digit',
+    minute: '2-digit'
+  })}`
 }
 
 const getMovementTypeBadgeClass = (type: string) => {
   const classes: Record<string, string> = {
-    'internal': 'badge-light-primary',
-    'transfer': 'badge-light-warning',
-    'court': 'badge-light-info',
-    'medical': 'badge-light-danger',
-    'temporary': 'badge-light-secondary'
+    medical: 'badge-light-success',
+    education: 'badge-light-info',
+    work: 'badge-light-warning',
+    visit: 'badge-light-primary',
+    court: 'badge-light-dark',
+    administrative: 'badge-light-secondary',
+    religious: 'badge-light-primary',
+    sports: 'badge-light-success',
+    emergency: 'badge-light-danger',
+    transfer: 'badge-light-info'
   }
   return classes[type] || 'badge-light-secondary'
 }
 
 const getStatusBadgeClass = (status: string) => {
   const classes: Record<string, string> = {
-    'pending': 'badge-light-warning',
-    'in_transit': 'badge-light-info',
-    'completed': 'badge-light-success',
-    'cancelled': 'badge-light-danger'
+    scheduled: 'badge-light-secondary',
+    in_transit: 'badge-light-primary',
+    at_destination: 'badge-light-warning',
+    returning: 'badge-light-info',
+    completed: 'badge-light-success',
+    cancelled: 'badge-light-danger'
   }
   return classes[status] || 'badge-light-secondary'
 }
@@ -529,9 +532,12 @@ watch(filters, () => {
   loadMovementHistory(1)
 }, { deep: true })
 
+watch(selectedInmate, () => {
+  loadMovementHistory(1)
+})
+
 // Lifecycle
 onMounted(() => {
-  loadCenters()
   loadMovementHistory()
 })
 </script>

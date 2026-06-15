@@ -6,7 +6,7 @@
         <p class="text-muted">{{ $t('operations.movements.create.subtitle') }}</p>
       </div>
       <div class="card-toolbar">
-        <router-link 
+        <router-link
           :to="{ name: 'operations-movements' }"
           class="btn btn-light-primary btn-sm"
         >
@@ -21,21 +21,21 @@
       <div class="mb-8">
         <h5 class="mb-4">Tipo de Movimiento</h5>
         <div class="row">
-          <div 
-            v-for="type in movementTypes" 
+          <div
+            v-for="type in movementTypes"
             :key="type.value"
-            class="col-md-3 mb-4"
+            class="col-6 col-md-3 mb-4"
           >
-            <div 
-              class="card border-2 cursor-pointer"
-              :class="{ 
+            <div
+              class="card border-2 cursor-pointer h-100"
+              :class="{
                 'border-primary': form.movement_type === type.value,
                 'border-gray-300': form.movement_type !== type.value
               }"
               @click="form.movement_type = type.value"
             >
               <div class="card-body text-center">
-                <i :class="type.icon" class="fa-3x mb-3" 
+                <i :class="type.icon" class="fa-2x mb-3"
                    :style="{ color: form.movement_type === type.value ? '#009ef7' : '#a1a5b7' }"></i>
                 <h6 class="mb-1">{{ type.label }}</h6>
                 <p class="text-muted fs-7 mb-0">{{ type.description }}</p>
@@ -51,42 +51,11 @@
           <h5 class="mb-4">Seleccionar PPL</h5>
           <div class="row">
             <div class="col-md-6">
-              <label class="form-label required">Buscar PPL</label>
-              <div class="input-group">
-                <input 
-                  v-model="searchQuery"
-                  type="text" 
-                  class="form-control"
-                  placeholder="DPI, nombre o código..."
-                  @keyup.enter="searchInmate"
-                >
-                <button 
-                  @click="searchInmate"
-                  class="btn btn-primary"
-                  type="button"
-                >
-                  <i class="fas fa-search"></i>
-                </button>
-              </div>
-            </div>
-          </div>
-
-          <!-- Selected Inmate Info -->
-          <div v-if="selectedInmate" class="alert alert-light-primary mt-4">
-            <div class="d-flex align-items-center">
-              <div class="flex-grow-1">
-                <h6 class="mb-1">{{ selectedInmate.full_name }}</h6>
-                <div class="text-muted">
-                  DPI: {{ selectedInmate.document_number }} | 
-                  Ubicación Actual: {{ selectedInmate.current_location }}
-                </div>
-              </div>
-              <button 
-                @click="selectedInmate = null"
-                class="btn btn-sm btn-light-danger"
-              >
-                <i class="fas fa-times"></i>
-              </button>
+              <InmateSearchField
+                v-model="selectedInmate"
+                label="Buscar PPL"
+                required
+              />
             </div>
           </div>
         </div>
@@ -94,31 +63,34 @@
         <!-- Movement Details Form -->
         <div v-if="selectedInmate" class="mb-8">
           <h5 class="mb-4">Detalles del Movimiento</h5>
-          
+
           <div class="row">
             <!-- Origin -->
             <div class="col-md-6 mb-6">
-              <h6 class="mb-3">Origen</h6>
+              <h6 class="mb-3">Origen (ubicación actual)</h6>
               <div class="mb-3">
-                <label class="form-label">Centro</label>
-                <input 
-                  :value="selectedInmate.current_center"
+                <label for="origin-center" class="form-label">Centro</label>
+                <input
+                  id="origin-center"
+                  :value="inmateDetail?.current_center?.name || 'No registrado'"
                   class="form-control"
                   disabled
                 >
               </div>
               <div class="mb-3">
-                <label class="form-label">Sector</label>
-                <input 
-                  :value="selectedInmate.current_sector"
+                <label for="origin-sector" class="form-label">Sector</label>
+                <input
+                  id="origin-sector"
+                  :value="inmateDetail?.current_sector?.name || 'No registrado'"
                   class="form-control"
                   disabled
                 >
               </div>
               <div class="mb-3">
-                <label class="form-label">Celda</label>
-                <input 
-                  :value="selectedInmate.current_cell"
+                <label for="origin-location" class="form-label">Ubicación</label>
+                <input
+                  id="origin-location"
+                  :value="inmateDetail?.current_location || 'No registrada'"
                   class="form-control"
                   disabled
                 >
@@ -129,106 +101,123 @@
             <div class="col-md-6 mb-6">
               <h6 class="mb-3">Destino</h6>
               <div class="mb-3">
-                <label class="form-label required">Centro</label>
-                <select v-model="form.destination_center_id" class="form-select">
-                  <option value="">Seleccionar centro</option>
-                  <option v-for="center in centers" :key="center.id" :value="center.id">
-                    {{ center.name }}
-                  </option>
-                </select>
+                <label for="dest-location" class="form-label required">Destino</label>
+                <input
+                  id="dest-location"
+                  v-model="form.to_location"
+                  type="text"
+                  class="form-control"
+                  maxlength="255"
+                  placeholder="Ej. Clínica médica, Juzgado 5to, Área de visitas..."
+                >
               </div>
               <div class="mb-3">
-                <label class="form-label">Sector</label>
-                <select 
-                  v-model="form.destination_sector_id" 
+                <label for="dest-sector" class="form-label">Sector Destino (opcional)</label>
+                <select
+                  id="dest-sector"
+                  v-model="form.to_sector_id"
                   class="form-select"
-                  :disabled="!form.destination_center_id"
                 >
-                  <option value="">Seleccionar sector</option>
-                  <option v-for="sector in availableSectors" :key="sector.id" :value="sector.id">
+                  <option value="">Sin sector específico</option>
+                  <option v-for="sector in sectors" :key="sector.id" :value="sector.id">
                     {{ sector.name }}
-                  </option>
-                </select>
-              </div>
-              <div class="mb-3">
-                <label class="form-label">Celda</label>
-                <select 
-                  v-model="form.destination_cell_id" 
-                  class="form-select"
-                  :disabled="!form.destination_sector_id"
-                >
-                  <option value="">Seleccionar celda</option>
-                  <option v-for="cell in availableCells" :key="cell.id" :value="cell.id">
-                    {{ cell.name }} ({{ cell.available_capacity }} disponible)
                   </option>
                 </select>
               </div>
             </div>
           </div>
 
-          <!-- Additional Details -->
+          <!-- Schedule -->
           <div class="row">
             <div class="col-md-6 mb-3">
-              <label class="form-label required">Fecha del Movimiento</label>
-              <input 
-                v-model="form.movement_date"
-                type="date" 
+              <label for="mv-departure" class="form-label required">Fecha y Hora de Salida</label>
+              <input
+                id="mv-departure"
+                v-model="form.departure_time"
+                type="datetime-local"
                 class="form-control"
+                :min="minDeparture"
               >
             </div>
             <div class="col-md-6 mb-3">
-              <label class="form-label required">Hora del Movimiento</label>
-              <input 
-                v-model="form.movement_time"
-                type="time" 
+              <label for="mv-return" class="form-label">Retorno Esperado (opcional)</label>
+              <input
+                id="mv-return"
+                v-model="form.expected_return_time"
+                type="datetime-local"
                 class="form-control"
+                :min="form.departure_time"
               >
+            </div>
+          </div>
+
+          <!-- Escort -->
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <div class="form-check form-switch mt-md-10">
+                <input
+                  id="mv-escort"
+                  v-model="form.requires_escort"
+                  class="form-check-input"
+                  type="checkbox"
+                >
+                <label for="mv-escort" class="form-check-label">Requiere escolta</label>
+              </div>
+            </div>
+            <div v-if="form.requires_escort" class="col-md-6 mb-3">
+              <label for="mv-escort-officer" class="form-label required">Oficial de Escolta</label>
+              <select
+                id="mv-escort-officer"
+                v-model="form.escort_officer_id"
+                class="form-select"
+              >
+                <option value="">Seleccionar oficial...</option>
+                <option v-for="officer in officers" :key="officer.id" :value="officer.id">
+                  {{ officer.full_name }}
+                </option>
+              </select>
             </div>
           </div>
 
           <div class="row">
             <div class="col-md-12 mb-3">
-              <label class="form-label required">Motivo del Movimiento</label>
-              <textarea 
+              <label for="mv-reason" class="form-label required">Motivo del Movimiento</label>
+              <textarea
+                id="mv-reason"
                 v-model="form.reason"
                 class="form-control"
                 rows="3"
+                maxlength="500"
                 placeholder="Describa el motivo del movimiento..."
               ></textarea>
             </div>
           </div>
 
-          <!-- Authorization -->
-          <div v-if="requiresAuthorization" class="row">
-            <div class="col-md-6 mb-3">
-              <label class="form-label required">Autorizado por</label>
-              <input 
-                v-model="form.authorized_by"
-                type="text" 
+          <div class="row">
+            <div class="col-md-12 mb-3">
+              <label for="mv-instructions" class="form-label">Instrucciones Especiales (opcional)</label>
+              <textarea
+                id="mv-instructions"
+                v-model="form.special_instructions"
                 class="form-control"
-                placeholder="Nombre del funcionario"
-              >
-            </div>
-            <div class="col-md-6 mb-3">
-              <label class="form-label">Documento de Autorización</label>
-              <input 
-                type="file" 
-                class="form-control"
-                @change="handleFileUpload"
-              >
+                rows="2"
+                maxlength="500"
+                placeholder="Indicaciones adicionales de seguridad o manejo..."
+              ></textarea>
             </div>
           </div>
         </div>
 
         <!-- Action Buttons -->
         <div v-if="selectedInmate" class="d-flex justify-content-end">
-          <button 
+          <button
             @click="saveMovement"
             class="btn btn-primary"
-            :disabled="!isFormValid"
+            :disabled="!isFormValid || saving"
           >
-            <i class="fas fa-save me-2"></i>
-            Guardar Movimiento
+            <span v-if="saving" class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+            <i v-else class="fas fa-save me-2"></i>
+            Programar Movimiento
           </button>
         </div>
       </div>
@@ -240,198 +229,158 @@
 import { ref, reactive, computed, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
-import { useAuthStore } from '@/stores/auth'
 import Swal from 'sweetalert2'
+import { movementsApi } from '@/services/api/operations'
+import apiClient from '@/services/api/apiClient'
+import InmateSearchField from '../components/InmateSearchField.vue'
 
 const { t } = useI18n()
 const router = useRouter()
-const authStore = useAuthStore()
 
 // Data
-const searchQuery = ref('')
 const selectedInmate = ref<any>(null)
-const centers = ref<any[]>([])
-const availableSectors = ref<any[]>([])
-const availableCells = ref<any[]>([])
+const inmateDetail = ref<any>(null)
+const sectors = ref<any[]>([])
+const officers = ref<any[]>([])
+const saving = ref(false)
+
+const toLocalDateTime = (date: Date) => {
+  const pad = (n: number) => String(n).padStart(2, '0')
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`
+}
+
+const minDeparture = toLocalDateTime(new Date())
 
 const form = reactive({
   movement_type: '',
-  inmate_id: null,
-  destination_center_id: '',
-  destination_sector_id: '',
-  destination_cell_id: '',
-  movement_date: '',
-  movement_time: '',
+  inmate_id: null as number | null,
+  to_location: '',
+  to_sector_id: '',
+  departure_time: toLocalDateTime(new Date(Date.now() + 15 * 60 * 1000)),
+  expected_return_time: '',
+  requires_escort: false,
+  escort_officer_id: '',
   reason: '',
-  authorized_by: '',
-  authorization_document: null
+  special_instructions: ''
 })
 
+// Tipos válidos según backend InmateMovementController@store
+// (el tipo "emergency" se registra desde Control de Movimientos)
 const movementTypes = [
-  {
-    value: 'internal',
-    label: 'Movimiento Interno',
-    description: 'Dentro del mismo centro',
-    icon: 'fas fa-arrows-alt'
-  },
-  {
-    value: 'transfer',
-    label: 'Traslado',
-    description: 'Entre centros',
-    icon: 'fas fa-exchange-alt'
-  },
-  {
-    value: 'court',
-    label: 'Audiencia',
-    description: 'Salida a tribunales',
-    icon: 'fas fa-gavel'
-  },
-  {
-    value: 'medical',
-    label: 'Médico',
-    description: 'Salida médica',
-    icon: 'fas fa-ambulance'
-  }
+  { value: 'medical', label: 'Médico', description: 'Consulta o atención médica', icon: 'fas fa-stethoscope' },
+  { value: 'court', label: 'Tribunal', description: 'Audiencia o diligencia judicial', icon: 'fas fa-gavel' },
+  { value: 'transfer', label: 'Traslado', description: 'Cambio de ubicación', icon: 'fas fa-exchange-alt' },
+  { value: 'administrative', label: 'Administrativo', description: 'Gestión administrativa', icon: 'fas fa-file-alt' },
+  { value: 'visit', label: 'Visita', description: 'Área de visitas', icon: 'fas fa-users' },
+  { value: 'education', label: 'Educación', description: 'Actividad educativa', icon: 'fas fa-graduation-cap' },
+  { value: 'work', label: 'Trabajo', description: 'Programa laboral', icon: 'fas fa-hammer' },
+  { value: 'religious', label: 'Religioso', description: 'Actividad religiosa', icon: 'fas fa-pray' },
+  { value: 'sports', label: 'Deportes', description: 'Actividad deportiva', icon: 'fas fa-running' }
 ]
 
 // Computed
-const requiresAuthorization = computed(() => {
-  return ['transfer', 'court', 'medical'].includes(form.movement_type)
-})
-
 const isFormValid = computed(() => {
   if (!form.movement_type || !selectedInmate.value) return false
-  if (!form.destination_center_id || !form.movement_date || !form.movement_time || !form.reason) return false
-  if (requiresAuthorization.value && !form.authorized_by) return false
+  if (!form.to_location.trim() || !form.departure_time || !form.reason.trim()) return false
+  if (form.requires_escort && !form.escort_officer_id) return false
+  if (form.expected_return_time && form.expected_return_time <= form.departure_time) return false
   return true
 })
 
 // Methods
-const searchInmate = async () => {
-  if (!searchQuery.value) {
-    await Swal.fire({
-      icon: 'warning',
-      title: 'Búsqueda vacía',
-      text: 'Por favor ingrese un criterio de búsqueda'
-    })
-    return
-  }
-
+const loadInmateDetail = async (inmateId: number) => {
   try {
-    // TODO: Implement API call
-    // Mock data for now
-    selectedInmate.value = {
-      id: 1,
-      full_name: 'Juan Pérez García',
-      document_number: '1234567890101',
-      current_center: 'Centro Preventivo Zona 18',
-      current_sector: 'Sector A',
-      current_cell: 'Celda A-101',
-      current_location: 'Centro Preventivo Zona 18 - Sector A - Celda A-101'
-    }
-    form.inmate_id = selectedInmate.value.id
+    const response = await apiClient.get(`/inmates/${inmateId}`)
+    inmateDetail.value = response.data?.data ?? response.data
   } catch (error) {
-    await Swal.fire({
-      icon: 'error',
-      title: 'Error',
-      text: 'No se pudo buscar el PPL'
-    })
+    console.error('Error loading inmate detail:', error)
+    inmateDetail.value = null
   }
 }
 
-const loadCenters = async () => {
+const loadSectors = async () => {
   try {
-    // TODO: Implement API call
-    centers.value = [
-      { id: 1, name: 'Centro Preventivo Zona 18' },
-      { id: 2, name: 'Granja Penal Canadá' },
-      { id: 3, name: 'Centro de Detención Preventiva para Mujeres' }
-    ]
-  } catch (error) {
-    console.error('Error loading centers:', error)
-  }
-}
-
-const loadSectors = async (centerId: string) => {
-  try {
-    // TODO: Implement API call
-    availableSectors.value = [
-      { id: 1, name: 'Sector A' },
-      { id: 2, name: 'Sector B' },
-      { id: 3, name: 'Sector C' }
-    ]
+    const response = await apiClient.get('/sectors', { params: { simple: true } })
+    sectors.value = response.data?.data || []
   } catch (error) {
     console.error('Error loading sectors:', error)
   }
 }
 
-const loadCells = async (sectorId: string) => {
+const loadOfficers = async () => {
   try {
-    // TODO: Implement API call
-    availableCells.value = [
-      { id: 1, name: 'Celda A-101', available_capacity: 2 },
-      { id: 2, name: 'Celda A-102', available_capacity: 1 },
-      { id: 3, name: 'Celda A-103', available_capacity: 3 }
-    ]
+    const response = await apiClient.get('/users', { params: { simple: true } })
+    officers.value = response.data?.data || []
   } catch (error) {
-    console.error('Error loading cells:', error)
-  }
-}
-
-const handleFileUpload = (event: Event) => {
-  const target = event.target as HTMLInputElement
-  if (target.files?.length) {
-    form.authorization_document = target.files[0]
+    console.error('Error loading officers:', error)
   }
 }
 
 const saveMovement = async () => {
   const result = await Swal.fire({
     title: '¿Confirmar movimiento?',
-    text: 'Se registrará el movimiento del PPL',
+    text: 'Se programará el movimiento del PPL',
     icon: 'question',
     showCancelButton: true,
     confirmButtonText: 'Sí, confirmar',
     cancelButtonText: 'Cancelar'
   })
-  
-  if (result.isConfirmed) {
-    try {
-      // TODO: Implement API call
-      await Swal.fire({
-        icon: 'success',
-        title: 'Movimiento registrado',
-        text: 'El movimiento ha sido registrado exitosamente'
-      })
-      router.push({ name: 'operations-movements' })
-    } catch (error) {
-      await Swal.fire({
-        icon: 'error',
-        title: 'Error',
-        text: 'No se pudo registrar el movimiento'
-      })
+
+  if (!result.isConfirmed) return
+
+  saving.value = true
+  try {
+    const payload: Record<string, any> = {
+      inmate_id: form.inmate_id,
+      movement_type: form.movement_type,
+      to_location: form.to_location.trim(),
+      departure_time: form.departure_time,
+      requires_escort: form.requires_escort,
+      reason: form.reason.trim()
     }
+    if (form.to_sector_id) payload.to_sector_id = form.to_sector_id
+    if (form.expected_return_time) payload.expected_return_time = form.expected_return_time
+    if (form.requires_escort) payload.escort_officer_id = form.escort_officer_id
+    if (form.special_instructions.trim()) payload.special_instructions = form.special_instructions.trim()
+
+    await movementsApi.schedule(payload)
+
+    await Swal.fire({
+      icon: 'success',
+      title: 'Movimiento programado',
+      text: 'El movimiento ha sido registrado exitosamente'
+    })
+    router.push({ name: 'operations-movements' })
+  } catch (error: any) {
+    let message = 'No se pudo registrar el movimiento'
+    if (error.response?.status === 409) {
+      message = 'El PPL ya tiene un movimiento activo'
+    } else if (error.response?.status === 422 && error.response.data?.errors) {
+      const firstError = Object.values(error.response.data.errors)[0]
+      message = Array.isArray(firstError) ? String(firstError[0]) : String(firstError)
+    }
+    await Swal.fire({
+      icon: 'error',
+      title: 'Error',
+      text: message
+    })
+  } finally {
+    saving.value = false
   }
 }
 
 // Watchers
-watch(() => form.destination_center_id, (newValue) => {
-  if (newValue) {
-    loadSectors(newValue)
-    form.destination_sector_id = ''
-    form.destination_cell_id = ''
-  }
-})
-
-watch(() => form.destination_sector_id, (newValue) => {
-  if (newValue) {
-    loadCells(newValue)
-    form.destination_cell_id = ''
+watch(selectedInmate, (inmate) => {
+  form.inmate_id = inmate?.id || null
+  inmateDetail.value = null
+  if (inmate?.id) {
+    loadInmateDetail(inmate.id)
   }
 })
 
 // Lifecycle
-loadCenters()
+loadSectors()
+loadOfficers()
 </script>
 
 <style scoped>

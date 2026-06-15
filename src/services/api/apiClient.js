@@ -3,8 +3,13 @@ import { useAuthStore } from '@/stores/auth'
 import router from '@/router'
 
 // Create axios instance
+// VITE_API_BASE_URL solo existe en dev; el build de producción define
+// VITE_APP_API_URL=/api (nginx proxya /api al backend del cluster)
 const apiClient = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api',
+  baseURL:
+    import.meta.env.VITE_API_BASE_URL ||
+    import.meta.env.VITE_APP_API_URL ||
+    '/api',
   timeout: 30000,
   headers: {
     'Content-Type': 'application/json',
