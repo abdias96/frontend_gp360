@@ -1,4 +1,4 @@
-export const emergencyTranslations = {
+const emergencyTranslations_base = {
   en: {
     emergency: {
       incidents: {
@@ -343,4 +343,58 @@ export const emergencyTranslations = {
       },
     },
   },
+};
+
+
+// === FLAT KEYS appended to match component t() usage (auto-added, do not remove) ===
+const __flatKeys_emergency = {
+  "en": {
+    "emergency": {
+      "evacuations": {
+        "subtitle": "Manage and review evacuations",
+        "title": "Evacuations"
+      },
+      "protocols": {
+        "subtitle": "Manage and review protocols",
+        "title": "Protocols"
+      },
+      "responseTeams": {
+        "subtitle": "Manage and review response teams",
+        "title": "Response Teams"
+      }
+    }
+  },
+  "es": {
+    "emergency": {
+      "evacuations": {
+        "subtitle": "Gestione y consulte evacuaciones",
+        "title": "Evacuaciones"
+      },
+      "protocols": {
+        "subtitle": "Gestione y consulte protocolos",
+        "title": "Protocolos"
+      },
+      "responseTeams": {
+        "subtitle": "Gestione y consulte equipos de respuesta",
+        "title": "Equipos de respuesta"
+      }
+    }
+  }
+} as const;
+
+function __deepMerge_emergency(target: any, source: any): any {
+  const result: any = { ...target };
+  for (const key in source) {
+    if (source[key] && typeof source[key] === "object" && !Array.isArray(source[key])) {
+      result[key] = __deepMerge_emergency(result[key] || {}, source[key]);
+    } else {
+      result[key] = source[key];
+    }
+  }
+  return result;
+}
+
+export const emergencyTranslations = {
+  en: __deepMerge_emergency(emergencyTranslations_base.en, __flatKeys_emergency.en),
+  es: __deepMerge_emergency(emergencyTranslations_base.es, __flatKeys_emergency.es),
 };

@@ -560,7 +560,7 @@ const routes: Array<RouteRecordRaw> = [
       {
         path: "/visits",
         name: "visits",
-        redirect: "/visits/visitors",
+        redirect: "/visits/visitor-management",
         meta: {
           pageTitle: "Sistema de visitas",
           breadcrumbs: ["Visitas"],

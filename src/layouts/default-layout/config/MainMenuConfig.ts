@@ -349,7 +349,7 @@ const MainMenuConfig: Array<MenuItem> = [
         sub: [
           {
             heading: "visitorRegistry",
-            route: "/visits/visitors",
+            route: "/visits/visitor-management",
             permission: "visits.visitors_view",
           },
           {

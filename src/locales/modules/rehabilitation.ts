@@ -1,4 +1,4 @@
-export const rehabilitationTranslations = {
+const rehabilitationTranslations_base = {
   en: {
     rehabilitation: {
       // General
@@ -997,4 +997,246 @@ export const rehabilitationTranslations = {
       },
     },
   },
+};
+
+
+// === FLAT KEYS appended to match component t() usage (auto-added, do not remove) ===
+const __flatKeys_rehabilitation = {
+  "en": {
+    "rehabilitation": {
+      "assignments": {
+        "subtitle": "Manage and review assignments",
+        "title": "Assignments"
+      },
+      "attendance": {
+        "subtitle": "Manage and review attendance",
+        "title": "Attendance"
+      },
+      "basic": {
+        "subtitle": "Manage and review basic education",
+        "title": "Basic Education"
+      },
+      "certificates": {
+        "columns": {
+          "deliveryDate": "Delivery Date",
+          "gradeCategory": "Grade Category"
+        },
+        "fields": {
+          "hasExternalValidity": "Has External Validity"
+        },
+        "gradeCategory": {
+          "distinction": "Distinction",
+          "high_distinction": "High Distinction",
+          "merit": "Merit",
+          "pass": "Pass"
+        }
+      },
+      "evaluations": {
+        "subtitle": "Manage and review evaluations",
+        "title": "Evaluations"
+      },
+      "higher": {
+        "subtitle": "Manage and review higher education",
+        "title": "Higher Education"
+      },
+      "literacy": {
+        "subtitle": "Manage and review literacy",
+        "title": "Literacy"
+      },
+      "programs": {
+        "filters": {
+          "allCenters": "All centers",
+          "allStatuses": "All statuses",
+          "allTypes": "All types"
+        }
+      },
+      "progress": {
+        "actions": {
+          "completeSession": "Complete Session",
+          "recordAttendance": "Record Attendance",
+          "startConfirm": "Are you sure you want to start this session?",
+          "startSession": "Start Session"
+        },
+        "attendanceRecorded": "Attendance recorded successfully.",
+        "columns": {
+          "attendanceRate": "Attendance Rate",
+          "endTime": "End Time",
+          "facilitator": "Facilitator",
+          "sessionDate": "Session Date",
+          "sessionNumber": "Session Number",
+          "sessionTitle": "Session Title",
+          "startTime": "Start Time",
+          "status": "Status"
+        },
+        "fields": {
+          "description": "Description",
+          "endTime": "End Time",
+          "facilitator": "Facilitator",
+          "location": "Location",
+          "notes": "Notes",
+          "programId": "Program",
+          "qualityRating": "Quality Rating",
+          "sessionDate": "Session Date",
+          "sessionNumber": "Session Number",
+          "sessionTitle": "Session Title",
+          "startTime": "Start Time"
+        },
+        "sessionCompleted": "Session completed successfully.",
+        "started": "Session started successfully.",
+        "status": {
+          "cancelled": "Cancelled",
+          "completed": "Completed",
+          "in_progress": "In Progress",
+          "scheduled": "Scheduled"
+        }
+      },
+      "work": {
+        "attendance": {
+          "columns": {
+            "absentCount": "Absent",
+            "attendanceRate": "Attendance Rate",
+            "presentCount": "Present",
+            "program": "Program",
+            "session": "Session"
+          }
+        },
+        "evaluations": {
+          "columns": {
+            "attendance": "Attendance",
+            "behavioralChanges": "Behavioral Changes",
+            "lastEvaluation": "Last Evaluation",
+            "program": "Program",
+            "progressLevel": "Progress Level"
+          }
+        }
+      }
+    }
+  },
+  "es": {
+    "rehabilitation": {
+      "assignments": {
+        "subtitle": "Gestione y consulte asignaciones",
+        "title": "Asignaciones"
+      },
+      "attendance": {
+        "subtitle": "Gestione y consulte asistencia",
+        "title": "Asistencia"
+      },
+      "basic": {
+        "subtitle": "Gestione y consulte educación básica",
+        "title": "Educación básica"
+      },
+      "certificates": {
+        "columns": {
+          "deliveryDate": "Fecha de entrega",
+          "gradeCategory": "Categoría de calificación"
+        },
+        "fields": {
+          "hasExternalValidity": "Tiene validez externa"
+        },
+        "gradeCategory": {
+          "distinction": "Distinción",
+          "high_distinction": "Distinción alta",
+          "merit": "Mérito",
+          "pass": "Aprobado"
+        }
+      },
+      "evaluations": {
+        "subtitle": "Gestione y consulte evaluaciones",
+        "title": "Evaluaciones"
+      },
+      "higher": {
+        "subtitle": "Gestione y consulte educación superior",
+        "title": "Educación superior"
+      },
+      "literacy": {
+        "subtitle": "Gestione y consulte alfabetización",
+        "title": "Alfabetización"
+      },
+      "programs": {
+        "filters": {
+          "allCenters": "Todos los centros",
+          "allStatuses": "Todos los estados",
+          "allTypes": "Todos los tipos"
+        }
+      },
+      "progress": {
+        "actions": {
+          "completeSession": "Completar sesión",
+          "recordAttendance": "Registrar asistencia",
+          "startConfirm": "¿Está seguro de iniciar esta sesión?",
+          "startSession": "Iniciar sesión"
+        },
+        "attendanceRecorded": "Asistencia registrada correctamente.",
+        "columns": {
+          "attendanceRate": "Tasa de asistencia",
+          "endTime": "Hora de fin",
+          "facilitator": "Facilitador",
+          "sessionDate": "Fecha de sesión",
+          "sessionNumber": "Número de sesión",
+          "sessionTitle": "Título de la sesión",
+          "startTime": "Hora de inicio",
+          "status": "Estado"
+        },
+        "fields": {
+          "description": "Descripción",
+          "endTime": "Hora de fin",
+          "facilitator": "Facilitador",
+          "location": "Ubicación",
+          "notes": "Observaciones",
+          "programId": "Programa",
+          "qualityRating": "Calificación de calidad",
+          "sessionDate": "Fecha de sesión",
+          "sessionNumber": "Número de sesión",
+          "sessionTitle": "Título de la sesión",
+          "startTime": "Hora de inicio"
+        },
+        "sessionCompleted": "Sesión completada correctamente.",
+        "started": "Sesión iniciada correctamente.",
+        "status": {
+          "cancelled": "Cancelado",
+          "completed": "Completado",
+          "in_progress": "En progreso",
+          "scheduled": "Programado"
+        }
+      },
+      "work": {
+        "attendance": {
+          "columns": {
+            "absentCount": "Ausentes",
+            "attendanceRate": "Tasa de asistencia",
+            "presentCount": "Presentes",
+            "program": "Programa",
+            "session": "Sesión"
+          }
+        },
+        "evaluations": {
+          "columns": {
+            "attendance": "Asistencia",
+            "behavioralChanges": "Cambios de conducta",
+            "lastEvaluation": "Última evaluación",
+            "program": "Programa",
+            "progressLevel": "Nivel de progreso"
+          }
+        }
+      }
+    }
+  }
+} as const;
+
+function __deepMerge_rehabilitation(target: any, source: any): any {
+  const result: any = { ...target };
+  for (const key in source) {
+    if (source[key] && typeof source[key] === "object" && !Array.isArray(source[key])) {
+      result[key] = __deepMerge_rehabilitation(result[key] || {}, source[key]);
+    } else {
+      result[key] = source[key];
+    }
+  }
+  return result;
+}
+
+export const rehabilitationTranslations = {
+  en: __deepMerge_rehabilitation(rehabilitationTranslations_base.en, __flatKeys_rehabilitation.en),
+  es: __deepMerge_rehabilitation(rehabilitationTranslations_base.es, __flatKeys_rehabilitation.es),
 };

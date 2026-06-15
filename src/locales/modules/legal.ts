@@ -1,4 +1,4 @@
-export const legalTranslations = {
+const legalTranslations_base = {
   en: {
     legal: {
       profiles: {
@@ -939,4 +939,38 @@ export const legalTranslations = {
       }
     }
   }
+};
+
+
+// === FLAT KEYS appended to match component t() usage (auto-added, do not remove) ===
+const __flatKeys_legal = {
+  "en": {
+    "legal": {}
+  },
+  "es": {
+    "legal": {
+      "profiles": {
+        "detail": {
+          "releaseDate": "Fecha de liberación"
+        }
+      }
+    }
+  }
+} as const;
+
+function __deepMerge_legal(target: any, source: any): any {
+  const result: any = { ...target };
+  for (const key in source) {
+    if (source[key] && typeof source[key] === "object" && !Array.isArray(source[key])) {
+      result[key] = __deepMerge_legal(result[key] || {}, source[key]);
+    } else {
+      result[key] = source[key];
+    }
+  }
+  return result;
+}
+
+export const legalTranslations = {
+  en: __deepMerge_legal(legalTranslations_base.en, __flatKeys_legal.en),
+  es: __deepMerge_legal(legalTranslations_base.es, __flatKeys_legal.es),
 };

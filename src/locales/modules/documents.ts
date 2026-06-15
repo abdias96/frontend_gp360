@@ -1,4 +1,4 @@
-export const documentsTranslations = {
+const documentsTranslations_base = {
   en: {
     documents: {
       digitalFiles: {
@@ -323,4 +323,42 @@ export const documentsTranslations = {
       }
     }
   }
+};
+
+
+// === FLAT KEYS appended to match component t() usage (auto-added, do not remove) ===
+const __flatKeys_documents = {
+  "en": {
+    "documents": {
+      "correspondence": {
+        "subtitle": "Manage and review correspondence",
+        "title": "Correspondence"
+      }
+    }
+  },
+  "es": {
+    "documents": {
+      "correspondence": {
+        "subtitle": "Gestione y consulte correspondencia",
+        "title": "Correspondencia"
+      }
+    }
+  }
+} as const;
+
+function __deepMerge_documents(target: any, source: any): any {
+  const result: any = { ...target };
+  for (const key in source) {
+    if (source[key] && typeof source[key] === "object" && !Array.isArray(source[key])) {
+      result[key] = __deepMerge_documents(result[key] || {}, source[key]);
+    } else {
+      result[key] = source[key];
+    }
+  }
+  return result;
+}
+
+export const documentsTranslations = {
+  en: __deepMerge_documents(documentsTranslations_base.en, __flatKeys_documents.en),
+  es: __deepMerge_documents(documentsTranslations_base.es, __flatKeys_documents.es),
 };
