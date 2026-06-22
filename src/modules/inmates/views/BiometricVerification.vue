@@ -61,32 +61,19 @@
       <div class="tab-content" id="verificationsTabContent">
         <!-- Biometric Search Tab -->
         <div class="tab-pane fade show active" id="biometric-search">
-          <!-- Nota para ambiente de producción -->
-          <div v-if="!isLocalDevelopment && !javaServiceAvailable" class="alert alert-info mb-5">
-            <div class="d-flex align-items-start">
-              <i class="ki-duotone ki-information fs-2x text-info me-4">
-                <span class="path1"></span>
-                <span class="path2"></span>
-                <span class="path3"></span>
-              </i>
-              <div>
-                <h4 class="mb-2">{{ t('biometric.verification.service.localRequired') }}</h4>
-                <p class="mb-2">
-                  {{ t('biometric.verification.service.localRequiredDesc') }}
-                </p>
-                <ol class="mb-2">
-                  <li>{{ t('biometric.verification.service.steps.download') }}</li>
-                  <li>{{ t('biometric.verification.service.steps.connect') }}</li>
-                  <li>{{ t('biometric.verification.service.steps.run') }} <code>java -jar BiometricService.jar</code></li>
-                  <li>{{ t('biometric.verification.service.steps.autoConnect') }}</li>
-                </ol>
-                <p class="mb-0 text-muted">
-                  <small>{{ t('biometric.verification.service.note') }}</small>
-                </p>
-              </div>
+          <!-- Estado del agente biométrico .NET (BioAgent) -->
+          <div v-if="!bioReady" class="alert alert-warning d-flex align-items-center mb-5">
+            <i class="ki-outline ki-information-5 fs-2x text-warning me-4"></i>
+            <div class="flex-grow-1">
+              <h4 class="mb-1">{{ t('biometric.verification.service.localRequired') }}</h4>
+              <p class="mb-0 text-muted">{{ t('biometric.verification.service.localRequiredDesc') }}</p>
             </div>
+            <button class="btn btn-sm btn-light-primary" @click="reconnectAgent">
+              <i class="ki-outline ki-arrows-circle fs-5 me-1"></i>
+              {{ t('biometric.verification.error.retry') }}
+            </button>
           </div>
-          
+
           <div class="row g-5">
             <!-- Fingerprint Verification -->
             <div class="col-md-6">
@@ -492,7 +479,7 @@
 import { ref, onMounted, onActivated, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
-import { useJavaBiometric } from '@/composables/useJavaBiometric'
+import { useBioAgent, type FingerName } from '@/composables/useBioAgent'
 import Swal from 'sweetalert2'
 import axios from 'axios'
 
@@ -509,17 +496,17 @@ if (token) {
 
 const router = useRouter()
 
-// Composables
-const {
-  isServiceAvailable: javaServiceAvailable,
-  isCapturing,
-  checkServiceStatus: checkJavaStatus,
-  launchBiometricCapture,
-  launchBiometricVerification,
-  startFingerprintCapture,
-  verifyOneToMany,
-  initializeDevice
-} = useJavaBiometric()
+// Agente biométrico .NET (BioAgent — loopback 127.0.0.1:8400).
+// Reemplaza al antiguo BiometricService Java (protocolo gp360biometric://).
+const bio = useBioAgent()
+const verificationFinger = ref<FingerName>('right_index')
+const stats = ref({ totalTemplates: 0 })
+
+// El agente está listo si responde el health-check del loopback .NET.
+const bioReady = computed(() => bio.isAvailable.value)
+const reconnectAgent = async () => {
+  await bio.checkHealth()
+}
 
 // State
 const verificationInProgress = ref(false)
@@ -532,9 +519,6 @@ const capturedFingerprint = ref('') // Variable para almacenar la huella captura
 const searchResults = ref<any[]>([])
 const isSearching = ref(false)
 const isServiceLoading = ref(false)
-const isBuildingService = ref(false)
-const serviceStatus = ref<any>(null)
-const isLocalDevelopment = ref(import.meta.env.DEV || window.location.hostname === 'localhost')
 const searchData = ref({
   // Document search
   documentNumber: '',
@@ -556,25 +540,58 @@ const startFingerprintVerification = async () => {
   verificationError.value = ''
 
   try {
-    // Lanzar el servicio de verificación biométrica 1:N
-    const result = await launchBiometricVerification()
+    // 1. Conectar con el agente biométrico .NET (BioAgent, 127.0.0.1:8400).
+    const healthy = await bio.checkHealth()
+    if (!healthy) {
+      throw new Error(bio.lastError.value || t('biometric.swal.couldNotLaunchApp'))
+    }
+    await bio.handshake()
 
-    if (result.success) {
-      // Resetear el estado ya que la verificación ocurre en la app Java
-      verificationInProgress.value = false
-      currentStep.value = 1
+    // 2. Capturar UNA huella en el lector DigitalPersona.
+    const cap = await bio.capture(verificationFinger.value, 60, 20)
+
+    // 3. Búsqueda 1:N en el padrón biométrico GP360 (matching server-side).
+    currentStep.value = 2
+    const { data } = await axios.post('/biometric/identify', {
+      finger: verificationFinger.value,
+      template_base64: cap.templateBase64,
+      quality: cap.quality,
+    })
+    const r = data?.data ?? data
+
+    currentStep.value = 3
+    if (r && r.match === 'local' && r.subject) {
+      // Coincidencia: la persona ya está registrada en GP360.
+      verificationResult.value = {
+        found: true,
+        inmate_id: r.subject.id,
+        inmate_name: r.subject.full_name,
+        inmate_code: r.subject.code,
+        photo: r.subject.photo_url || null,
+        score: typeof r.score === 'number' ? r.score / 100 : 0,
+        method: 'Huella · BioAgent .NET',
+      }
     } else {
-      throw new Error(result.message || t('biometric.swal.couldNotLaunchApp'))
+      // Sin coincidencia local: no existe registro previo, puede admitirse.
+      verificationResult.value = {
+        found: false,
+        message:
+          r && r.match === 'renap'
+            ? t('biometric.verification.noMatch.renapOnly')
+            : undefined,
+      }
     }
   } catch (error: any) {
-    verificationError.value = error.message || t('biometric.swal.couldNotLaunchApp')
+    verificationError.value =
+      error?.response?.data?.message ||
+      error?.message ||
+      t('biometric.swal.couldNotLaunchApp')
     currentStep.value = 3
-    verificationInProgress.value = false
 
     await Swal.fire({
       icon: 'error',
       title: t('common.swal.titles.error'),
-      text: verificationError.value
+      text: verificationError.value,
     })
   }
 }
@@ -823,168 +840,17 @@ const showSearchResults = (inmates: any[]) => {
 }
 
 
-// Service Control Methods
-const checkServiceFullStatus = async () => {
-  isServiceLoading.value = true
-  try {
-    const response = await axios.get('biometric-service/status')
-    if (response.data.success) {
-      serviceStatus.value = response.data
-      javaServiceAvailable.value = response.data.operational || false
-    }
-  } catch (error) {
-    console.error('Error al verificar estado del servicio:', error)
-  } finally {
-    isServiceLoading.value = false
-  }
-}
-
-// Método obsoleto - el servicio ya no es HTTP, es una aplicación standalone
-const startService = async () => {
-  // Este método ya no se usa, ahora lanzamos directamente la aplicación Java
-  // mediante startFingerprintVerification
-  await startFingerprintVerification()
-}
-
-const buildService = async () => {
-  const result = await Swal.fire({
-    icon: 'question',
-    title: t('biometric.swal.buildService'),
-    text: t('biometric.swal.buildServiceText'),
-    showCancelButton: true,
-    confirmButtonText: t('biometric.swal.yesBuild'),
-    cancelButtonText: t('common.swal.buttons.cancel')
-  })
-  
-  if (!result.isConfirmed) return
-  
-  isBuildingService.value = true
-  
-  try {
-    const response = await axios.post('biometric-service/build')
-    
-    if (response.data.success) {
-      const jarCompiledText = t('biometric.swal.jarCompiled')
-      const jarSizeText = t('biometric.swal.jarSize')
-      await Swal.fire({
-        icon: 'success',
-        title: t('biometric.swal.buildSuccess'),
-        html: `
-          <div class="text-start">
-            <p><strong>${jarCompiledText}</strong> ${response.data.data?.jar_path || 'BiometricService.jar'}</p>
-            ${response.data.data?.jar_size ? `<p><strong>${jarSizeText}</strong> ${(response.data.data.jar_size / 1024).toFixed(2)} KB</p>` : ''}
-          </div>
-        `,
-        confirmButtonText: t('common.swal.buttons.accept')
-      })
-      
-      // Actualizar estado del servicio
-      await checkServiceFullStatus()
-    } else {
-      await Swal.fire({
-        icon: 'error',
-        title: t('biometric.swal.buildError'),
-        html: `
-          <div class="text-start">
-            <p>${response.data.message}</p>
-            ${response.data.output ? `<pre class="mt-3" style="max-height: 300px; overflow-y: auto;">${response.data.output}</pre>` : ''}
-          </div>
-        `,
-        confirmButtonText: t('common.swal.buttons.accept')
-      })
-    }
-  } catch (error: any) {
-    console.error('Error al compilar servicio:', error)
-    await Swal.fire({
-      icon: 'error',
-      title: t('common.swal.titles.error'),
-      text: error.response?.data?.message || t('biometric.swal.buildError'),
-      confirmButtonText: t('common.swal.buttons.accept')
-    })
-  } finally {
-    isBuildingService.value = false
-  }
-}
-
-const stopService = async () => {
-  const result = await Swal.fire({
-    icon: 'warning',
-    title: t('biometric.swal.stopService'),
-    text: t('biometric.swal.stopServiceText'),
-    showCancelButton: true,
-    confirmButtonText: t('biometric.swal.yesStop'),
-    cancelButtonText: t('common.swal.buttons.cancel'),
-    confirmButtonColor: '#d33'
-  })
-  
-  if (!result.isConfirmed) return
-  
-  isServiceLoading.value = true
-  
-  try {
-    const response = await axios.post('biometric-service/stop')
-    
-    if (response.data.success) {
-      Swal.fire({
-        icon: 'success',
-        title: t('biometric.swal.serviceStopped'),
-        text: t('biometric.swal.serviceStoppedText'),
-        timer: 2000,
-        showConfirmButton: false
-      })
-
-      // Actualizar estado
-      javaServiceAvailable.value = false
-      checkServiceFullStatus()
-    }
-  } catch (error: any) {
-    Swal.fire({
-      icon: 'error',
-      title: t('common.swal.titles.error'),
-      text: error.response?.data?.message || t('biometric.swal.stopServiceError')
-    })
-  } finally {
-    isServiceLoading.value = false
-  }
-}
-
-const showServiceLogs = async () => {
-  try {
-    const response = await axios.get('biometric-service/logs', {
-      params: { lines: 30 }
-    })
-
-    if (response.data.success && response.data.logs) {
-      const logsHtml = response.data.logs
-        .map((line: string) => `<div class="text-start font-monospace small">${line}</div>`)
-        .join('')
-
-      Swal.fire({
-        title: t('biometric.swal.serviceLogs'),
-        html: `<div class="mh-400px overflow-auto">${logsHtml}</div>`,
-        width: '800px',
-        confirmButtonText: t('common.swal.buttons.close')
-      })
-    }
-  } catch (error) {
-    console.error('Error al obtener logs:', error)
-  }
-}
 
 // Lifecycle
 onMounted(async () => {
   // Resetear la vista al estado inicial
   resetView()
 
-  // Verificar estado completo del servicio
-  await checkServiceFullStatus()
-
-  // Verificar estado del servicio Java
-  await checkJavaStatus()
+  // Sondear el agente biométrico .NET (no bloqueante).
+  await bio.checkHealth()
 
   // Marcar como listo
   isBiometricReady.value = true
-
 })
 
 // Resetear cuando el componente se reactive (al volver de otra ruta)

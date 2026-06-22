@@ -867,27 +867,9 @@ const handleEdit = () => {
 }
 
 const launchBiometricCapture = async () => {
-  try {
-    const response = await ApiService.post('/biometric-service/launch-enrollment', {
-      enrollable_id: route.params.id,
-      type: 'visitor',
-      capture_type: 'enrollment'
-    })
-    const data = response.data
-    if (data.success && data.data?.protocol_url) {
-      window.location.href = data.data.protocol_url
-      Swal.fire({
-        title: 'Servicio Biometrico',
-        text: 'Se esta abriendo el servicio de captura biometrica. Por favor autorice la apertura en su navegador.',
-        icon: 'info',
-        confirmButtonText: 'OK'
-      })
-    } else {
-      Swal.fire({ title: 'Error', text: data.message || 'No se pudo generar la URL', icon: 'error' })
-    }
-  } catch (err: any) {
-    Swal.fire({ title: 'Error', text: 'No se pudo iniciar el servicio biometrico', icon: 'error' })
-  }
+  // Enrolamiento biométrico vía agente .NET (BioAgent), no el antiguo servicio Java.
+  // El flujo .NET vincula las 10 huellas a un código de visita aprobado (VIS-XXXX).
+  router.push({ name: 'bioagent-enroll-visitor' })
 }
 
 // Visit request status management

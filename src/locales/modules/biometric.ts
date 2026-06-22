@@ -64,8 +64,8 @@ export const biometricTranslations = {
         },
         // Service info
         service: {
-          localRequired: "Local biometric service required",
-          localRequiredDesc: "To use biometric verification, you need to run the Java service locally on your computer.",
+          localRequired: "Biometric agent unavailable",
+          localRequiredDesc: "Start the BioAgent on the workstation (system tray icon) to capture fingerprints.",
           steps: {
             download: "Download and install BiometricService on your computer",
             connect: "Connect the DigitalPersona fingerprint reader",
@@ -73,8 +73,8 @@ export const biometricTranslations = {
             autoConnect: "The service will automatically connect on port 8080",
           },
           note: "Note: The service must run on the same computer where the fingerprint reader is located.",
-          javaSystem: "Java BiometricService system",
-          requiresJar: "Requires BiometricService.jar running",
+          javaSystem: "BioAgent (.NET)",
+          requiresJar: "Requires the BioAgent running (127.0.0.1:8400)",
         },
         // Fingerprint verification
         fingerprint: {
@@ -130,9 +130,9 @@ export const biometricTranslations = {
           step3: "Result",
           step3Desc: "Show matches",
           captureFingerprint: "Capture fingerprint",
-          javaWindowInfo: "The Java system will open a capture window",
+          javaWindowInfo: "Place your finger on the reader when prompted",
           placeFingerInfo: "Place your finger on the reader when indicated",
-          captureViaJava: "Capture is done via BiometricService.jar with DigitalPersona reader",
+          captureViaJava: "Capture is performed with the DigitalPersona reader via the BioAgent (.NET)",
           searchingMatches: "Searching for matches",
           searching: "Searching...",
           verifyingInDb: "Verifying in database...",
@@ -152,13 +152,14 @@ export const biometricTranslations = {
           title: "No matches",
           description: "No previous records of this person were found in the system.",
           canProceed: "The person can proceed with the admission process.",
+          renapOnly: "No prior enrollment in GP360. The person was located in RENAP only; they can proceed with admission.",
           proceedWithAdmission: "Proceed with admission",
           newVerification: "New verification",
         },
         error: {
           title: "Verification error",
           retry: "Retry",
-          couldNotLaunch: "Could not launch verification application",
+          couldNotLaunch: "Could not connect to the BioAgent biometric agent",
         },
         // Search results
         searchResults: {
@@ -216,7 +217,7 @@ export const biometricTranslations = {
         stopServiceError: "Error stopping the service",
         serviceLogs: "Service logs",
         // Verification errors
-        couldNotLaunchApp: "Could not launch verification application",
+        couldNotLaunchApp: "Could not connect to the BioAgent biometric agent",
       },
     },
   },
@@ -284,8 +285,8 @@ export const biometricTranslations = {
         },
         // Info del servicio
         service: {
-          localRequired: "Servicio biométrico local requerido",
-          localRequiredDesc: "Para utilizar la verificación biométrica, necesita ejecutar el servicio Java localmente en su computadora.",
+          localRequired: "Agente biométrico no disponible",
+          localRequiredDesc: "Inicie el agente BioAgent en la estación (ícono en la bandeja del sistema) para capturar huellas.",
           steps: {
             download: "Descargue e instale el BiometricService en su computadora",
             connect: "Conecte el lector de huellas DigitalPersona",
@@ -293,8 +294,8 @@ export const biometricTranslations = {
             autoConnect: "El servicio se conectará automáticamente en el puerto 8080",
           },
           note: "Nota: El servicio debe ejecutarse en la misma computadora donde está el lector de huellas.",
-          javaSystem: "Sistema Java BiometricService",
-          requiresJar: "Requiere BiometricService.jar ejecutándose",
+          javaSystem: "Agente BioAgent (.NET)",
+          requiresJar: "Requiere el agente BioAgent en ejecución (127.0.0.1:8400)",
         },
         // Verificación dactilar
         fingerprint: {
@@ -350,9 +351,9 @@ export const biometricTranslations = {
           step3: "Resultado",
           step3Desc: "Mostrar coincidencias",
           captureFingerprint: "Capturar huella dactilar",
-          javaWindowInfo: "El sistema Java abrirá una ventana de captura",
+          javaWindowInfo: "Coloque el dedo en el lector cuando se le indique",
           placeFingerInfo: "Coloque el dedo en el lector cuando se le indique",
-          captureViaJava: "La captura se realiza mediante BiometricService.jar con el lector DigitalPersona",
+          captureViaJava: "La captura se realiza con el lector DigitalPersona a través del agente BioAgent (.NET)",
           searchingMatches: "Buscando coincidencias",
           searching: "Buscando...",
           verifyingInDb: "Verificando en base de datos...",
@@ -372,13 +373,14 @@ export const biometricTranslations = {
           title: "Sin coincidencias",
           description: "No se encontraron registros previos de esta persona en el sistema.",
           canProceed: "La persona puede proceder con el proceso de ingreso.",
+          renapOnly: "Sin enrolamiento previo en GP360. La persona fue localizada solo en RENAP; puede proceder con el ingreso.",
           proceedWithAdmission: "Proceder con ingreso",
           newVerification: "Nueva verificación",
         },
         error: {
           title: "Error en verificación",
           retry: "Reintentar",
-          couldNotLaunch: "No se pudo lanzar la aplicación de verificación",
+          couldNotLaunch: "No se pudo conectar con el agente biométrico BioAgent",
         },
         // Resultados de búsqueda
         searchResults: {
@@ -436,7 +438,7 @@ export const biometricTranslations = {
         stopServiceError: "Error al detener el servicio",
         serviceLogs: "Logs del servicio",
         // Errores de verificación
-        couldNotLaunchApp: "No se pudo lanzar la aplicación de verificación",
+        couldNotLaunchApp: "No se pudo conectar con el agente biométrico BioAgent",
       },
     },
   },
